@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "howItWorks": "How It Works",
+    "login": "Login",
+    "startFree": "Start Free",
+    "toggleLang": "عربي",
+    "toggleTheme": "Light Mode"
+  },
+  "hero": {
+    "badge": "AI Automation · ذكاء اصطناعي",
+    "headline1": "The AI Employee",
+    "headline2": "That Never Sleeps",
+    "subheadline": "An AI platform that automatically replies to customer messages, creates content, and protects your Google reputation — 24/7.",
+    "ctaPrimary": "Start Free — 14-Day Trial",
+    "ctaSecondary": "Watch How It Works",
+    "socialProof": "Trusted by 500+ business owners",
+    "stats": {
+      "messages": "340 messages replied",
+      "replyTime": "Reply time: 8 seconds",
+      "rating": "4.9 Google Rating"
+    }
+  },
+  "trustedBy": {
+    "title": "Trusted by restaurants, clinics, cafés, and stores..."
+  },
+  "problems": {
+    "title": "Do You Face These Daily?",
+    "items": [
+      { "icon": "🌙", "title": "Unanswered Messages at Night", "desc": "Customers message after hours and no one replies" },
+      { "icon": "🔄", "title": "Repetitive Questions Drain You", "desc": "Same questions every day exhaust you and your team" },
+      { "icon": "⭐", "title": "Negative Reviews Without Response", "desc": "One unanswered negative review hurts your business" },
+      { "icon": "📱", "title": "Channels Scattered Everywhere", "desc": "WhatsApp, Instagram, Facebook — impossible to track all" }
+    ]
+  },
+  "features": {
+    "title": "One Solution for Every Problem",
+    "items": [
+      { "icon": "📥", "title": "Unified Inbox", "desc": "All messages from every channel in one place. Track conversations without switching apps." },
+      { "icon": "🎭", "title": "Reply in Your Voice", "desc": "AI learns your style and replies exactly as you would." },
+      { "icon": "🛡️", "title": "Before They Complain", "desc": "Detects unhappy customers and reaches out before they leave a bad review." },
+      { "icon": "✍️", "title": "Auto Content Engine", "desc": "Generates daily social media content tailored to your business — effortlessly." },
+      { "icon": "🔍", "title": "Keyword Hunter", "desc": "Monitors conversations needing human attention and alerts you instantly." },
+      { "icon": "📊", "title": "Smart Weekly Report", "desc": "Comprehensive weekly report on reply performance, customer satisfaction, and growth opportunities." }
+    ]
+  },
+  "howItWorks": {
+    "title": "3 Steps and You're Ready",
+    "steps": [
+      { "num": "01", "title": "Sign Up & Connect", "desc": "Connect your channels in under 3 minutes — Instagram, WhatsApp, Facebook, Gmail, and more." },
+      { "num": "02", "title": "Define Your Business", "desc": "Tell the AI about your business, your tone, and your frequently asked questions." },
+      { "num": "03", "title": "Sleep Peacefully", "desc": "The AI replies to customers, posts your content, and protects your reputation — automatically." }
+    ]
+  },
+  "pricing": {
+    "title": "Choose Your Plan",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "annualSave": "Save 20%",
+    "mostPopular": "Most Popular",
+    "startFree": "Get Started",
+    "plans": [
+      {
+        "name": "Starter",
+        "nameAr": "Starter",
+        "price": 29,
+        "desc": "Perfect for small businesses",
+        "features": ["1 channel", "500 replies/month", "Basic AI replies", "Monthly report", "Email support"]
+      },
+      {
+        "name": "Business",
+        "nameAr": "Business",
+        "price": 59,
+        "popular": true,
+        "desc": "Best for most businesses",
+        "features": ["5 channels", "2,000 replies/month", "Before They Complain", "Daily auto content", "Weekly report", "Live support"]
+      },
+      {
+        "name": "Growth",
+        "nameAr": "Growth",
+        "price": 89,
+        "desc": "For businesses scaling up",
+        "features": ["10 channels", "5,000 replies/month", "All Business features", "Keyword Hunter", "Advanced analytics", "API access"]
+      },
+      {
+        "name": "Agency",
+        "nameAr": "Agency",
+        "price": 249,
+        "desc": "Manage multiple clients",
+        "features": ["Unlimited channels", "Unlimited replies", "Agency dashboard", "White-label", "Dedicated account manager", "Guaranteed SLA"]
+      }
+    ]
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "items": [
+      { "name": "Ahmed Al-Salem", "business": "Restaurant, Riyadh", "rating": 5, "quote": "After Naz, our replies became instant even while sleeping. Customers noticed and our ratings improved significantly." },
+      { "name": "Sara Al-Mutairi", "business": "Beauty Clinic, Jeddah", "rating": 5, "quote": "I used to waste hours daily answering the same questions. Now AI handles everything and I focus on my work." },
+      { "name": "Mohammed Al-Zahrani", "business": "Café, Dammam", "rating": 5, "quote": "The Before They Complain system saved me multiple times. I now know about an issue before they leave a bad review." }
+    ]
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": [
+      { "q": "Do I need technical experience to use Naz?", "a": "Not at all. Naz is designed to be easy for any business owner. Setup takes less than 10 minutes." },
+      { "q": "Will AI reply for me or suggest replies?", "a": "You can choose both modes — fully automatic replies or suggested replies for you to review and approve." },
+      { "q": "Which channels are supported?", "a": "Instagram, Facebook, WhatsApp, Gmail, TikTok, and X (Twitter). Coming soon: Snapchat and Telegram." },
+      { "q": "Is my data secure?", "a": "Yes. We use end-to-end SSL encryption and your data is never shared with any third party." },
+      { "q": "Can I cancel anytime?", "a": "Yes, you can cancel your subscription at any time with no additional fees." },
+      { "q": "Is there a free trial?", "a": "Yes! All plans come with a 14-day full free trial with no credit card required." }
+    ]
+  },
+  "finalCta": {
+    "title": "Start Today — First Reply Free",
+    "btn": "Start Your Free Trial",
+    "noCc": "No credit card required"
+  },
+  "footer": {
+    "tagline": "The AI Employee That Never Sleeps",
+    "product": "Product",
+    "company": "Company",
+    "support": "Support",
+    "productLinks": ["Features", "Pricing", "How It Works", "Integrations"],
+    "companyLinks": ["About Naz", "Blog", "Partners", "Careers"],
+    "supportLinks": ["Help Center", "Contact Us", "Privacy Policy", "Terms of Service"],
+    "copyright": "© 2024 Naz. All rights reserved."
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Create Account",
+    "name": "Full Name",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "loginWithGoogle": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create new account",
+    "backToLogin": "Back to login"
+  }
+}
