@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useLang } from '../../../lib/LangContext'
+import { useLang } from '../../lib/LangContext'
 
 function useCountUp(target: number, duration = 1400) {
   const [val, setVal] = useState(0)
