@@ -145,16 +145,20 @@ function AICore({ size = 130 }: { size?: number }) {
       }}>
         <span style={{ fontSize: s * 0.2, filter: 'drop-shadow(0 0 14px rgba(198,255,0,1))' }}>✦</span>
       </div>
-      {[0,72,144,216,288].map((deg, i) => (
-        <div key={i} className="absolute" style={{
-          width: 5, height: 5, borderRadius: '50%',
-          background: i % 2 === 0 ? '#C6FF00' : '#7DF9FF',
-          boxShadow: `0 0 6px ${i % 2 === 0 ? '#C6FF00' : '#7DF9FF'}`,
-          top: `${50 - 43 * Math.cos((deg * Math.PI) / 180)}%`,
-          left: `${50 + 43 * Math.sin((deg * Math.PI) / 180)}%`,
-          transform: 'translate(-50%,-50%)',
-        }} />
-      ))}
+      {[0,72,144,216,288].map((deg, i) => {
+        const topPct = 50 - 43 * Math.cos((deg * Math.PI) / 180);
+        const leftPct = 50 + 43 * Math.sin((deg * Math.PI) / 180);
+        return (
+          <div key={i} className="absolute" style={{
+            width: 5, height: 5, borderRadius: '50%',
+            background: i % 2 === 0 ? '#C6FF00' : '#7DF9FF',
+            boxShadow: `0 0 6px ${i % 2 === 0 ? '#C6FF00' : '#7DF9FF'}`,
+            top: `${topPct.toFixed(4)}%`,
+            left: `${leftPct.toFixed(4)}%`,
+            transform: 'translate(-50%,-50%)',
+          }} />
+        );
+      })}
     </div>
   )
 }

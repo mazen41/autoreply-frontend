@@ -1,27 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --bg-primary:      #050505;
-  --bg-secondary:    #090909;
-  --surface:         #111111;
-  --accent-primary:  #C6FF00;
-  --accent-secondary:#7DF9FF;
-  --text-primary:    #F5F5F5;
-  --text-secondary:  rgba(255,255,255,0.55);
-  --border:          rgba(255,255,255,0.05);
-  --glow-lime:       rgba(198,255,0,0.12);
-  --glow-cyan:       rgba(125,249,255,0.12);
+  --background: #0A0A0F;
+  --surface: #111118;
+  --border: #1E1E2E;
+  --primary: #6C63FF;
+  --text-primary: #F0F0FF;
+  --text-secondary: #8888AA;
+  --success: #00D68F;
+  --warning: #FFB800;
+  --danger: #FF4D6D;
 }
 
-html[dir="rtl"] body { font-family: 'Cairo', sans-serif; }
-html[dir="ltr"] body { font-family: 'Cairo', 'Inter', sans-serif; }
+html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
+html[dir="ltr"] body { font-family: var(--font-space-grotesk), sans-serif; }
 
 body {
-  background: var(--bg-primary);
+  background: var(--background);
   color: var(--text-primary);
   overflow-x: hidden;
 }

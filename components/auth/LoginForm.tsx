@@ -1,16 +1,29 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
+import { useTheme } from '../../lib/ThemeContext'
+import toast from 'react-hot-toast'
+import SocialLoginButtons from '../ui/SocialLoginButtons'
 
 export default function LoginForm() {
-  const { isRTL } = useLang()
+  const { isRTL, t } = useLang()
+  const { theme } = useTheme()
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPass, setShowPass] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error') === 'auth_failed') {
+      setError(t.auth.authFailed)
+      toast.error(t.auth.authFailed)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [t.auth.authFailed])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,55 +36,61 @@ export default function LoginForm() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Login failed')
+      if (!res.ok) throw new Error(data.message || t.auth.loginError)
       document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
+      toast.success(t.auth.loginSuccess)
       if (data.user?.onboarding_completed === false) {
         window.location.href = '/onboarding'
       } else {
         window.location.href = '/dashboard'
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      const msg = err instanceof Error ? err.message : t.auth.loginError
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
   const fields = [
-    { key: 'email',    label: isRTL ? 'البريد الإلكتروني' : 'Email',    type: 'email',    ph: 'you@example.com' },
-    { key: 'password', label: isRTL ? 'كلمة المرور'        : 'Password', type: showPass ? 'text' : 'password', ph: '••••••••' },
+    { key: 'email',    label: t.auth.email,    type: 'email',    ph: 'you@example.com' },
+    { key: 'password', label: t.auth.password, type: showPass ? 'text' : 'password', ph: '••••••••' },
   ]
 
   return (
     <div className="w-full">
       {/* Mobile logo */}
       <div className="flex items-center gap-2.5 justify-center mb-8 lg:hidden">
-        <span style={{ color: '#C6FF00', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(198,255,0,0.7))' }}>✦</span>
-        <span className="text-2xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
+        <span style={{ color: 'var(--primary)', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(108,99,255,0.7))' }}>✦</span>
+        <span className="text-2xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
       </div>
 
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full"
-          style={{ background: 'rgba(198,255,0,0.08)', border: '1px solid rgba(198,255,0,0.18)' }}>
-          <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
-          <span className="text-[11px] font-bold tracking-[0.1em]" style={{ color: '#C6FF00' }}>
-            {isRTL ? 'تسجيل الدخول' : 'SIGN IN'}
+          style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.18)' }}>
+          <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--primary)' }} />
+          <span className="text-[11px] font-bold tracking-[0.1em]" style={{ color: 'var(--primary)' }}>
+            {t.auth.login.toUpperCase()}
           </span>
         </div>
-        <h1 className="font-black mb-1.5" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', color: '#F5F5F5', letterSpacing: '-0.04em' }}>
+        <h1 className="font-black mb-1.5" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'مرحباً بعودتك.' : 'Welcome back.'}
         </h1>
-        <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'سجّل دخولك للوصول إلى نظامك.' : 'Sign in to access your AI system.'}
         </p>
       </motion.div>
+
+      {/* Social Login Buttons */}
+      <SocialLoginButtons />
 
       {/* Error */}
       {error && (
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
           className="mb-5 p-3.5 rounded-xl text-sm text-center"
-          style={{ background: 'rgba(255,60,60,0.07)', border: '1px solid rgba(255,60,60,0.22)', color: '#FF7070' }}>
+          style={{ background: 'rgba(255,77,109,0.07)', border: '1px solid rgba(255,77,109,0.22)', color: 'var(--danger)' }}>
           {error}
         </motion.div>
       )}
@@ -81,7 +100,7 @@ export default function LoginForm() {
           <motion.div key={key}
             initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + i * 0.08, duration: 0.45 }}>
-            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               {label}
             </label>
             <div className="relative">
@@ -92,12 +111,12 @@ export default function LoginForm() {
                 placeholder={ph}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
                 style={{
-                  background: 'rgba(17,17,17,0.9)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#F5F5F5',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
                 }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(198,255,0,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(198,255,0,0.08)' }}
-                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(108,99,255,0.08)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
               />
               {key === 'password' && (
                 <button type="button" onClick={() => setShowPass(s => !s)}
@@ -113,8 +132,8 @@ export default function LoginForm() {
         {/* Forgot password */}
         <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'}`}>
           <Link href="/forgot-password" className="text-xs font-medium hover:underline"
-            style={{ color: 'rgba(198,255,0,0.7)' }}>
-            {isRTL ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+            style={{ color: 'var(--primary)' }}>
+            {t.auth.forgotPassword}
           </Link>
         </div>
 
@@ -122,8 +141,8 @@ export default function LoginForm() {
         <motion.button type="submit" disabled={loading}
           className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200"
           style={{
-            background: loading ? 'rgba(198,255,0,0.5)' : 'linear-gradient(135deg, #C6FF00, #a8e000)',
-            color: '#050505',
+            background: loading ? 'rgba(108,99,255,0.5)' : 'var(--primary)',
+            color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF',
           }}
           whileHover={!loading ? { scale: 1.015 } : {}}
           whileTap={!loading ? { scale: 0.985 } : {}}
@@ -135,20 +154,20 @@ export default function LoginForm() {
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
             </svg>
           )}
-          {loading ? (isRTL ? 'جاري الدخول...' : 'Signing in...') : (isRTL ? 'تسجيل الدخول' : 'Sign In')}
+          {loading ? (isRTL ? 'جاري الدخول...' : 'Signing in...') : t.auth.signIn}
         </motion.button>
       </form>
 
-      <p className="text-center text-sm mt-7" style={{ color: 'rgba(255,255,255,0.38)' }}>
-        {isRTL ? 'ليس لديك حساب؟' : "Don't have an account?"}{' '}
-        <Link href="/register" className="font-bold hover:underline" style={{ color: '#C6FF00' }}>
-          {isRTL ? 'سجل مجاناً' : 'Sign up free'}
+      <p className="text-center text-sm mt-7" style={{ color: 'var(--text-secondary)' }}>
+        {t.auth.noAccount}{' '}
+        <Link href="/register" className="font-bold hover:underline" style={{ color: 'var(--primary)' }}>
+          {t.auth.signUp}
         </Link>
       </p>
 
-      <p className="text-center text-[11px] mt-4" style={{ color: 'rgba(255,255,255,0.2)' }}>
+      <p className="text-center text-[11px] mt-4" style={{ color: 'var(--text-secondary)' }}>
         {isRTL ? 'بالمتابعة توافق على ' : 'By continuing you agree to our '}
-        <span className="underline cursor-pointer" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        <span className="underline cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'الشروط والسياسة' : 'Terms & Privacy'}
         </span>
       </p>

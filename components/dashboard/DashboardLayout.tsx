@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
+import { useTheme } from '../../lib/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV = [
   { icon: '🏠', ar: 'الرئيسية',     en: 'Overview',    href: '/dashboard' },
-  { icon: '📥', ar: 'صندوق الوارد', en: 'Inbox',       href: '/dashboard/inbox',      badge: 5 },
+  { icon: '📥', ar: 'صندوق الوارد', en: 'Inbox',       href: '/dashboard/inbox' },
   { icon: '📢', ar: 'القنوات',      en: 'Channels',    href: '/dashboard/channels' },
   { icon: '✍️', ar: 'المحتوى',      en: 'Content',     href: '/dashboard/content' },
   { icon: '⭐', ar: 'السمعة',       en: 'Reputation',  href: '/dashboard/reputation' },
@@ -39,7 +40,8 @@ function useUser() {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isRTL } = useLang()
+  const { isRTL, t, setLang } = useLang()
+  const { theme, setTheme } = useTheme()
   const pathname = usePathname()
   const router = useRouter()
   const user = useUser()
@@ -51,7 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // page title
   const allNav = [...NAV, ...NAV_BOTTOM]
   const current = allNav.find(n => n.href === pathname)
-  const pageTitle = current ? (isRTL ? current.ar : current.en) : (isRTL ? 'لوحة التحكم' : 'Dashboard')
+  const pageTitle = current ? (isRTL ? current.ar : current.en) : t.nav.dashboard
 
   const logout = () => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
@@ -64,9 +66,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 mb-2">
-        <span style={{ color: '#C6FF00', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(198,255,0,0.8))' }}>✦</span>
+        <span style={{ color: 'var(--primary)', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(108,99,255,0.8))' }}>✦</span>
         {(!collapsed || isMobile) && (
-          <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
+          <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
         )}
       </div>
 
@@ -79,9 +81,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => isMobile && setMobileSidebar(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
               style={{
-                background: active ? 'rgba(198,255,0,0.08)' : 'transparent',
-                borderLeft: active ? '3px solid #C6FF00' : '3px solid transparent',
-                color: active ? '#C6FF00' : 'rgba(255,255,255,0.55)',
+                background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
+                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
+                color: active ? 'var(--primary)' : 'var(--text-secondary)',
               }}>
               <span style={{ fontSize: 18, minWidth: 20, textAlign: 'center' }}>{item.icon}</span>
               {(!collapsed || isMobile) && (
@@ -89,13 +91,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
               {item.badge && (!collapsed || isMobile) && (
                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                  style={{ background: '#FF3B30', color: '#fff' }}>
+                  style={{ background: 'var(--danger)', color: '#fff' }}>
                   {item.badge}
                 </span>
               )}
               {collapsed && !isMobile && (
                 <div className="absolute left-full ml-2 px-2 py-1 rounded-lg text-xs font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50"
-                  style={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}>
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
                   {isRTL ? item.ar : item.en}
                 </div>
               )}
@@ -105,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Divider */}
-      <div className="mx-4 my-3" style={{ height: 1, background: 'rgba(255,255,255,0.05)' }} />
+      <div className="mx-4 my-3" style={{ height: 1, background: 'var(--border)' }} />
 
       {/* Bottom nav */}
       <nav className="px-3 space-y-1 pb-4">
@@ -116,9 +118,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => isMobile && setMobileSidebar(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
               style={{
-                background: active ? 'rgba(198,255,0,0.08)' : 'transparent',
-                borderLeft: active ? '3px solid #C6FF00' : '3px solid transparent',
-                color: active ? '#C6FF00' : 'rgba(255,255,255,0.55)',
+                background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
+                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
+                color: active ? 'var(--primary)' : 'var(--text-secondary)',
               }}>
               <span style={{ fontSize: 18, minWidth: 20, textAlign: 'center' }}>{item.icon}</span>
               {(!collapsed || isMobile) && (
@@ -131,9 +133,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Help */}
         {(!collapsed || isMobile) && (
           <div className="px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200"
-            style={{ color: 'rgba(255,255,255,0.35)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
             <span className="flex items-center gap-3">
               <span style={{ fontSize: 18 }}>❓</span>
               <span className="text-sm font-semibold">{isRTL ? 'المساعدة' : 'Help'}</span>
@@ -145,14 +147,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#050505' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--background)' }}>
 
       {/* ── Desktop Sidebar ── */}
       <aside className="hidden md:flex flex-col flex-shrink-0 transition-all duration-300"
         style={{
           width: collapsed ? 64 : 260,
-          background: 'rgba(9,9,9,0.98)',
-          borderRight: '1px solid rgba(255,255,255,0.05)',
+          background: 'var(--surface)',
+          borderRight: '1px solid var(--border)',
         }}>
         <SidebarContent />
       </aside>
@@ -166,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setMobileSidebar(false)} />
             <motion.aside className="fixed top-0 z-50 h-full w-72 md:hidden flex flex-col"
-              style={{ [isRTL ? 'right' : 'left']: 0, background: 'rgba(9,9,9,0.99)', borderRight: '1px solid rgba(255,255,255,0.07)' }}
+              style={{ [isRTL ? 'right' : 'left']: 0, background: 'var(--surface)', borderRight: '1px solid var(--border)' }}
               initial={{ x: isRTL ? 288 : -288 }} animate={{ x: 0 }} exit={{ x: isRTL ? 288 : -288 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
               <SidebarContent isMobile />
@@ -180,13 +182,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* ── Topbar ── */}
         <header className="flex-shrink-0 flex items-center justify-between px-4 md:px-6"
-          style={{ height: 64, background: 'rgba(9,9,9,0.98)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          style={{ height: 64, background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
 
           {/* Left */}
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button className="md:hidden p-2 rounded-lg" onClick={() => setMobileSidebar(true)}
-              style={{ color: 'rgba(255,255,255,0.6)' }}>
+              style={{ color: 'var(--text-secondary)' }}>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <rect y="3" width="20" height="2" rx="1"/><rect y="9" width="20" height="2" rx="1"/><rect y="15" width="20" height="2" rx="1"/>
               </svg>
@@ -194,18 +196,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Desktop collapse toggle */}
             <button className="hidden md:flex p-2 rounded-lg transition-colors"
               onClick={() => setCollapsed(c => !c)}
-              style={{ color: 'rgba(255,255,255,0.4)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#C6FF00')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}>
+              style={{ color: 'var(--text-secondary)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
               <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
                 <rect y="2" width="18" height="2" rx="1"/><rect y="8" width="12" height="2" rx="1"/><rect y="14" width="18" height="2" rx="1"/>
               </svg>
             </button>
-            <h1 className="text-base font-bold" style={{ color: '#F5F5F5' }}>{pageTitle}</h1>
+            <h1 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>{pageTitle}</h1>
           </div>
 
           {/* Right */}
           <div className="flex items-center gap-2 md:gap-3">
+            {/* Language toggle */}
+            <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+              onClick={() => setLang(isRTL ? 'en' : 'ar')}>
+              {isRTL ? '🇬🇧 EN' : '🇸🇦 AR'}
+            </button>
+
+            {/* Theme toggle */}
+            <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+
             {/* Trial pill */}
             <button className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
               style={{ background: 'rgba(255,160,0,0.1)', border: '1px solid rgba(255,160,0,0.3)', color: '#FFA500' }}>
@@ -216,37 +232,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Notifications */}
             <div className="relative">
               <button className="relative p-2 rounded-xl transition-colors"
-                style={{ color: 'rgba(255,255,255,0.55)' }}
+                style={{ color: 'var(--text-secondary)' }}
                 onClick={() => { setNotifOpen(o => !o); setUserMenuOpen(false) }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#F5F5F5')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.55)')}>
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#FF3B30' }} />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--danger)' }} />
               </button>
               <AnimatePresence>
                 {notifOpen && (
                   <motion.div className="absolute z-50 w-80 rounded-2xl overflow-hidden"
-                    style={{ [isRTL ? 'left' : 'right']: 0, top: '100%', marginTop: 8, background: '#111', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{ [isRTL ? 'left' : 'right']: 0, top: '100%', marginTop: 8, background: 'var(--surface)', border: '1px solid var(--border)' }}
                     initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.2 }}>
-                    <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <span className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{isRTL ? 'الإشعارات' : 'Notifications'}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,59,48,0.15)', color: '#FF3B30' }}>3</span>
+                    <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+                      <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t.nav.notifications}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,77,109,0.15)', color: 'var(--danger)' }}>3</span>
                     </div>
                     {NOTIFICATIONS.map((n, i) => (
                       <Link key={i} href={n.href} onClick={() => setNotifOpen(false)}
                         className="flex items-start gap-3 px-4 py-3 transition-colors"
-                        style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+                        style={{ borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <span style={{ fontSize: 16 }}>{n.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                          <p className="text-xs font-medium leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                             {isRTL ? n.ar : n.en}
                           </p>
-                          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                             {isRTL ? `منذ ${n.time}` : `${n.time} ago`}
                           </p>
                         </div>
@@ -260,13 +276,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* User menu */}
             <div className="relative">
               <button className="flex items-center gap-2 px-2 py-1.5 rounded-xl transition-colors"
-                style={{ color: 'rgba(255,255,255,0.7)' }}
+                style={{ color: 'var(--text-primary)' }}
                 onClick={() => { setUserMenuOpen(o => !o); setNotifOpen(false) }}>
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black"
-                  style={{ background: 'linear-gradient(135deg, #C6FF00, #a8e000)', color: '#050505' }}>
+                  style={{ background: 'var(--primary)', color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF' }}>
                   {user?.name?.[0]?.toUpperCase() || 'N'}
                 </div>
-                <span className="hidden sm:block text-sm font-semibold" style={{ color: '#F5F5F5' }}>
+                <span className="hidden sm:block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {user?.name?.split(' ')[0] || 'Naz'}
                 </span>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className="hidden sm:block opacity-40">
@@ -276,7 +292,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <AnimatePresence>
                 {userMenuOpen && (
                   <motion.div className="absolute z-50 w-48 rounded-2xl overflow-hidden"
-                    style={{ [isRTL ? 'left' : 'right']: 0, top: '100%', marginTop: 8, background: '#111', border: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{ [isRTL ? 'left' : 'right']: 0, top: '100%', marginTop: 8, background: 'var(--surface)', border: '1px solid var(--border)' }}
                     initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ duration: 0.2 }}>
                     {[
@@ -285,7 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     ].map((item, i) => (
                       <Link key={i} href={item.href} onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-sm transition-colors"
-                        style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.7)' }}
+                        style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)' }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                         <span>{item.icon}</span>
@@ -294,8 +310,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     ))}
                     <button onClick={logout}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors"
-                      style={{ color: '#FF6B6B' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,59,48,0.06)')}
+                      style={{ color: 'var(--danger)' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,77,109,0.06)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
                       <span>🚪</span>
                       <span>{isRTL ? 'تسجيل الخروج' : 'Logout'}</span>
@@ -308,10 +324,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* ── Page Content ── */}
-        <main className="flex-1 overflow-auto" style={{ background: '#080808' }}>
+        <main className="flex-1 overflow-auto" style={{ background: 'var(--background)' }}>
           {/* subtle grid */}
           <div className="fixed inset-0 pointer-events-none" style={{
-            backgroundImage: 'linear-gradient(rgba(198,255,0,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(198,255,0,0.015) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(108,99,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(108,99,255,0.015) 1px, transparent 1px)',
             backgroundSize: '50px 50px',
             zIndex: 0,
           }} />

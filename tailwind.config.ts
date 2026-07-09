@@ -9,22 +9,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'bg-primary':      '#050505',
-        'bg-secondary':    '#090909',
-        'surface':         '#111111',
-        'accent-primary':  '#C6FF00',
-        'accent-secondary':'#7DF9FF',
-        'text-primary':    '#F5F5F5',
-        'text-secondary':  'rgba(255,255,255,0.55)',
-        // legacy aliases
-        'teal':            '#7DF9FF',
-        'magenta':         '#C6FF00',
-        'bg-dark':         '#050505',
-        'accent':          '#C6FF00',
-        'border-dark':     'rgba(255,255,255,0.05)',
+        // Dark mode colors
+        background: '#0A0A0F',
+        surface: '#111118',
+        border: '#1E1E2E',
+        primary: '#6C63FF',
+        'text-primary': '#F0F0FF',
+        'text-secondary': '#8888AA',
+        success: '#00D68F',
+        warning: '#FFB800',
+        danger: '#FF4D6D',
+        // Light mode colors (used with dark: prefix)
+        light: {
+          background: '#F4F4FF',
+          surface: '#FFFFFF',
+          border: '#E0E0F0',
+          'text-primary': '#0A0A1A',
+          'text-secondary': '#555577',
+        },
       },
       fontFamily: {
-        sans:   ['Cairo', 'Inter', 'sans-serif'],
+        sans: ['Space Grotesk', 'Inter', 'sans-serif'],
         arabic: ['Cairo', 'sans-serif'],
       },
       fontSize: {
@@ -37,6 +42,20 @@ const config: Config = {
       },
       animation: {
         'spin-slow': 'spin 20s linear infinite',
+        'nebula': 'nebula 20s ease-in-out infinite alternate',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+      },
+      keyframes: {
+        nebula: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
       },
     },
   },

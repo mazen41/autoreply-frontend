@@ -1,37 +1,41 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import ar from '../messages/ar.json'
-import en from '../messages/en.json'
+import { Cookies } from 'react-cookie'
+import { translations, Language } from './i18n'
 
-type Lang = 'ar' | 'en'
+const cookies = new Cookies()
 
 interface LangContextType {
-  lang: Lang
-  t: typeof ar
+  lang: Language
+  t: typeof translations.ar
   toggleLang: () => void
   isRTL: boolean
 }
 
 const LangContext = createContext<LangContextType>({
   lang: 'ar',
-  t: ar,
+  t: translations.ar,
   toggleLang: () => {},
   isRTL: true,
 })
 
 export function LangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>('ar')
+  const [lang, setLang] = useState<Language>('ar')
 
   useEffect(() => {
-    const saved = localStorage.getItem('naz-lang') as Lang
-    if (saved) setLang(saved)
+    const saved = cookies.get('naz-lang') as Language
+    if (saved) {
+      setLang(saved)
+    } else {
+      cookies.set('naz-lang', 'ar', { path: '/', maxAge: 31536000 })
+    }
   }, [])
 
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
     document.documentElement.lang = lang
-    localStorage.setItem('naz-lang', lang)
+    cookies.set('naz-lang', lang, { path: '/', maxAge: 31536000 })
   }, [lang])
 
   const toggleLang = () => setLang(l => l === 'ar' ? 'en' : 'ar')
@@ -39,7 +43,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
   return (
     <LangContext.Provider value={{
       lang,
-      t: lang === 'ar' ? ar : en as typeof ar,
+      t: translations[lang],
       toggleLang,
       isRTL: lang === 'ar',
     }}>

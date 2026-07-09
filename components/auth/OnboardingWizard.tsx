@@ -426,11 +426,32 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
   const handleConnect = (id: string) => {
     setConnecting(id)
-    setTimeout(() => {
-      setData({ ...data, connectedChannel: id })
-      setConnecting(null)
-    }, 1800)
+    if (id === 'facebook' || id === 'instagram') {
+      const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+      const token = match ? decodeURIComponent(match[1]) : ''
+      const width = 600, height = 700
+      const left = window.screen.width / 2 - width / 2
+      const top = window.screen.height / 2 - height / 2
+      window.open(`http://localhost:8000/api/channels/connect/facebook?token=${token}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
+    } else {
+      setTimeout(() => {
+        setData({ ...data, connectedChannel: id })
+        setConnecting(null)
+      }, 1800)
+    }
   }
+
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'facebook_connected') {
+        // Here we just hardcode setting the channel to facebook, since the API was hit successfully.
+        setData(d => ({ ...d, connectedChannel: 'facebook' }))
+        setConnecting(null)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [setData])
 
   return (
     <div>

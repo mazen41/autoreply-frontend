@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
+import ChannelIcon from '../../components/ui/ChannelIcon'
 
 function useCountUp(target: number, duration = 1400) {
   const [val, setVal] = useState(0)
@@ -20,74 +21,152 @@ function useCountUp(target: number, duration = 1400) {
   return val
 }
 
-function StatCard({ icon, label, value, sub, color = '#C6FF00', delay = 0 }: {
-  icon: string; label: string; value: string | number; sub?: string; color?: string; delay?: number
+function StatCard({ icon, label, value, sub, color = 'var(--primary)', delay = 0, trend }: {
+  icon: string; label: string; value: string | number; sub?: string; color?: string; delay?: number; trend?: { value: number; isPositive: boolean }
 }) {
   const isNum = typeof value === 'number'
   const counted = useCountUp(isNum ? value : 0)
   return (
     <motion.div className="rounded-2xl p-5 relative overflow-hidden"
       initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4, boxShadow: `0 8px 30px ${color}20` }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+      style={{ 
+        background: 'var(--surface)', 
+        border: '1px solid var(--border)',
+        borderTop: `3px solid ${color}`
+      }}>
       <div className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${color}10 0%, transparent 70%)`, filter: 'blur(20px)' }} />
+        style={{ background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`, filter: 'blur(20px)' }} />
       <div className="text-2xl mb-3">{icon}</div>
-      <div className="text-[11px] font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+      <div className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
         {label.toUpperCase()}
       </div>
-      <div className="text-3xl font-black mb-1" style={{ color: '#F5F5F5' }}>
+      <div className="text-3xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>
         {isNum ? counted : value}
       </div>
-      {sub && <div className="text-xs font-semibold" style={{ color }}>{sub}</div>}
+      {trend && (
+        <div className="flex items-center gap-1 text-xs font-bold" style={{ color: trend.isPositive ? 'var(--success)' : 'var(--danger)' }}>
+          {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+        </div>
+      )}
+      {sub && !trend && <div className="text-xs font-semibold" style={{ color }}>{sub}</div>}
     </motion.div>
   )
 }
 
-const RECENT_CONVS = [
-  { ch: '📸', name: 'أحمد الشمري', preview: 'متى تفتحون؟ أريد حجز طاولة...', time: '2د', status: 'auto' },
-  { ch: '📧', name: 'sara@gmail.com', preview: 'Do you deliver to Riyadh?', time: '15د', status: 'draft' },
-  { ch: '🔵', name: 'محمد العتيبي', preview: 'شكراً جزيلاً على الخدمة الممتازة', time: '1س', status: 'auto' },
-  { ch: '📸', name: 'Lina Hassan', preview: 'What are your prices for catering?', time: '2س', status: 'alert' },
-  { ch: '📧', name: 'info@example.com', preview: 'بخصوص الطلب رقم #1204...', time: 'أمس', status: 'auto' },
-]
-
-const STATUS_MAP: Record<string, { label: string; labelEn: string; color: string; bg: string }> = {
-  auto:  { label: 'تم الرد', labelEn: 'Auto-replied', color: '#C6FF00', bg: 'rgba(198,255,0,0.1)' },
-  draft: { label: 'مسودة',   labelEn: 'Draft',        color: '#FFA500', bg: 'rgba(255,165,0,0.1)' },
-  alert: { label: 'تنبيه',   labelEn: 'Alert',        color: '#FF3B30', bg: 'rgba(255,59,48,0.1)' },
-}
-
-const CHECKLIST = [
-  { ar: 'أنشأت حسابك',           en: 'Account created',            done: true },
-  { ar: 'أكملت بيانات العمل',    en: 'Business info completed',    done: true },
-  { ar: 'ربطت Gmail',            en: 'Connected Gmail',            done: true },
-  { ar: 'استقبل أول رسالة',     en: 'Received first message',     done: false },
-  { ar: 'شاهد أول رد تلقائي',   en: 'Saw first auto-reply',       done: false },
-  { ar: 'اربط قناة ثانية',       en: 'Connect a second channel',   done: false },
-]
-
-const CHANNELS_STATUS = [
-  { icon: '📸', name: 'Instagram', color: '#E1306C', connected: true, msgs: 124 },
-  { icon: '📧', name: 'Gmail',     color: '#EA4335', connected: true, msgs: 89 },
-  { icon: '🔵', name: 'Facebook',  color: '#1877F2', connected: false, msgs: 0 },
-  { icon: '⭐', name: 'Google Reviews', color: '#FBBC05', connected: false, msgs: 0 },
-]
 
 export default function DashboardHome() {
-  const { isRTL } = useLang()
+  const { isRTL, t } = useLang()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [stats, setStats] = useState<any>(null)
+  const [conversations, setConversations] = useState<any[]>([])
+  const [channels, setChannels] = useState<any[]>([])
 
-  const allDone = CHECKLIST.every(c => c.done)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
+        
+        const [statsRes, inboxRes, channelsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stats`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inbox`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+        ])
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          setStats(statsData)
+        }
+        
+        if (inboxRes.ok) {
+          const inboxData = await inboxRes.json()
+          setConversations(inboxData.data?.slice(0, 5) || [])
+        }
+        
+        if (channelsRes.ok) {
+          const channelsData = await channelsRes.json()
+          setChannels(channelsData.data || [])
+        }
+      } catch (err) {
+        setError('Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'var(--surface)' }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 md:p-6 max-w-7xl mx-auto">
+        <div className="rounded-2xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: 'var(--primary)', color: 'var(--text-primary)' }}>
+            {t.common.retry}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
 
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="💬" label={isRTL ? 'الرسائل اليوم' : "Today's Messages"} value={47} sub="↑ 12%" color="#C6FF00" delay={0} />
-        <StatCard icon="🤖" label={isRTL ? 'تم الرد تلقائياً' : 'Auto-replied'} value={43} sub={isRTL ? '91% معدل الرد' : '91% reply rate'} color="#7DF9FF" delay={0.08} />
-        <StatCard icon="⏱️" label={isRTL ? 'ساعات وُفِّرت' : 'Hours Saved'} value="3.2h" sub={isRTL ? 'هذا الأسبوع' : 'This week'} color="#FF9500" delay={0.16} />
-        <StatCard icon="⭐" label={isRTL ? 'تقييم Google' : 'Google Rating'} value="4.7" sub="↑ +0.2" color="#FBBC05" delay={0.24} />
+        <StatCard 
+          icon="💬" 
+          label={t.dashboard.totalMessages} 
+          value={stats?.total_messages || 0} 
+          trend={stats?.messages_trend} 
+          color="var(--primary)" 
+          delay={0} 
+        />
+        <StatCard 
+          icon="🤖" 
+          label={t.dashboard.aiReplies} 
+          value={stats?.ai_replies || 0} 
+          sub={`${stats?.response_rate || 0}% ${t.dashboard.responseRate}`} 
+          color="var(--success)" 
+          delay={0.08} 
+        />
+        <StatCard 
+          icon="⏱️" 
+          label={isRTL ? 'ساعات وُفِّرت' : 'Hours Saved'} 
+          value={stats?.hours_saved || '0'} 
+          sub={isRTL ? 'هذا الأسبوع' : 'This week'} 
+          color="var(--warning)" 
+          delay={0.16} 
+        />
+        <StatCard 
+          icon="⭐" 
+          label={isRTL ? 'تقييم Google' : 'Google Rating'} 
+          value={stats?.google_rating || '0'} 
+          trend={stats?.rating_trend} 
+          color="var(--primary)" 
+          delay={0.24} 
+        />
       </div>
 
       {/* ── Middle row ── */}
@@ -97,71 +176,68 @@ export default function DashboardHome() {
         <motion.div className="lg:col-span-3 rounded-2xl overflow-hidden"
           initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <h2 className="text-sm font-bold" style={{ color: '#F5F5F5' }}>
-              {isRTL ? 'آخر المحادثات' : 'Recent Conversations'}
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+              {t.dashboard.recentConversations}
             </h2>
-            <Link href="/dashboard/inbox" className="text-xs font-bold" style={{ color: '#C6FF00' }}>
+            <Link href="/dashboard/inbox" className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
               {isRTL ? 'عرض الكل ←' : 'View all →'}
             </Link>
           </div>
-          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-            {RECENT_CONVS.map((c, i) => {
-              const s = STATUS_MAP[c.status]
-              return (
-                <Link key={i} href="/dashboard/inbox"
-                  className="flex items-center gap-3 px-5 py-3.5 transition-colors"
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                  <span className="text-xl flex-shrink-0">{c.ch}</span>
+          {conversations.length === 0 ? (
+            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+              <div className="text-4xl mb-3">💬</div>
+              <p className="text-sm">{t.inbox.noConversations}</p>
+            </div>
+          ) : (
+            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+              {conversations.map((c, i) => (
+                <Link key={i} href={`/dashboard/inbox?conversation=${c.id}`}
+                  className="flex items-center gap-3 px-5 py-3.5 transition-all"
+                  style={{ borderLeft: '3px solid transparent' }}
+                  onMouseEnter={e => { 
+                    e.currentTarget.style.background = 'rgba(108,99,255,0.05)'
+                    e.currentTarget.style.borderLeftColor = 'var(--primary)'
+                  }}
+                  onMouseLeave={e => { 
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.borderLeftColor = 'transparent'
+                  }}>
+                  <ChannelIcon type={c.channel_type || 'facebook'} size={24} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-semibold truncate" style={{ color: '#F5F5F5' }}>{c.name}</span>
-                      <span className="text-[11px] flex-shrink-0 mr-2" style={{ color: 'rgba(255,255,255,0.3)' }}>{c.time}</span>
+                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{c.customer_name || 'Unknown'}</span>
+                      <span className="text-[11px] flex-shrink-0 mr-2" style={{ color: 'var(--text-secondary)' }}>{c.time_ago || ''}</span>
                     </div>
-                    <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{c.preview}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{c.last_message || ''}</p>
                   </div>
-                  <span className="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded-full"
-                    style={{ background: s.bg, color: s.color }}>
-                    {isRTL ? s.label : s.labelEn}
-                  </span>
+                  {c.is_active && (
+                    <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--success)' }} />
+                  )}
                 </Link>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
-        {/* Getting started checklist */}
-        {!allDone && (
+        {/* Getting started checklist - only show if no channels */}
+        {channels.length === 0 && (
           <motion.div className="lg:col-span-2 rounded-2xl p-5"
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.38, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
-            <h2 className="text-sm font-bold mb-1" style={{ color: '#F5F5F5' }}>
-              {isRTL ? '🚀 ابدأ من هنا' : '🚀 Getting Started'}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <h2 className="text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+              {t.dashboard.noChannels}
             </h2>
-            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {isRTL ? `${CHECKLIST.filter(c => c.done).length} من ${CHECKLIST.length} مكتملة` : `${CHECKLIST.filter(c => c.done).length} of ${CHECKLIST.length} complete`}
+            <p className="text-[11px] mb-4" style={{ color: 'var(--text-secondary)' }}>
+              {isRTL ? 'ابدأ بربط قنواتك الأولى' : 'Start by connecting your first channels'}
             </p>
-            {/* Progress bar */}
-            <div className="h-1 rounded-full mb-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
-              <div className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${(CHECKLIST.filter(c => c.done).length / CHECKLIST.length) * 100}%`, background: 'linear-gradient(to right, #C6FF00, #7DF9FF)' }} />
-            </div>
-            <div className="space-y-2.5">
-              {CHECKLIST.map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: item.done ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${item.done ? '#C6FF00' : 'rgba(255,255,255,0.1)'}` }}>
-                    {item.done && <span style={{ color: '#C6FF00', fontSize: 10 }}>✓</span>}
-                  </div>
-                  <span className="text-xs" style={{ color: item.done ? 'rgba(255,255,255,0.5)' : '#F5F5F5', textDecoration: item.done ? 'line-through' : 'none' }}>
-                    {isRTL ? item.ar : item.en}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <Link href="/dashboard/channels"
+              className="block w-full py-3 rounded-xl text-center text-sm font-bold animate-pulse"
+              style={{ background: 'var(--primary)', color: 'var(--text-primary)' }}>
+              {t.dashboard.connectChannel}
+            </Link>
           </motion.div>
         )}
       </div>
@@ -173,66 +249,70 @@ export default function DashboardHome() {
         <motion.div className="rounded-2xl p-5"
           initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold" style={{ color: '#F5F5F5' }}>
-              {isRTL ? '🔗 حالة القنوات' : '🔗 Channel Status'}
+            <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+              {t.channels.title}
             </h2>
-            <Link href="/dashboard/channels" className="text-xs font-bold" style={{ color: '#C6FF00' }}>
-              {isRTL ? 'إدارة' : 'Manage'}
+            <Link href="/dashboard/channels" className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+              {t.channels.connect}
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {CHANNELS_STATUS.map((ch, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                  style={{ background: `${ch.color}15` }}>
-                  {ch.icon}
+          {channels.length === 0 ? (
+            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+              <div className="text-4xl mb-3">🔗</div>
+              <p className="text-sm">{t.channels.noChannels}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {channels.slice(0, 4).map((ch, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
+                  <ChannelIcon type={ch.type || 'facebook'} size={36} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{ch.name || ch.type}</div>
+                    {ch.connected ? (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--success)' }} />
+                        <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
+                          {t.channels.connected}
+                        </span>
+                      </div>
+                    ) : (
+                      <Link href="/dashboard/channels"
+                        className="text-[10px] font-bold mt-0.5 inline-block"
+                        style={{ color: 'var(--primary)' }}>
+                        + {t.channels.connect}
+                      </Link>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold truncate" style={{ color: '#F5F5F5' }}>{ch.name}</div>
-                  {ch.connected ? (
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
-                      <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        {ch.msgs} {isRTL ? 'رسالة' : 'msgs'}
-                      </span>
-                    </div>
-                  ) : (
-                    <Link href="/dashboard/channels"
-                      className="text-[10px] font-bold mt-0.5 inline-block"
-                      style={{ color: '#C6FF00' }}>
-                      + {isRTL ? 'ربط' : 'Connect'}
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Top question */}
         <motion.div className="rounded-2xl p-5"
           initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.52, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <h2 className="text-sm font-bold mb-4" style={{ color: '#F5F5F5' }}>
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
             {isRTL ? '🔥 السؤال الأكثر هذا الأسبوع' : '🔥 Top Question This Week'}
           </h2>
           <div className="p-4 rounded-xl mb-4"
-            style={{ background: 'rgba(198,255,0,0.04)', border: '1px solid rgba(198,255,0,0.12)' }}>
-            <p className="text-sm font-bold mb-1" style={{ color: '#C6FF00' }}>
-              {isRTL ? '"ما هي ساعات العمل لديكم؟"' : '"What are your working hours?"'}
+            style={{ background: 'rgba(108,99,255,0.04)', border: '1px solid rgba(108,99,255,0.12)' }}>
+            <p className="text-sm font-bold mb-1" style={{ color: 'var(--primary)' }}>
+              {stats?.top_question || isRTL ? '"ما هي ساعات العمل لديكم؟"' : '"What are your working hours?"'}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              {isRTL ? 'سُئل 18 مرة هذا الأسبوع' : 'Asked 18 times this week'}
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {stats?.question_count ? `${isRTL ? 'سُئل' : 'Asked'} ${stats.question_count} ${isRTL ? 'مرة' : 'times'} ${isRTL ? 'هذا الأسبوع' : 'this week'}` : isRTL ? 'سُئل 18 مرة هذا الأسبوع' : 'Asked 18 times this week'}
             </p>
           </div>
           <div className="flex items-start gap-2 p-3 rounded-xl"
-            style={{ background: 'rgba(255,160,0,0.05)', border: '1px solid rgba(255,160,0,0.12)' }}>
+            style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.12)' }}>
             <span style={{ fontSize: 14 }}>💡</span>
-            <p className="text-xs" style={{ color: 'rgba(255,160,0,0.85)' }}>
+            <p className="text-xs" style={{ color: 'rgba(255,184,0,0.85)' }}>
               {isRTL
                 ? 'أضف إجابة أوضح لساعات العمل في إعدادات الذكاء الاصطناعي'
                 : 'Add a clearer working hours answer in AI Settings'}
@@ -240,9 +320,9 @@ export default function DashboardHome() {
           </div>
           <Link href="/dashboard/settings"
             className="mt-3 block text-center py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'rgba(198,255,0,0.3)'; e.currentTarget.style.color = '#C6FF00' }}
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}>
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)' }}
+            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}>
             {isRTL ? 'تحديث إعدادات الذكاء الاصطناعي ←' : 'Update AI Settings →'}
           </Link>
         </motion.div>

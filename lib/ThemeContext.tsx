@@ -1,6 +1,9 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { Cookies } from 'react-cookie'
+
+const cookies = new Cookies()
 
 type Theme = 'dark' | 'light'
 
@@ -18,12 +21,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark')
 
   useEffect(() => {
-    const saved = localStorage.getItem('naz-theme') as Theme
+    const saved = cookies.get('naz-theme') as Theme
     if (saved) {
       setTheme(saved)
       document.documentElement.classList.toggle('dark', saved === 'dark')
     } else {
       document.documentElement.classList.add('dark')
+      cookies.set('naz-theme', 'dark', { path: '/', maxAge: 31536000 })
     }
   }, [])
 
@@ -31,7 +35,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(t => {
       const next = t === 'dark' ? 'light' : 'dark'
       document.documentElement.classList.toggle('dark', next === 'dark')
-      localStorage.setItem('naz-theme', next)
+      cookies.set('naz-theme', next, { path: '/', maxAge: 31536000 })
       return next
     })
   }
