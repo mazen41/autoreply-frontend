@@ -204,7 +204,7 @@ export default function DashboardHome() {
                     e.currentTarget.style.background = 'transparent'
                     e.currentTarget.style.borderLeftColor = 'transparent'
                   }}>
-                  <ChannelIcon type={c.channel_type || 'facebook'} size={24} />
+                  <ChannelIcon type={(c.channel_type || 'facebook') as any} size={24} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{c.customer_name || 'Unknown'}</span>
@@ -268,7 +268,7 @@ export default function DashboardHome() {
               {channels.slice(0, 4).map((ch, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
                   style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
-                  <ChannelIcon type={ch.type || 'facebook'} size={36} />
+                  <ChannelIcon type={(ch.type || 'facebook') as any} size={36} />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{ch.name || ch.type}</div>
                     {ch.connected ? (

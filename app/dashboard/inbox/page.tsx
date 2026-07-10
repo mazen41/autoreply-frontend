@@ -90,7 +90,7 @@ function ConvRow({ conv, active, onClick }: { conv: ApiConversation; active: boo
       }}
     >
       <div style={{ position: 'relative', flexShrink: 0 }}>
-        <ChannelIcon type={conv.channel?.type || 'facebook'} size={40} />
+        <ChannelIcon type={(conv.channel?.type || 'facebook') as any} size={40} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
@@ -272,7 +272,7 @@ export default function InboxPage() {
             <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <button onClick={() => setMobilePane('list')} className="mobile-back-btn" style={{ width: 32, height: 32, borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-                <ChannelIcon type={selectedConv.channel?.type || 'facebook'} size={36} />
+                <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={36} />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{senderLabel(selectedConv)}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
