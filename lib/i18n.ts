@@ -132,6 +132,7 @@ export const translations = {
       all: 'الكل',
       profile: 'الملف الشخصي',
       logout: 'تسجيل الخروج',
+      continue: 'متابعة',
     },
     // Footer
     footer: {
@@ -287,6 +288,7 @@ export const translations = {
       all: 'All',
       profile: 'Profile',
       logout: 'Logout',
+      continue: 'Continue',
     },
     // Footer
     footer: {
