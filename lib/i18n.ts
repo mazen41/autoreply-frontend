@@ -13,6 +13,90 @@ export const translations = {
       settings: 'الإعدادات',
       login: 'تسجيل الدخول',
       startFree: 'ابدأ مجاناً',
+      notifications: 'الإشعارات',
+    },
+    hero: {
+      badge: 'ذكاء اصطناعي · AI Automation',
+      headline1: 'موظفك الذكي',
+      headline2: 'الذي لا ينام',
+      subheadline: 'منصة ذكاء اصطناعي ترد‌ على رسائل عملائك تلقائياً، تنشئ المحتوى، وتحمي سمعتك على Google — على مدار الساعة.',
+      ctaPrimary: 'ابدأ مجاناً — 14 يوم مجاني',
+      ctaSecondary: 'شاهد كيف يعمل',
+      socialProof: 'يثق به أكثر من 500+ صاحب عمل',
+      stats: {
+        messages: '340 رسالة تم الرد عليها',
+        replyTime: 'وقت الرد: 8 ثوانِ',
+        rating: '4.9 تقييم Google',
+      },
+    },
+    trustedBy: {
+      title: 'يستخدمه أصحاب المطاعم، العيادات، الكافيهات، المتاجر...',
+    },
+    problems: {
+      title: 'هل تعاني من هذا كل يوم؟',
+      items: [
+        { icon: '🌙', title: 'رسائل بلا رد في المساء', desc: 'عملاؤك يرسلون بعد الدوام ولا أحد يرد' },
+        { icon: '🔄', title: 'أسئلة متكررة تأكل وقتك', desc: 'نفس الأسئلة كل يوم تستنزف طاقتك وفريقك' },
+        { icon: '⭐', title: 'تقييمات سلبية بلا رد', desc: 'تقييم سلبي واحد بلا رد يضر بعملك' },
+        { icon: '📱', title: 'قنوات مشتتة في كل مكان', desc: 'واتساب، انستغرام، فيسبوك — لا تقدر تتابع الكل' },
+      ],
+    },
+    features: {
+      title: 'حل واحد لكل المشاكل',
+      items: [
+        { icon: '📥', title: 'صندوق الوارد الموحد', desc: 'كل رسائلك من جميع القنوات في مكان واحد. تابع المحادثات بسهولة دون تبديل التطبيقات.' },
+        { icon: '🎭', title: 'الرد بأسلوبك الشخصي', desc: 'الذكاء الاصطناعي يتعلم أسلوبك ويرد كما لو كنت أنت بنفسك.' },
+        { icon: '🛡️', title: 'Before They Complain', desc: 'نظام يكتشف العملاء غير الراضين ويتواصل معهم قبل أن يتركوا تقييماً سلبياً.' },
+        { icon: '✍️', title: 'محرك المحتوى التلقائي', desc: 'ينشئ محتوى يومياً لسوشال ميديا مناسباً لعملك بدون جهد منك.' },
+        { icon: '🔍', title: 'صائد الكلمات المفتاحية', desc: 'يرصد المحادثات التي تحتاج تدخلاً بشرياً ويُنبهك فوراً.' },
+        { icon: '📊', title: 'التقرير الأسبوعي الذكي', desc: 'تقرير شامل كل أسبوع عن أداء ردودك ورضا العملاء وفرص التحسين.' },
+      ],
+    },
+    howItWorks: {
+      title: '3 خطوات وأنت جاهز',
+      steps: [
+        { num: '01', title: 'سجّل وارتبط', desc: 'اربط قنواتك في أقل من 3 دقائق — انستغرام، واتساب، فيسبوك، Gmail وأكثر.' },
+        { num: '02', title: 'عرّف عملك', desc: 'أخبر الذكاء الاصطناعي عن طبيعة عملك، أسلوبك، وأسئلتك الشائعة.' },
+        { num: '03', title: 'نَم بهدوء', desc: 'الذكاء الاصطناعي يرد على عملائك، ينشر محتواك، ويحمي سمعتك — تلقائياً.' },
+      ],
+    },
+    pricing: {
+      title: 'اختر الباقة المناسبة',
+      monthly: 'شهري',
+      annual: 'سنوي',
+      annualSave: 'وفر 20%',
+      mostPopular: 'الأكثر طلباً',
+      startFree: 'ابدأ الآن',
+      plans: [
+        { name: 'Starter', nameAr: 'الشخصية', price: 29, desc: 'مثالي للأعمال الصغيرة', features: ['قناة واحدة', '500 رد/شهر', 'ردود AI أساسية', 'تقرير شهري', 'دعم بالبريد'] },
+        { name: 'Business', nameAr: 'الأعمال', price: 59, popular: true, desc: 'الأنسب لمعظم الأعمال', features: ['5 قنوات', '2,000 رد/شهر', 'Before They Complain', 'محتوى تلقائي يومي', 'تقرير أسبوعي', 'دعم مباشر'] },
+        { name: 'Growth', nameAr: 'النمو الشامل', price: 89, desc: 'للأعمال في مرحلة التوسع', features: ['10 قنوات', '5,000 رد/شهر', 'كل مميزات Business', 'صائد الكلمات المفتاحية', 'تحليلات متقدمة', 'API وصول'] },
+        { name: 'Agency', nameAr: 'الوكالات', price: 249, desc: 'لإدارة عملاء متعددين', features: ['قنوات غير محدودة', 'ردود غير محدودة', 'لوحة تحكم وكالة', 'White-label', 'مدير حساب مخصص', 'SLA مضمون'] },
+      ],
+    },
+    testimonials: {
+      title: 'ماذا يقول عملاؤنا',
+      items: [
+        { name: 'أحمد السالم', business: 'مطعم، الرياض', rating: 5, quote: 'بعد ناز أصبحت ردودنا فورية حتى وقت النوم. العملاء لاحظوا الفرق وارتفعت التقييمات بشكل ملحوظ.' },
+        { name: 'سارة المطيري', business: 'عيادة تجميل، جدة', rating: 5, quote: 'كنت أضيع ساعات يومياً في الرد على نفس الأسئلة. الآن الذكاء الاصطناعي يتكفل بكل شيء وأنا أركز على عملي.' },
+        { name: 'محمد الزهراني', business: 'كافيه، الدمام', rating: 5, quote: 'نظام Before They Complain أنقذني أكثر من مرة. أصبحت أعرف بمشكلة العميل قبل أن يتركني تقييماً سيئاً.' },
+      ],
+    },
+    faq: {
+      title: 'الأسئلة الشائعة',
+      items: [
+        { q: 'هل أحتاج خبرة تقنية لاستخدام ناز؟', a: 'لا إطلاقاً. ناز مصمم ليكون سهل الاستخدام لأي صاحب عمل. الإعداد يستغرق أقل من 10 دقائق.' },
+        { q: 'هل الذكاء الاصطناعي سيرد بدلاً مني أم يقترح ردوداً؟', a: 'يمكنك اختيار الوضعين. إما رد تلقائي كامل أو اقتراح ردود تراجعها وتوافق عليها.' },
+        { q: 'ما هي القنوات المدعومة؟', a: 'انستغرام، فيسبوك، واتساب، Gmail، تيك توك، وX (تويتر). قريباً: سناب شات وتيليغرام.' },
+        { q: 'هل بياناتي آمنة؟', a: 'نعم. نستخدم تشفير SSL من طرف لطرف وبياناتك لا تُشارك مع أي طرف ثالث.' },
+        { q: 'هل يمكنني إلغاء الاشتراك في أي وقت؟', a: 'نعم، يمكنك إلغاء اشتراكك في أي وقت دون أي رسوم إضافية.' },
+        { q: 'هل هناك فترة تجربة مجانية؟', a: 'نعم! كل الباقات تأتي مع 14 يوم تجربة مجانية كاملة بدون بطاقة ائتمان.' },
+      ],
+    },
+    finalCta: {
+      title: 'ابدأ اليوم — الرد الأول مجاناً',
+      btn: 'ابدأ تجربتك المجانية',
+      noCc: 'لا يتطلب بطاقة ائتمانية',
     },
     // Auth
     auth: {
@@ -169,6 +253,90 @@ export const translations = {
       settings: 'Settings',
       login: 'Login',
       startFree: 'Start Free',
+      notifications: 'Notifications',
+    },
+    hero: {
+      badge: 'AI Automation · ذكاء اصطناعي',
+      headline1: 'The AI Employee',
+      headline2: 'That Never Sleeps',
+      subheadline: 'An AI platform that automatically replies to customer messages, creates content, and protects your Google reputation — 24/7.',
+      ctaPrimary: 'Start Free — 14-Day Trial',
+      ctaSecondary: 'Watch How It Works',
+      socialProof: 'Trusted by 500+ business owners',
+      stats: {
+        messages: '340 messages replied',
+        replyTime: 'Reply time: 8 seconds',
+        rating: '4.9 Google Rating',
+      },
+    },
+    trustedBy: {
+      title: 'Trusted by restaurants, clinics, cafés, and stores...',
+    },
+    problems: {
+      title: 'Do You Face These Daily?',
+      items: [
+        { icon: '🌙', title: 'Unanswered Messages at Night', desc: 'Customers message after hours and no one replies' },
+        { icon: '🔄', title: 'Repetitive Questions Drain You', desc: 'Same questions every day exhaust you and your team' },
+        { icon: '⭐', title: 'Negative Reviews Without Response', desc: 'One unanswered negative review hurts your business' },
+        { icon: '📱', title: 'Channels Scattered Everywhere', desc: 'WhatsApp, Instagram, Facebook — impossible to track all' },
+      ],
+    },
+    features: {
+      title: 'One Solution for Every Problem',
+      items: [
+        { icon: '📥', title: 'Unified Inbox', desc: 'All messages from every channel in one place. Track conversations without switching apps.' },
+        { icon: '🎭', title: 'Reply in Your Voice', desc: 'AI learns your style and replies exactly as you would.' },
+        { icon: '🛡️', title: 'Before They Complain', desc: 'Detects unhappy customers and reaches out before they leave a bad review.' },
+        { icon: '✍️', title: 'Auto Content Engine', desc: 'Generates daily social media content tailored to your business — effortlessly.' },
+        { icon: '🔍', title: 'Keyword Hunter', desc: 'Monitors conversations needing human attention and alerts you instantly.' },
+        { icon: '📊', title: 'Smart Weekly Report', desc: 'Comprehensive weekly report on reply performance, customer satisfaction, and growth opportunities.' },
+      ],
+    },
+    howItWorks: {
+      title: '3 Steps and You\'re Ready',
+      steps: [
+        { num: '01', title: 'Sign Up & Connect', desc: 'Connect your channels in under 3 minutes — Instagram, WhatsApp, Facebook, Gmail, and more.' },
+        { num: '02', title: 'Define Your Business', desc: 'Tell the AI about your business, your tone, and your frequently asked questions.' },
+        { num: '03', title: 'Sleep Peacefully', desc: 'The AI replies to customers, posts your content, and protects your reputation — automatically.' },
+      ],
+    },
+    pricing: {
+      title: 'Choose Your Plan',
+      monthly: 'Monthly',
+      annual: 'Annual',
+      annualSave: 'Save 20%',
+      mostPopular: 'Most Popular',
+      startFree: 'Get Started',
+      plans: [
+        { name: 'Starter', nameAr: 'Starter', price: 29, desc: 'Perfect for small businesses', features: ['1 channel', '500 replies/month', 'Basic AI replies', 'Monthly report', 'Email support'] },
+        { name: 'Business', nameAr: 'Business', price: 59, popular: true, desc: 'Best for most businesses', features: ['5 channels', '2,000 replies/month', 'Before They Complain', 'Daily auto content', 'Weekly report', 'Live support'] },
+        { name: 'Growth', nameAr: 'Growth', price: 89, desc: 'For businesses scaling up', features: ['10 channels', '5,000 replies/month', 'All Business features', 'Keyword Hunter', 'Advanced analytics', 'API access'] },
+        { name: 'Agency', nameAr: 'Agency', price: 249, desc: 'Manage multiple clients', features: ['Unlimited channels', 'Unlimited replies', 'Agency dashboard', 'White-label', 'Dedicated account manager', 'Guaranteed SLA'] },
+      ],
+    },
+    testimonials: {
+      title: 'What Our Customers Say',
+      items: [
+        { name: 'Ahmed Al-Salem', business: 'Restaurant, Riyadh', rating: 5, quote: 'After Naz, our replies became instant even while sleeping. Customers noticed and our ratings improved significantly.' },
+        { name: 'Sara Al-Mutairi', business: 'Beauty Clinic, Jeddah', rating: 5, quote: 'I used to waste hours daily answering the same questions. Now AI handles everything and I focus on my work.' },
+        { name: 'Mohammed Al-Zahrani', business: 'Café, Dammam', rating: 5, quote: 'The Before They Complain system saved me multiple times. I now know about an issue before they leave a bad review.' },
+      ],
+    },
+    faq: {
+      title: 'Frequently Asked Questions',
+      items: [
+        { q: 'Do I need technical experience to use Naz?', a: 'Not at all. Naz is designed to be easy for any business owner. Setup takes less than 10 minutes.' },
+        { q: 'Will AI reply for me or suggest replies?', a: 'You can choose both modes — fully automatic replies or suggested replies for you to review and approve.' },
+        { q: 'Which channels are supported?', a: 'Instagram, Facebook, WhatsApp, Gmail, TikTok, and X (Twitter). Coming soon: Snapchat and Telegram.' },
+        { q: 'Is my data secure?', a: 'Yes. We use end-to-end SSL encryption and your data is never shared with any third party.' },
+        { q: 'Can I cancel anytime?', a: 'Yes, you can cancel your subscription at any time with no additional fees.' },
+        { q: 'Is there a free trial?', a: 'Yes! All plans come with a 14-day full free trial with no credit card required.' },
+      ],
+    },
+    finalCta: {
+      title: 'Start Today — First Reply Free',
+      btn: 'Start Your Free Trial',
+      noCc: 'No credit card required',
     },
     // Auth
     auth: {

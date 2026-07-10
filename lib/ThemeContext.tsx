@@ -10,11 +10,13 @@ type Theme = 'dark' | 'light'
 interface ThemeContextType {
   theme: Theme
   toggleTheme: () => void
+  setTheme: (t: Theme) => void
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'dark',
   toggleTheme: () => {},
+  setTheme: () => {},
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -40,8 +42,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  const setThemeAndPersist = (next: Theme) => {
+    document.documentElement.classList.toggle('dark', next === 'dark')
+    cookies.set('naz-theme', next, { path: '/', maxAge: 31536000 })
+    setTheme(next)
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme: setThemeAndPersist }}>
       {children}
     </ThemeContext.Provider>
   )

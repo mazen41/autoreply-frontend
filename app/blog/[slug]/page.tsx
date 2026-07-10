@@ -21,15 +21,19 @@ const categoryToolMap: Record<string, string[]> = {
 }
 
 async function getPost(slug: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts/${slug}`, {
-    next: { revalidate: 60 },
-  })
-  
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts/${slug}`, {
+      next: { revalidate: 60 },
+    })
+
+    if (!res.ok) {
+      return null
+    }
+
+    return res.json()
+  } catch {
     return null
   }
-  
-  return res.json()
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {

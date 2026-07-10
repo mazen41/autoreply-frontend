@@ -113,9 +113,6 @@ function ConvRow({ conv, active, onClick }: { conv: ApiConversation; active: boo
           </span>
         </div>
       </div>
-      {conv.is_active && (
-        <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--success)' }} />
-      )}
     </motion.button>
   )
 }

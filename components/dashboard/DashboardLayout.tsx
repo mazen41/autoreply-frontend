@@ -89,10 +89,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {(!collapsed || isMobile) && (
                 <span className="text-sm font-semibold flex-1">{isRTL ? item.ar : item.en}</span>
               )}
-              {item.badge && (!collapsed || isMobile) && (
+              {(item as any).badge && (!collapsed || isMobile) && (
                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
                   style={{ background: 'var(--danger)', color: '#fff' }}>
-                  {item.badge}
+                  {(item as any).badge}
                 </span>
               )}
               {collapsed && !isMobile && (

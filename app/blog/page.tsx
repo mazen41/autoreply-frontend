@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 
 const categories = [
   { value: 'all', labelAr: 'الكل', labelEn: 'All' },
@@ -9,15 +8,19 @@ const categories = [
 ]
 
 async function getPosts(category: string = 'all') {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/posts${category !== 'all' ? `?category=${category}` : ''}`, {
-    next: { revalidate: 60 },
-  })
-  
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts${category !== 'all' ? `?category=${category}` : ''}`, {
+      next: { revalidate: 60 },
+    })
+
+    if (!res.ok) {
+      return { data: [], meta: { total: 0 } }
+    }
+
+    return res.json()
+  } catch {
     return { data: [], meta: { total: 0 } }
   }
-  
-  return res.json()
 }
 
 export default async function BlogPage({ searchParams }: { searchParams: { category?: string } }) {
@@ -57,14 +60,14 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
 
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div>
           <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#F5F5F5', letterSpacing: '-0.04em' }}>
             المدونة
           </h1>
           <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
             Blog - Tips & insights for e-commerce success
           </p>
-        </motion.div>
+        </div>
       </div>
 
       {/* Category Filter */}
@@ -98,11 +101,8 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post: any, i: number) => (
-              <motion.div
+              <div
                 key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.4 }}
               >
                 <Link href={`/blog/${post.slug}`}>
                   <div className="h-full p-6 rounded-2xl transition-all duration-300 hover:scale-105"
@@ -145,7 +145,7 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
                     </div>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

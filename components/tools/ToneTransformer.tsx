@@ -83,7 +83,7 @@ export default function ToneTransformer() {
             نوع التحويل / Transformation Type
           </label>
           <div className="grid grid-cols-1 gap-2">
-            {transformments.map((t) => (
+            {transformations.map((t) => (
               <label key={t.value} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
                 style={{ background: transformation === t.value ? 'rgba(198,255,0,0.1)' : 'rgba(17,17,17,0.9)', border: transformation === t.value ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,255,255,0.1)' }}>
                 <input

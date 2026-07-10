@@ -445,13 +445,13 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'facebook_connected') {
         // Here we just hardcode setting the channel to facebook, since the API was hit successfully.
-        setData(d => ({ ...d, connectedChannel: 'facebook' }))
+        setData({ ...data, connectedChannel: 'facebook' })
         setConnecting(null)
       }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [setData])
+  }, [setData, data])
 
   return (
     <div>

@@ -10,6 +10,7 @@ interface LangContextType {
   lang: Language
   t: typeof translations.ar
   toggleLang: () => void
+  setLang: (l: Language) => void
   isRTL: boolean
 }
 
@@ -17,6 +18,7 @@ const LangContext = createContext<LangContextType>({
   lang: 'ar',
   t: translations.ar,
   toggleLang: () => {},
+  setLang: () => {},
   isRTL: true,
 })
 
@@ -45,6 +47,7 @@ export function LangProvider({ children }: { children: React.ReactNode }) {
       lang,
       t: translations[lang],
       toggleLang,
+      setLang,
       isRTL: lang === 'ar',
     }}>
       {children}
