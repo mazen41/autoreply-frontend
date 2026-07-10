@@ -432,7 +432,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       const width = 600, height = 700
       const left = window.screen.width / 2 - width / 2
       const top = window.screen.height / 2 - height / 2
-      window.open(`http://localhost:8000/api/channels/connect/facebook?token=${token}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
+      window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/channels/connect/facebook?token=${token}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
     } else {
       setTimeout(() => {
         setData({ ...data, connectedChannel: id })
@@ -668,7 +668,7 @@ export default function OnboardingWizard() {
       4: { connected_channel: data.connectedChannel },
     }
     try {
-      await fetch(`http://localhost:8000${endpoints[stepNum]}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${endpoints[stepNum]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payloads[stepNum]),
@@ -696,7 +696,7 @@ export default function OnboardingWizard() {
   const finish = async () => {
     setSaving(true)
     try {
-      await fetch('http://localhost:8000/api/onboarding/complete', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/onboarding/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${getToken()}` },
       })

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getEcho, disconnectEcho } from '../lib/echo'
 
-const API = 'http://localhost:8000/api'
+const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''

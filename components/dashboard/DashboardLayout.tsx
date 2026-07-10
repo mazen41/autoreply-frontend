@@ -32,7 +32,7 @@ function useUser() {
   useEffect(() => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
     if (!token) return
-    fetch('http://localhost:8000/api/auth/user', {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     }).then(r => r.json()).then(setUser).catch(() => {})
   }, [])
@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const logout = () => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-    if (token) fetch('http://localhost:8000/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {})
+    if (token) fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {})
     document.cookie = 'naz_token=; max-age=0; path=/'
     router.push('/login')
   }

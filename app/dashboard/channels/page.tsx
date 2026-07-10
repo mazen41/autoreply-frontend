@@ -12,6 +12,8 @@ function getToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 const CHANNELS_DEFS = [
   { id: 'instagram', name: 'Instagram',      color: '#E1306C', plan: 'free' },
   { id: 'facebook',  name: 'Facebook',       color: '#1877F2', plan: 'free' },
@@ -38,14 +40,14 @@ function ConnectModal({
     if (ch.id === 'facebook' || ch.id === 'instagram') {
       const token = getToken()
       // Navigate in the same window — OAuth must NOT open in a popup
-      window.location.href = `http://localhost:8000/api/channels/connect/facebook?token=${encodeURIComponent(token)}&redirect=dashboard`
+      window.location.href = `${API}/api/channels/connect/facebook?token=${encodeURIComponent(token)}&redirect=dashboard`
       return
     }
 
     if (ch.id === 'gmail') {
       setConnectingLoading(true)
       try {
-        const res = await fetch('http://localhost:8000/api/channels/connect/gmail', {
+        const res = await fetch(`${API}/api/channels/connect/gmail`, {
           headers: {
             'Authorization': `Bearer ${getToken()}`,
             'Accept': 'application/json',
@@ -136,7 +138,7 @@ export default function ChannelsPage() {
 
   const fetchChannels = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/channels', {
+      const res = await fetch(`${API}/api/channels`, {
         headers: {
           'Authorization': `Bearer ${getToken()}`,
           'Accept': 'application/json',
@@ -175,7 +177,7 @@ export default function ChannelsPage() {
   const handleDisconnect = async (id: number) => {
     if (!confirm(t.channels.confirmDisconnect)) return
     try {
-      await fetch(`http://localhost:8000/api/channels/${id}`, {
+      await fetch(`${API}/api/channels/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Accept': 'application/json' },
       })
@@ -189,7 +191,7 @@ export default function ChannelsPage() {
 
   const handleToggleAI = async (id: number, currentStatus: boolean) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/channels/${id}`, {
+      const res = await fetch(`${API}/api/channels/${id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${getToken()}`,
