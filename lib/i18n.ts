@@ -217,6 +217,7 @@ export const translations = {
       profile: 'الملف الشخصي',
       logout: 'تسجيل الخروج',
       continue: 'متابعة',
+      back: 'رجوع',
     },
     // Footer
     footer: {
@@ -457,6 +458,7 @@ export const translations = {
       profile: 'Profile',
       logout: 'Logout',
       continue: 'Continue',
+      back: 'Back',
     },
     // Footer
     footer: {
