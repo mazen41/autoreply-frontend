@@ -11,6 +11,7 @@ const NAV = [
   { icon: '🏠', ar: 'الرئيسية',     en: 'Overview',    href: '/dashboard' },
   { icon: '📥', ar: 'صندوق الوارد', en: 'Inbox',       href: '/dashboard/inbox' },
   { icon: '📢', ar: 'القنوات',      en: 'Channels',    href: '/dashboard/channels' },
+  { icon: '💬', ar: 'واتساب',      en: 'WhatsApp',    href: '/dashboard/whatsapp' },
   { icon: '✍️', ar: 'المحتوى',      en: 'Content',     href: '/dashboard/content' },
   { icon: '⭐', ar: 'السمعة',       en: 'Reputation',  href: '/dashboard/reputation' },
   { icon: '📊', ar: 'التقارير',     en: 'Reports',     href: '/dashboard/reports' },

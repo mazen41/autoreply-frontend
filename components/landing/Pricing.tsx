@@ -4,6 +4,25 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
 
+interface Package {
+  id: number
+  name: string
+  name_ar: string
+  description: string
+  description_ar: string
+  price_monthly: number
+  price_yearly: number
+  ai_replies_limit: number
+  channels_limit: number
+  tools_limit: number
+  blog_posts_limit: number
+  features: string[]
+  features_ar: string[]
+  is_popular: boolean
+  is_active: boolean
+  sort_order: number
+}
+
 function useReveal() {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -17,9 +36,39 @@ function useReveal() {
 export default function Pricing() {
   const { t, isRTL } = useLang()
   const [annual, setAnnual] = useState(false)
+  const [packages, setPackages] = useState<Package[]>([])
+  const [loading, setLoading] = useState(true)
   const sectionRef = useReveal()
 
-  const getPrice = (price: number) => annual ? Math.round(price * 0.8) : price
+  useEffect(() => {
+    fetchPackages()
+  }, [])
+
+  const fetchPackages = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
+      const data = await response.json()
+      setPackages(data)
+    } catch (error) {
+      console.error('Failed to fetch packages:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getPrice = (pkg: Package) => annual ? pkg.price_yearly : pkg.price_monthly
+
+  if (loading) {
+    return (
+      <section id="pricing" className="py-24 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00FFB2]"></div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="pricing" className="py-24 relative overflow-hidden">
@@ -58,13 +107,12 @@ export default function Pricing() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-          {t.pricing.plans.map((plan, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+          {packages.map((pkg, i) => (
             <PricingCard
-              key={i}
-              plan={plan}
-              price={getPrice(plan.price)}
-              origPrice={plan.price}
+              key={pkg.id}
+              pkg={pkg}
+              price={getPrice(pkg)}
               annual={annual}
               isRTL={isRTL}
               t={t}
@@ -78,19 +126,21 @@ export default function Pricing() {
 }
 
 function PricingCard({
-  plan, price, origPrice, annual, isRTL, t, delay,
+  pkg, price, annual, isRTL, t, delay,
 }: {
-  plan: { popular?: boolean; nameAr: string; desc: string; price: number; features: string[] }
+  pkg: Package
   price: number
-  origPrice: number
   annual: boolean
   isRTL: boolean
   t: { pricing: { monthly: string; mostPopular: string; startFree: string } }
   delay: number
 }) {
   const ref = useReveal()
+  const name = isRTL ? pkg.name_ar : pkg.name
+  const description = isRTL ? pkg.description_ar : pkg.description
+  const features = isRTL ? pkg.features_ar : pkg.features
 
-  if (plan.popular) {
+  if (pkg.is_popular) {
     return (
       <div
         ref={ref}
@@ -120,7 +170,17 @@ function PricingCard({
           className="flex flex-col h-full rounded-[14px] p-6"
           style={{ background: '#141424' }}
         >
-          <CardInner plan={plan} price={price} origPrice={origPrice} annual={annual} isRTL={isRTL} t={t} popular />
+          <CardInner 
+            name={name} 
+            description={description} 
+            price={price} 
+            annual={annual} 
+            isRTL={isRTL} 
+            t={t} 
+            features={features}
+            popular 
+            pkg={pkg}
+          />
         </div>
       </div>
     )
@@ -132,40 +192,50 @@ function PricingCard({
       className="reveal card-hover rounded-2xl p-6 flex flex-col"
       style={{ background: '#0F0F1A', animationDelay: `${delay}s` }}
     >
-      <CardInner plan={plan} price={price} origPrice={origPrice} annual={annual} isRTL={isRTL} t={t} />
+      <CardInner 
+        name={name} 
+        description={description} 
+        price={price} 
+        annual={annual} 
+        isRTL={isRTL} 
+        t={t} 
+        features={features}
+        pkg={pkg}
+      />
     </div>
   )
 }
 
 function CardInner({
-  plan, price, origPrice, annual, isRTL, t, popular = false,
+  name, description, price, annual, isRTL, t, features, popular = false, pkg,
 }: {
-  plan: { popular?: boolean; nameAr: string; desc: string; price: number; features: string[] }
+  name: string
+  description: string
   price: number
-  origPrice: number
   annual: boolean
   isRTL: boolean
   t: { pricing: { monthly: string; startFree: string } }
+  features: string[]
   popular?: boolean
+  pkg: Package
 }) {
   return (
     <>
       <div className="mb-6">
-        <h3 className="font-bold text-xl mb-1" style={{ color: '#F0F0FF' }}>{plan.nameAr}</h3>
-        <p className="text-xs mb-4" style={{ color: 'rgba(240,240,255,0.4)' }}>{plan.desc}</p>
+        <h3 className="font-bold text-xl mb-1" style={{ color: '#F0F0FF' }}>{name}</h3>
+        <p className="text-xs mb-4" style={{ color: 'rgba(240,240,255,0.4)' }}>{description}</p>
         <div className="flex items-end gap-1">
           <span className="text-4xl font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}>
-            ${price}
+            {price === 0 ? 'Free' : `${price} SAR`}
           </span>
-          <span className="text-sm mb-2" style={{ color: 'rgba(240,240,255,0.4)' }}>/{t.pricing.monthly}</span>
+          {price > 0 && (
+            <span className="text-sm mb-2" style={{ color: 'rgba(240,240,255,0.4)' }}>/{t.pricing.monthly}</span>
+          )}
         </div>
-        {annual && (
-          <p className="text-xs mt-1" style={{ color: '#00FFB2' }}>بدلاً من ${origPrice}</p>
-        )}
       </div>
 
       <ul className="space-y-3 flex-1 mb-6">
-        {plan.features.map((f, j) => (
+        {features.map((f, j) => (
           <li key={j} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(240,240,255,0.55)' }}>
             <span style={{ color: popular ? '#00FFB2' : '#00FFB2', fontSize: 14 }}>✓</span>
             <span>{f}</span>
@@ -174,7 +244,7 @@ function CardInner({
       </ul>
 
       <Link
-        href="/register"
+        href={`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`}
         className="block text-center py-3 rounded-xl text-sm font-bold transition-all duration-200"
         style={
           popular
