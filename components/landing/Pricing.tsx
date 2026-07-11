@@ -55,7 +55,7 @@ export default function Pricing() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
       const data = await response.json()
-      setPackages(data)
+      setPackages(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []))
     } catch (error) {
       console.error('Failed to fetch packages:', error)
     } finally {
@@ -145,7 +145,10 @@ function PricingCard({
   const ref = useReveal()
   const name = isRTL ? pkg.name_ar : pkg.name
   const description = isRTL ? pkg.description_ar : pkg.description
-  const features = isRTL ? pkg.features_ar : pkg.features
+  const rawFeatures = isRTL ? pkg.features_ar : pkg.features
+  const features = Array.isArray(rawFeatures)
+    ? rawFeatures
+    : (typeof rawFeatures === 'string' ? (() => { try { const parsed = JSON.parse(rawFeatures); return Array.isArray(parsed) ? parsed : [] } catch { return [] } })() : [])
 
   if (pkg.is_popular) {
     return (
