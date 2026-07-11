@@ -4,10 +4,10 @@ import RegisterForm from '../../components/auth/RegisterForm'
 export default function RegisterPage() {
   return (
     <div className="min-h-screen flex" style={{ background: '#050505' }}>
-      <div style={{ width: '42%' }}>
+      <div className="hidden lg:block" style={{ width: '42%' }}>
         <AuthLeftPanel mode="register" />
       </div>
-      <div className="flex-1 flex items-center justify-center px-6 py-12 relative overflow-hidden"
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative overflow-hidden"
         style={{ background: '#050505' }}>
         <div className="absolute pointer-events-none" style={{
           bottom: '-100px', left: '-100px', width: 500, height: 500, borderRadius: '50%',

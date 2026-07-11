@@ -4,10 +4,10 @@ import LoginForm from '../../components/auth/LoginForm'
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex" style={{ background: '#050505' }}>
-      <div style={{ width: '42%' }}>
+      <div className="hidden lg:block" style={{ width: '42%' }}>
         <AuthLeftPanel mode="login" />
       </div>
-      <div className="flex-1 flex items-center justify-center px-6 py-12 relative overflow-hidden"
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 relative overflow-hidden"
         style={{ background: '#050505' }}>
         {/* Subtle background glow */}
         <div className="absolute pointer-events-none" style={{

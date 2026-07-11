@@ -5,6 +5,12 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import Link from 'next/link'
 
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
 interface Package {
   id: number
   name: string
@@ -75,7 +81,7 @@ function CheckoutContent() {
     if (!pkg) return
 
     try {
-      const token = localStorage.getItem('token')
+      const token = getToken()
       if (!token) {
         router.push(`/login?redirect=/checkout?package=${packageId}&billing=${billingCycle}`)
         return
@@ -113,9 +119,16 @@ function CheckoutContent() {
         throw new Error(data.message || 'Payment failed')
       }
 
-      // Redirect to Moyasar payment page
-      if (data.url) {
-        window.location.href = data.url
+      // Moyasar's response for a card payment needing 3-D Secure includes
+      // source.transaction_url — that's where the browser needs to go next.
+      // If the payment somehow completed instantly (no 3DS challenge), there's
+      // no transaction_url and we can just send the user straight to our
+      // callback route, which will verify the status and redirect accordingly.
+      const redirectUrl = data?.source?.transaction_url
+      if (redirectUrl) {
+        window.location.href = redirectUrl
+      } else if (data?.id) {
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/payments/callback?id=${data.id}`
       } else {
         setError('Payment initiation failed')
       }
