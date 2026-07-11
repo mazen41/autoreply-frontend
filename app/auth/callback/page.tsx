@@ -16,6 +16,7 @@ function CallbackHandler() {
     const token     = searchParams.get('token')
     const isNewUser = searchParams.get('is_new_user')
     const errorParam = searchParams.get('error')
+    const redirectTo = searchParams.get('redirect')
 
     if (errorParam === 'auth_failed') {
       setError('Authentication failed. Please try again.')
@@ -47,11 +48,11 @@ function CallbackHandler() {
           // User fetch failed but token is saved — still redirect
           console.warn('Could not parse user response, redirecting anyway')
         }
-        router.push(isNewUser === 'true' ? '/onboarding' : '/dashboard')
+        router.push(redirectTo || (isNewUser === 'true' ? '/onboarding' : '/dashboard'))
       })
       .catch(() => {
         // Network error — token already saved, redirect anyway
-        router.push(isNewUser === 'true' ? '/onboarding' : '/dashboard')
+        router.push(redirectTo || (isNewUser === 'true' ? '/onboarding' : '/dashboard'))
       })
   }, [searchParams, router])
 

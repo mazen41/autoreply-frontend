@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import toast from 'react-hot-toast'
@@ -11,6 +12,8 @@ import SocialLoginButtons from '../ui/SocialLoginButtons'
 export default function RegisterForm() {
   const { isRTL, t } = useLang()
   const { theme } = useTheme()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -47,7 +50,7 @@ export default function RegisterForm() {
       if (!res.ok) throw new Error(data.message || t.auth.registerError)
       document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
       toast.success(t.auth.registerSuccess)
-      window.location.href = '/onboarding'
+      window.location.href = redirectTo || '/onboarding'
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t.auth.registerError
       setError(msg.includes('abort') || msg.includes('fetch') ? (isRTL ? 'تعذر الاتصال بالخادم. تأكد أن الـ backend يعمل.' : 'Cannot connect to server. Make sure the backend is running.') : msg)
@@ -90,7 +93,7 @@ export default function RegisterForm() {
       </motion.div>
 
       {/* Social Login Buttons */}
-      <SocialLoginButtons />
+      <SocialLoginButtons redirectTo={redirectTo || undefined} />
 
       {/* Error */}
       {error && (

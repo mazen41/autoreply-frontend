@@ -89,6 +89,17 @@ const LABELS = [
   { ar: 'النشر جاهز',         en: 'Ready to Deploy'       },
 ]
 
+interface RealPackage {
+  id: number
+  name: string
+  name_ar: string
+  price_monthly: number
+  price_yearly: number
+  features: string[]
+  features_ar: string[]
+  is_popular: boolean
+}
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function polar(deg: number, dist: number) {
   const r = (deg * Math.PI) / 180
@@ -691,8 +702,12 @@ function State5({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
   )
 }
 
-function State6({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boolean; packages: RealPackage[] }) {
   const [annual, setAnnual] = useState(false)
+
+  // Fall back to the static mock plans only if the API call hasn't returned yet / failed,
+  // so the section still looks right, but real packages take priority once loaded.
+  const displayPlans = packages.length > 0 ? packages : null
 
   return (
     <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4 pt-20 pb-4 overflow-y-auto"
@@ -731,9 +746,13 @@ function State6({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 w-full max-w-5xl">
-        {PLANS.map((plan, i) => {
-          const price = annual ? plan.yr : plan.mo
-          const isPop = !!plan.pop
+        {(displayPlans ?? PLANS).map((plan: any, i: number) => {
+          const isReal = displayPlans !== null
+          const price = isReal ? (annual ? plan.price_yearly : plan.price_monthly) : (annual ? plan.yr : plan.mo)
+          const isPop = isReal ? !!plan.is_popular : !!plan.pop
+          const name = isReal ? (isRTL ? plan.name_ar : plan.name) : (isRTL ? plan.ar : plan.en)
+          const feats = isReal ? (isRTL ? plan.features_ar : plan.features) : plan.f
+          const href = isReal ? `/checkout?package=${plan.id}&billing=${annual ? 'yearly' : 'monthly'}` : '/register'
           const inner = (
             <div className="relative rounded-2xl p-4 flex flex-col h-full"
               style={{
@@ -751,25 +770,25 @@ function State6({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
               )}
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-black" style={{ color: isPop ? '#C6FF00' : '#F5F5F5' }}>
-                  {isRTL ? plan.ar : plan.en}
+                  {name}
                 </h3>
                 <span style={{ color: isPop ? '#C6FF00' : 'rgba(255,255,255,0.2)', fontSize: 13 }}>◈</span>
               </div>
               <div className="flex items-end gap-1 mb-3">
                 <span className="text-2xl font-black" style={{ color: isPop ? '#C6FF00' : '#F5F5F5', letterSpacing: '-0.04em' }}>
-                  ${price}
+                  {price === 0 ? (isRTL ? 'مجاني' : 'Free') : (isReal ? `${price} SAR` : `$${price}`)}
                 </span>
-                <span className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>/{isRTL ? 'شهر' : 'mo'}</span>
+                {price > 0 && <span className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>/{isRTL ? 'شهر' : 'mo'}</span>}
               </div>
               <ul className="space-y-1.5 flex-1 mb-4">
-                {plan.f.map((f, j) => (
+                {feats.map((f: string, j: number) => (
                   <li key={j} className="flex items-start gap-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.48)' }}>
                     <span style={{ color: '#C6FF00', fontSize: 10, marginTop: 2, flexShrink: 0 }}>✓</span>
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register"
+              <Link href={href}
                 className="block text-center py-2 rounded-xl text-xs font-bold transition-all duration-200"
                 style={isPop
                   ? { background: 'linear-gradient(135deg,#C6FF00,#7DF9FF)', color: '#050505' }
@@ -780,7 +799,7 @@ function State6({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
             </div>
           )
           return (
-            <div key={i} style={{ transform: isPop ? 'scale(1.04)' : undefined, transformOrigin: 'center' }}>
+            <div key={isReal ? plan.id : i} style={{ transform: isPop ? 'scale(1.04)' : undefined, transformOrigin: 'center' }}>
               {isPop ? <div className="animated-border rounded-2xl p-[2px] h-full">{inner}</div> : inner}
             </div>
           )
@@ -809,6 +828,14 @@ export default function OSExperience() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: scrollRef })
   const smooth = useSpring(scrollYProgress, { stiffness: 55, damping: 20 })
+
+  const [packages, setPackages] = useState<RealPackage[]>([])
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
+      .then(res => res.json())
+      .then(data => setPackages(Array.isArray(data) ? data : []))
+      .catch(() => setPackages([]))
+  }, [])
 
   const [stateIdx, setStateIdx] = useState(0)
   useEffect(() => {
@@ -859,7 +886,7 @@ export default function OSExperience() {
         <State3 op={op3} isRTL={isRTL} />
         <State4 op={op4} isRTL={isRTL} />
         <State5 op={op5} isRTL={isRTL} />
-        <State6 op={op6} isRTL={isRTL} />
+        <State6 op={op6} isRTL={isRTL} packages={packages} />
 
         {/* ── Persistent: state indicator ── */}
         <motion.div

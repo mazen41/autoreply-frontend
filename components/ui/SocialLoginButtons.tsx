@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 
-export default function SocialLoginButtons() {
+export default function SocialLoginButtons({ redirectTo }: { redirectTo?: string } = {}) {
   const { isRTL, t } = useLang()
   const { theme } = useTheme()
   const [loading, setLoading] = useState<'google' | 'facebook' | null>(null)
@@ -13,7 +13,8 @@ export default function SocialLoginButtons() {
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setLoading(provider)
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${provider}/redirect`, {
+      const qs = redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${provider}/redirect${qs}`, {
         headers: { Accept: 'application/json' },
       })
 

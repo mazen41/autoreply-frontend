@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import toast from 'react-hot-toast'
@@ -11,6 +12,8 @@ import SocialLoginButtons from '../ui/SocialLoginButtons'
 export default function LoginForm() {
   const { isRTL, t } = useLang()
   const { theme } = useTheme()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -39,7 +42,9 @@ export default function LoginForm() {
       if (!res.ok) throw new Error(data.message || t.auth.loginError)
       document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
       toast.success(t.auth.loginSuccess)
-      if (data.user?.onboarding_completed === false) {
+      if (redirectTo) {
+        window.location.href = redirectTo
+      } else if (data.user?.onboarding_completed === false) {
         window.location.href = '/onboarding'
       } else {
         window.location.href = '/dashboard'
@@ -84,7 +89,7 @@ export default function LoginForm() {
       </motion.div>
 
       {/* Social Login Buttons */}
-      <SocialLoginButtons />
+      <SocialLoginButtons redirectTo={redirectTo || undefined} />
 
       {/* Error */}
       {error && (

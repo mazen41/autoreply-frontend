@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import AuthLeftPanel from '../../components/auth/AuthLeftPanel'
 import LoginForm from '../../components/auth/LoginForm'
 
@@ -16,7 +17,9 @@ export default function LoginPage() {
           filter: 'blur(60px)',
         }} />
         <div className="w-full max-w-md relative z-10">
-          <LoginForm />
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>
