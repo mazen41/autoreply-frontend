@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 
 interface Package {
@@ -21,6 +22,12 @@ interface Package {
   is_popular: boolean
   is_active: boolean
   sort_order: number
+}
+
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
 }
 
 function useReveal() {
@@ -219,6 +226,19 @@ function CardInner({
   popular?: boolean
   pkg: Package
 }) {
+  const router = useRouter()
+  const token = getToken()
+
+  const handlePlanClick = () => {
+    if (token) {
+      // User is logged in, go directly to checkout
+      router.push(`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+    } else {
+      // User not logged in, go to register with plan info
+      router.push(`/register?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+    }
+  }
+
   return (
     <>
       <div className="mb-6">
@@ -243,9 +263,9 @@ function CardInner({
         ))}
       </ul>
 
-      <Link
-        href={`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`}
-        className="block text-center py-3 rounded-xl text-sm font-bold transition-all duration-200"
+      <button
+        onClick={handlePlanClick}
+        className="block w-full text-center py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
         style={
           popular
             ? {
@@ -275,8 +295,8 @@ function CardInner({
           }
         }}
       >
-        {t.pricing.startFree}
-      </Link>
+        {token ? (isRTL ? 'اشترك الآن' : 'Subscribe Now') : t.pricing.startFree}
+      </button>
     </>
   )
 }

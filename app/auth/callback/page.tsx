@@ -17,6 +17,8 @@ function CallbackHandler() {
     const isNewUser = searchParams.get('is_new_user')
     const errorParam = searchParams.get('error')
     const redirectTo = searchParams.get('redirect')
+    const packageId = searchParams.get('package')
+    const billingCycle = searchParams.get('billing')
 
     if (errorParam === 'auth_failed') {
       setError('Authentication failed. Please try again.')
@@ -33,6 +35,21 @@ function CallbackHandler() {
     // Persist token
     document.cookie = `naz_token=${token}; path=/; max-age=604800; SameSite=Lax`
 
+    // Determine redirect after auth
+    let redirectUrl = redirectTo
+    if (!redirectUrl) {
+      if (packageId) {
+        // User chose a plan, go to checkout
+        redirectUrl = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
+      } else if (isNewUser === 'true') {
+        // New user without plan, go to pricing
+        redirectUrl = '/pricing'
+      } else {
+        // Existing user, go to dashboard
+        redirectUrl = '/dashboard'
+      }
+    }
+
     // Fetch user — guard against HTML error pages
     fetch(`${API_URL}/api/auth/user`, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
@@ -48,11 +65,11 @@ function CallbackHandler() {
           // User fetch failed but token is saved — still redirect
           console.warn('Could not parse user response, redirecting anyway')
         }
-        router.push(redirectTo || (isNewUser === 'true' ? '/onboarding' : '/dashboard'))
+        router.push(redirectUrl)
       })
       .catch(() => {
         // Network error — token already saved, redirect anyway
-        router.push(redirectTo || (isNewUser === 'true' ? '/onboarding' : '/dashboard'))
+        router.push(redirectUrl)
       })
   }, [searchParams, router])
 

@@ -4,7 +4,11 @@ import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 
-export default function SocialLoginButtons({ redirectTo }: { redirectTo?: string } = {}) {
+export default function SocialLoginButtons({ redirectTo, packageId, billingCycle }: { 
+  redirectTo?: string
+  packageId?: string
+  billingCycle?: string
+} = {}) {
   const { isRTL, t } = useLang()
   const { theme } = useTheme()
   const [loading, setLoading] = useState<'google' | 'facebook' | null>(null)
@@ -13,7 +17,13 @@ export default function SocialLoginButtons({ redirectTo }: { redirectTo?: string
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     setLoading(provider)
     try {
-      const qs = redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''
+      // Build query string with redirect, package, and billing params
+      const params = new URLSearchParams()
+      if (redirectTo) params.set('redirect', redirectTo)
+      if (packageId) params.set('package', packageId)
+      if (billingCycle) params.set('billing', billingCycle)
+      const qs = params.toString() ? `?${params.toString()}` : ''
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${provider}/redirect${qs}`, {
         headers: { Accept: 'application/json' },
       })
