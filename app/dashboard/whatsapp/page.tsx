@@ -303,7 +303,7 @@ export default function WhatsAppPage() {
                 {qrCode ? (
                   <div className="inline-block p-4 rounded-xl bg-white">
                     <img 
-                      src={`data:image/png;base64,${qrCode}`} 
+                      src={qrCode.startsWith('data:') ? qrCode : `data:image/png;base64,${qrCode}`} 
                       alt="QR Code" 
                       className="w-64 h-64"
                     />
