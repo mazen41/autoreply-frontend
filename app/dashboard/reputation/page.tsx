@@ -1,22 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
-
-const REVIEWS = [
-  { id: 1, name: 'سارة الأحمدي', rating: 5, date: 'منذ يومين', text: 'تجربة رائعة! الطعام لذيذ والخدمة سريعة. سأزورهم مرة أخرى بالتأكيد.', status: 'draft', reply: 'شكراً جزيلاً على كلماتك الجميلة يا سارة! يسعدنا أنك أحببتِ تجربتك. نتطلع لزيارتك القادمة 💚' },
-  { id: 2, name: 'Mohammed Al-Hajj', rating: 4, date: 'منذ 4 أيام', text: 'Good food and fast service. The place was a bit crowded on Friday but overall great experience.', status: 'replied', reply: '' },
-  { id: 3, name: 'عبدالله المطيري', rating: 2, date: 'منذ أسبوع', text: 'الطلب تأخر أكثر من ساعة والطعام وصل بارداً. آمل أن تتحسن الخدمة.', status: 'pending', reply: '' },
-  { id: 4, name: 'Fatima Khalid', rating: 5, date: 'منذ أسبوع', text: 'Amazing experience! Best restaurant in the area. Highly recommend the grilled items.', status: 'replied', reply: '' },
-]
-
-const FOLLOWUPS = [
-  { name: 'أحمد محمد', sent: 'منذ 2 ساعة', outcome: 'redirected' },
-  { name: 'Layla Al-Rashid', sent: 'منذ 5 ساعات', outcome: 'complaint' },
-  { name: 'خالد عمر', sent: 'أمس', outcome: 'pending' },
-  { name: 'Nora Abdullah', sent: 'أمس', outcome: 'redirected' },
-]
 
 const OUTCOME_MAP = {
   redirected: { ar: 'وُجِّه لـ Google',    en: 'Sent to Google',  color: '#C6FF00', bg: 'rgba(198,255,0,0.08)', icon: '🟢' },
@@ -38,6 +24,43 @@ export default function ReputationPage() {
   const { isRTL } = useLang()
   const [followupOn, setFollowupOn] = useState(true)
   const [expandedReview, setExpandedReview] = useState<number | null>(null)
+  const [reviews, setReviews] = useState<any[]>([])
+  const [followups, setFollowups] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const getToken = () => {
+    if (typeof document === 'undefined') return ''
+    const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+    return match ? decodeURIComponent(match[1]) : ''
+  }
+
+  useEffect(() => {
+    fetchReputationData()
+  }, [])
+
+  const fetchReputationData = async () => {
+    try {
+      const token = getToken()
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      // For now, this is a placeholder - would need actual API endpoints
+      // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`, {
+      //   headers: { Authorization: `Bearer ${token}` }
+      // })
+      // if (res.ok) {
+      //   const data = await res.json()
+      //   setReviews(data.reviews || [])
+      //   setFollowups(data.followups || [])
+      // }
+    } catch (err) {
+      console.error('Failed to fetch reputation data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
@@ -69,62 +92,76 @@ export default function ReputationPage() {
             {isRTL ? '⭐ تقييمات Google' : '⭐ Google Reviews'}
           </h2>
         </div>
-        <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-          {REVIEWS.map(r => {
-            const s = STATUS_MAP[r.status as keyof typeof STATUS_MAP]
-            const expanded = expandedReview === r.id
-            return (
-              <div key={r.id} className="p-5">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.06)', color: '#F5F5F5' }}>
-                    {r.name[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{r.name}</span>
-                      <Stars n={r.rating} />
-                      <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{r.date}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: s.bg, color: s.color }}>
-                        {isRTL ? s.ar : s.en}
-                      </span>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C6FF00]"></div>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {isRTL ? 'لا توجد تقييمات بعد' : 'No reviews yet'}
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
+            {reviews.map(r => {
+              const s = STATUS_MAP[r.status as keyof typeof STATUS_MAP]
+              const expanded = expandedReview === r.id
+              return (
+                <div key={r.id} className="p-5">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.06)', color: '#F5F5F5' }}>
+                      {r.name?.[0] || '?'}
                     </div>
-                    <p className="text-sm mt-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>{r.text}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{r.name || 'Anonymous'}</span>
+                        <Stars n={r.rating || 5} />
+                        <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          {r.date ? new Date(r.date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US') : ''}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: s.bg, color: s.color }}>
+                          {isRTL ? s.ar : s.en}
+                        </span>
+                      </div>
+                      <p className="text-sm mt-1.5" style={{ color: 'rgba(255,255,255,0.6)' }}>{r.text || ''}</p>
+                    </div>
                   </div>
-                </div>
-                {r.status !== 'replied' && (
-                  <div className="flex gap-2 mr-12">
-                    <button onClick={() => setExpandedReview(expanded ? null : r.id)}
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                      style={{ background: 'rgba(125,249,255,0.08)', border: '1px solid rgba(125,249,255,0.2)', color: '#7DF9FF' }}>
-                      {isRTL ? 'عرض الرد المقترح' : 'View AI Reply'}
-                    </button>
-                    {expanded && r.reply && (
-                      <button className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                        style={{ background: 'linear-gradient(135deg, #C6FF00, #a8e000)', color: '#050505' }}>
-                        {isRTL ? 'نشر الرد' : 'Publish Reply'}
+                  {r.status !== 'replied' && (
+                    <div className="flex gap-2 mr-12">
+                      <button onClick={() => setExpandedReview(expanded ? null : r.id)}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold"
+                        style={{ background: 'rgba(125,249,255,0.08)', border: '1px solid rgba(125,249,255,0.2)', color: '#7DF9FF' }}>
+                        {isRTL ? 'عرض الرد المقترح' : 'View AI Reply'}
                       </button>
-                    )}
-                  </div>
-                )}
-                {expanded && r.reply && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-3 mr-12 p-3 rounded-xl"
-                    style={{ background: 'rgba(198,255,0,0.04)', border: '1px solid rgba(198,255,0,0.12)' }}>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span style={{ fontSize: 12 }}>⚡</span>
-                      <span className="text-[11px] font-bold" style={{ color: '#C6FF00' }}>
-                        {isRTL ? 'رد مقترح من الذكاء الاصطناعي' : 'AI-suggested reply'}
-                      </span>
+                      {expanded && r.reply && (
+                        <button className="px-3 py-1.5 rounded-xl text-xs font-bold"
+                          style={{ background: 'linear-gradient(135deg, #C6FF00, #a8e000)', color: '#050508' }}>
+                          {isRTL ? 'نشر الرد' : 'Publish Reply'}
+                        </button>
+                      )}
                     </div>
-                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{r.reply}</p>
-                  </motion.div>
-                )}
-              </div>
-            )
-          })}
-        </div>
+                  )}
+                  {expanded && r.reply && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                      className="mt-3 mr-12 p-3 rounded-xl"
+                      style={{ background: 'rgba(198,255,0,0.04)', border: '1px solid rgba(198,255,0,0.12)' }}>
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span style={{ fontSize: 12 }}>⚡</span>
+                        <span className="text-[11px] font-bold" style={{ color: '#C6FF00' }}>
+                          {isRTL ? 'رد مقترح من الذكاء الاصطناعي' : 'AI-suggested reply'}
+                        </span>
+                      </div>
+                      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{r.reply}</p>
+                    </motion.div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Follow-up campaigns */}

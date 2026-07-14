@@ -45,7 +45,12 @@ export default function AdminDashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) {
+        setError('Please login to view admin dashboard')
+        setLoading(false)
+        return
+      }
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/dashboard`, {
         headers: {
           'Authorization': `Bearer ${token}`,

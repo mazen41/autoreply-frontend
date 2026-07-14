@@ -1,15 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
-
-const POSTS = [
-  { id: 1, date: 'اليوم 09:00', platforms: ['📸', '🔵'], text: 'صباح الخير! نبدأ اليوم بطاقة إيجابية 🌟 تعالوا وزورونا...', status: 'scheduled' },
-  { id: 2, date: 'اليوم 18:00', platforms: ['📸'], text: 'مساء النور! تذكير بأننا نغلق الساعة 11 مساءً...', status: 'scheduled' },
-  { id: 3, date: 'أمس 09:00',   platforms: ['📸', '🔵'], text: 'جمعة مباركة على الجميع! نتمنى لكم يوم...', status: 'published' },
-  { id: 4, date: 'الجمعة',      platforms: ['📸', '🔵'], text: 'تهنئة خاصة بمناسبة اليوم الوطني...', status: 'draft' },
-]
 
 const STATUS_COLORS: Record<string, { label: string; en: string; color: string; bg: string }> = {
   scheduled: { label: 'مجدول',    en: 'Scheduled',  color: '#7DF9FF', bg: 'rgba(125,249,255,0.1)' },
@@ -34,6 +27,41 @@ export default function ContentPage() {
   const [style, setStyle] = useState('friendly')
   const [generated, setGenerated] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [posts, setPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const getToken = () => {
+    if (typeof document === 'undefined') return ''
+    const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+    return match ? decodeURIComponent(match[1]) : ''
+  }
+
+  useEffect(() => {
+    fetchPosts()
+  }, [])
+
+  const fetchPosts = async () => {
+    try {
+      const token = getToken()
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setPosts(data.data || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch posts:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const toggle = (id: string) => setAutoTypes(t => t.map(x => x.id === id ? { ...x, on: !x.on } : x))
 
@@ -74,15 +102,25 @@ export default function ContentPage() {
       {/* Tab 1: Scheduled */}
       {tab === 'scheduled' && (
         <div className="space-y-3">
-          {POSTS.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C6FF00]"></div>
+            </div>
+          ) : posts.length === 0 ? (
             <div className="text-center py-20">
               <span style={{ fontSize: 48 }}>📅</span>
               <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 {isRTL ? 'لم تُنشر أي منشورات بعد — فعّل محرك المحتوى من الإعدادات' : 'No posts yet — enable the content engine in Settings'}
               </p>
             </div>
-          ) : POSTS.map((post, i) => {
-            const s = STATUS_COLORS[post.status]
+          ) : posts.map((post, i) => {
+            const s = STATUS_COLORS[post.status || 'draft']
+            const date = new Date(post.created_at).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
             return (
               <motion.div key={post.id}
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
@@ -90,12 +128,12 @@ export default function ContentPage() {
                 className="flex items-center gap-4 p-4 rounded-2xl"
                 style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <div className="text-xs font-semibold flex-shrink-0 w-20" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  {post.date}
+                  {date}
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  {post.platforms.map((p, j) => <span key={j} style={{ fontSize: 16 }}>{p}</span>)}
+                  <span style={{ fontSize: 16 }}>📸</span>
                 </div>
-                <p className="flex-1 text-sm truncate" style={{ color: '#F5F5F5' }}>{post.text}</p>
+                <p className="flex-1 text-sm truncate" style={{ color: '#F5F5F5' }}>{post.title || post.content?.substring(0, 50)}</p>
                 <span className="flex-shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full"
                   style={{ background: s.bg, color: s.color }}>
                   {isRTL ? s.label : s.en}

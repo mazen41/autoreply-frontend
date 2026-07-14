@@ -119,6 +119,14 @@ export default function BillingPage() {
     })
   }
 
+  const getDaysRemaining = (endsAt: string) => {
+    const endDate = new Date(endsAt)
+    const now = new Date()
+    const diffTime = endDate.getTime() - now.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    return diffDays
+  }
+
   const formatPrice = (price: number) => {
     return price === 0 ? 'Free' : `${price} SAR`
   }
@@ -195,24 +203,36 @@ export default function BillingPage() {
             </div>
 
             {subscription && subscription.status === 'active' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
-                    {isRTL ? 'تاريخ البدء' : 'Start Date'}
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                      {isRTL ? 'تاريخ البدء' : 'Start Date'}
+                    </div>
+                    <div className="font-bold" style={{ color: '#F0F0FF' }}>
+                      {formatDate(subscription.starts_at)}
+                    </div>
                   </div>
-                  <div className="font-bold" style={{ color: '#F0F0FF' }}>
-                    {formatDate(subscription.starts_at)}
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                      {isRTL ? 'تاريخ الانتهاء' : 'End Date'}
+                    </div>
+                    <div className="font-bold" style={{ color: '#F0F0FF' }}>
+                      {formatDate(subscription.ends_at)}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
-                    {isRTL ? 'تاريخ الانتهاء' : 'End Date'}
-                  </div>
-                  <div className="font-bold" style={{ color: '#F0F0FF' }}>
-                    {formatDate(subscription.ends_at)}
+                <div className="mt-4 p-4 rounded-xl" style={{ background: 'rgba(0,255,178,0.05)', border: '1px solid rgba(0,255,178,0.15)' }}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                      {isRTL ? 'الأيام المتبقية' : 'Days Remaining'}
+                    </span>
+                    <span className="text-2xl font-bold" style={{ color: '#00FFB2' }}>
+                      {getDaysRemaining(subscription.ends_at)}
+                    </span>
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
             {subscription && subscription.status === 'cancelled' && (

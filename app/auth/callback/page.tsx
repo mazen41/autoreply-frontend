@@ -38,14 +38,18 @@ function CallbackHandler() {
     // Determine redirect after auth
     let redirectUrl = redirectTo
     if (!redirectUrl) {
-      if (packageId) {
-        // User chose a plan, go to checkout
+      if (isNewUser === 'true') {
+        // New user - always go to onboarding first with package/billing params
+        const params = new URLSearchParams()
+        if (packageId) params.set('package', packageId)
+        if (billingCycle) params.set('billing', billingCycle)
+        const queryString = params.toString()
+        redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
+      } else if (packageId) {
+        // Existing user with plan selected, go to checkout
         redirectUrl = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
-      } else if (isNewUser === 'true') {
-        // New user without plan, go to pricing
-        redirectUrl = '/pricing'
       } else {
-        // Existing user, go to dashboard
+        // Existing user without plan, go to dashboard
         redirectUrl = '/dashboard'
       }
     }

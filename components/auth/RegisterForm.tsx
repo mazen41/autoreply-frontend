@@ -53,16 +53,15 @@ export default function RegisterForm() {
       document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
       toast.success(t.auth.registerSuccess)
       
-      // Determine redirect after registration
+      // Determine redirect after registration - always go to onboarding first
       let redirectUrl = redirectTo
       if (!redirectUrl) {
-        if (packageId) {
-          // User chose a plan, go to checkout
-          redirectUrl = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
-        } else {
-          // No plan chosen, go to pricing
-          redirectUrl = '/pricing'
-        }
+        // Build onboarding URL with package/billing params if present
+        const params = new URLSearchParams()
+        if (packageId) params.set('package', packageId)
+        if (billingCycle) params.set('billing', billingCycle)
+        const queryString = params.toString()
+        redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
       }
       window.location.href = redirectUrl
     } catch (err: unknown) {

@@ -18,7 +18,7 @@ const CHANNELS_DEFS = [
   { id: 'instagram', name: 'Instagram',      color: '#E1306C', plan: 'free' },
   { id: 'facebook',  name: 'Facebook',       color: '#1877F2', plan: 'free' },
   { id: 'gmail',     name: 'Gmail',          color: '#EA4335', plan: 'free' },
-  { id: 'whatsapp',  name: 'WhatsApp',       color: '#25D366', plan: 'business', locked: true },
+  { id: 'whatsapp',  name: 'WhatsApp',       color: '#25D366', plan: 'free' },
   { id: 'reviews',   name: 'Google Reviews', color: '#FBBC05', plan: 'free' },
   { id: 'webchat',   name: 'Web Chat',       color: '#7DF9FF', plan: 'starter' },
 ]
@@ -256,10 +256,8 @@ export default function ChannelsPage() {
               style={{
                 background: 'var(--surface)',
                 border: `1px solid ${ch.connected ? 'rgba(108,99,255,0.15)' : 'var(--border)'}`,
-                opacity: ch.locked ? 0.7 : 1,
               }}
             >
-              {ch.locked && <div className="absolute top-3 right-3 text-sm">🔒</div>}
 
               <div className="flex items-center gap-3 mb-4">
                 <ChannelIcon type={ch.id as any} size={48} />
@@ -278,10 +276,6 @@ export default function ChannelsPage() {
                           {t.channels.connected}
                         </span>
                       </>
-                    ) : ch.locked ? (
-                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                        {t.channels.businessPlan}
-                      </span>
                     ) : (
                       <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                         {t.channels.notConnected}
@@ -292,12 +286,7 @@ export default function ChannelsPage() {
               </div>
 
               <div className="flex gap-2">
-                {ch.locked ? (
-                  <button className="flex-1 py-2.5 rounded-xl text-xs font-bold"
-                    style={{ background: 'var(--primary)', color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF' }}>
-                    {t.channels.upgradeNow}
-                  </button>
-                ) : ch.connected ? (
+                {ch.connected ? (
                   <>
                     <button 
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}

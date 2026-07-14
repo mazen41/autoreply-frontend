@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -622,6 +623,8 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
 // ─── MAIN WIZARD ──────────────────────────────────────────────────────────────
 export default function OnboardingWizard() {
   const { isRTL } = useLang()
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [step, setStep] = useState(1) // 1–4 + 5 = celebration
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -702,7 +705,18 @@ export default function OnboardingWizard() {
       })
     } catch { /* silent */ }
     setSaving(false)
-    window.location.href = '/dashboard'
+    
+    // Check if package/billing params were passed through registration
+    const packageId = searchParams.get('package')
+    const billingCycle = searchParams.get('billing')
+    
+    if (packageId) {
+      // User pre-selected a plan, go to checkout
+      window.location.href = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
+    } else {
+      // No plan pre-selected, go to pricing
+      window.location.href = '/pricing'
+    }
   }
 
   const variants = {

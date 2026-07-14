@@ -7,6 +7,24 @@ import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Custom scrollbar styles
+const customScrollbarStyle = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 178, 0.3);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 178, 0.5);
+  }
+`
+
 const NAV = [
   { icon: '🏠', ar: 'الرئيسية',     en: 'Overview',    href: '/dashboard' },
   { icon: '📥', ar: 'صندوق الوارد', en: 'Inbox',       href: '/dashboard/inbox' },
@@ -74,7 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* Main nav */}
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {NAV.map(item => {
           const active = pathname === item.href
           return (
@@ -82,9 +100,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => isMobile && setMobileSidebar(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
               style={{
-                background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
-                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
-                color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                background: active ? 'rgba(0,255,178,0.12)' : 'transparent',
+                borderLeft: active ? '3px solid #00FFB2' : '3px solid transparent',
+                color: active ? '#00FFB2' : 'var(--text-secondary)',
+              }}
+              onMouseEnter={e => {
+                if (!active) {
+                  e.currentTarget.style.background = 'rgba(0,255,178,0.04)'
+                  e.currentTarget.style.color = 'rgba(240,240,255,0.8)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!active) {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                }
               }}>
               <span style={{ fontSize: 18, minWidth: 20, textAlign: 'center' }}>{item.icon}</span>
               {(!collapsed || isMobile) && (
@@ -119,9 +149,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => isMobile && setMobileSidebar(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
               style={{
-                background: active ? 'rgba(108,99,255,0.08)' : 'transparent',
-                borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
-                color: active ? 'var(--primary)' : 'var(--text-secondary)',
+                background: active ? 'rgba(0,255,178,0.12)' : 'transparent',
+                borderLeft: active ? '3px solid #00FFB2' : '3px solid transparent',
+                color: active ? '#00FFB2' : 'var(--text-secondary)',
+              }}
+              onMouseEnter={e => {
+                if (!active) {
+                  e.currentTarget.style.background = 'rgba(0,255,178,0.04)'
+                  e.currentTarget.style.color = 'rgba(240,240,255,0.8)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!active) {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                }
               }}>
               <span style={{ fontSize: 18, minWidth: 20, textAlign: 'center' }}>{item.icon}</span>
               {(!collapsed || isMobile) && (
@@ -148,7 +190,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--background)' }}>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: customScrollbarStyle }} />
+      <div className="flex h-screen overflow-hidden" style={{ background: 'var(--background)' }}>
 
       {/* ── Desktop Sidebar ── */}
       <aside className="hidden md:flex flex-col flex-shrink-0 transition-all duration-300"
@@ -343,5 +387,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="fixed inset-0 z-40" onClick={() => { setNotifOpen(false); setUserMenuOpen(false) }} />
       )}
     </div>
+    </>
   )
 }

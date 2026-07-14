@@ -232,13 +232,44 @@ function CardInner({
   const router = useRouter()
   const token = getToken()
 
-  const handlePlanClick = () => {
-    if (token) {
-      // User is logged in, go directly to checkout
-      router.push(`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+  const handlePlanClick = async () => {
+    if (price === 0) {
+      // Free plan - skip checkout
+      if (token) {
+        // Logged in - create free subscription and go to dashboard
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions/create-free`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              package_id: pkg.id,
+              billing_cycle: 'monthly',
+            }),
+          })
+          if (response.ok) {
+            router.push('/dashboard')
+          } else {
+            // If creation fails, still go to dashboard
+            router.push('/dashboard')
+          }
+        } catch {
+          // On error, still go to dashboard
+          router.push('/dashboard')
+        }
+      } else {
+        // Not logged in - go to register with free plan info
+        router.push(`/register?package=${pkg.id}&billing=monthly`)
+      }
     } else {
-      // User not logged in, go to register with plan info
-      router.push(`/register?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+      // Paid plan - go to checkout or register
+      if (token) {
+        router.push(`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+      } else {
+        router.push(`/register?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+      }
     }
   }
 

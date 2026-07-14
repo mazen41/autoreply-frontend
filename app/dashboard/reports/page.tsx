@@ -1,27 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
 
 const RANGES = ['هذا الأسبوع', 'هذا الشهر', 'آخر 3 أشهر']
 const RANGES_EN = ['This week', 'This month', 'Last 3 months']
 
-const DAILY_DATA = [12, 19, 8, 24, 31, 18, 27, 22, 35, 29, 41, 38, 24, 33, 27, 45, 52, 38, 44, 36, 29, 47, 53, 41, 38, 44, 47, 39, 43, 37]
-
-const CHANNEL_DATA = [
-  { ch: '📸', name: 'Instagram', msgs: 340, color: '#E1306C' },
-  { ch: '📧', name: 'Gmail',     msgs: 287, color: '#EA4335' },
-  { ch: '🔵', name: 'Facebook',  msgs: 220, color: '#1877F2' },
-]
-
-const TOP_QUESTIONS = [
-  { q: 'ما هي ساعات العمل؟',     qEn: 'What are your hours?',         count: 89 },
-  { q: 'هل يوجد توصيل؟',         qEn: 'Do you deliver?',              count: 67 },
-  { q: 'كم سعر الوجبة؟',         qEn: 'What is the meal price?',      count: 45 },
-  { q: 'هل يوجد حجز مسبق؟',      qEn: 'Do you take reservations?',    count: 38 },
-  { q: 'أين موقعكم؟',             qEn: 'Where are you located?',       count: 29 },
-]
+const RANGE_DAYS = [7, 30, 90]
 
 function MiniLineChart({ data }: { data: number[] }) {
   const max = Math.max(...data)
@@ -46,8 +32,105 @@ function MiniLineChart({ data }: { data: number[] }) {
 export default function ReportsPage() {
   const { isRTL } = useLang()
   const [range, setRange] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  
+  const [dailyData, setDailyData] = useState<number[]>([])
+  const [channelData, setChannelData] = useState<any[]>([])
+  const [aiPerformance, setAiPerformance] = useState<any>(null)
+  const [topQuestions, setTopQuestions] = useState<any[]>([])
+  const [timeSaved, setTimeSaved] = useState<any>(null)
 
-  const maxMsg = Math.max(...CHANNEL_DATA.map(c => c.msgs))
+  useEffect(() => {
+    fetchReports()
+  }, [range])
+
+  const fetchReports = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) {
+        setError('Please login to view reports')
+        setLoading(false)
+        return
+      }
+
+      const days = RANGE_DAYS[range]
+      const lang = isRTL ? 'ar' : 'en'
+
+      const [dailyRes, channelRes, aiRes, questionsRes, timeRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/daily-messages?days=${days}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/channel-breakdown`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/ai-performance`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/top-questions?limit=5`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reports/time-saved?lang=${lang}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+      ])
+
+      if (dailyRes.ok) {
+        const dailyJson = await dailyRes.json()
+        setDailyData(dailyJson.data || [])
+      }
+
+      if (channelRes.ok) {
+        const channelJson = await channelRes.json()
+        setChannelData(channelJson.channels || [])
+      }
+
+      if (aiRes.ok) {
+        const aiJson = await aiRes.json()
+        setAiPerformance(aiJson)
+      }
+
+      if (questionsRes.ok) {
+        const questionsJson = await questionsRes.json()
+        setTopQuestions(questionsJson.questions || [])
+      }
+
+      if (timeRes.ok) {
+        const timeJson = await timeRes.json()
+        setTimeSaved(timeJson)
+      }
+    } catch (err) {
+      console.error('Failed to fetch reports:', err)
+      setError('Failed to load reports data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const maxMsg = channelData.length > 0 ? Math.max(...channelData.map((c: any) => c.messages_count)) : 0
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C6FF00]"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 md:p-6 max-w-5xl mx-auto">
+        <div className="rounded-2xl p-6 text-center" style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{error}</p>
+          <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: '#C6FF00', color: '#050508' }}>
+            {isRTL ? 'إعادة المحاولة' : 'Retry'}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
@@ -77,9 +160,9 @@ export default function ReportsPage() {
             <h3 className="text-sm font-bold" style={{ color: '#F5F5F5' }}>
               {isRTL ? 'الرسائل اليومية' : 'Daily Messages'}
             </h3>
-            <span className="text-2xl font-black" style={{ color: '#C6FF00' }}>847</span>
+            <span className="text-2xl font-black" style={{ color: '#C6FF00' }}>{dailyData.reduce((a, b) => a + b, 0)}</span>
           </div>
-          <MiniLineChart data={DAILY_DATA} />
+          <MiniLineChart data={dailyData.length > 0 ? dailyData : [0]} />
         </motion.div>
 
         {/* Bar chart */}
@@ -89,19 +172,41 @@ export default function ReportsPage() {
           <h3 className="text-sm font-bold mb-4" style={{ color: '#F5F5F5' }}>
             {isRTL ? 'توزيع حسب القناة' : 'By Channel'}
           </h3>
-          <div className="space-y-3">
-            {CHANNEL_DATA.map((c, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-lg w-6">{c.ch}</span>
-                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <motion.div className="h-full rounded-full" style={{ background: c.color }}
-                    initial={{ width: 0 }} animate={{ width: `${(c.msgs / maxMsg) * 100}%` }}
-                    transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }} />
-                </div>
-                <span className="text-sm font-bold w-10 text-right" style={{ color: '#F5F5F5' }}>{c.msgs}</span>
-              </div>
-            ))}
-          </div>
+          {channelData.length === 0 ? (
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {isRTL ? 'لا توجد بيانات' : 'No data available'}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {channelData.map((c, i) => {
+                const colors: Record<string, string> = {
+                  instagram: '#E1306C',
+                  gmail: '#EA4335',
+                  facebook: '#1877F2',
+                  whatsapp: '#25D366',
+                }
+                const icons: Record<string, string> = {
+                  instagram: '📸',
+                  gmail: '📧',
+                  facebook: '🔵',
+                  whatsapp: '💬',
+                }
+                const color = colors[c.type] || '#C6FF00'
+                const icon = icons[c.type] || '📢'
+                return (
+                  <div key={i} className="flex items-center gap-3">
+                    <span className="text-lg w-6">{icon}</span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <motion.div className="h-full rounded-full" style={{ background: color }}
+                        initial={{ width: 0 }} animate={{ width: maxMsg > 0 ? `${(c.messages_count / maxMsg) * 100}%` : '0%' }}
+                        transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }} />
+                    </div>
+                    <span className="text-sm font-bold w-10 text-right" style={{ color: '#F5F5F5' }}>{c.messages_count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </motion.div>
       </div>
 
@@ -113,20 +218,22 @@ export default function ReportsPage() {
           {isRTL ? '🤖 أداء الذكاء الاصطناعي' : '🤖 AI Performance'}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {[
-            { label: isRTL ? 'الرسائل الواردة' : 'Total messages',      value: '847', color: '#F5F5F5' },
-            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: '791 (93.4%)', color: '#C6FF00' },
-            { label: isRTL ? 'مسودات مُوافق عليها' : 'Drafts approved', value: '38', color: '#7DF9FF' },
-            { label: isRTL ? 'تدخل يدوي' : 'Manual intervention',       value: '18', color: '#FFA500' },
-            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: '6.2s', color: '#C6FF00' },
-            { label: isRTL ? 'متوسط السوق' : 'Market average',           value: '4.3h', color: 'rgba(255,255,255,0.4)' },
+          {aiPerformance ? [
+            { label: isRTL ? 'الرسائل الواردة' : 'Total messages',      value: aiPerformance.total_messages, color: '#F5F5F5' },
+            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: `${aiPerformance.auto_replies} (${aiPerformance.auto_reply_rate}%)`, color: '#C6FF00' },
+            { label: isRTL ? 'تدخل يدوي' : 'Manual intervention',       value: aiPerformance.manual_interventions, color: '#FFA500' },
+            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: aiPerformance.avg_response_time_formatted, color: '#C6FF00' },
           ].map((item, i) => (
             <div key={i} className="p-3 rounded-xl"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
               <div className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{item.label}</div>
               <div className="text-lg font-black" style={{ color: item.color }}>{item.value}</div>
             </div>
-          ))}
+          )) : (
+            <p className="text-sm col-span-3" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {isRTL ? 'لا توجد بيانات' : 'No data available'}
+            </p>
+          )}
         </div>
       </motion.div>
 
@@ -137,25 +244,31 @@ export default function ReportsPage() {
         <h3 className="text-sm font-bold mb-4" style={{ color: '#F5F5F5' }}>
           {isRTL ? '❓ أكثر الأسئلة تكراراً' : '❓ Top Questions'}
         </h3>
-        <div className="space-y-3">
-          {TOP_QUESTIONS.map((q, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="text-xs font-black w-5 text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>#{i + 1}</span>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm" style={{ color: '#F5F5F5' }}>{isRTL ? q.q : q.qEn}</span>
-                  <span className="text-xs font-bold" style={{ color: '#C6FF00' }}>{q.count}</span>
-                </div>
-                <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                  <motion.div className="h-full rounded-full" style={{ background: 'linear-gradient(to right, #C6FF00, #7DF9FF)' }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(q.count / TOP_QUESTIONS[0].count) * 100}%` }}
-                    transition={{ delay: 0.4 + i * 0.07, duration: 0.8 }} />
+        {topQuestions.length === 0 ? (
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {isRTL ? 'لا توجد بيانات' : 'No data available'}
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {topQuestions.map((q, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-xs font-black w-5 text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>#{i + 1}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm" style={{ color: '#F5F5F5' }}>{q.question}</span>
+                    <span className="text-xs font-bold" style={{ color: '#C6FF00' }}>{q.count}</span>
+                  </div>
+                  <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                    <motion.div className="h-full rounded-full" style={{ background: 'linear-gradient(to right, #C6FF00, #7DF9FF)' }}
+                      initial={{ width: 0 }}
+                      animate={{ width: topQuestions.length > 0 ? `${(q.count / topQuestions[0].count) * 100}%` : '0%' }}
+                      transition={{ delay: 0.4 + i * 0.07, duration: 0.8 }} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       {/* Time saved */}
@@ -167,19 +280,25 @@ export default function ReportsPage() {
         <h3 className="text-sm font-bold mb-4 relative" style={{ color: '#C6FF00' }}>
           ⏱️ {isRTL ? 'الوقت الذي وفّره البوت' : 'Time Saved by the Bot'}
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative">
-          {[
-            { label: isRTL ? 'رسائل أُجيب عليها' : 'Messages handled', value: '791' },
-            { label: isRTL ? 'متوسط وقت الرد يدوياً' : 'Avg manual time', value: '3 دقائق' },
-            { label: isRTL ? 'وقت وُفِّر هذا الشهر' : 'Time saved/month', value: '39.5h', highlight: true },
-            { label: isRTL ? 'القيمة التقديرية' : 'Estimated value', value: '3,950 ريال', highlight: true },
-          ].map((item, i) => (
-            <div key={i}>
-              <div className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.label}</div>
-              <div className="text-xl font-black" style={{ color: item.highlight ? '#C6FF00' : '#F5F5F5' }}>{item.value}</div>
-            </div>
-          ))}
-        </div>
+        {timeSaved ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative">
+            {[
+              { label: isRTL ? 'رسائل أُجيب عليها' : 'Messages handled', value: timeSaved.messages_handled },
+              { label: isRTL ? 'متوسط وقت الرد يدوياً' : 'Avg manual time', value: timeSaved.avg_manual_reply_time },
+              { label: isRTL ? 'وقت وُفِّر هذا الشهر' : 'Time saved/month', value: timeSaved.time_saved_hours + 'h', highlight: true },
+              { label: isRTL ? 'القيمة التقديرية' : 'Estimated value', value: timeSaved.estimated_value_formatted, highlight: true },
+            ].map((item, i) => (
+              <div key={i}>
+                <div className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.label}</div>
+                <div className="text-xl font-black" style={{ color: item.highlight ? '#C6FF00' : '#F5F5F5' }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm relative" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            {isRTL ? 'لا توجد بيانات' : 'No data available'}
+          </p>
+        )}
       </motion.div>
 
       {/* Export */}
