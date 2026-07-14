@@ -30,7 +30,7 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const params = new URLSearchParams({
         page: page.toString(),
         per_page: '20',
@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
 
   const handleToggleAdmin = async (userId: number) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}/toggle-admin`, {
         method: 'POST',
         headers: {
@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
     }
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}`, {
         method: 'DELETE',
         headers: {

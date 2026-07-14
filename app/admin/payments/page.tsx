@@ -44,7 +44,7 @@ export default function AdminPaymentsPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const params = new URLSearchParams({
         page: page.toString(),
         per_page: '20',
@@ -76,7 +76,7 @@ export default function AdminPaymentsPage() {
 
   const handleUpdateStatus = async (subscriptionId: number, status: string) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/subscriptions/${subscriptionId}`, {
         method: 'PATCH',
         headers: {

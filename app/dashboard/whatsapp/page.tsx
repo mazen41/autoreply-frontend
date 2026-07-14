@@ -51,7 +51,7 @@ export default function WhatsAppPage() {
 
   const fetchStatus = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/status`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -87,7 +87,7 @@ export default function WhatsAppPage() {
     setPairingCode(null)
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/connect`, {
         method: 'POST',
         headers: {
@@ -120,7 +120,7 @@ export default function WhatsAppPage() {
     }
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/disconnect`, {
         method: 'POST',
         headers: {
@@ -146,7 +146,7 @@ export default function WhatsAppPage() {
     setError('')
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/reconnect`, {
         method: 'POST',
         headers: {

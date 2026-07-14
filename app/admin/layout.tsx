@@ -21,7 +21,7 @@ export default function AdminLayout({
 
   const checkAdmin = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       if (!token) {
         router.push('/login')
         return

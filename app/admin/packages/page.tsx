@@ -54,7 +54,7 @@ export default function AdminPackagesPage() {
 
   const fetchPackages = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/packages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -125,7 +125,7 @@ export default function AdminPackagesPage() {
     }
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/packages/${id}`, {
         method: 'DELETE',
         headers: {
@@ -149,7 +149,7 @@ export default function AdminPackagesPage() {
     setError('')
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const url = editingPackage
         ? `${process.env.NEXT_PUBLIC_API_URL}/api/admin/packages/${editingPackage.id}`
         : `${process.env.NEXT_PUBLIC_API_URL}/api/admin/packages`

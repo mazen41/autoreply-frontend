@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
     setSuccess('')
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/settings`, {
         method: 'PATCH',
         headers: {

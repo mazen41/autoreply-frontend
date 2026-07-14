@@ -56,7 +56,7 @@ export default function BillingPage() {
 
   const fetchSubscription = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       if (!token) {
         setError('Please login to view billing')
         setLoading(false)
@@ -90,7 +90,7 @@ export default function BillingPage() {
     setError('')
 
     try {
-      const token = localStorage.getItem('token')
+      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions`, {
         method: 'DELETE',
         headers: {
