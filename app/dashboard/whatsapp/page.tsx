@@ -30,6 +30,7 @@ export default function WhatsAppPage() {
   const [pairingCode, setPairingCode] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [polling, setPolling] = useState(false)
+  const pollIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     fetchStatus()
@@ -38,14 +39,21 @@ export default function WhatsAppPage() {
   }, [])
 
   const startPolling = () => {
+    // Never stack multiple intervals — clear any existing one first
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current)
+    }
     setPolling(true)
-    const interval = setInterval(() => {
+    pollIntervalRef.current = setInterval(() => {
       fetchStatus()
     }, 3000) // Poll every 3 seconds
-    return () => clearInterval(interval)
   }
 
   const stopPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current)
+      pollIntervalRef.current = null
+    }
     setPolling(false)
   }
 
@@ -65,10 +73,11 @@ export default function WhatsAppPage() {
       const data = await response.json()
       setInstance(data.instance)
       
-      // If connected, clear QR code
+      // If connected, clear QR code and stop polling — nothing left to wait for
       if (data.connected) {
         setQrCode(null)
         setPairingCode(null)
+        stopPolling()
       }
     } catch (error: any) {
       console.error('Failed to fetch status:', error)
