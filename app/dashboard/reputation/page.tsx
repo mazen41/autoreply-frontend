@@ -188,7 +188,7 @@ export default function ReputationPage() {
             {isRTL ? 'يُرسل رسالة تلقائية بعد 2 ساعة من اكتمال الطلب' : 'Sends auto message 2 hours after order completion'}
           </p>
           <div className="space-y-2">
-            {FOLLOWUPS.map((f, i) => {
+            {followups.map((f, i) => {
               const o = OUTCOME_MAP[f.outcome as keyof typeof OUTCOME_MAP]
               return (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
