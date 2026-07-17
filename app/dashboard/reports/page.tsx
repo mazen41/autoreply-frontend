@@ -195,7 +195,7 @@ export default function ReportsPage() {
                     <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                       <motion.div className="h-full rounded-full" style={{ background: color }}
                         initial={{ width: 0 }} animate={{ width: maxMsg > 0 ? `${(c.messages_count / maxMsg) * 100}%` : '0%' }}
-                        transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }} />
+                        transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] as any }} />
                     </div>
                     <span className="text-sm font-bold w-10 text-right" style={{ color: '#F0F0FF' }}>{c.messages_count}</span>
                   </div>

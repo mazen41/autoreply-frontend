@@ -124,24 +124,29 @@ function MsgBubble({ msg }: { msg: ApiMessage }) {
       initial={{ opacity: 0, y: 6, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.16 }}
-      style={{ display: 'flex', justifyContent: isIn ? 'flex-start' : 'flex-end' }}
+      style={{ display: 'flex', justifyContent: isIn ? 'flex-start' : 'flex-end', marginBottom: 8 }}
     >
-      <div style={{ maxWidth: '68%' }}>
+      <div style={{ maxWidth: '70%' }}>
         <div style={{
-          padding: '10px 14px',
-          borderRadius: isIn ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
-          background: isIn ? 'var(--surface)' : msg.is_ai ? 'linear-gradient(135deg, rgba(108,99,255,0.08), rgba(108,99,255,0.04))' : 'rgba(100,180,255,0.09)',
-          border: `1px solid ${isIn ? 'var(--border)' : msg.is_ai ? 'rgba(108,99,255,0.18)' : 'rgba(100,180,255,0.18)'}`,
-          fontSize: 13, lineHeight: 1.55,
-          color: isIn ? 'var(--text-primary)' : 'var(--text-primary)',
+          padding: '12px 16px',
+          borderRadius: isIn ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
+          background: isIn 
+            ? 'rgba(17,17,17,0.8)' 
+            : msg.is_ai 
+              ? 'linear-gradient(135deg, #C6FF00, #A8E600)' 
+              : 'linear-gradient(135deg, #00D68F, #00B877)',
+          border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(198,255,0,0.3)' : 'rgba(0,214,143,0.3)'}`,
+          fontSize: 14, lineHeight: 1.5,
+          color: isIn ? '#F0F0FF' : '#050508',
           whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+          boxShadow: isIn ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
         }}>
           {msg.content}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4, paddingInline: 4, justifyContent: isIn ? 'flex-start' : 'flex-end' }}>
-          {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: 'var(--primary)', opacity: 0.6 }}>⚡ AI</span>}
-          {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: 'rgba(100,180,255,0.6)' }}>↩ manual</span>}
-          <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{formatMsgTime(msg.created_at)}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingInline: 4, justifyContent: isIn ? 'flex-start' : 'flex-end' }}>
+          {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: '#C6FF00', fontWeight: 600 }}>⚡ AI</span>}
+          {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: '#00D68F', fontWeight: 600 }}>↩ manual</span>}
+          <span style={{ fontSize: 10, color: 'rgba(136,136,170,0.6)' }}>{formatMsgTime(msg.created_at)}</span>
         </div>
       </div>
     </motion.div>

@@ -52,7 +52,7 @@ function StatCard({
       className="card-os rounded-2xl p-5 relative overflow-hidden"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
       style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
     >
       <div className="shimmer-line absolute inset-0" />
@@ -94,7 +94,7 @@ function ActivityFeedItem({ item, index }: { item: any; index: number }) {
       className="feed-item flex items-center gap-3 p-3 rounded-xl"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: index * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
       style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
     >
       <ChannelIcon type={item.channel_type || 'facebook'} size={24} />

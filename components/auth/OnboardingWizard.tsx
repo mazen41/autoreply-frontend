@@ -74,7 +74,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
         <motion.div className="h-full rounded-full"
           style={{ background: 'linear-gradient(to right, #C6FF00, #7DF9FF)', boxShadow: '0 0 8px rgba(198,255,0,0.4)' }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5, ease: [0.22,1,0.36,1] }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
         />
       </div>
       {/* Step dots */}
@@ -774,7 +774,7 @@ export default function OnboardingWizard() {
               custom={direction}
               variants={variants}
               initial="enter" animate="center" exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}>
 
               {step === 1 && <Step1 data={data} setData={setData} isRTL={isRTL} />}
               {step === 2 && <Step2 data={data} setData={setData} isRTL={isRTL} />}

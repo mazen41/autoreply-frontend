@@ -15,6 +15,11 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
 
+  // Special-case the admin login page - no auth guard, no sidebar
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
   useEffect(() => {
     checkAdmin()
   }, [])
@@ -23,7 +28,7 @@ export default function AdminLayout({
     try {
       const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       if (!token) {
-        router.push('/login')
+        router.push('/admin/login')
         return
       }
 
@@ -36,22 +41,22 @@ export default function AdminLayout({
       const data = await response.json()
       
       if (!data.is_admin) {
-        router.push('/dashboard')
+        router.push('/admin/login')
         return
       }
 
       setIsAdmin(true)
     } catch (error) {
       console.error('Failed to check admin status:', error)
-      router.push('/login')
+      router.push('/admin/login')
     } finally {
       setLoading(false)
     }
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    router.push('/login')
+    document.cookie = 'naz_token=; path=/; max-age=0'
+    router.push('/admin/login')
   }
 
   if (loading) {
