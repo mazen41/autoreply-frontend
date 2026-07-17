@@ -1,0 +1,1 @@
+'WhatsApp Instance: name=' . \$instance- . ', status=' . \$instance- . ', phone=' . \$instance- . PHP_EOL;

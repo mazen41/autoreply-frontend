@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
+import { LightningIcon, ContentIcon, PlusIcon } from '../../../components/ui/DashboardIcons'
 
 const STATUS_COLORS: Record<string, { label: string; en: string; color: string; bg: string }> = {
   scheduled: { label: 'مجدول',    en: 'Scheduled',  color: '#7DF9FF', bg: 'rgba(125,249,255,0.1)' },
@@ -77,9 +78,9 @@ export default function ContentPage() {
   ]
 
   const VARIATIONS = [
-    isRTL ? 'صباح النور والسعادة! 🌟 يومنا بدأ بأبهى صورة وأنتم معنا. تعالوا وجرّبوا طعمنا المميز اليوم!' : 'Good morning sunshine! ✨ Start your day with us. Come taste our special menu today!',
-    isRTL ? 'خيرًا أصبحتم! 🤍 إذا كان يومك محتاج دفعة طاقة، أنتم في المكان الصح. نستقبلكم بابتسامة.' : 'Rise and shine! 🤍 If your day needs an energy boost, you\'re in the right place. We welcome you with a smile.',
-    isRTL ? 'صباح البركة والخير عليكم جميعاً! 🌿 اليوم عندنا عروض خاصة — كن أول من يزورنا.' : 'Blessed morning to you all! 🌿 Special offers today — be the first to visit us.',
+    isRTL ? 'صباح النور والسعادة! يومنا بدأ بأبهى صورة وأنتم معنا. تعالوا وجرّبوا طعمنا المميز اليوم!' : 'Good morning sunshine! Start your day with us. Come taste our special menu today!',
+    isRTL ? 'خيرًا أصبحتم! إذا كان يومك محتاج دفعة طاقة، أنتم في المكان الصح. نستقبلكم بابتسامة.' : 'Rise and shine! If your day needs an energy boost, you\'re in the right place. We welcome you with a smile.',
+    isRTL ? 'صباح البركة والخير عليكم جميعاً! اليوم عندنا عروض خاصة — كن أول من يزورنا.' : 'Blessed morning to you all! Special offers today — be the first to visit us.',
   ]
 
   return (
@@ -89,10 +90,10 @@ export default function ContentPage() {
         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)}
-            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+            className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 btn-ghost"
             style={{
               background: tab === t.id ? 'rgba(198,255,0,0.1)' : 'transparent',
-              color: tab === t.id ? '#C6FF00' : 'rgba(255,255,255,0.45)',
+              color: tab === t.id ? '#C6FF00' : 'rgba(136,136,170,0.8)',
             }}>
             {isRTL ? t.ar : t.en}
           </button>
@@ -108,8 +109,8 @@ export default function ContentPage() {
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
-              <span style={{ fontSize: 48 }}>📅</span>
-              <p className="mt-3 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <ContentIcon size={48} style={{ color: 'rgba(136,136,170,0.3)' }} />
+              <p className="mt-3 text-sm" style={{ color: 'rgba(136,136,170,0.6)' }}>
                 {isRTL ? 'لم تُنشر أي منشورات بعد — فعّل محرك المحتوى من الإعدادات' : 'No posts yet — enable the content engine in Settings'}
               </p>
             </div>
@@ -125,26 +126,26 @@ export default function ContentPage() {
               <motion.div key={post.id}
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
-                className="flex items-center gap-4 p-4 rounded-2xl"
-                style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="text-xs font-semibold flex-shrink-0 w-20" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                className="card-os flex items-center gap-4 p-4 rounded-2xl"
+                style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="text-xs font-semibold flex-shrink-0 w-20" style={{ color: 'rgba(136,136,170,0.6)' }}>
                   {date}
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <span style={{ fontSize: 16 }}>📸</span>
+                  <ContentIcon size={16} style={{ color: '#C6FF00' }} />
                 </div>
-                <p className="flex-1 text-sm truncate" style={{ color: '#F5F5F5' }}>{post.title || post.content?.substring(0, 50)}</p>
+                <p className="flex-1 text-sm truncate" style={{ color: '#F0F0FF' }}>{post.title || post.content?.substring(0, 50)}</p>
                 <span className="flex-shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full"
                   style={{ background: s.bg, color: s.color }}>
                   {isRTL ? s.label : s.en}
                 </span>
                 <div className="flex gap-1.5 flex-shrink-0">
-                  <button className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)' }}>
+                  <button className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold btn-ghost"
+                    style={{ color: 'rgba(136,136,170,0.8)' }}>
                     {isRTL ? 'تعديل' : 'Edit'}
                   </button>
                   <button className="px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-                    style={{ background: 'rgba(255,59,48,0.07)', border: '1px solid rgba(255,59,48,0.15)', color: '#FF3B30' }}>
+                    style={{ background: 'rgba(255,77,109,0.07)', border: '1px solid rgba(255,77,109,0.15)', color: '#FF4D6D' }}>
                     {isRTL ? 'حذف' : 'Delete'}
                   </button>
                 </div>
@@ -158,14 +159,14 @@ export default function ContentPage() {
       {tab === 'settings' && (
         <div className="space-y-3">
           {autoTypes.map(item => (
-            <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl"
-              style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div key={item.id} className="card-os flex items-center justify-between p-4 rounded-2xl"
+              style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div>
-                <div className="text-sm font-semibold" style={{ color: '#F5F5F5' }}>
+                <div className="text-sm font-semibold" style={{ color: '#F0F0FF' }}>
                   {isRTL ? item.ar : item.en}
                 </div>
                 {item.on && (
-                  <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <div className="text-xs mt-0.5" style={{ color: 'rgba(136,136,170,0.6)' }}>
                     {isRTL ? 'ينشر الساعة 09:00 — Instagram + Facebook' : 'Posts at 09:00 — Instagram + Facebook'}
                   </div>
                 )}
@@ -185,34 +186,31 @@ export default function ContentPage() {
       {tab === 'generate' && (
         <div className="space-y-4 max-w-lg">
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(136,136,170,0.8)' }}>
               {isRTL ? 'موضوع المنشور' : 'Post Topic'}
             </label>
             <input type="text" value={topic} onChange={e => setTopic(e.target.value)}
               placeholder={isRTL ? 'مثال: تخفيضات نهاية الأسبوع' : 'e.g. Weekend sale'}
-              className="w-full px-4 py-3 rounded-xl text-sm input-os"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#F5F5F5', outline: 'none' }} />
+              className="w-full px-4 py-3 rounded-xl text-sm input-os" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(136,136,170,0.8)' }}>
                 {isRTL ? 'المنصة' : 'Platform'}
               </label>
               <select value={platform} onChange={e => setPlatform(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm input-os"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#F5F5F5', outline: 'none' }}>
+                className="w-full px-4 py-3 rounded-xl text-sm input-os">
                 <option value="both">{isRTL ? 'الكل' : 'Both'}</option>
                 <option value="instagram">Instagram</option>
                 <option value="facebook">Facebook</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(136,136,170,0.8)' }}>
                 {isRTL ? 'الأسلوب' : 'Style'}
               </label>
               <select value={style} onChange={e => setStyle(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-sm input-os"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#F5F5F5', outline: 'none' }}>
+                className="w-full px-4 py-3 rounded-xl text-sm input-os">
                 <option value="friendly">{isRTL ? 'ودود' : 'Friendly'}</option>
                 <option value="formal">{isRTL ? 'رسمي' : 'Formal'}</option>
                 <option value="promo">{isRTL ? 'ترويجي' : 'Promotional'}</option>
@@ -220,32 +218,32 @@ export default function ContentPage() {
             </div>
           </div>
           <button onClick={generate} disabled={!topic || generating}
-            className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-            style={{ background: topic ? 'linear-gradient(135deg, #C6FF00, #a8e000)' : 'rgba(198,255,0,0.2)', color: topic ? '#050505' : 'rgba(255,255,255,0.3)' }}>
+            className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 btn-lime"
+            style={{ opacity: topic ? 1 : 0.5 }}>
             {generating && <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>}
-            {generating ? (isRTL ? 'جاري التوليد...' : 'Generating...') : (isRTL ? '⚡ اطلب من الذكاء الاصطناعي' : '⚡ Ask AI')}
+            <LightningIcon size={16} />
+            {generating ? (isRTL ? 'جاري التوليد...' : 'Generating...') : (isRTL ? 'اطلب من الذكاء الاصطناعي' : 'Ask AI')}
           </button>
           {generated && (
             <div className="space-y-3">
-              <p className="text-xs font-bold" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-xs font-bold" style={{ color: 'rgba(136,136,170,0.8)' }}>
                 {isRTL ? '3 اقتراحات — اختر واحدة:' : '3 suggestions — pick one:'}
               </p>
               {VARIATIONS.map((v, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="p-4 rounded-xl cursor-pointer transition-all duration-200"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                  className="card-os p-4 rounded-xl cursor-pointer transition-all duration-200"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(198,255,0,0.3)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)' }}>
-                  <p className="text-sm mb-3" style={{ color: '#F5F5F5' }}>{v}</p>
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.04)' }}>
+                  <p className="text-sm mb-3" style={{ color: '#F0F0FF' }}>{v}</p>
                   <div className="flex gap-2">
-                    <button className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                      style={{ background: 'linear-gradient(135deg, #C6FF00, #a8e000)', color: '#050505' }}>
+                    <button className="px-3 py-1.5 rounded-lg text-xs font-bold btn-lime">
                       {isRTL ? 'جدول' : 'Schedule'}
                     </button>
-                    <button className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
-                      {isRTL ? 'انشر الآن' : 'Post Now'}
+                    <button className="px-3 py-1.5 rounded-lg text-xs font-bold btn-ghost"
+                      style={{ color: 'rgba(136,136,170,0.8)' }}>
+                      {isRTL ? 'نسخ' : 'Copy'}
                     </button>
                   </div>
                 </motion.div>

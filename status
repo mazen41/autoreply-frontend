@@ -1,0 +1,1 @@
+'WhatsApp Channel found: ID=' . \$channel- . ', page_id=' . \$channel- . ', status=' . \$channel- . PHP_EOL;

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
 import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
+import { PlusIcon, XIcon, LightningIcon } from '../../../components/ui/DashboardIcons'
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -79,28 +80,28 @@ function ConnectModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
       <motion.div
-        className="relative w-full max-w-sm rounded-2xl p-6"
+        className="relative w-full max-w-sm rounded-2xl p-6 glass"
         initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }}
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        style={{ border: '1px solid rgba(255,255,255,0.06)' }}
       >
         <>
           <div className="flex items-center gap-3 mb-5">
             <ChannelIcon type={ch.id as any} size={48} />
             <div>
-              <h3 className="font-black" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
                 {t.channels.connect} {ch.name}
               </h3>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-xs" style={{ color: 'rgba(136,136,170,0.8)' }}>
                 {t.channels.willNeedSignIn}
               </p>
             </div>
           </div>
 
           <div className="p-3 rounded-xl mb-5"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+            <p className="text-xs" style={{ color: 'rgba(136,136,170,0.8)' }}>
               {t.channels.permissionText.replace('{channel}', ch.name)}
             </p>
           </div>
@@ -108,16 +109,15 @@ function ConnectModal({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="flex-1 py-3 rounded-xl text-sm font-bold"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+              className="flex-1 py-3 rounded-xl text-sm font-bold btn-ghost"
             >
               {t.common.cancel}
             </button>
             <button
               onClick={handleConnect}
               disabled={connecting_loading}
-              className="flex-1 py-3 rounded-xl text-sm font-bold"
-              style={{ background: 'var(--primary)', color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF', opacity: connecting_loading ? 0.7 : 1 }}
+              className="flex-1 py-3 rounded-xl text-sm font-bold btn-lime"
+              style={{ opacity: connecting_loading ? 0.7 : 1 }}
             >
               {connecting_loading ? '...' : t.common.continue}
             </button>
@@ -230,17 +230,17 @@ export default function ChannelsPage() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="text-xl font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
           {t.channels.title}
         </h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm mt-1" style={{ color: 'rgba(136,136,170,0.8)' }}>
           {t.channels.subtitle}
         </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--primary)' }}>
+          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#C6FF00' }}>
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
           </svg>
@@ -252,32 +252,32 @@ export default function ChannelsPage() {
               key={ch.id}
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-2xl p-5 relative"
+              className="card-os rounded-2xl p-5 relative"
               style={{
-                background: 'var(--surface)',
-                border: `1px solid ${ch.connected ? 'rgba(108,99,255,0.15)' : 'var(--border)'}`,
+                background: 'rgba(17,17,17,0.7)',
+                border: `1px solid ${ch.connected ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)'}`,
               }}
             >
 
               <div className="flex items-center gap-3 mb-4">
                 <ChannelIcon type={ch.id as any} size={48} />
                 <div>
-                  <div className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{ch.name}</div>
+                  <div className="font-bold text-sm" style={{ color: '#F0F0FF' }}>{ch.name}</div>
                   {ch.pageName && (
-                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'var(--text-secondary)' }}>
+                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'rgba(136,136,170,0.6)' }}>
                       {ch.pageName}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {ch.connected ? (
                       <>
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
-                        <span className="text-[11px] font-semibold" style={{ color: 'var(--success)' }}>
+                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
+                        <span className="text-[11px] font-semibold" style={{ color: '#C6FF00' }}>
                           {t.channels.connected}
                         </span>
                       </>
                     ) : (
-                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                      <span className="text-[11px]" style={{ color: 'rgba(136,136,170,0.6)' }}>
                         {t.channels.notConnected}
                       </span>
                     )}
@@ -290,25 +290,30 @@ export default function ChannelsPage() {
                   <>
                     <button 
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
-                      className="flex-1 py-2.5 rounded-xl text-xs font-bold"
+                      className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost"
                       style={{ 
-                        background: ch.aiEnabled ? 'rgba(108,99,255,0.15)' : 'rgba(255,255,255,0.05)', 
-                        border: ch.aiEnabled ? '1px solid rgba(108,99,255,0.3)' : '1px solid var(--border)', 
-                        color: ch.aiEnabled ? 'var(--primary)' : 'var(--text-secondary)' 
-                      }}>
-                      {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
+                        background: ch.aiEnabled ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.04)', 
+                        border: ch.aiEnabled ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,255,255,0.1)', 
+                        color: ch.aiEnabled ? '#C6FF00' : 'rgba(136,136,170,0.8)' 
+                      }}
+                    >
+                      <div className="flex items-center justify-center gap-1.5">
+                        <LightningIcon size={12} />
+                        {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
+                      </div>
                     </button>
                     <button onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
                       className="py-2.5 px-3 rounded-xl text-xs font-bold"
-                      style={{ background: 'rgba(255,77,109,0.07)', border: '1px solid rgba(255,77,109,0.18)', color: 'var(--danger)' }}>
+                      style={{ background: 'rgba(255,77,109,0.07)', border: '1px solid rgba(255,77,109,0.18)', color: '#FF4D6D' }}>
                       {t.channels.disconnect}
                     </button>
                   </>
                 ) : (
                   <button onClick={() => setConnecting(ch)}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-bold"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                    + {t.channels.connect}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost flex items-center justify-center gap-1.5"
+                    style={{ color: 'rgba(136,136,170,0.8)' }}>
+                    <PlusIcon size={14} />
+                    {t.channels.connect}
                   </button>
                 )}
               </div>
@@ -335,9 +340,9 @@ export default function ChannelsPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-bold"
             style={{
-              background: toast.type === 'success' ? 'rgba(108,99,255,0.15)' : 'rgba(255,77,109,0.15)',
-              border: toast.type === 'success' ? '1px solid rgba(108,99,255,0.3)' : '1px solid rgba(255,77,109,0.3)',
-              color: toast.type === 'success' ? 'var(--primary)' : 'var(--danger)',
+              background: toast.type === 'success' ? 'rgba(198,255,0,0.1)' : 'rgba(255,77,109,0.1)',
+              border: toast.type === 'success' ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,77,109,0.3)',
+              color: toast.type === 'success' ? '#C6FF00' : '#FF4D6D',
             }}
           >
             {toast.message}

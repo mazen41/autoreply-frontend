@@ -1,10 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import ChannelIcon from '../../components/ui/ChannelIcon'
+import {
+  LightningIcon,
+  TrendUpIcon,
+  TrendDownIcon,
+  PlusIcon,
+  InboxIcon,
+  ChannelsIcon
+} from '../../components/ui/DashboardIcons'
 
 function useCountUp(target: number, duration = 1400) {
   const [val, setVal] = useState(0)
@@ -21,47 +29,127 @@ function useCountUp(target: number, duration = 1400) {
   return val
 }
 
-function StatCard({ icon, label, value, sub, color = 'var(--primary)', delay = 0, trend }: {
-  icon: string; label: string; value: string | number; sub?: string; color?: string; delay?: number; trend?: { value: number; isPositive: boolean }
+function StatCard({ 
+  label, 
+  value, 
+  sub, 
+  delay = 0, 
+  trend,
+  icon 
+}: { 
+  label: string
+  value: string | number
+  sub?: string
+  delay?: number
+  trend?: { value: number; isPositive: boolean }
+  icon: React.ReactNode
 }) {
   const isNum = typeof value === 'number'
   const counted = useCountUp(isNum ? value : 0)
+  
   return (
-    <motion.div className="rounded-2xl p-5 relative overflow-hidden"
-      initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, boxShadow: `0 8px 30px ${color}20` }}
+    <motion.div
+      className="card-os rounded-2xl p-5 relative overflow-hidden"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{ 
-        background: 'var(--surface)', 
-        border: '1px solid var(--border)',
-        borderTop: `3px solid ${color}`
-      }}>
-      <div className="absolute top-0 right-0 w-24 h-24 rounded-full pointer-events-none"
-        style={{ background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`, filter: 'blur(20px)' }} />
-      <div className="text-2xl mb-3">{icon}</div>
-      <div className="text-[11px] font-semibold mb-1" style={{ color: 'var(--text-secondary)', letterSpacing: '0.06em' }}>
-        {label.toUpperCase()}
+      style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
+    >
+      <div className="shimmer-line absolute inset-0" />
+      <div className="flex items-start justify-between mb-4">
+        <div className="p-2 rounded-lg" style={{ background: 'rgba(198,255,0,0.1)' }}>
+          {icon}
+        </div>
+        {trend && (
+          <div className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{ 
+            background: trend.isPositive ? 'rgba(0,214,143,0.1)' : 'rgba(255,77,109,0.1)',
+            color: trend.isPositive ? '#00D68F' : '#FF4D6D'
+          }}>
+            {trend.isPositive ? <TrendUpIcon size={14} /> : <TrendDownIcon size={14} />}
+            {Math.abs(trend.value)}%
+          </div>
+        )}
       </div>
-      <div className="text-3xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>
+      
+      <div className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'rgba(136,136,170,0.8)' }}>
+        {label}
+      </div>
+      
+      <div className="text-3xl font-black mb-1 text-lime">
         {isNum ? counted : value}
       </div>
-      {trend && (
-        <div className="flex items-center gap-1 text-xs font-bold" style={{ color: trend.isPositive ? 'var(--success)' : 'var(--danger)' }}>
-          {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+      
+      {sub && (
+        <div className="text-xs font-semibold" style={{ color: 'rgba(136,136,170,0.6)' }}>
+          {sub}
         </div>
       )}
-      {sub && !trend && <div className="text-xs font-semibold" style={{ color }}>{sub}</div>}
     </motion.div>
   )
 }
 
+function ActivityFeedItem({ item, index }: { item: any; index: number }) {
+  return (
+    <motion.div
+      className="feed-item flex items-center gap-3 p-3 rounded-xl"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+    >
+      <ChannelIcon type={item.channel_type || 'facebook'} size={24} />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
+            {item.sender_name}
+          </span>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00' }}>
+            <LightningIcon size={10} />
+            AI
+          </div>
+        </div>
+        <p className="text-xs truncate" style={{ color: 'rgba(136,136,170,0.6)' }}>
+          {item.message_preview}
+        </p>
+      </div>
+      <span className="text-xs" style={{ color: 'rgba(136,136,170,0.4)' }}>
+        {item.time}
+      </span>
+    </motion.div>
+  )
+}
+
+function ChannelStatusCard({ channel, index }: { channel: any; index: number }) {
+  return (
+    <motion.div
+      className="flex items-center gap-3 p-3 rounded-xl"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
+    >
+      <ChannelIcon type={channel.type || 'facebook'} size={24} />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
+          {channel.name}
+        </div>
+        <div className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
+          {channel.messages_today} {channel.messages_today === 1 ? 'message' : 'messages'}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C6FF00' }} />
+      </div>
+    </motion.div>
+  )
+}
 
 export default function DashboardHome() {
   const { isRTL, t } = useLang()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [stats, setStats] = useState<any>(null)
-  const [conversations, setConversations] = useState<any[]>([])
+  const [activity, setActivity] = useState<any[]>([])
   const [channels, setChannels] = useState<any[]>([])
 
   useEffect(() => {
@@ -88,7 +176,7 @@ export default function DashboardHome() {
         
         if (inboxRes.ok) {
           const inboxData = await inboxRes.json()
-          setConversations(inboxData.data?.slice(0, 5) || [])
+          setActivity(inboxData.data?.slice(0, 5) || [])
         }
         
         if (channelsRes.ok) {
@@ -110,7 +198,7 @@ export default function DashboardHome() {
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'rgba(17,17,17,0.7)' }} />
           ))}
         </div>
       </div>
@@ -120,9 +208,12 @@ export default function DashboardHome() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        <div className="rounded-2xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: 'var(--primary)', color: 'var(--text-primary)' }}>
+        <div className="card-os rounded-2xl p-6 text-center" style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <p className="text-sm mb-4" style={{ color: 'rgba(136,136,170,0.8)' }}>{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="btn-lime px-4 py-2 rounded-lg text-sm font-bold"
+          >
             {t.common.retry}
           </button>
         </div>
@@ -132,199 +223,226 @@ export default function DashboardHome() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
-
       {/* ── Stat Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          icon="💬" 
           label={t.dashboard.totalMessages} 
           value={stats?.total_messages || 0} 
           trend={stats?.messages_trend} 
-          color="var(--primary)" 
-          delay={0} 
+          delay={0}
+          icon={<InboxIcon size={20} style={{ color: '#C6FF00' }} />}
         />
         <StatCard 
-          icon="🤖" 
           label={t.dashboard.aiReplies} 
           value={stats?.ai_replies || 0} 
           sub={`${stats?.response_rate || 0}% ${t.dashboard.responseRate}`} 
-          color="var(--success)" 
-          delay={0.08} 
+          delay={0.08}
+          icon={<LightningIcon size={20} style={{ color: '#7DF9FF' }} />}
         />
         <StatCard 
-          icon="⏱️" 
           label={isRTL ? 'ساعات وُفِّرت' : 'Hours Saved'} 
           value={stats?.hours_saved || '0'} 
           sub={isRTL ? 'هذا الأسبوع' : 'This week'} 
-          color="var(--warning)" 
-          delay={0.16} 
+          delay={0.16}
+          icon={<TrendUpIcon size={20} style={{ color: '#FFB800' }} />}
         />
         <StatCard 
-          icon="⭐" 
-          label={isRTL ? 'تقييم Google' : 'Google Rating'} 
-          value={stats?.google_rating || '0'} 
-          trend={stats?.rating_trend} 
-          color="var(--primary)" 
-          delay={0.24} 
+          label={isRTL ? 'القنوات النشطة' : 'Active Channels'} 
+          value={channels.length} 
+          sub={isRTL ? 'متصل' : 'Connected'} 
+          delay={0.24}
+          icon={<ChannelsIcon size={20} style={{ color: '#00D68F' }} />}
         />
       </div>
 
       {/* ── Middle row ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-
-        {/* Recent conversations */}
-        <motion.div className="lg:col-span-3 rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        {/* AI Activity Feed */}
+        <motion.div
+          className="lg:col-span-2 rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-              {t.dashboard.recentConversations}
+          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
+        >
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              {isRTL ? 'نشاط الذكاء الاصطناعي' : 'AI Activity Feed'}
             </h2>
-            <Link href="/dashboard/inbox" className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
+            <Link href="/dashboard/inbox" className="text-xs font-bold btn-ghost px-3 py-1.5 rounded-lg">
               {isRTL ? 'عرض الكل ←' : 'View all →'}
             </Link>
           </div>
-          {conversations.length === 0 ? (
-            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-              <div className="text-4xl mb-3">💬</div>
-              <p className="text-sm">{t.inbox.noConversations}</p>
-            </div>
-          ) : (
-            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-              {conversations.map((c, i) => (
-                <Link key={i} href={`/dashboard/inbox?conversation=${c.id}`}
-                  className="flex items-center gap-3 px-5 py-3.5 transition-all"
-                  style={{ borderLeft: '3px solid transparent' }}
-                  onMouseEnter={e => { 
-                    e.currentTarget.style.background = 'rgba(108,99,255,0.05)'
-                    e.currentTarget.style.borderLeftColor = 'var(--primary)'
-                  }}
-                  onMouseLeave={e => { 
-                    e.currentTarget.style.background = 'transparent'
-                    e.currentTarget.style.borderLeftColor = 'transparent'
-                  }}>
-                  <ChannelIcon type={(c.channel_type || 'facebook') as any} size={24} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{c.customer_name || 'Unknown'}</span>
-                      <span className="text-[11px] flex-shrink-0 mr-2" style={{ color: 'var(--text-secondary)' }}>{c.time_ago || ''}</span>
-                    </div>
-                    <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{c.last_message || ''}</p>
-                  </div>
-                  {c.is_active && (
-                    <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--success)' }} />
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
+          
+          <div className="p-4 space-y-2">
+            {activity.length === 0 ? (
+              <div className="text-center py-8">
+                <LightningIcon size={32} style={{ color: 'rgba(136,136,170,0.3)' }} />
+                <p className="text-sm mt-3" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                  {isRTL ? 'لا يوجد نشاط بعد — قم بتوصيل قناة' : 'No activity yet — connect a channel'}
+                </p>
+              </div>
+            ) : (
+              activity.map((item, i) => (
+                <ActivityFeedItem key={i} item={item} index={i} />
+              ))
+            )}
+          </div>
         </motion.div>
 
-        {/* Getting started checklist - only show if no channels */}
-        {channels.length === 0 && (
-          <motion.div className="lg:col-span-2 rounded-2xl p-5"
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.38, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <h2 className="text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-              {t.dashboard.noChannels}
+        {/* Channel Status */}
+        <motion.div
+          className="rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
+        >
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              {isRTL ? 'حالة القنوات' : 'Channel Status'}
             </h2>
-            <p className="text-[11px] mb-4" style={{ color: 'var(--text-secondary)' }}>
-              {isRTL ? 'ابدأ بربط قنواتك الأولى' : 'Start by connecting your first channels'}
-            </p>
-            <Link href="/dashboard/channels"
-              className="block w-full py-3 rounded-xl text-center text-sm font-bold animate-pulse"
-              style={{ background: 'var(--primary)', color: 'var(--text-primary)' }}>
-              {t.dashboard.connectChannel}
+            <Link href="/dashboard/channels" className="btn-ghost p-2 rounded-lg">
+              <PlusIcon size={18} />
             </Link>
-          </motion.div>
-        )}
+          </div>
+          
+          <div className="p-4 space-y-2">
+            {channels.length === 0 ? (
+              <div className="text-center py-8">
+                <ChannelsIcon size={32} style={{ color: 'rgba(136,136,170,0.3)' }} />
+                <p className="text-sm mt-3" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                  {isRTL ? 'لا توجد قنوات متصلة' : 'No connected channels'}
+                </p>
+              </div>
+            ) : (
+              channels.map((channel, i) => (
+                <ChannelStatusCard key={i} channel={channel} index={i} />
+              ))
+            )}
+          </div>
+          
+          {/* AI Status Indicator */}
+          <div className="p-4 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-3 h-3 rounded-full status-live" style={{ background: '#C6FF00' }} />
+                <div className="absolute inset-0 w-3 h-3 rounded-full" style={{ 
+                  background: '#C6FF00',
+                  animation: 'energyPulse 2s ease-out infinite'
+                }} />
+              </div>
+              <div>
+                <div className="text-xs font-semibold" style={{ color: '#F0F0FF' }}>
+                  {isRTL ? 'الذكاء الاصطناعي نشط' : 'AI Active'}
+                </div>
+                <div className="text-[10px]" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                  {isRTL ? 'يعالج الرسائل تلقائياً' : 'Processing messages automatically'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-        {/* Channel status */}
-        <motion.div className="rounded-2xl p-5"
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-              {t.channels.title}
+        
+        {/* Response Time Chart */}
+        <motion.div
+          className="rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
+        >
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              {isRTL ? 'وقت الاستجابة' : 'Response Time'}
             </h2>
-            <Link href="/dashboard/channels" className="text-xs font-bold" style={{ color: 'var(--primary)' }}>
-              {t.channels.connect}
-            </Link>
           </div>
-          {channels.length === 0 ? (
-            <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
-              <div className="text-4xl mb-3">🔗</div>
-              <p className="text-sm">{t.channels.noChannels}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {channels.slice(0, 4).map((ch, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
-                  <ChannelIcon type={(ch.type || 'facebook') as any} size={36} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{ch.name || ch.type}</div>
-                    {ch.connected ? (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--success)' }} />
-                        <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-                          {t.channels.connected}
-                        </span>
-                      </div>
-                    ) : (
-                      <Link href="/dashboard/channels"
-                        className="text-[10px] font-bold mt-0.5 inline-block"
-                        style={{ color: 'var(--primary)' }}>
-                        + {t.channels.connect}
-                      </Link>
-                    )}
-                  </div>
-                </div>
+          
+          <div className="p-4">
+            <div className="h-40 flex items-end gap-2">
+              {[40, 35, 45, 30, 38, 42, 35].map((height, i) => (
+                <motion.div
+                  key={i}
+                  className="flex-1 rounded-t"
+                  initial={{ height: 0 }}
+                  animate={{ height: `${height}%` }}
+                  transition={{ delay: 0.5 + i * 0.05, duration: 0.5 }}
+                  style={{ 
+                    background: `linear-gradient(180deg, #C6FF00, rgba(198,255,0,0.3))`,
+                    minHeight: '20px'
+                  }}
+                />
               ))}
             </div>
-          )}
+            <div className="flex justify-between mt-2 text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                <span key={day}>{day}</span>
+              ))}
+            </div>
+          </div>
         </motion.div>
 
-        {/* Top question */}
-        <motion.div className="rounded-2xl p-5"
-          initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.52, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <h2 className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-            {isRTL ? '🔥 السؤال الأكثر هذا الأسبوع' : '🔥 Top Question This Week'}
-          </h2>
-          <div className="p-4 rounded-xl mb-4"
-            style={{ background: 'rgba(108,99,255,0.04)', border: '1px solid rgba(108,99,255,0.12)' }}>
-            <p className="text-sm font-bold mb-1" style={{ color: 'var(--primary)' }}>
-              {stats?.top_question || isRTL ? '"ما هي ساعات العمل لديكم؟"' : '"What are your working hours?"'}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {stats?.question_count ? `${isRTL ? 'سُئل' : 'Asked'} ${stats.question_count} ${isRTL ? 'مرة' : 'times'} ${isRTL ? 'هذا الأسبوع' : 'this week'}` : isRTL ? 'سُئل 18 مرة هذا الأسبوع' : 'Asked 18 times this week'}
-            </p>
+        {/* Top Senders */}
+        <motion.div
+          className="rounded-2xl overflow-hidden"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
+        >
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              {isRTL ? 'أكثر المرسلين' : 'Top Senders'}
+            </h2>
           </div>
-          <div className="flex items-start gap-2 p-3 rounded-xl"
-            style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.12)' }}>
-            <span style={{ fontSize: 14 }}>💡</span>
-            <p className="text-xs" style={{ color: 'rgba(255,184,0,0.85)' }}>
-              {isRTL
-                ? 'أضف إجابة أوضح لساعات العمل في إعدادات الذكاء الاصطناعي'
-                : 'Add a clearer working hours answer in AI Settings'}
-            </p>
+          
+          <div className="p-4">
+            <div className="space-y-2">
+              {[
+                { rank: 1, name: 'John Doe', channel: 'Gmail', messages: 45 },
+                { rank: 2, name: 'Jane Smith', channel: 'Instagram', messages: 32 },
+                { rank: 3, name: 'Mike Johnson', channel: 'Facebook', messages: 28 },
+                { rank: 4, name: 'Sarah Wilson', channel: 'WhatsApp', messages: 24 },
+              ].map((sender, i) => (
+                <motion.div
+                  key={i}
+                  className="flex items-center gap-3 p-2 rounded-lg"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + i * 0.05, duration: 0.3 }}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.02)',
+                    borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(198,255,0,0.03)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                >
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ 
+                    background: i < 3 ? 'linear-gradient(135deg, #C6FF00, #A8E600)' : 'rgba(136,136,170,0.3)',
+                    color: i < 3 ? '#050508' : '#F0F0FF'
+                  }}>
+                    {sender.rank}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
+                      {sender.name}
+                    </div>
+                    <div className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                      {sender.channel}
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold text-lime">
+                    {sender.messages}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-          <Link href="/dashboard/settings"
-            className="mt-3 block text-center py-2.5 rounded-xl text-xs font-bold transition-all duration-200"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
-            onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)' }}
-            onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}>
-            {isRTL ? 'تحديث إعدادات الذكاء الاصطناعي ←' : 'Update AI Settings →'}
-          </Link>
         </motion.div>
       </div>
     </div>

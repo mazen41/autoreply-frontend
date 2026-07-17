@@ -7,12 +7,15 @@
   --background: #0A0A0F;
   --surface: #111118;
   --border: #1E1E2E;
-  --primary: #6C63FF;
+  --primary: #C6FF00; /* Lime - primary accent */
+  --secondary: #7DF9FF; /* Cyan - secondary accent */
   --text-primary: #F0F0FF;
   --text-secondary: #8888AA;
   --success: #00D68F;
   --warning: #FFB800;
   --danger: #FF4D6D;
+  --bg-primary: #0A0A0F;
+  --accent-primary: #C6FF00;
 }
 
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
@@ -280,33 +283,52 @@ body {
 
 /* ─── Button ─── */
 .btn-lime {
-  background: var(--accent-primary);
-  color: #050505;
-  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  background: linear-gradient(135deg, #C6FF00, #A8E600);
+  color: #050508;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 20px rgba(198,255,0,0.2);
 }
 .btn-lime:hover {
-  background: #d4ff1a;
-  box-shadow: 0 0 40px rgba(198,255,0,0.3);
-  transform: scale(1.02) translateY(-1px);
+  box-shadow: 0 0 30px rgba(198,255,0,0.4);
+  transform: translateY(-1px);
+}
+.btn-lime:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(198,255,0,0.3);
 }
 
 .btn-ghost {
+  background: transparent;
   border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.03);
-  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 .btn-ghost:hover {
+  background: rgba(255,255,255,0.05);
   border-color: rgba(198,255,0,0.3);
-  color: #F5F5F5;
-  background: rgba(198,255,0,0.05);
+  color: #C6FF00;
+}
+.btn-ghost:focus {
+  outline: none;
+  border-color: rgba(198,255,0,0.5);
 }
 
 /* ─── Input focus ─── */
+.input-os {
+  background: rgba(17,17,17,0.8);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
 .input-os:focus {
   outline: none;
   border-color: rgba(198,255,0,0.5) !important;
   box-shadow: 0 0 0 3px rgba(198,255,0,0.1), 0 0 20px rgba(198,255,0,0.06);
+}
+.input-os::placeholder {
+  color: var(--text-secondary);
 }
 
 /* ─── Stagger delays ─── */

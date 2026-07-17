@@ -1,0 +1,1 @@
+'Most recent message: from=' . \$recent- . ', body=' . \$recent- . ', created_at=' . \$recent- . PHP_EOL;
