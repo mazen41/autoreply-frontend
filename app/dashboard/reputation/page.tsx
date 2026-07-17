@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
-import { LightningIcon, InboxIcon, StarIcon } from '../../../components/ui/DashboardIcons'
+import { LightningIcon, InboxIcon, StarIcon, TrendUpIcon } from '../../../components/ui/DashboardIcons'
 
 const OUTCOME_MAP = {
   redirected: { ar: 'وُجِّه لـ Google',    en: 'Sent to Google',  color: '#C6FF00', bg: 'rgba(198,255,0,0.08)', icon: 'check' },
