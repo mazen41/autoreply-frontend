@@ -196,7 +196,7 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
         <motion.div
           initial={{ opacity: 0, scale: 0.4 }}
           animate={visible ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 1.1, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1.1, delay: 0.35, ease: [0.22, 1, 0.36, 1] as any }}
           className="mb-10"
         >
           <AICore phase={phase} size={200} />
@@ -302,7 +302,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                 style={{ left: `${cx}%`, top: `${cy}%`, transform: 'translate(-50%,-50%)' }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={visible ? { scale: 1, opacity: 1 } : {}}
-                transition={{ duration: 0.6, delay: 0.2 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, delay: 0.2 + i * 0.12, ease: [0.22, 1, 0.36, 1] as any }}
               >
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
@@ -369,7 +369,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                   initial={{ opacity: 0, x: 30 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
                   className="flex items-center gap-3 p-3.5 rounded-2xl glass card-os"
                   style={{ background: 'rgba(17,17,17,0.8)', opacity: visible ? 1 : 0 }}
                 >
@@ -498,7 +498,7 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                 style={{ left: `${cap.x}%`, top: `${cap.y}%`, transform: 'translate(-50%,-50%)' }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={isOn ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as any }}
               >
                 <div className="flex flex-col items-center gap-1.5 cursor-default"
                   onMouseEnter={() => setPulse(cap.id)}
@@ -772,7 +772,7 @@ function ScreenImpact({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
                 style={{ background: bar.color, boxShadow: `0 0 8px ${bar.color}60` }}
                 initial={{ width: 0 }}
                 animate={visible ? { width: `${bar.pct}%` } : {}}
-                transition={{ duration: 1.4, delay: 0.6 + i * 0.2, ease: [0.22, 1, 0.36, 1] }} />
+                transition={{ duration: 1.4, delay: 0.6 + i * 0.2, ease: [0.22, 1, 0.36, 1] as any }} />
             </div>
           </div>
         ))}

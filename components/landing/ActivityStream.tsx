@@ -117,7 +117,7 @@ export default function ActivityStream() {
                     key={`${item.name}-${i}`}
                     initial={{ opacity: 0, x: isRTL ? -40 : 40, scale: 0.96 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
                     className="flex items-center gap-4 p-4 rounded-2xl glass card-os"
                     style={{ background: 'rgba(17,17,17,0.8)' }}
                   >

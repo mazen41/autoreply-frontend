@@ -102,7 +102,7 @@ export default function CommandCenter() {
           style={{ width: 220, height: 220 }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={visible ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
         >
           {/* Pulse rings */}
           <div className="absolute inset-0 flex items-center justify-center">
