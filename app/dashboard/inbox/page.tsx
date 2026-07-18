@@ -224,8 +224,7 @@ export default function InboxPage() {
   const ch = selectedConv ? channelMeta(selectedConv.channel?.type) : null
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', background: 'var(--background)', overflow: 'hidden', fontFamily: 'inherit' }} {
-
+    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', background: 'var(--background)', overflow: 'hidden', fontFamily: 'inherit' }}>
       {/* LEFT: conversation list */}
       <div style={{
         width: 300, flexShrink: 0, display: mobilePane === 'chat' ? 'none' : 'flex',
