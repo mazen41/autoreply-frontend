@@ -112,6 +112,35 @@ export default function ReportsPage() {
 
   const maxMsg = channelData.length > 0 ? Math.max(...channelData.map((c: any) => c.messages_count)) : 0
 
+  async function handleExport(format: 'pdf' | 'csv') {
+    const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+    if (!token) return
+
+    const type = 'messages' // Default to messages export
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/reports/export/${format}?type=${type}`
+    
+    try {
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = downloadUrl
+      a.download = `report_${type}_${new Date().toISOString().split('T')[0]}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert(isRTL ? 'فشل التصدير' : 'Export failed')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -301,11 +330,19 @@ export default function ReportsPage() {
 
       {/* Export */}
       <div className="flex gap-3">
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-ghost">
+        <button 
+          onClick={() => handleExport('pdf')}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-ghost"
+          style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
+        >
           <ReportsIcon size={16} />
           {isRTL ? 'تصدير PDF' : 'Export PDF'}
         </button>
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-lime">
+        <button 
+          onClick={() => handleExport('csv')}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-lime"
+          style={{ background: 'rgba(198,255,0,0.1)', border: '1px solid rgba(198,255,0,0.3)', color: '#C6FF00' }}
+        >
           <ReportsIcon size={16} />
           {isRTL ? 'تصدير Excel' : 'Export Excel'}
         </button>

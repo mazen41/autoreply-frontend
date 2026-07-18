@@ -33,7 +33,7 @@ function formatTimestamp(iso: string | null) {
   const diffMin = Math.floor(diffMs / 60000)
   const diffH   = Math.floor(diffMs / 3600000)
   const diffD   = Math.floor(diffMs / 86400000)
-  if (diffMin < 1)  return 'just now'
+  if (diffMin < 1) return 'just now'
   if (diffMin < 60) return `${diffMin}m`
   if (diffH < 24)   return `${diffH}h`
   if (diffD < 7)    return `${diffD}d`
@@ -68,7 +68,7 @@ function ConvSkeleton() {
   )
 }
 
-function ConvRow({ conv, active, onClick }: { conv: ApiConversation; active: boolean; onClick: () => void }) {
+function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation; active: boolean; onClick: () => void; onToggleAi: (id: number) => void }) {
   const ch = channelMeta(conv.channel?.type)
   const preview = conv.latest_message?.content ?? conv.subject ?? '—'
   const isAI = conv.latest_message?.is_ai
@@ -113,6 +113,22 @@ function ConvRow({ conv, active, onClick }: { conv: ApiConversation; active: boo
           </span>
         </div>
       </div>
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggleAi(conv.id) }}
+        style={{
+          padding: '4px 8px',
+          borderRadius: 6,
+          background: conv.ai_enabled ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${conv.ai_enabled ? 'rgba(198,255,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          color: conv.ai_enabled ? '#C6FF00' : 'rgba(255,255,255,0.4)',
+          fontSize: 10,
+          fontWeight: 600,
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        {conv.ai_enabled ? 'AI ON' : 'AI OFF'}
+      </button>
     </motion.button>
   )
 }
@@ -124,9 +140,9 @@ function MsgBubble({ msg }: { msg: ApiMessage }) {
       initial={{ opacity: 0, y: 6, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.16 }}
-      style={{ display: 'flex', justifyContent: isIn ? 'flex-start' : 'flex-end', marginBottom: 8 }}
+      style={{ display: 'flex', justifyContent: isIn ? 'flex-start' : 'flex-end', marginBottom: 8, width: '100%' }}
     >
-      <div style={{ maxWidth: '70%' }}>
+      <div style={{ maxWidth: '70%', alignSelf: isIn ? 'flex-start' : 'flex-end' }}>
         <div style={{
           padding: '12px 16px',
           borderRadius: isIn ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
@@ -166,7 +182,7 @@ export default function InboxPage() {
   const {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
-    fetchConversations, selectConversation, sendReply,
+    fetchConversations, selectConversation, sendReply, toggleAi,
   } = useInbox()
 
   const [filter, setFilter]         = useState('all')
@@ -208,7 +224,7 @@ export default function InboxPage() {
   const ch = selectedConv ? channelMeta(selectedConv.channel?.type) : null
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', background: 'var(--background)', overflow: 'hidden', fontFamily: 'inherit' }}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 64px)', background: 'var(--background)', overflow: 'hidden', fontFamily: 'inherit' }} {
 
       {/* LEFT: conversation list */}
       <div style={{
@@ -216,156 +232,215 @@ export default function InboxPage() {
         flexDirection: 'column', borderRight: '1px solid var(--border)',
         background: 'var(--surface)',
       }} className="md-inbox-list">
-
-        <div style={{ padding: '16px 16px 12px', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t.inbox.title}</span>
-            <button onClick={() => fetchConversations()} title="Refresh" style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↻</button>
-          </div>
-          <div style={{ position: 'relative', marginBottom: 10 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'var(--text-secondary)' }}>⌕</span>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.common.search} style={{ width: '100%', padding: '8px 10px 8px 28px', borderRadius: 10, background: 'var(--background)', border: '1px solid var(--border)', color: 'var(--text-primary)', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+        {/* Header */}
+        <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
+            {t.inbox.title}
+          </h2>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {FILTERS.map(f => (
-              <button key={f.id} onClick={() => setFilter(f.id)} style={{ padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: filter === f.id ? 'rgba(108,99,255,0.12)' : 'rgba(255,255,255,0.03)', border: `1px solid ${filter === f.id ? 'rgba(108,99,255,0.3)' : 'var(--border)'}`, color: filter === f.id ? 'var(--primary)' : 'var(--text-secondary)' }}>
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: filter === f.id ? 'var(--primary)' : 'transparent',
+                  color: filter === f.id ? '#050508' : 'var(--text-secondary)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
                 {f.label}
               </button>
             ))}
           </div>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={isRTL ? 'بحث...' : 'Search...'}
+            style={{
+              marginTop: 12,
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: 8,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
+              fontSize: 13,
+            }}
+          />
         </div>
 
+        {/* List */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {error ? (
-            <div style={{ padding: 24, textAlign: 'center' }}>
-              <p style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 12 }}>{error}</p>
-              <button onClick={() => fetchConversations()} style={{ padding: '6px 14px', borderRadius: 8, fontSize: 11, cursor: 'pointer', background: 'rgba(255,77,109,0.1)', border: '1px solid rgba(255,77,109,0.2)', color: 'var(--danger)' }}>{t.common.retry}</button>
+          {loadingConvs ? (
+            <div style={{ padding: 16 }}>
+              {[1,2,3,4,5].map(i => <ConvSkeleton key={i} />)}
             </div>
-          ) : loadingConvs ? (
-            Array.from({ length: 6 }).map((_, i) => <ConvSkeleton key={i} />)
           ) : filtered.length === 0 ? (
-            <div style={{ padding: 32, textAlign: 'center' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{search ? 'No results' : t.inbox.noConversations}</p>
+            <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-secondary)' }}>
+              {search ? t.inbox.noResults : t.inbox.noConversations}
             </div>
-          ) : filtered.map(conv => (
-            <ConvRow key={conv.id} conv={conv} active={selectedId === conv.id} onClick={() => handleSelect(conv.id)} />
-          ))}
+          ) : (
+            filtered.map(conv => (
+              <ConvRow
+                key={conv.id}
+                conv={conv}
+                active={selectedId === conv.id}
+                onClick={() => handleSelect(conv.id)}
+                onToggleAi={toggleAi}
+              />
+            ))
+          )}
         </div>
-
-        {!loadingConvs && filtered.length > 0 && (
-          <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', fontSize: 10, color: 'var(--text-secondary)', textAlign: 'center' }}>
-            {filtered.length} conversation{filtered.length !== 1 ? 's' : ''}
-          </div>
-        )}
       </div>
 
-      {/* RIGHT: chat */}
-      <div style={{ flex: 1, display: mobilePane === 'list' ? 'none' : 'flex', flexDirection: 'column', overflow: 'hidden', background: 'var(--background)' }} className="md-inbox-chat">
+      {/* RIGHT: chat view */}
+      <div style={{ flex: 1, display: mobilePane === 'list' ? 'none' : 'flex', flexDirection: 'column', background: 'var(--background)' }}>
         {!selectedConv ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12 }}>
-            <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(108,99,255,0.05)', border: '1px solid rgba(108,99,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📥</div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>{t.inbox.selectConversation}</p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{conversations.length} total · pick from the left</p>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+            {t.inbox.selectConversation}
           </div>
         ) : (
           <>
-            {/* Header */}
-            <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button onClick={() => setMobilePane('list')} className="mobile-back-btn" style={{ width: 32, height: 32, borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
-                <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={36} />
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>{senderLabel(selectedConv)}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: 'rgba(108,99,255,0.12)', color: 'var(--primary)', border: '1px solid rgba(108,99,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{selectedConv.channel?.type}</span>
-                    {selectedConv.subject && <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>{selectedConv.subject}</span>}
-                  </div>
+            {/* Chat header */}
+            <div style={{
+              padding: '16px',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              background: 'var(--surface)',
+            }}>
+              <button onClick={() => setMobilePane('list')} className="md:hidden" style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: 20 }}>
+                ←
+              </button>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={40} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                  {senderLabel(selectedConv)}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                  {ch?.label} • {isRTL ? 'يومنا: ' : 'Today'}
                 </div>
               </div>
-              <button style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>{t.common.close}</button>
+              <button
+                onClick={() => toggleAi(selectedConv.id)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: selectedConv.ai_enabled ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${selectedConv.ai_enabled ? 'rgba(198,255,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  color: selectedConv.ai_enabled ? '#C6FF00' : 'rgba(255,255,255,0.4)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                {selectedConv.ai_enabled ? '⚡ AI ON' : 'AI OFF'}
+              </button>
             </div>
 
             {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
               {loadingMsgs ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[false, true, false].map((r, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: r ? 'flex-end' : 'flex-start' }}>
-                      <div style={{ height: 44, borderRadius: 14, background: 'rgba(255,255,255,0.05)', width: '45%' }} />
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}>
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
                 </div>
-              ) : allMessages.length === 0 ? (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
-                  <span style={{ fontSize: 28 }}>💬</span>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{t.inbox.noConversations}</p>
+              ) : grouped.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-secondary)' }}>
+                  {t.inbox.noMessages}
                 </div>
               ) : (
-                <AnimatePresence initial={false}>
-                  {grouped.map(group => (
-                    <div key={group.date} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0' }}>
-                        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                        <span style={{ fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{group.date}</span>
-                        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                      </div>
-                      {group.messages.map(msg => <MsgBubble key={msg.id} msg={msg} />)}
+                grouped.map(group => (
+                  <div key={group.date} style={{ marginBottom: 24 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      {group.date}
                     </div>
-                  ))}
-                </AnimatePresence>
+                    {group.messages.map(msg => (
+                      <MsgBubble key={msg.id} msg={msg} />
+                    ))}
+                  </div>
+                ))
               )}
               <div ref={bottomRef} />
             </div>
 
-            {/* Reply box */}
-            <div style={{ padding: '14px 20px', borderTop: '1px solid var(--border)', background: 'var(--surface)', backdropFilter: 'blur(12px)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', background: 'var(--background)', border: `1px solid ${reply ? 'rgba(108,99,255,0.2)' : 'var(--border)'}`, borderRadius: 14, padding: '10px 14px', transition: 'border-color 0.2s' }}>
-                <textarea
+            {/* Input */}
+            <div style={{ padding: '16px', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="text"
                   value={reply}
                   onChange={e => setReply(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSend() } }}
-                  rows={2}
-                  placeholder={t.inbox.typeMessage}
-                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 13, resize: 'none', lineHeight: 1.5, fontFamily: 'inherit' }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+                  placeholder={isRTL ? 'اكتب رسالتك...' : 'Type your message...'}
+                  disabled={sending}
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    borderRadius: 12,
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-primary)',
+                    fontSize: 14,
+                  }}
                 />
                 <button
                   onClick={handleSend}
-                  disabled={!reply.trim() || sending}
-                  style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: !reply.trim() || sending ? 'rgba(108,99,255,0.15)' : 'var(--primary)', border: 'none', cursor: !reply.trim() || sending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF', fontWeight: 900, opacity: !reply.trim() || sending ? 0.4 : 1, transition: 'all 0.15s' }}
+                  disabled={sending || !reply.trim()}
+                  style={{
+                    padding: '12px 20px',
+                    borderRadius: 12,
+                    background: sending ? 'rgba(108,99,255,0.3)' : 'var(--primary)',
+                    color: sending ? 'rgba(255,255,255,0.5)' : '#050508',
+                    border: 'none',
+                    cursor: sending ? 'not-allowed' : 'pointer',
+                    fontWeight: 600,
+                    fontSize: 14,
+                  }}
                 >
-                  {sending ? <span style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.3)', borderTopColor: '#000', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> : '↑'}
+                  {sending ? '...' : isRTL ? 'إرسال' : 'Send'}
                 </button>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, paddingInline: 2 }}>
-                <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Ctrl+Enter to send</span>
-                <button onClick={() => setToast('AI suggest reply — coming soon ⚡')} style={{ fontSize: 10, color: 'var(--primary)', opacity: 0.6, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>⚡ Suggest reply</button>
               </div>
             </div>
           </>
         )}
       </div>
 
+      {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 18px', fontSize: 12, color: 'var(--text-primary)', zIndex: 100, backdropFilter: 'blur(16px)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)', whiteSpace: 'nowrap' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            style={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              padding: '12px 20px',
+              borderRadius: 12,
+              background: 'rgba(108,99,255,0.15)',
+              border: '1px solid rgba(108,99,255,0.3)',
+              color: 'var(--primary)',
+              fontSize: 14,
+              fontWeight: 600,
+              zIndex: 1000,
+            }}
+          >
             {toast}
           </motion.div>
         )}
       </AnimatePresence>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        ::-webkit-scrollbar { width: 4px }
-        ::-webkit-scrollbar-track { background: 'transparent' }
-        ::-webkit-scrollbar-thumb { background: 'var(--border)'; border-radius: 4px }
-        @media (min-width: 768px) {
-          .md-inbox-list { display: flex !important }
-          .md-inbox-chat { display: flex !important }
-          .mobile-back-btn { display: none !important }
-        }
-      `}</style>
     </div>
   )
 }

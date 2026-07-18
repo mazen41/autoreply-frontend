@@ -6,6 +6,22 @@ import { useLang } from '../../../lib/LangContext'
 interface Settings {
   app_name: string
   app_url: string
+  // Meta
+  meta_app_id: string | null
+  meta_app_secret: string | null
+  // Google
+  google_client_id: string | null
+  google_client_secret: string | null
+  // Gemini
+  gemini_api_key: string | null
+  gemini_model: string | null
+  // Pusher
+  pusher_app_id: string | null
+  pusher_app_key: string | null
+  pusher_secret: string | null
+  pusher_cluster: string | null
+  pusher_host: string | null
+  // Moyasar
   moyasar_publishable_key: string
   moyasar_secret_key: string | null
 }
@@ -19,6 +35,17 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState('')
   const [formData, setFormData] = useState({
     app_name: '',
+    meta_app_id: '',
+    meta_app_secret: '',
+    google_client_id: '',
+    google_client_secret: '',
+    gemini_api_key: '',
+    gemini_model: '',
+    pusher_app_id: '',
+    pusher_app_key: '',
+    pusher_secret: '',
+    pusher_cluster: '',
+    pusher_host: '',
     moyasar_publishable_key: '',
     moyasar_secret_key: '',
   })
@@ -44,6 +71,17 @@ export default function AdminSettingsPage() {
       setSettings(data)
       setFormData({
         app_name: data.app_name || '',
+        meta_app_id: data.meta_app_id || '',
+        meta_app_secret: '',
+        google_client_id: data.google_client_id || '',
+        google_client_secret: '',
+        gemini_api_key: '',
+        gemini_model: data.gemini_model || '',
+        pusher_app_id: data.pusher_app_id || '',
+        pusher_app_key: data.pusher_app_key || '',
+        pusher_secret: '',
+        pusher_cluster: data.pusher_cluster || '',
+        pusher_host: data.pusher_host || '',
         moyasar_publishable_key: data.moyasar_publishable_key || '',
         moyasar_secret_key: '',
       })
@@ -55,8 +93,7 @@ export default function AdminSettingsPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setSaving(true)
     setError('')
     setSuccess('')
@@ -124,7 +161,7 @@ export default function AdminSettingsPage() {
             {isRTL ? 'الإعدادات العامة' : 'General Settings'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
                 {isRTL ? 'اسم التطبيق' : 'App Name'}
@@ -154,7 +191,188 @@ export default function AdminSettingsPage() {
                 }}
               />
             </div>
-          </form>
+          </div>
+        </div>
+
+        {/* Meta Settings */}
+        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+            {isRTL ? 'إعدادات Meta (فيسبوك/إنستغرام)' : 'Meta Settings (Facebook/Instagram)'}
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'معرف التطبيق' : 'App ID'}
+              </label>
+              <input
+                type="text"
+                value={formData.meta_app_id}
+                onChange={(e) => setFormData({ ...formData, meta_app_id: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'مفتاح التطبيق السري' : 'App Secret'}
+              </label>
+              <input
+                type="password"
+                value={formData.meta_app_secret}
+                onChange={(e) => setFormData({ ...formData, meta_app_secret: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Google Settings */}
+        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+            {isRTL ? 'إعدادات Google (Gmail/Reviews)' : 'Google Settings (Gmail/Reviews)'}
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'معرف العميل' : 'Client ID'}
+              </label>
+              <input
+                type="text"
+                value={formData.google_client_id}
+                onChange={(e) => setFormData({ ...formData, google_client_id: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'مفتاح العميل السري' : 'Client Secret'}
+              </label>
+              <input
+                type="password"
+                value={formData.google_client_secret}
+                onChange={(e) => setFormData({ ...formData, google_client_secret: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Gemini Settings */}
+        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+            {isRTL ? 'إعدادات Gemini AI' : 'Gemini AI Settings'}
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'مفتاح API' : 'API Key'}
+              </label>
+              <input
+                type="password"
+                value={formData.gemini_api_key}
+                onChange={(e) => setFormData({ ...formData, gemini_api_key: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'النموذج' : 'Model'}
+              </label>
+              <input
+                type="text"
+                value={formData.gemini_model}
+                onChange={(e) => setFormData({ ...formData, gemini_model: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                placeholder="gemini-2.5-flash"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Pusher Settings */}
+        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+            {isRTL ? 'إعدادات Pusher (Real-time)' : 'Pusher Settings (Real-time)'}
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'معرف التطبيق' : 'App ID'}
+              </label>
+              <input
+                type="text"
+                value={formData.pusher_app_id}
+                onChange={(e) => setFormData({ ...formData, pusher_app_id: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'مفتاح التطبيق' : 'App Key'}
+              </label>
+              <input
+                type="text"
+                value={formData.pusher_app_key}
+                onChange={(e) => setFormData({ ...formData, pusher_app_key: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'المفتاح السري' : 'Secret'}
+              </label>
+              <input
+                type="password"
+                value={formData.pusher_secret}
+                onChange={(e) => setFormData({ ...formData, pusher_secret: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'المجموعة' : 'Cluster'}
+              </label>
+              <input
+                type="text"
+                value={formData.pusher_cluster}
+                onChange={(e) => setFormData({ ...formData, pusher_cluster: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                placeholder="mt1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                {isRTL ? 'المضيف' : 'Host'}
+              </label>
+              <input
+                type="text"
+                value={formData.pusher_host}
+                onChange={(e) => setFormData({ ...formData, pusher_host: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-transparent"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Payment Settings */}
@@ -163,7 +381,7 @@ export default function AdminSettingsPage() {
             {isRTL ? 'إعدادات الدفع' : 'Payment Settings'}
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
                 Moyasar {isRTL ? 'مفتاح النشر' : 'Publishable Key'}
@@ -197,23 +415,35 @@ export default function AdminSettingsPage() {
                 {isRTL ? 'مفتاح سري للخادم' : 'Secret key for server-side'}
               </p>
             </div>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full py-3 rounded-xl font-bold transition-all"
-              style={{
-                background: saving ? 'rgba(0,255,178,0.3)' : 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-                color: '#050508',
-                opacity: saving ? 0.7 : 1,
-              }}
-            >
-              {saving 
-                ? (isRTL ? 'جاري الحفظ...' : 'Saving...') 
-                : (isRTL ? 'حفظ الإعدادات' : 'Save Settings')}
-            </button>
-          </form>
+          </div>
         </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="mt-6">
+        <button
+          onClick={handleSubmit}
+          disabled={saving}
+          className="w-full py-3 rounded-xl font-bold transition-all"
+          style={{
+            background: saving ? 'rgba(0,255,178,0.3)' : 'linear-gradient(135deg, #00FFB2, #BF00FF)',
+            color: '#050508',
+            opacity: saving ? 0.7 : 1,
+          }}
+        >
+          {saving 
+            ? (isRTL ? 'جاري الحفظ...' : 'Saving...') 
+            : (isRTL ? 'حفظ الإعدادات' : 'Save Settings')}
+        </button>
+      </div>
+
+      {/* Config Cache Warning */}
+      <div className="rounded-2xl p-4" style={{ background: 'rgba(255,193,7,0.1)', border: '1px solid rgba(255,193,7,0.3)' }}>
+        <p className="text-sm" style={{ color: '#FFC107' }}>
+          {isRTL 
+            ? '⚠️ يتم مسح ذاكرة التكوين تلقائياً بعد الحفظ لضمان تطبيق التغييرات فوراً.' 
+            : '⚠️ Config cache is automatically cleared after saving to ensure changes take effect immediately.'}
+        </p>
       </div>
 
       {/* Info Cards */}

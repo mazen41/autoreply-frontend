@@ -42,6 +42,7 @@ export interface ApiConversation {
   sender_email: string | null
   subject: string | null
   status: string
+  ai_enabled: boolean
   last_message_at: string | null
   channel: ApiChannel
   latest_message?: ApiMessage | null
@@ -58,6 +59,7 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     sender_email: raw.sender_email ?? null,
     subject: raw.subject ?? null,
     status: raw.status,
+    ai_enabled: raw.ai_enabled ?? true,
     last_message_at: raw.last_message_at,
     channel: raw.channel,
     latest_message: latest,
@@ -136,6 +138,21 @@ export function useInbox() {
     }
   }, [fetchConversations])
 
+  const toggleAi = useCallback(async (convId: number): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/inbox/${convId}/toggle-ai`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      setConversations(prev => prev.map(c => c.id === convId ? { ...c, ai_enabled: data.ai_enabled } : c))
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
   // Gmail: poll silently every 60s, only refresh UI if new messages arrived
   useEffect(() => {
     const pollGmail = async () => {
@@ -207,6 +224,6 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply,
+    fetchConversations, selectConversation, sendReply, toggleAi,
   }
 }

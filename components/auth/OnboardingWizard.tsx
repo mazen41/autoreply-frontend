@@ -416,6 +416,58 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             })}
           </div>
         </div>
+
+        {/* Knowledge file upload */}
+        <div>
+          <label className="block text-sm font-bold mb-2" style={{ color: '#C6FF00' }}>
+            {isRTL ? '📎 رفع ملف معرفة (اختياري)' : '📎 Upload Knowledge File (Optional)'}
+          </label>
+          <p className="text-[11px] mb-2" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            {isRTL ? 'PDF أو Excel - سنستخرج النص لتدريب الذكاء الاصطناعي' : 'PDF or Excel - we\'ll extract text to train the AI'}
+          </p>
+          <div className="border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200"
+            style={{
+              borderColor: 'rgba(255,255,255,0.1)',
+              background: 'rgba(17,17,17,0.4)',
+            }}>
+            <input
+              type="file"
+              accept=".pdf,.xlsx,.xls"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
+                const formData = new FormData()
+                formData.append('file', file)
+                try {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/upload-knowledge`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                  })
+                  if (res.ok) {
+                    alert(isRTL ? 'تم رفع الملف بنجاح' : 'File uploaded successfully')
+                  } else {
+                    alert(isRTL ? 'فشل رفع الملف' : 'Failed to upload file')
+                  }
+                } catch (err) {
+                  alert(isRTL ? 'حدث خطأ أثناء الرفع' : 'Error uploading file')
+                }
+              }}
+              className="hidden"
+              id="knowledge-file-input"
+            />
+            <label htmlFor="knowledge-file-input" className="cursor-pointer">
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+              <div className="text-sm font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                {isRTL ? 'انقر لرفع ملف' : 'Click to upload file'}
+              </div>
+              <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                {isRTL ? 'PDF, XLSX, XLS (حد أقصى 10MB)' : 'PDF, XLSX, XLS (max 10MB)'}
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   )

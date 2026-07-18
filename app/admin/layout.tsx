@@ -76,6 +76,7 @@ export default function AdminLayout({
     { path: '/admin/users', label: isRTL ? 'المستخدمين' : 'Users' },
     { path: '/admin/packages', label: isRTL ? 'الباقات' : 'Packages' },
     { path: '/admin/payments', label: isRTL ? 'المدفوعات' : 'Payments' },
+    { path: '/admin/blog', label: isRTL ? 'المدونة' : 'Blog' },
     { path: '/admin/settings', label: isRTL ? 'الإعدادات' : 'Settings' },
   ]
 
