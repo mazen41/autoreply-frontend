@@ -140,6 +140,7 @@ export const translations = {
     inbox: {
       title: 'الرسائل',
       noConversations: 'لا توجد محادثات',
+      noResults: 'لا توجد نتائج',
       selectConversation: 'اختر محادثة للبدء',
       typeMessage: 'اكتب رسالتك...',
       send: 'إرسال',
@@ -381,6 +382,7 @@ export const translations = {
     inbox: {
       title: 'Inbox',
       noConversations: 'No conversations',
+      noResults: 'No results found',
       selectConversation: 'Select a conversation to start',
       typeMessage: 'Type your message...',
       send: 'Send',
