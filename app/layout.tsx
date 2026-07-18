@@ -20,8 +20,8 @@ const cairo = Cairo({
 })
 
 export const metadata: Metadata = {
-  title: 'Naz — موظفك الذكي الذي لا ينام',
-  description: 'AI-powered auto-reply platform for businesses. Automatically reply to customer messages across all channels.',
+  title: 'Naz — AI Customer Support Automation',
+  description: 'Naz is an AI platform that automatically replies to your customers on WhatsApp, Instagram, and Facebook — 24/7. Handle customer support, lead qualification, and content creation with intelligent automation.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
