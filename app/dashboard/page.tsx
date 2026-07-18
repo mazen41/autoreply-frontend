@@ -97,7 +97,7 @@ function ActivityFeedItem({ item, index }: { item: any; index: number }) {
       transition={{ delay: index * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
       style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
     >
-      <ChannelIcon type={item.channel_type || 'facebook'} size={24} />
+      <ChannelIcon type={item.channel?.type || 'facebook'} size={24} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
@@ -131,10 +131,10 @@ function ChannelStatusCard({ channel, index }: { channel: any; index: number }) 
       <ChannelIcon type={channel.type || 'facebook'} size={24} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
-          {channel.name}
+          {channel.page_name || channel.type}
         </div>
         <div className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
-          {channel.messages_today} {channel.messages_today === 1 ? 'message' : 'messages'}
+          {channel.type || 'Unknown'}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -151,6 +151,7 @@ export default function DashboardHome() {
   const [stats, setStats] = useState<any>(null)
   const [activity, setActivity] = useState<any[]>([])
   const [channels, setChannels] = useState<any[]>([])
+  const [topSenders, setTopSenders] = useState<any[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -176,7 +177,33 @@ export default function DashboardHome() {
         
         if (inboxRes.ok) {
           const inboxData = await inboxRes.json()
-          setActivity(inboxData.data?.slice(0, 5) || [])
+          const allConversations = inboxData.data || []
+          setActivity(allConversations.slice(0, 5) || [])
+          
+          // Calculate top senders from all conversations
+          const senderCounts = new Map<string, { count: number; channel: any; name: string }>()
+          
+          allConversations.forEach((conv: any) => {
+            const senderKey = conv.sender_id
+            const existing = senderCounts.get(senderKey)
+            
+            if (existing) {
+              existing.count++
+            } else {
+              senderCounts.set(senderKey, {
+                count: 1,
+                channel: conv.channel,
+                name: conv.sender_name || conv.sender_id
+              })
+            }
+          })
+          
+          // Convert to array and sort by count
+          const sortedSenders = Array.from(senderCounts.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 4)
+          
+          setTopSenders(sortedSenders)
         }
         
         if (channelsRes.ok) {
@@ -403,44 +430,48 @@ export default function DashboardHome() {
           
           <div className="p-4">
             <div className="space-y-2">
-              {[
-                { rank: 1, name: 'John Doe', channel: 'Gmail', messages: 45 },
-                { rank: 2, name: 'Jane Smith', channel: 'Instagram', messages: 32 },
-                { rank: 3, name: 'Mike Johnson', channel: 'Facebook', messages: 28 },
-                { rank: 4, name: 'Sarah Wilson', channel: 'WhatsApp', messages: 24 },
-              ].map((sender, i) => (
-                <motion.div
-                  key={i}
-                  className="flex items-center gap-3 p-2 rounded-lg"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.05, duration: 0.3 }}
-                  style={{ 
-                    background: 'rgba(255,255,255,0.02)',
-                    borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(198,255,0,0.03)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                >
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ 
-                    background: i < 3 ? 'linear-gradient(135deg, #C6FF00, #A8E600)' : 'rgba(136,136,170,0.3)',
-                    color: i < 3 ? '#050508' : '#F0F0FF'
-                  }}>
-                    {sender.rank}
+              {topSenders.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-sm" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                    {isRTL ? 'لا توجد بيانات بعد' : 'No data yet'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
-                      {sender.name}
+                </div>
+              ) : (
+                topSenders.map((sender, i) => (
+                  <motion.div
+                    key={i}
+                    className="flex items-center gap-3 p-2 rounded-lg"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.05, duration: 0.3 }}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.02)',
+                      borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(198,255,0,0.03)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+                  >
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ 
+                      background: i < 3 ? 'linear-gradient(135deg, #C6FF00, #A8E600)' : 'rgba(136,136,170,0.3)',
+                      color: i < 3 ? '#050508' : '#F0F0FF'
+                    }}>
+                      {i + 1}
                     </div>
-                    <div className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
-                      {sender.channel}
+                    <ChannelIcon type={sender.channel?.type || 'facebook'} size={20} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
+                        {sender.name}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                        {sender.channel?.type || 'Unknown'}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-sm font-bold text-lime">
-                    {sender.messages}
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="text-sm font-bold text-lime">
+                      {sender.count}
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </motion.div>
