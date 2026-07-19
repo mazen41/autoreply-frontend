@@ -85,7 +85,7 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
         }}>
           <div className="flex justify-between items-start mb-8">
             <div className="text-2xl">📱</div>
-            <div className="text-xl font-bold" style={{ color: '#C6FF00' }}>
+            <div className="text-xl font-bold" style={{ color: '#3B82F6' }}>
               {getCardBrandIcon(brand)}
             </div>
           </div>
@@ -332,9 +332,9 @@ function CheckoutContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050508' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C6FF00] mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
           <p style={{ color: '#F0F0FF' }}>Loading...</p>
         </div>
       </div>
@@ -343,10 +343,10 @@ function CheckoutContent() {
 
   if (!pkg) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050508' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <p style={{ color: '#F0F0FF' }}>Package not found</p>
-          <Link href="/pricing" className="mt-4 inline-block" style={{ color: '#C6FF00' }}>
+          <Link href="/pricing" className="mt-4 inline-block" style={{ color: '#3B82F6' }}>
             Back to Pricing
           </Link>
         </div>
@@ -360,9 +360,9 @@ function CheckoutContent() {
   const price = billingCycle === 'yearly' ? pkg.price_yearly : pkg.price_monthly
 
   return (
-    <div className="min-h-screen py-8 px-4" style={{ background: '#050508' }}>
+    <div className="min-h-screen py-8 px-4" style={{ background: 'var(--background)' }}>
       <div className="max-w-6xl mx-auto">
-        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: '#C6FF00' }}>
+        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: '#3B82F6' }}>
           <span>{isRTL ? '→' : '←'}</span>
           <span>{t.common.back}</span>
         </Link>
@@ -392,7 +392,7 @@ function CheckoutContent() {
                 <span style={{ color: 'rgba(240,240,255,0.6)' }}>
                   {billingCycle === 'yearly' ? t.pricing.annual : t.pricing.monthly}
                 </span>
-                <span className="font-bold" style={{ color: '#C6FF00' }}>
+                <span className="font-bold" style={{ color: '#3B82F6' }}>
                   {formatPrice(price)}
                 </span>
               </div>
@@ -401,11 +401,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('monthly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'monthly' ? 'ring-2 ring-[#C6FF00]' : ''
+                    billingCycle === 'monthly' ? 'ring-2 ring-[#3B82F6]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'monthly' ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'monthly' ? '#C6FF00' : 'rgba(240,240,255,0.6)',
+                    background: billingCycle === 'monthly' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: billingCycle === 'monthly' ? '#3B82F6' : 'rgba(240,240,255,0.6)',
                   }}
                 >
                   {t.pricing.monthly}
@@ -413,11 +413,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('yearly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'yearly' ? 'ring-2 ring-[#C6FF00]' : ''
+                    billingCycle === 'yearly' ? 'ring-2 ring-[#3B82F6]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'yearly' ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'yearly' ? '#C6FF00' : 'rgba(240,240,255,0.6)',
+                    background: billingCycle === 'yearly' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: billingCycle === 'yearly' ? '#3B82F6' : 'rgba(240,240,255,0.6)',
                   }}
                 >
                   {t.pricing.annual}
@@ -428,7 +428,7 @@ function CheckoutContent() {
             <ul className="space-y-3 mb-6">
               {features.map((f, i) => (
                 <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
-                  <span style={{ color: '#C6FF00' }}>✓</span>
+                  <span style={{ color: '#3B82F6' }}>✓</span>
                   <span>{f}</span>
                 </li>
               ))}
@@ -438,7 +438,7 @@ function CheckoutContent() {
               <span className="font-bold" style={{ color: '#F0F0FF' }}>
                 {isRTL ? 'الإجمالي' : 'Total'}
               </span>
-              <span className="text-2xl font-black" style={{ color: '#C6FF00' }}>
+              <span className="text-2xl font-black" style={{ color: '#3B82F6' }}>
                 {formatPrice(price)}
               </span>
             </div>
@@ -460,11 +460,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('card')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'card' ? 'ring-2 ring-[#C6FF00]' : ''
+                  paymentMethod === 'card' ? 'ring-2 ring-[#3B82F6]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'card' ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'card' ? '#C6FF00' : '#F0F0FF',
+                  background: paymentMethod === 'card' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
+                  color: paymentMethod === 'card' ? '#3B82F6' : '#F0F0FF',
                 }}
               >
                 {isRTL ? 'بطاقة ائتمان' : 'Credit Card'}
@@ -472,11 +472,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('applepay')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'applepay' ? 'ring-2 ring-[#C6FF00]' : ''
+                  paymentMethod === 'applepay' ? 'ring-2 ring-[#3B82F6]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'applepay' ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'applepay' ? '#C6FF00' : '#F0F0FF',
+                  background: paymentMethod === 'applepay' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
+                  color: paymentMethod === 'applepay' ? '#3B82F6' : '#F0F0FF',
                 }}
               >
                 Apple Pay
@@ -628,14 +628,14 @@ function CheckoutContent() {
                     disabled={processing}
                     className="w-full mt-6 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                     style={{
-                      background: processing ? 'rgba(198,255,0,0.3)' : 'linear-gradient(135deg, #C6FF00, #00D68F)',
-                      color: '#050508',
+                      background: processing ? 'rgba(59,130,246,0.3)' : 'var(--accent)',
+                      color: '#FFFFFF',
                       opacity: processing ? 0.7 : 1,
                     }}
                   >
                     {processing ? (
                       <>
-                        <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-[#050508]"></div>
+                        <span>⏳</span>
                         <span>{isRTL ? 'جاري المعالجة...' : 'Processing...'}</span>
                       </>
                     ) : (
@@ -688,9 +688,9 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050508' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#C6FF00] mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
           <p style={{ color: '#F0F0FF' }}>Loading...</p>
         </div>
       </div>

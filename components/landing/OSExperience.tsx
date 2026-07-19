@@ -27,87 +27,87 @@ const IC = {
       <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
     </svg>
   ),
-  Mail: ({ c = '#7DF9FF', s = 20 }) => (
+  Mail: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="16" rx="2"/>
       <path d="M2 7l10 7 10-7"/>
     </svg>
   ),
-  Globe: ({ c = '#C6FF00', s = 20 }) => (
+  Globe: ({ c = '#3B82F6', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/>
       <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
     </svg>
   ),
-  Zap: ({ c = '#C6FF00', s = 20 }) => (
+  Zap: ({ c = '#3B82F6', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
     </svg>
   ),
-  Star: ({ c = '#FFB800', s = 20 }) => (
+  Star: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
     </svg>
   ),
-  Target: ({ c = '#C6FF00', s = 20 }) => (
+  Target: ({ c = '#3B82F6', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill={c} stroke="none"/>
     </svg>
   ),
-  MessageSquare: ({ c = '#7DF9FF', s = 20 }) => (
+  MessageSquare: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
   ),
-  Users: ({ c = '#C6FF00', s = 20 }) => (
+  Users: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
       <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
     </svg>
   ),
-  PenTool: ({ c = '#7DF9FF', s = 20 }) => (
+  PenTool: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
       <path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>
     </svg>
   ),
-  DollarSign: ({ c = '#C6FF00', s = 20 }) => (
+  DollarSign: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 010 7H6"/>
     </svg>
   ),
-  Inbox: ({ c = '#7DF9FF', s = 20 }) => (
+  Inbox: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/>
       <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
     </svg>
   ),
-  Moon: ({ c = '#7DF9FF', s = 20 }) => (
+  Moon: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
     </svg>
   ),
-  TrendingUp: ({ c = '#C6FF00', s = 20 }) => (
+  TrendingUp: ({ c = '#10B981', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
     </svg>
   ),
-  CheckCircle: ({ c = '#00D68F', s = 20 }) => (
+  CheckCircle: ({ c = '#10B981', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
     </svg>
   ),
-  Clock: ({ c = '#7DF9FF', s = 20 }) => (
+  Clock: ({ c = '#A0A0A0', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
     </svg>
   ),
-  Shield: ({ c = '#C6FF00', s = 14 }) => (
+  Shield: ({ c = '#10B981', s = 14 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
     </svg>
   ),
-  Sparkle: ({ c = '#C6FF00', s = 14 }) => (
+  Sparkle: ({ c = '#3B82F6', s = 14 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
     </svg>

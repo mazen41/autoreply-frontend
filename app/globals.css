@@ -4,18 +4,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #0A0A0F;
-  --surface: #111118;
-  --border: #1E1E2E;
-  --primary: #C6FF00; /* Lime - primary accent */
-  --secondary: #7DF9FF; /* Cyan - secondary accent */
-  --text-primary: #F0F0FF;
-  --text-secondary: #8888AA;
-  --success: #00D68F;
-  --warning: #FFB800;
-  --danger: #FF4D6D;
-  --bg-primary: #0A0A0F;
-  --accent-primary: #C6FF00;
+  --background: #0A0A0A;
+  --surface: #0F0F0F;
+  --border: rgba(255,255,255,0.06);
+  --divider: rgba(255,255,255,0.04);
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-subtle: rgba(59,130,246,0.1);
+  --accent-focus: rgba(59,130,246,0.5);
+  --text-primary: #E8E8E8;
+  --text-secondary: #A0A0A0;
+  --text-tertiary: #6B6B6B;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --bg-primary: #0A0A0A;
+  --accent-primary: #3B82F6;
 }
 
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
@@ -30,8 +34,8 @@ body {
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 99px; }
-* { scrollbar-color: #C6FF00 #050505; scrollbar-width: thin; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+* { scrollbar-color: rgba(255,255,255,0.1) var(--bg-primary); scrollbar-width: thin; }
 
 /* ─── OS Background ─── */
 .os-bg {
@@ -49,8 +53,8 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(198,255,0,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(198,255,0,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
   background-size: 60px 60px;
   animation: gridDrift 20s linear infinite;
 }
@@ -64,14 +68,14 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Energy orbs */
+/* Energy orbs - toned down */
 .orb-lime {
   position: absolute;
   width: 900px;
   height: 900px;
   bottom: -200px;
   left: -200px;
-  background: radial-gradient(circle, rgba(198,255,0,0.14) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 65%);
   border-radius: 50%;
   filter: blur(80px);
   animation: orbFloat 12s ease-in-out infinite alternate;
@@ -83,13 +87,13 @@ body {
   height: 800px;
   top: -150px;
   right: -150px;
-  background: radial-gradient(circle, rgba(125,249,255,0.12) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 65%);
   border-radius: 50%;
   filter: blur(100px);
   animation: orbFloat 15s ease-in-out infinite alternate-reverse;
 }
 
-/* Particles */
+/* Particles - toned down */
 .os-particles {
   position: absolute;
   inset: 0;
@@ -99,7 +103,7 @@ body {
   width: 2px;
   height: 2px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: rgba(255,255,255,0.3);
   opacity: 0;
   animation: particleFade var(--dur, 8s) ease-in-out var(--delay, 0s) infinite;
 }
@@ -127,56 +131,36 @@ body {
   border: 1px solid var(--border);
 }
 
-/* ─── Lime glow card hover ─── */
+/* ─── Clean card hover ─── */
 .card-os {
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
   transition: border-color 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1);
 }
 .card-os:hover {
-  border-color: rgba(198,255,0,0.25);
-  box-shadow: 0 0 60px rgba(198,255,0,0.08);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
   transform: translateY(-2px);
 }
 
-/* ─── Animated border (rotating conic) ─── */
-@property --ang { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-@keyframes rotateAng { to { --ang: 360deg; } }
-.animated-border {
-  border: 2px solid transparent;
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    conic-gradient(from var(--ang), #C6FF00, #7DF9FF, #C6FF00) border-box;
-  animation: rotateAng 3s linear infinite;
-}
+/* ─── Subtle animated border (removed) ─── */
+/* Animated border removed - using clean borders instead */
 
-/* ─── AI Core glow ring ─── */
+/* ─── Subtle core ring (no glow) ─── */
 @keyframes coreRing {
-  0%, 100% { box-shadow: 0 0 40px rgba(198,255,0,0.2), 0 0 80px rgba(198,255,0,0.08), inset 0 0 40px rgba(198,255,0,0.05); }
-  50%       { box-shadow: 0 0 80px rgba(198,255,0,0.35), 0 0 160px rgba(198,255,0,0.12), inset 0 0 80px rgba(198,255,0,0.1); }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%       { transform: scale(1.05); opacity: 1; }
 }
-.core-glow { animation: coreRing 3s ease-in-out infinite; }
+.core-glow { animation: coreRing 4s ease-in-out infinite; }
 
 @keyframes coreRotate {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-.core-rotate { animation: coreRotate 20s linear infinite; }
-.core-rotate-rev { animation: coreRotate 15s linear infinite reverse; }
+.core-rotate { animation: coreRotate 30s linear infinite; }
+.core-rotate-rev { animation: coreRotate 25s linear infinite reverse; }
 
-/* ─── Energy pulse ─── */
-@keyframes energyPulse {
-  0%   { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(2.5); opacity: 0; }
-}
-.energy-pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(198,255,0,0.4);
-  animation: energyPulse 2.5s ease-out infinite;
-}
-.energy-pulse:nth-child(2) { animation-delay: 0.8s; }
-.energy-pulse:nth-child(3) { animation-delay: 1.6s; }
+/* ─── Subtle energy pulse (removed - too distracting) */
+/* Energy pulse removed for cleaner aesthetic */
 
 /* ─── Activity feed ─── */
 @keyframes feedSlideIn {
@@ -185,12 +169,12 @@ body {
 }
 .feed-item { animation: feedSlideIn 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 
-/* ─── Status dot pulse ─── */
+/* ─── Status dot (subtle pulse) ─── */
 @keyframes statusPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(198,255,0,0.6); }
-  50%       { box-shadow: 0 0 0 6px rgba(198,255,0,0); }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
 }
-.status-live { animation: statusPulse 2s ease-in-out infinite; }
+.status-live { animation: statusPulse 3s ease-in-out infinite; }
 
 /* ─── Neural node ─── */
 @keyframes nodeActivate {
@@ -211,7 +195,7 @@ body {
 }
 .path-draw.drawn { animation: drawPath 2s cubic-bezier(0.22,1,0.36,1) forwards; }
 
-/* ─── Signal travel ─── */
+/* ─── Signal travel (subtle) ─── */
 @keyframes signalTravel {
   0%   { offset-distance: 0%; opacity: 1; }
   90%  { opacity: 1; }
@@ -221,9 +205,8 @@ body {
   position: absolute;
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--accent-primary);
-  box-shadow: 0 0 10px var(--accent-primary);
-  animation: signalTravel 2s linear infinite;
+  background: var(--accent);
+  animation: signalTravel 3s linear infinite;
 }
 
 /* ─── Typing dots ─── */
@@ -250,15 +233,15 @@ body {
   transform: translateY(0);
 }
 
-/* ─── Metric card shimmer ─── */
+/* ─── Metric card shimmer (subtle) ─── */
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to   { background-position: 200% 0; }
 }
 .shimmer-line {
-  background: linear-gradient(90deg, transparent, rgba(198,255,0,0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2.5s linear infinite;
+  animation: shimmer 3s linear infinite;
 }
 
 /* ─── Float pill ─── */
@@ -269,50 +252,52 @@ body {
 
 /* ─── Gradient text ─── */
 .text-lime {
-  background: linear-gradient(135deg, #C6FF00, #A8E600);
+  background: var(--accent);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .text-cyan {
-  background: linear-gradient(135deg, #7DF9FF, #00E0FF);
+  background: linear-gradient(135deg, #60A5FA, #3B82F6);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .text-dual {
-  background: linear-gradient(135deg, #C6FF00 0%, #7DF9FF 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
 /* ─── Button ─── */
 .btn-lime {
-  background: linear-gradient(135deg, #C6FF00, #A8E600);
-  color: #050508;
+  background: var(--accent);
+  color: white;
   font-weight: 600;
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 0 20px rgba(198,255,0,0.2);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 .btn-lime:hover {
-  box-shadow: 0 0 30px rgba(198,255,0,0.4);
+  background: var(--accent-hover);
   transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 .btn-lime:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(198,255,0,0.3);
+  box-shadow: 0 0 0 3px var(--accent-focus);
 }
 
 .btn-ghost {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
   color: var(--text-primary);
   font-weight: 500;
   transition: all 0.2s ease;
 }
 .btn-ghost:hover {
   background: rgba(255,255,255,0.05);
-  border-color: rgba(198,255,0,0.3);
-  color: #C6FF00;
+  border-color: rgba(255,255,255,0.1);
+  color: var(--text-primary);
 }
 .btn-ghost:focus {
   outline: none;
-  border-color: rgba(198,255,0,0.5);
+  border-color: var(--accent-focus);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 /* ─── Input focus ─── */
@@ -324,8 +309,8 @@ body {
 }
 .input-os:focus {
   outline: none;
-  border-color: rgba(198,255,0,0.5) !important;
-  box-shadow: 0 0 0 3px rgba(198,255,0,0.1), 0 0 20px rgba(198,255,0,0.06);
+  border-color: var(--accent-focus) !important;
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 .input-os::placeholder {
   color: var(--text-secondary);
@@ -349,8 +334,8 @@ body {
   from { width: 0; }
 }
 
-/* node pulse */
+/* node pulse (subtle) */
 @keyframes nodePulse {
-  0%   { transform: translate(-50%,-50%) scale(0.85); opacity: 0.8; }
-  100% { transform: translate(-50%,-50%) scale(1.5);  opacity: 0; }
+  0%   { transform: translate(-50%,-50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%,-50%) scale(1.2);  opacity: 0; }
 }

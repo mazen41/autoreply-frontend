@@ -204,7 +204,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                  style={{ background: 'linear-gradient(135deg, #C6FF00, #A8E600)', color: '#050508' }}
+                  style={{ background: 'var(--accent)', color: '#FFFFFF' }}
                 >
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </div>
@@ -362,7 +362,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
-                  style={{ background: 'linear-gradient(135deg, #C6FF00, #A8E600)', color: '#050508' }}
+                  style={{ background: 'var(--accent)', color: '#FFFFFF' }}
                 >
                   {user?.name?.[0]?.toUpperCase() || 'U'}
                 </button>

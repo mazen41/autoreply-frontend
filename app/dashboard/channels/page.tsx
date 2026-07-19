@@ -21,7 +21,7 @@ const CHANNELS_DEFS = [
   { id: 'gmail',     name: 'Gmail',          color: '#EA4335', plan: 'free' },
   { id: 'whatsapp',  name: 'WhatsApp',       color: '#25D366', plan: 'free' },
   { id: 'reviews',   name: 'Google Reviews', color: '#FBBC05', plan: 'free' },
-  { id: 'webchat',   name: 'Web Chat',       color: '#7DF9FF', plan: 'starter' },
+  { id: 'webchat',   name: 'Web Chat',       color: '#60A5FA', plan: 'starter' },
 ]
 
 function ConnectModal({
@@ -240,7 +240,7 @@ export default function ChannelsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#C6FF00' }}>
+          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#3B82F6' }}>
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
           </svg>
@@ -271,8 +271,8 @@ export default function ChannelsPage() {
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {ch.connected ? (
                       <>
-                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
-                        <span className="text-[11px] font-semibold" style={{ color: '#C6FF00' }}>
+                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#10B981' }} />
+                        <span className="text-[11px] font-semibold" style={{ color: '#10B981' }}>
                           {t.channels.connected}
                         </span>
                       </>
@@ -292,9 +292,9 @@ export default function ChannelsPage() {
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost"
                       style={{ 
-                        background: ch.aiEnabled ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.04)', 
-                        border: ch.aiEnabled ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,255,255,0.1)', 
-                        color: ch.aiEnabled ? '#C6FF00' : 'rgba(136,136,170,0.8)' 
+                        background: ch.aiEnabled ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.04)', 
+                        border: ch.aiEnabled ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)', 
+                        color: ch.aiEnabled ? '#3B82F6' : 'rgba(136,136,170,0.8)' 
                       }}
                     >
                       <div className="flex items-center justify-center gap-1.5">
@@ -340,9 +340,9 @@ export default function ChannelsPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-bold"
             style={{
-              background: toast.type === 'success' ? 'rgba(198,255,0,0.1)' : 'rgba(255,77,109,0.1)',
-              border: toast.type === 'success' ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,77,109,0.3)',
-              color: toast.type === 'success' ? '#C6FF00' : '#FF4D6D',
+              background: toast.type === 'success' ? 'rgba(59,130,246,0.1)' : 'rgba(255,77,109,0.1)',
+              border: toast.type === 'success' ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,77,109,0.3)',
+              color: toast.type === 'success' ? '#3B82F6' : '#FF4D6D',
             }}
           >
             {toast.message}

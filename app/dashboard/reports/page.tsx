@@ -20,12 +20,12 @@ function MiniLineChart({ data }: { data: number[] }) {
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height: 80 }}>
       <defs>
         <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#C6FF00" stopOpacity="0.15"/>
-          <stop offset="100%" stopColor="#C6FF00" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15"/>
+          <stop offset="100%" stopColor="#3B82F6" stopOpacity="0"/>
         </linearGradient>
       </defs>
       <path d={area} fill="url(#lg)"/>
-      <path d={line} fill="none" stroke="#C6FF00" strokeWidth="2"/>
+      <path d={line} fill="none" stroke="#3B82F6" strokeWidth="2"/>
     </svg>
   )
 }
@@ -144,7 +144,7 @@ export default function ReportsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C6FF00]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
       </div>
     )
   }
@@ -154,7 +154,7 @@ export default function ReportsPage() {
       <div className="p-4 md:p-6 max-w-5xl mx-auto">
         <div className="rounded-2xl p-6 text-center" style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{error}</p>
-          <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: '#C6FF00', color: '#050508' }}>
+          <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: 'var(--accent)', color: '#FFFFFF' }}>
             {isRTL ? 'إعادة المحاولة' : 'Retry'}
           </button>
         </div>
@@ -171,9 +171,9 @@ export default function ReportsPage() {
           <button key={i} onClick={() => setRange(i)}
             className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 btn-ghost"
             style={{
-              background: range === i ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${range === i ? 'rgba(198,255,0,0.3)' : 'rgba(255,255,255,0.06)'}`,
-              color: range === i ? '#C6FF00' : 'rgba(136,136,170,0.8)',
+              background: range === i ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${range === i ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)'}`,
+              color: range === i ? '#3B82F6' : 'rgba(136,136,170,0.8)',
             }}>
             {r}
           </button>
@@ -187,10 +187,10 @@ export default function ReportsPage() {
           className="card-os p-5 rounded-2xl"
           style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            <h3 className="text-2xl font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
               {isRTL ? 'الرسائل اليومية' : 'Daily Messages'}
             </h3>
-            <span className="text-2xl font-black text-lime">{dailyData.reduce((a, b) => a + b, 0)}</span>
+            <span className="text-2xl font-black" style={{ color: '#3B82F6' }}>{dailyData.reduce((a, b) => a + b, 0)}</span>
           </div>
           <MiniLineChart data={dailyData.length > 0 ? dailyData : [0]} />
         </motion.div>
@@ -199,7 +199,7 @@ export default function ReportsPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
           className="card-os p-5 rounded-2xl"
           style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <h3 className="text-sm font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+          <h3 className="text-2xl font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
             {isRTL ? 'توزيع حسب القناة' : 'By Channel'}
           </h3>
           {channelData.length === 0 ? (
@@ -215,7 +215,7 @@ export default function ReportsPage() {
                   facebook: '#1877F2',
                   whatsapp: '#25D366',
                 }
-                const color = colors[c.type] || '#C6FF00'
+                const color = colors[c.type] || '#3B82F6'
                 return (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: `${color}20`, color }}>
@@ -239,16 +239,16 @@ export default function ReportsPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
         className="card-os p-5 rounded-2xl"
         style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h3 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
-          <LightningIcon size={16} style={{ color: '#C6FF00' }} />
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+          <LightningIcon size={16} style={{ color: '#3B82F6' }} />
           {isRTL ? 'أداء الذكاء الاصطناعي' : 'AI Performance'}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {aiPerformance ? [
             { label: isRTL ? 'الرسائل الواردة' : 'Total messages',      value: aiPerformance.total_messages, color: '#F0F0FF' },
-            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: `${aiPerformance.auto_replies} (${aiPerformance.auto_reply_rate}%)`, color: '#C6FF00' },
+            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: `${aiPerformance.auto_replies} (${aiPerformance.auto_reply_rate}%)`, color: '#3B82F6' },
             { label: isRTL ? 'تدخل يدوي' : 'Manual intervention',       value: aiPerformance.manual_interventions, color: '#FFB800' },
-            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: aiPerformance.avg_response_time_formatted, color: '#C6FF00' },
+            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: aiPerformance.avg_response_time_formatted, color: '#3B82F6' },
           ].map((item, i) => (
             <div key={i} className="p-3 rounded-xl"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -267,7 +267,7 @@ export default function ReportsPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
         className="card-os p-5 rounded-2xl"
         style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h3 className="text-sm font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+        <h3 className="text-2xl font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
           {isRTL ? 'أكثر الأسئلة تكراراً' : 'Top Questions'}
         </h3>
         {topQuestions.length === 0 ? (
@@ -282,10 +282,10 @@ export default function ReportsPage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm" style={{ color: '#F0F0FF' }}>{q.question}</span>
-                    <span className="text-xs font-bold text-lime">{q.count}</span>
+                    <span className="text-xs font-bold" style={{ color: '#3B82F6' }}>{q.count}</span>
                   </div>
                   <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <motion.div className="h-full rounded-full" style={{ background: 'linear-gradient(to right, #C6FF00, #7DF9FF)' }}
+                    <motion.div className="h-full rounded-full" style={{ background: 'var(--accent)' }}
                       initial={{ width: 0 }}
                       animate={{ width: topQuestions.length > 0 ? `${(q.count / topQuestions[0].count) * 100}%` : '0%' }}
                       transition={{ delay: 0.4 + i * 0.07, duration: 0.8 }} />
@@ -300,10 +300,8 @@ export default function ReportsPage() {
       {/* Time saved */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
         className="p-6 rounded-2xl relative overflow-hidden card-os"
-        style={{ background: 'rgba(198,255,0,0.04)', border: '1px solid rgba(198,255,0,0.15)' }}>
-        <div className="absolute top-0 left-0 w-64 h-64 rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(198,255,0,0.06) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-        <h3 className="text-sm font-bold mb-4 relative flex items-center gap-2" style={{ color: '#C6FF00', letterSpacing: '-0.02em' }}>
+        style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)' }}>
+        <h3 className="text-2xl font-bold mb-4 relative flex items-center gap-2" style={{ color: '#3B82F6', letterSpacing: '-0.02em' }}>
           <TrendUpIcon size={16} />
           {isRTL ? 'الوقت الذي وفّره البوت' : 'Time Saved by the Bot'}
         </h3>
@@ -317,7 +315,7 @@ export default function ReportsPage() {
             ].map((item, i) => (
               <div key={i}>
                 <div className="text-[11px] mb-1" style={{ color: 'rgba(136,136,170,0.6)' }}>{item.label}</div>
-                <div className="text-xl font-black" style={{ color: item.highlight ? '#C6FF00' : '#F0F0FF' }}>{item.value}</div>
+                <div className="text-xl font-black" style={{ color: item.highlight ? '#3B82F6' : '#F0F0FF' }}>{item.value}</div>
               </div>
             ))}
           </div>
@@ -340,8 +338,8 @@ export default function ReportsPage() {
         </button>
         <button 
           onClick={() => handleExport('csv')}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-lime"
-          style={{ background: 'rgba(198,255,0,0.1)', border: '1px solid rgba(198,255,0,0.3)', color: '#C6FF00' }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold"
+          style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3B82F6' }}
         >
           <ReportsIcon size={16} />
           {isRTL ? 'تصدير Excel' : 'Export Excel'}

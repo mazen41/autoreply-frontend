@@ -119,9 +119,9 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
         style={{
           padding: '4px 8px',
           borderRadius: 6,
-          background: conv.ai_enabled ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)',
-          border: `1px solid ${conv.ai_enabled ? 'rgba(198,255,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
-          color: conv.ai_enabled ? '#C6FF00' : 'rgba(255,255,255,0.4)',
+          background: conv.ai_enabled ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${conv.ai_enabled ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          color: conv.ai_enabled ? '#3B82F6' : 'rgba(255,255,255,0.4)',
           fontSize: 10,
           fontWeight: 600,
           cursor: 'pointer',
@@ -175,11 +175,11 @@ function MsgBubble({ msg, channelType, onReact }: { msg: ApiMessage; channelType
             background: isIn 
               ? 'rgba(17,17,17,0.8)' 
               : msg.is_ai 
-                ? 'linear-gradient(135deg, #C6FF00, #A8E600)' 
-                : 'linear-gradient(135deg, #00D68F, #00B877)',
-            border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(198,255,0,0.3)' : 'rgba(0,214,143,0.3)'}`,
+                ? 'var(--accent)' 
+                : '#00D68F',
+            border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(59,130,246,0.3)' : 'rgba(0,214,143,0.3)'}`,
             fontSize: 14, lineHeight: 1.5,
-            color: isIn ? '#F0F0FF' : '#050508',
+            color: isIn ? '#F0F0FF' : '#FFFFFF',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
             boxShadow: isIn ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
             position: 'relative',
@@ -221,7 +221,7 @@ function MsgBubble({ msg, channelType, onReact }: { msg: ApiMessage; channelType
         )}
         
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingInline: 4, justifyContent: isIn ? 'flex-start' : 'flex-end' }}>
-          {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: '#C6FF00', fontWeight: 600 }}>⚡ AI</span>}
+          {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: '#3B82F6', fontWeight: 600 }}>⚡ AI</span>}
           {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: '#00D68F', fontWeight: 600 }}>↩ manual</span>}
           <span style={{ fontSize: 10, color: 'rgba(136,136,170,0.6)' }}>{formatMsgTime(msg.created_at)}</span>
         </div>
@@ -294,7 +294,7 @@ export default function InboxPage() {
       }} className="md-inbox-list">
         {/* Header */}
         <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
+          <h2 style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12, letterSpacing: '-0.02em' }}>
             {t.inbox.title}
           </h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -396,9 +396,9 @@ export default function InboxPage() {
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
-                  background: selectedConv.ai_enabled ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${selectedConv.ai_enabled ? 'rgba(198,255,0,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                  color: selectedConv.ai_enabled ? '#C6FF00' : 'rgba(255,255,255,0.4)',
+                  background: selectedConv.ai_enabled ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${selectedConv.ai_enabled ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  color: selectedConv.ai_enabled ? '#3B82F6' : 'rgba(255,255,255,0.4)',
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',

@@ -39,7 +39,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const ToolComponent = toolComponent
 
   return (
-    <div className="min-h-screen" style={{ background: '#050505' }}>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

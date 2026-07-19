@@ -57,7 +57,7 @@ function StatCard({
     >
       <div className="shimmer-line absolute inset-0" />
       <div className="flex items-start justify-between mb-4">
-        <div className="p-2 rounded-lg" style={{ background: 'rgba(198,255,0,0.1)' }}>
+        <div className="p-2 rounded-lg" style={{ background: 'rgba(59,130,246,0.1)' }}>
           {icon}
         </div>
         {trend && (
@@ -75,7 +75,7 @@ function StatCard({
         {label}
       </div>
       
-      <div className="text-3xl font-black mb-1 text-lime">
+      <div className="text-3xl font-black mb-1" style={{ color: 'var(--accent)' }}>
         {isNum ? counted : value}
       </div>
       
@@ -103,7 +103,7 @@ function ActivityFeedItem({ item, index }: { item: any; index: number }) {
           <span className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
             {item.sender_name}
           </span>
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00' }}>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}>
             <LightningIcon size={10} />
             AI
           </div>
@@ -138,7 +138,7 @@ function ChannelStatusCard({ channel, index }: { channel: any; index: number }) 
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C6FF00' }} />
+        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#3B82F6' }} />
       </div>
     </motion.div>
   )
@@ -257,14 +257,14 @@ export default function DashboardHome() {
           value={stats?.total_messages || 0} 
           trend={stats?.messages_trend} 
           delay={0}
-          icon={<InboxIcon size={20} style={{ color: '#C6FF00' }} />}
+          icon={<InboxIcon size={20} style={{ color: '#3B82F6' }} />}
         />
         <StatCard 
           label={t.dashboard.aiReplies} 
           value={stats?.ai_replies || 0} 
           sub={`${stats?.response_rate || 0}% ${t.dashboard.responseRate}`} 
           delay={0.08}
-          icon={<LightningIcon size={20} style={{ color: '#7DF9FF' }} />}
+          icon={<LightningIcon size={20} style={{ color: '#60A5FA' }} />}
         />
         <StatCard 
           label={isRTL ? 'ساعات وُفِّرت' : 'Hours Saved'} 
@@ -354,9 +354,9 @@ export default function DashboardHome() {
           <div className="p-4 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-3 h-3 rounded-full status-live" style={{ background: '#C6FF00' }} />
+                <div className="w-3 h-3 rounded-full status-live" style={{ background: '#10B981' }} />
                 <div className="absolute inset-0 w-3 h-3 rounded-full" style={{ 
-                  background: '#C6FF00',
+                  background: '#10B981',
                   animation: 'energyPulse 2s ease-out infinite'
                 }} />
               </div>
@@ -385,7 +385,7 @@ export default function DashboardHome() {
           style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
               {isRTL ? 'وقت الاستجابة' : 'Response Time'}
             </h2>
           </div>
@@ -400,7 +400,7 @@ export default function DashboardHome() {
                   animate={{ height: `${height}%` }}
                   transition={{ delay: 0.5 + i * 0.05, duration: 0.5 }}
                   style={{ 
-                    background: `linear-gradient(180deg, #C6FF00, rgba(198,255,0,0.3))`,
+                    background: 'var(--accent)',
                     minHeight: '20px'
                   }}
                 />
@@ -423,7 +423,7 @@ export default function DashboardHome() {
           style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}
         >
           <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-            <h2 className="text-sm font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
               {isRTL ? 'أكثر المرسلين' : 'Top Senders'}
             </h2>
           </div>
@@ -448,12 +448,12 @@ export default function DashboardHome() {
                       background: 'rgba(255,255,255,0.02)',
                       borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.04)' : 'none'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(198,255,0,0.03)'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--accent-subtle)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                   >
                     <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ 
-                      background: i < 3 ? 'linear-gradient(135deg, #C6FF00, #A8E600)' : 'rgba(136,136,170,0.3)',
-                      color: i < 3 ? '#050508' : '#F0F0FF'
+                      background: i < 3 ? 'var(--accent)' : 'rgba(136,136,170,0.3)',
+                      color: i < 3 ? '#FFFFFF' : '#F0F0FF'
                     }}>
                       {i + 1}
                     </div>
@@ -466,7 +466,7 @@ export default function DashboardHome() {
                         {sender.channel?.type || 'Unknown'}
                       </div>
                     </div>
-                    <div className="text-sm font-bold text-lime">
+                    <div className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
                       {sender.count}
                     </div>
                   </motion.div>

@@ -11,10 +11,10 @@ function Hero() {
   return (
     <section className="relative z-10 px-6 py-16 md:py-24" style={{ background: 'transparent' }}>
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl md:text-6xl font-black mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.04em' }}>
+        <h1 className="text-4xl md:text-6xl font-black mb-4" style={{ color: '#E8E8E8', letterSpacing: '-0.04em' }}>
           Naz
         </h1>
-        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'rgba(240,240,255,0.7)', lineHeight: 1.6 }}>
+        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: '#A0A0A0', lineHeight: 1.6 }}>
           {isRTL 
             ? 'منصة ذكاء اصطناعي ترد تلقائياً على رسائل عملائك على واتساب، إنستغرام، وفيسبوك — على مدار الساعة.'
             : 'An AI platform that automatically replies to your customers on WhatsApp, Instagram, and Facebook — 24/7.'}
@@ -24,8 +24,17 @@ function Hero() {
             href="/pricing"
             className="px-8 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: 'linear-gradient(135deg, #C6FF00, #00D68F)',
-              color: '#050508',
+              background: '#3B82F6',
+              color: 'white',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#2563EB'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#3B82F6'
+              e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
             {isRTL ? 'ابدأ مجاناً' : 'Start Free'}
@@ -35,8 +44,16 @@ function Hero() {
             className="px-8 py-3 rounded-xl font-bold transition-all"
             style={{
               background: 'rgba(255,255,255,0.05)',
-              color: '#F0F0FF',
-              border: '1px solid rgba(255,255,255,0.1)',
+              color: '#E8E8E8',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
             }}
           >
             {isRTL ? 'تسجيل الدخول' : 'Sign In'}

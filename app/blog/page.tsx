@@ -43,16 +43,16 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#050505' }}>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#C6FF00', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(198,255,0,0.7))' }}>✦</span>
+            <span style={{ color: '#3B82F6', fontSize: 20 }}>✦</span>
             <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}>
+            style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -79,9 +79,9 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               href={`/blog?category=${cat.value}`}
               className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{
-                background: category === cat.value ? 'rgba(198,255,0,0.15)' : 'rgba(17,17,17,0.9)',
-                color: category === cat.value ? '#C6FF00' : 'rgba(255,255,255,0.6)',
-                border: category === cat.value ? '1px solid rgba(198,255,0,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                background: category === cat.value ? 'rgba(59,130,246,0.15)' : 'rgba(17,17,17,0.9)',
+                color: category === cat.value ? '#3B82F6' : 'rgba(255,255,255,0.6)',
+                border: category === cat.value ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               {cat.labelAr}
@@ -122,7 +122,7 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
                     {/* Category Badge */}
                     {post.category && (
                       <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-3"
-                        style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}>
+                        style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
                         {post.category}
                       </div>
                     )}

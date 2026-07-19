@@ -6,14 +6,14 @@ import { useLang } from '../../../lib/LangContext'
 import { LightningIcon, InboxIcon, StarIcon, TrendUpIcon } from '../../../components/ui/DashboardIcons'
 
 const OUTCOME_MAP = {
-  redirected: { ar: 'وُجِّه لـ Google',    en: 'Sent to Google',  color: '#C6FF00', bg: 'rgba(198,255,0,0.08)', icon: 'check' },
+  redirected: { ar: 'وُجِّه لـ Google',    en: 'Sent to Google',  color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', icon: 'check' },
   complaint:  { ar: 'شكوى خاصة — تنبيه',  en: 'Private complaint',color: '#FF4D6D', bg: 'rgba(255,77,109,0.08)', icon: 'alert' },
   pending:    { ar: 'لم يرد بعد',          en: 'No response yet', color: 'rgba(255,255,255,0.4)', bg: 'rgba(255,255,255,0.04)', icon: 'clock' },
 }
 
 const STATUS_MAP = {
-  replied: { ar: 'تم الرد', en: 'Replied', color: '#C6FF00', bg: 'rgba(198,255,0,0.08)' },
-  draft:   { ar: 'مسودة جاهزة', en: 'Draft ready', color: '#7DF9FF', bg: 'rgba(125,249,255,0.08)' },
+  replied: { ar: 'تم الرد', en: 'Replied', color: '#3B82F6', bg: 'rgba(59,130,246,0.08)' },
+  draft:   { ar: 'مسودة جاهزة', en: 'Draft ready', color: '#60A5FA', bg: 'rgba(96,165,250,0.08)' },
   pending: { ar: 'لم يُرد بعد', en: 'Needs reply', color: '#FF4D6D', bg: 'rgba(255,77,109,0.08)' },
 }
 
@@ -80,8 +80,8 @@ export default function ReputationPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: <StarIcon size={24} style={{ color: '#FBBC05' }} />, label: isRTL ? 'تقييمك الحالي' : 'Current Rating', value: '4.7', color: '#FBBC05' },
-          { icon: <InboxIcon size={24} style={{ color: '#C6FF00' }} />, label: isRTL ? 'تقييمات الشهر' : 'Reviews this month', value: '+12', color: '#C6FF00' },
-          { icon: <LightningIcon size={24} style={{ color: '#7DF9FF' }} />, label: isRTL ? 'شكاوى حُلّت خاصةً' : 'Private resolutions', value: '8', color: '#7DF9FF' },
+          { icon: <InboxIcon size={24} style={{ color: '#3B82F6' }} />, label: isRTL ? 'تقييمات الشهر' : 'Reviews this month', value: '+12', color: '#3B82F6' },
+          { icon: <LightningIcon size={24} style={{ color: '#60A5FA' }} />, label: isRTL ? 'شكاوى حُلّت خاصةً' : 'Private resolutions', value: '8', color: '#60A5FA' },
           { icon: <TrendUpIcon size={24} style={{ color: '#FF9500' }} />, label: isRTL ? 'وُجِّهوا لـ Google' : 'Sent to Google', value: '23', color: '#FF9500' },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -99,14 +99,14 @@ export default function ReputationPage() {
       <div className="card-os rounded-2xl overflow-hidden"
         style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-          <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
-            <StarIcon size={16} style={{ color: '#C6FF00' }} />
+          <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            <StarIcon size={16} style={{ color: '#3B82F6' }} />
             {isRTL ? 'تقييمات Google' : 'Google Reviews'}
           </h2>
         </div>
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C6FF00]"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
           </div>
         ) : reviews.length === 0 ? (
           <div className="p-8 text-center">
@@ -146,11 +146,11 @@ export default function ReputationPage() {
                     <div className="flex gap-2 mr-12">
                       <button onClick={() => setExpandedReview(expanded ? null : r.id)}
                         className="px-3 py-1.5 rounded-xl text-xs font-bold btn-ghost"
-                        style={{ color: '#7DF9FF' }}>
+                        style={{ color: '#60A5FA' }}>
                         {isRTL ? 'عرض الرد المقترح' : 'View AI Reply'}
                       </button>
                       {expanded && r.reply && (
-                        <button className="px-3 py-1.5 rounded-xl text-xs font-bold btn-lime">
+                        <button className="px-3 py-1.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3B82F6' }}>
                           {isRTL ? 'نشر الرد' : 'Publish Reply'}
                         </button>
                       )}
@@ -159,10 +159,10 @@ export default function ReputationPage() {
                   {expanded && r.reply && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                       className="mt-3 mr-12 p-3 rounded-xl"
-                      style={{ background: 'rgba(198,255,0,0.04)', border: '1px solid rgba(198,255,0,0.12)' }}>
+                      style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.12)' }}>
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <LightningIcon size={12} style={{ color: '#C6FF00' }} />
-                        <span className="text-[11px] font-bold" style={{ color: '#C6FF00' }}>
+                        <LightningIcon size={12} style={{ color: '#3B82F6' }} />
+                        <span className="text-[11px] font-bold" style={{ color: '#3B82F6' }}>
                           {isRTL ? 'رد مقترح من الذكاء الاصطناعي' : 'AI-suggested reply'}
                         </span>
                       </div>
@@ -181,8 +181,8 @@ export default function ReputationPage() {
         style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
           <div>
-            <h2 className="text-sm font-bold flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
-              <InboxIcon size={16} style={{ color: '#C6FF00' }} />
+            <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              <InboxIcon size={16} style={{ color: '#3B82F6' }} />
               {isRTL ? 'حملة المتابعة التلقائية' : 'Auto Follow-up Campaign'}
             </h2>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(136,136,170,0.6)' }}>
@@ -191,9 +191,9 @@ export default function ReputationPage() {
           </div>
           <button onClick={() => setFollowupOn(o => !o)}
             className="relative w-12 h-6 rounded-full transition-all duration-200"
-            style={{ background: followupOn ? '#C6FF00' : 'rgba(255,255,255,0.1)' }}>
+            style={{ background: followupOn ? '#3B82F6' : 'rgba(255,255,255,0.1)' }}>
             <div className="absolute top-1 transition-all duration-200 w-4 h-4 rounded-full"
-              style={{ background: followupOn ? '#050505' : 'rgba(255,255,255,0.4)', left: followupOn ? 'auto' : 4, right: followupOn ? 4 : 'auto' }} />
+              style={{ background: followupOn ? '#FFFFFF' : 'rgba(255,255,255,0.4)', left: followupOn ? 'auto' : 4, right: followupOn ? 4 : 'auto' }} />
           </button>
         </div>
         <div className="p-5">

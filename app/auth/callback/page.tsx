@@ -79,7 +79,7 @@ function CallbackHandler() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050505' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <p className="text-lg font-semibold mb-4" style={{ color: '#ff4d6d' }}>{error}</p>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Redirecting to login…</p>
@@ -89,7 +89,7 @@ function CallbackHandler() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#050505' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
       <div className="text-center">
         <svg className="animate-spin w-12 h-12 mx-auto mb-4" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke="rgba(108,99,255,0.3)" strokeWidth="3"/>
@@ -106,7 +106,7 @@ function CallbackHandler() {
 export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050505' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <svg className="animate-spin w-12 h-12" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke="rgba(108,99,255,0.3)" strokeWidth="3"/>
           <path d="M12 2a10 10 0 0 1 10 10" stroke="#6c63ff" strokeWidth="3" strokeLinecap="round"/>

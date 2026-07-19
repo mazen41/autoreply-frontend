@@ -61,10 +61,10 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   
   if (!post) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#050505' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <h1 className="font-black text-2xl mb-4" style={{ color: '#F5F5F5' }}>المقال غير موجود</h1>
-          <Link href="/blog" className="text-sm" style={{ color: '#C6FF00' }}>العودة للمدونة</Link>
+          <Link href="/blog" className="text-sm" style={{ color: '#3B82F6' }}>العودة للمدونة</Link>
         </div>
       </div>
     )
@@ -83,16 +83,16 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#050505' }}>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#C6FF00', fontSize: 20, filter: 'drop-shadow(0 0 8px rgba(198,255,0,0.7))' }}>✦</span>
+            <span style={{ color: '#3B82F6', fontSize: 20 }}>✦</span>
             <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}>
+            style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -122,7 +122,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
             {post.category && (
               <div className="inline-block px-4 py-2 rounded-lg text-sm font-bold mb-4"
-                style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}>
+                style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
                 {post.category}
               </div>
             )}
@@ -152,7 +152,7 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                   <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                     <div className="p-4 rounded-xl transition-all hover:scale-105"
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div className="font-bold mb-1" style={{ color: '#C6FF00' }}>{tool.nameAr}</div>
+                      <div className="font-bold mb-1" style={{ color: '#3B82F6' }}>{tool.nameAr}</div>
                       <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
                     </div>
                   </Link>
@@ -161,15 +161,15 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             </div>
 
             {/* Upsell Banner */}
-            <div className="p-6 rounded-2xl text-center" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
-              <h3 className="font-bold mb-3" style={{ color: '#C6FF00' }}>
+            <div className="p-6 rounded-2xl text-center" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}>
+              <h3 className="font-bold mb-3" style={{ color: '#3B82F6' }}>
                 اكتشف كيف يمكن لـ Naz Autoreply أن يضاعف مبيعاتك
               </h3>
               <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>
                 دع الذكاء الاصطناعي يرد على عملائك تلقائياً على جميع المنصات
               </p>
               <Link href="/register" className="inline-block px-6 py-3 rounded-lg font-bold text-sm"
-                style={{ background: '#C6FF00', color: '#050505' }}>
+                style={{ background: 'var(--accent)', color: '#FFFFFF' }}>
                 جرّب مجاناً
               </Link>
             </div>
@@ -185,13 +185,13 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
                     <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                       <div className="p-3 rounded-xl transition-all hover:scale-105"
                         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div className="font-bold text-sm mb-1" style={{ color: '#C6FF00' }}>{tool.nameAr}</div>
+                        <div className="font-bold text-sm mb-1" style={{ color: '#3B82F6' }}>{tool.nameAr}</div>
                         <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
                       </div>
                     </Link>
                   ))}
                 </div>
-                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: '#C6FF00' }}>
+                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: '#3B82F6' }}>
                   عرض جميع الأدوات →
                 </Link>
               </div>
