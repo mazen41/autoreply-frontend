@@ -6,6 +6,7 @@ import { useInbox, ApiConversation, ApiMessage } from '../../../hooks/useInbox'
 import { useLang } from '../../../lib/LangContext'
 import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
+import ReactionPicker from '../../../components/inbox/ReactionPicker'
 
 function channelMeta(type: string) {
   if (type === 'facebook')  return { label: 'FB',  color: '#1877F2', glow: 'rgba(24,119,242,0.35)' }
@@ -133,8 +134,31 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
   )
 }
 
-function MsgBubble({ msg }: { msg: ApiMessage }) {
+function MsgBubble({ msg, channelType, onReact }: { msg: ApiMessage; channelType?: string; onReact?: (messageId: number, emoji: string) => void }) {
   const isIn = msg.direction === 'inbound'
+  const [showPicker, setShowPicker] = useState(false)
+  const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 })
+  const bubbleRef = useRef<HTMLDivElement>(null)
+
+  const isWhatsApp = channelType === 'whatsapp'
+  const canReact = isWhatsApp && !isIn // Only react to inbound WhatsApp messages
+
+  const handleLongPress = () => {
+    if (!canReact || !bubbleRef.current) return
+    const rect = bubbleRef.current.getBoundingClientRect()
+    setPickerPosition({ x: rect.left, y: rect.top - 60 })
+    setShowPicker(true)
+  }
+
+  const handleReact = (emoji: string) => {
+    if (onReact) {
+      onReact(msg.id, emoji)
+    }
+  }
+
+  const reactions = msg.reactions || []
+  const uniqueReactions = reactions.filter((r, i, a) => a.findIndex(b => b.emoji === r.emoji) === i)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 6, scale: 0.98 }}
@@ -143,22 +167,59 @@ function MsgBubble({ msg }: { msg: ApiMessage }) {
       style={{ display: 'flex', justifyContent: isIn ? 'flex-start' : 'flex-end', marginBottom: 8, width: '100%' }}
     >
       <div style={{ maxWidth: '70%', alignSelf: isIn ? 'flex-start' : 'flex-end' }}>
-        <div style={{
-          padding: '12px 16px',
-          borderRadius: isIn ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
-          background: isIn 
-            ? 'rgba(17,17,17,0.8)' 
-            : msg.is_ai 
-              ? 'linear-gradient(135deg, #C6FF00, #A8E600)' 
-              : 'linear-gradient(135deg, #00D68F, #00B877)',
-          border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(198,255,0,0.3)' : 'rgba(0,214,143,0.3)'}`,
-          fontSize: 14, lineHeight: 1.5,
-          color: isIn ? '#F0F0FF' : '#050508',
-          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-          boxShadow: isIn ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
-        }}>
+        <div
+          ref={bubbleRef}
+          style={{
+            padding: '12px 16px',
+            borderRadius: isIn ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
+            background: isIn 
+              ? 'rgba(17,17,17,0.8)' 
+              : msg.is_ai 
+                ? 'linear-gradient(135deg, #C6FF00, #A8E600)' 
+                : 'linear-gradient(135deg, #00D68F, #00B877)',
+            border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(198,255,0,0.3)' : 'rgba(0,214,143,0.3)'}`,
+            fontSize: 14, lineHeight: 1.5,
+            color: isIn ? '#F0F0FF' : '#050508',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            boxShadow: isIn ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
+            position: 'relative',
+            cursor: canReact ? 'pointer' : 'default',
+          }}
+          onMouseEnter={() => canReact && setShowPicker(true)}
+          onMouseLeave={() => setShowPicker(false)}
+          onContextMenu={(e) => { e.preventDefault(); handleLongPress() }}
+        >
           {msg.content}
+          
+          {uniqueReactions.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              right: isIn ? 'auto' : '-8px',
+              left: isIn ? '-8px' : 'auto',
+              background: 'rgba(17,17,17,0.9)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              padding: '2px 6px',
+              display: 'flex',
+              gap: '4px',
+              fontSize: '12px',
+            }}>
+              {uniqueReactions.map((r, i) => (
+                <span key={i}>{r.emoji}</span>
+              ))}
+            </div>
+          )}
         </div>
+        
+        {showPicker && canReact && (
+          <ReactionPicker
+            onSelect={handleReact}
+            onClose={() => setShowPicker(false)}
+            position={pickerPosition}
+          />
+        )}
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingInline: 4, justifyContent: isIn ? 'flex-start' : 'flex-end' }}>
           {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: '#C6FF00', fontWeight: 600 }}>⚡ AI</span>}
           {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: '#00D68F', fontWeight: 600 }}>↩ manual</span>}
@@ -182,7 +243,7 @@ export default function InboxPage() {
   const {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
-    fetchConversations, selectConversation, sendReply, toggleAi,
+    fetchConversations, selectConversation, sendReply, toggleAi, reactToMessage,
   } = useInbox()
 
   const [filter, setFilter]         = useState('all')
@@ -365,7 +426,12 @@ export default function InboxPage() {
                       {group.date}
                     </div>
                     {group.messages.map(msg => (
-                      <MsgBubble key={msg.id} msg={msg} />
+                      <MsgBubble 
+                        key={msg.id} 
+                        msg={msg} 
+                        channelType={selectedConv?.channel?.type}
+                        onReact={reactToMessage}
+                      />
                     ))}
                   </div>
                 ))

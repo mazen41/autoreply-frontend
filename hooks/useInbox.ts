@@ -27,6 +27,11 @@ export interface ApiMessage {
   is_ai: boolean
   status: string
   created_at: string
+  reactions?: Array<{
+    emoji: string
+    user_id: number
+    created_at: string
+  }>
 }
 
 export interface ApiChannel {
@@ -153,6 +158,22 @@ export function useInbox() {
     }
   }, [])
 
+  const reactToMessage = useCallback(async (messageId: number, emoji: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/messages/${messageId}/react`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ emoji }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions: data.reactions } : m))
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
   // Gmail: poll silently every 60s, only refresh UI if new messages arrived
   useEffect(() => {
     const pollGmail = async () => {
@@ -224,6 +245,6 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, toggleAi,
+    fetchConversations, selectConversation, sendReply, toggleAi, reactToMessage,
   }
 }
