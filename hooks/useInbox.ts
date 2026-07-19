@@ -19,6 +19,13 @@ function authHeaders() {
   }
 }
 
+function bearerHeaders() {
+  return {
+    'Authorization': `Bearer ${getToken()}`,
+    'Accept': 'application/json',
+  }
+}
+
 export interface ApiMessage {
   id: number
   conversation_id: number
@@ -27,9 +34,17 @@ export interface ApiMessage {
   is_ai: boolean
   status: string
   created_at: string
+  media_url?: string | null
+  media_type?: 'image' | 'audio' | 'video' | 'document' | null
+  mime_type?: string | null
+  file_name?: string | null
+  file_size?: number | null
+  duration?: number | null
+  whatsapp_message_id?: string | null
   reactions?: Array<{
     emoji: string
-    user_id: number
+    user_id?: number
+    actor?: 'business' | 'contact'
     created_at: string
   }>
 }
@@ -143,6 +158,35 @@ export function useInbox() {
     }
   }, [fetchConversations])
 
+  const sendMediaReply = useCallback(async (convId: number, file: File, caption = '', mediaType?: string, voiceNote = false): Promise<ApiMessage | null> => {
+    setSending(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      form.append('caption', caption)
+      if (mediaType) form.append('media_type', mediaType)
+      if (voiceNote) form.append('voice_note', '1')
+
+      const res = await fetch(`${API}/inbox/${convId}/media`, {
+        method: 'POST',
+        headers: bearerHeaders(),
+        body: form,
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      if (data.message) {
+        setMessages(prev => [...prev, data.message as ApiMessage])
+        fetchConversations(true)
+        return data.message as ApiMessage
+      }
+      return null
+    } catch {
+      return null
+    } finally {
+      setSending(false)
+    }
+  }, [fetchConversations])
+
   const toggleAi = useCallback(async (convId: number): Promise<boolean> => {
     try {
       const res = await fetch(`${API}/inbox/${convId}/toggle-ai`, {
@@ -223,7 +267,10 @@ export function useInbox() {
           })
 
           if (selectedIdRef.current === payload.message.conversation_id) {
-            setMessages(prev => prev.some(m => m.id === payload.message.id) ? prev : [...prev, payload.message])
+            setMessages(prev => prev.some(m => m.id === payload.message.id)
+              ? prev.map(m => m.id === payload.message.id ? { ...m, ...payload.message } : m)
+              : [...prev, payload.message]
+            )
           }
         })
       } catch {
@@ -245,6 +292,6 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, toggleAi, reactToMessage,
+    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, reactToMessage,
   }
 }

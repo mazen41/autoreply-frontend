@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SmilePlus } from 'lucide-react'
 
-const COMMON_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥', '🎉', '👏', '🙏', '💯']
+const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+const MORE_EMOJIS = ['🔥', '🎉', '👏', '💯', '✅', '⭐', '😍', '🤔', '😎', '🙌', '💪', '👌']
 
 interface ReactionPickerProps {
   onSelect: (emoji: string) => void
@@ -12,15 +14,18 @@ interface ReactionPickerProps {
 }
 
 export default function ReactionPicker({ onSelect, onClose, position }: ReactionPickerProps) {
+  const [expanded, setExpanded] = useState(false)
+  const emojis = expanded ? [...QUICK_EMOJIS, ...MORE_EMOJIS] : QUICK_EMOJIS
+
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.15 }}
+        initial={{ opacity: 0, y: 6, scale: 0.94 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 6, scale: 0.94 }}
+        transition={{ duration: 0.14 }}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           left: position.x,
           top: position.y,
           zIndex: 1000,
@@ -28,18 +33,21 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
       >
         <div
           style={{
-            background: 'rgba(17, 17, 17, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            padding: '8px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '4px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            background: 'rgba(18, 22, 24, 0.98)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            borderRadius: 999,
+            padding: 6,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.35)',
+            backdropFilter: 'blur(12px)',
+            maxWidth: 'calc(100vw - 24px)',
+            flexWrap: expanded ? 'wrap' : 'nowrap',
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {COMMON_EMOJIS.map((emoji) => (
+          {emojis.map((emoji) => (
             <button
               key={emoji}
               onClick={() => {
@@ -47,9 +55,10 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
                 onClose()
               }}
               style={{
-                fontSize: '20px',
-                padding: '6px',
-                borderRadius: '8px',
+                fontSize: 20,
+                width: 34,
+                height: 34,
+                borderRadius: 999,
                 background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
@@ -59,7 +68,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
                 justifyContent: 'center',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.2)'
+                e.currentTarget.style.transform = 'scale(1.18)'
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
               }}
               onMouseLeave={(e) => {
@@ -70,6 +79,25 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
               {emoji}
             </button>
           ))}
+          <button
+            onClick={() => setExpanded(v => !v)}
+            title={expanded ? 'Quick reactions' : 'More reactions'}
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 999,
+              background: expanded ? 'rgba(37,211,102,0.16)' : 'rgba(255,255,255,0.06)',
+              border: 'none',
+              color: 'rgba(255,255,255,0.82)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <SmilePlus size={17} />
+          </button>
         </div>
       </motion.div>
     </AnimatePresence>
