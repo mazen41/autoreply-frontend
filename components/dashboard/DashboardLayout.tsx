@@ -98,9 +98,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
         style={{
           background: active ? 'rgba(198,255,0,0.08)' : 'transparent',
-          borderLeft: active ? '2px solid #C6FF00' : '2px solid transparent',
-          borderRight: isRTL ? (active ? '2px solid #C6FF00' : '2px solid transparent') : '2px solid transparent',
-          color: active ? '#C6FF00' : 'rgba(136,136,170,0.8)',
+          borderLeft: active ? '2px solid #3B82F6' : '2px solid transparent',
+          borderRight: isRTL ? (active ? '2px solid #3B82F6' : '2px solid transparent') : '2px solid transparent',
+          color: active ? '#3B82F6' : 'rgba(136,136,170,0.8)',
         }}
         onMouseEnter={(e) => {
           if (!active) {
