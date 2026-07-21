@@ -113,7 +113,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       </div>
 
       {error && (
-        <p className="text-xs text-center -mt-2 mb-2" style={{ color: 'var(--danger, #ff4d6d)' }}>
+        <p className="text-xs text-center -mt-2 mb-2" style={{ color: 'var(--error)' }}>
           {error}
         </p>
       )}
