@@ -57,7 +57,7 @@ export default function ReputationPage() {
         return
       }
 
-      // For now, this is a placeholder - would need actual API endpoints
+      // TODO: Implement backend endpoint for reviews
       // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`, {
       //   headers: { Authorization: `Bearer ${token}` }
       // })
@@ -79,10 +79,10 @@ export default function ReputationPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: <StarIcon size={24} style={{ color: '#FBBC05' }} />, label: isRTL ? 'تقييمك الحالي' : 'Current Rating', value: '4.7', color: '#FBBC05' },
-          { icon: <InboxIcon size={24} style={{ color: '#3B82F6' }} />, label: isRTL ? 'تقييمات الشهر' : 'Reviews this month', value: '+12', color: '#3B82F6' },
-          { icon: <LightningIcon size={24} style={{ color: '#60A5FA' }} />, label: isRTL ? 'شكاوى حُلّت خاصةً' : 'Private resolutions', value: '8', color: '#60A5FA' },
-          { icon: <TrendUpIcon size={24} style={{ color: '#FF9500' }} />, label: isRTL ? 'وُجِّهوا لـ Google' : 'Sent to Google', value: '23', color: '#FF9500' },
+          { icon: <StarIcon size={24} style={{ color: '#FBBC05' }} />, label: isRTL ? 'تقييمك الحالي' : 'Current Rating', value: '—', color: '#FBBC05' },
+          { icon: <InboxIcon size={24} style={{ color: '#3B82F6' }} />, label: isRTL ? 'تقييمات الشهر' : 'Reviews this month', value: '0', color: '#3B82F6' },
+          { icon: <LightningIcon size={24} style={{ color: '#60A5FA' }} />, label: isRTL ? 'شكاوى حُلّت خاصةً' : 'Private resolutions', value: '0', color: '#60A5FA' },
+          { icon: <TrendUpIcon size={24} style={{ color: '#FF9500' }} />, label: isRTL ? 'وُجِّهوا لـ Google' : 'Sent to Google', value: '0', color: '#FF9500' },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}

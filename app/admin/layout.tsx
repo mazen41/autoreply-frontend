@@ -25,7 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [dark, setDark] = useState(() => typeof window === 'undefined' ? true : (window.localStorage.getItem('naz-admin-theme') || 'dark') === 'dark')
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const match = document.cookie.match(/(?:^|;\s*)naz_admin_theme=([^;]*)/)
+    if (!match) return true
+    return decodeURIComponent(match[1]) === 'dark'
+  })
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
@@ -60,7 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const toggleTheme = () => {
     const next = !dark
     setDark(next)
-    window.localStorage.setItem('naz-admin-theme', next ? 'dark' : 'light')
+    document.cookie = `naz_admin_theme=${next ? 'dark' : 'light'}; path=/; max-age=31536000; SameSite=Lax`
     document.documentElement.classList.toggle('dark', next)
   }
 

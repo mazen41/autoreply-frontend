@@ -48,9 +48,9 @@ export default function AdminDashboard() {
   const fetchDashboard = async () => {
     try {
       const auth = token()
-      if (!auth) throw new Error(isRTL ? '???? ????? ?????? ???? ???? ???????' : 'Please login to view admin dashboard')
+      if (!auth) throw new Error(isRTL ? 'الرجاء تسجيل الدخول لعرض لوحة التحكم' : 'Please login to view admin dashboard')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/dashboard`, { headers: { Authorization: `Bearer ${auth}` } })
-      if (!response.ok) throw new Error(isRTL ? '???? ????? ?????? ???? ???????' : 'Failed to load dashboard data')
+      if (!response.ok) throw new Error(isRTL ? 'فشل في تحميل بيانات لوحة التحكم' : 'Failed to load dashboard data')
       setData(await response.json())
     } catch (error: any) {
       setError(error.message || 'Failed to load dashboard')
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
     return { aiRate, activeRate }
   }, [data])
 
-  if (loading) return <AdminShell><PageHeader title={isRTL ? '???? ???????' : 'Admin Overview'} description={isRTL ? '???? ????? ?????? ??????.' : 'Loading platform intelligence.'} /><SkeletonRows rows={8} /></AdminShell>
+  if (loading) return <AdminShell><PageHeader title={isRTL ? 'نظرة عامة على المشرف' : 'Admin Overview'} description={isRTL ? 'جاري تحميل ذكاء المنصة.' : 'Loading platform intelligence.'} /><SkeletonRows rows={8} /></AdminShell>
   if (error) return <AdminShell><Panel className="border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200">{error}</Panel></AdminShell>
 
   const stats = data!.stats
@@ -80,30 +80,30 @@ export default function AdminDashboard() {
   return (
     <AdminShell>
       <PageHeader
-        eyebrow={isRTL ? '???? ?????? Naz' : 'Naz Operations'}
-        title={isRTL ? '???? ????? ???? ???????' : 'Enterprise Admin Overview'}
-        description={isRTL ? '???? ?????????? ?????????? ?????????? ???? ?????? ????????? ?? ???? ????? ????? ??????? ???????.' : 'Monitor revenue, usage, conversations, and AI health from one operational command surface.'}
-        actions={<><Button variant="ghost" onClick={fetchDashboard}><Activity size={16} />{isRTL ? '?????' : 'Refresh'}</Button><Button><Sparkles size={16} />{isRTL ? '????? ????' : 'Quick report'}</Button></>}
+        eyebrow={isRTL ? 'عمليات Naz' : 'Naz Operations'}
+        title={isRTL ? 'نظرة عامة إدارية للمؤسسة' : 'Enterprise Admin Overview'}
+        description={isRTL ? 'راقب الإيرادات، الاستخدام، المحادثات، وصحة الذكاء الاصطناعي من سطح أوامر تشغيلي واحد.' : 'Monitor revenue, usage, conversations, and AI health from one operational command surface.'}
+        actions={<><Button variant="ghost" onClick={fetchDashboard}><Activity size={16} />{isRTL ? 'تحديث' : 'Refresh'}</Button><Button><Sparkles size={16} />{isRTL ? 'تقرير سريع' : 'Quick report'}</Button></>}
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label={isRTL ? '?????? ?????????' : 'Total Revenue'} value={currency(stats.total_revenue)} detail={isRTL ? '??? ?????' : 'This month'} trend={currency(stats.revenue_this_month)} icon={<Wallet size={22} />} tone="emerald" />
-        <StatCard label={isRTL ? '??????????' : 'Total Users'} value={number(stats.total_users)} detail={isRTL ? '???????? ?????' : 'Active users'} trend={`${number(stats.active_users)} (${derived.activeRate}%)`} icon={<Users size={22} />} tone="cyan" />
-        <StatCard label={isRTL ? '???? ?????? ?????????' : 'AI Replies'} value={number(stats.ai_replies)} detail={isRTL ? '?? ?????? ???????' : 'Of all messages'} trend={`${derived.aiRate}%`} icon={<Bot size={22} />} tone="violet" />
-        <StatCard label={isRTL ? '?????????' : 'Conversations'} value={number(stats.total_conversations)} detail={isRTL ? '?????' : 'Today'} trend={number(stats.conversations_today)} icon={<Radio size={22} />} tone="amber" />
+        <StatCard label={isRTL ? 'إجمالي الإيرادات' : 'Total Revenue'} value={currency(stats.total_revenue)} detail={isRTL ? 'هذا الشهر' : 'This month'} trend={currency(stats.revenue_this_month)} icon={<Wallet size={22} />} tone="emerald" />
+        <StatCard label={isRTL ? 'إجمالي المستخدمين' : 'Total Users'} value={number(stats.total_users)} detail={isRTL ? 'المستخدمين النشطين' : 'Active users'} trend={`${number(stats.active_users)} (${derived.activeRate}%)`} icon={<Users size={22} />} tone="cyan" />
+        <StatCard label={isRTL ? 'ردود الذكاء الاصطناعي' : 'AI Replies'} value={number(stats.ai_replies)} detail={isRTL ? 'من جميع الرسائل' : 'Of all messages'} trend={`${derived.aiRate}%`} icon={<Bot size={22} />} tone="violet" />
+        <StatCard label={isRTL ? 'المحادثات' : 'Conversations'} value={number(stats.total_conversations)} detail={isRTL ? 'اليوم' : 'Today'} trend={number(stats.conversations_today)} icon={<Radio size={22} />} tone="amber" />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <Panel className="overflow-hidden p-0">
           <div className="flex items-center justify-between border-b border-slate-200 p-5 dark:border-white/10">
             <div>
-              <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? '???? ??????' : 'Performance Summary'}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{isRTL ? '?????? ????? ???????? ?????? ????? ??? ?????? ??????.' : 'Daily, weekly, and monthly signals from live platform data.'}</p>
+              <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? 'ملخص الأداء' : 'Performance Summary'}</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{isRTL ? 'إشارات يومية وأسبوعية وشهرية من بيانات المنصة الحية.' : 'Daily, weekly, and monthly signals from live platform data.'}</p>
             </div>
-            <Badge tone={providerConfigured ? 'emerald' : 'amber'}>{providerConfigured ? (isRTL ? 'AI ????' : 'AI Ready') : (isRTL ? '????? ????? API' : 'API key needed')}</Badge>
+            <Badge tone={providerConfigured ? 'emerald' : 'amber'}>{providerConfigured ? (isRTL ? 'الذكاء الاصطناعي جاهز' : 'AI Ready') : (isRTL ? 'مطلوب مفتاح API' : 'API key needed')}</Badge>
           </div>
           <div className="grid gap-4 p-5 md:grid-cols-3">
-            {[{ label: isRTL ? '????? ?????' : 'Messages today', value: stats.messages_today || 0, total: Math.max(stats.total_messages, 1) }, { label: isRTL ? '????? ?????' : 'Connected channels', value: stats.total_channels, total: Math.max(stats.total_users, 1) }, { label: isRTL ? '???????? ????' : 'Active subscriptions', value: stats.active_subscriptions, total: Math.max(stats.total_users, 1) }].map((item) => (
+            {[{ label: isRTL ? 'الرسائل اليوم' : 'Messages today', value: stats.messages_today || 0, total: Math.max(stats.total_messages, 1) }, { label: isRTL ? 'القنوات المتصلة' : 'Connected channels', value: stats.total_channels, total: Math.max(stats.total_users, 1) }, { label: isRTL ? 'الاشتراكات النشطة' : 'Active subscriptions', value: stats.active_subscriptions, total: Math.max(stats.total_users, 1) }].map((item) => (
               <div key={item.label} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
                 <div className="flex items-center justify-between text-sm"><span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span><span className="text-slate-500 dark:text-slate-400">{number(item.value)}</span></div>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" style={{ width: `${Math.min(100, Math.round((item.value / item.total) * 100))}%` }} /></div>
@@ -113,9 +113,9 @@ export default function AdminDashboard() {
         </Panel>
 
         <Panel>
-          <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? '???? ??????' : 'System Status'}</h2>
+          <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? 'حالة النظام' : 'System Status'}</h2>
           <div className="mt-4 space-y-3">
-            {[{ icon: Server, label: isRTL ? '??????' : 'Server', status: isRTL ? '?????' : 'Operational' }, { icon: Database, label: isRTL ? '????? ????????' : 'Database', status: isRTL ? '?????' : 'Connected' }, { icon: Wifi, label: isRTL ? '????? API' : 'API', status: isRTL ? '????' : 'Healthy' }, { icon: Bot, label: isRTL ? '???? AI' : 'AI Provider', status: `${ai.provider || 'gemini'} -> ${ai.fallback_provider || 'claude'}` }].map((item) => <div key={item.label} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><div className="flex items-center gap-3"><item.icon size={18} className="text-emerald-500" /><span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span></div><span className="text-xs text-slate-500 dark:text-slate-400">{item.status}</span></div>)}
+            {[{ icon: Server, label: isRTL ? 'الخادم' : 'Server', status: isRTL ? 'يعمل' : 'Operational' }, { icon: Database, label: isRTL ? 'قاعدة البيانات' : 'Database', status: isRTL ? 'متصل' : 'Connected' }, { icon: Wifi, label: isRTL ? 'واجهة API' : 'API', status: isRTL ? 'صحي' : 'Healthy' }, { icon: Bot, label: isRTL ? 'مزود الذكاء الاصطناعي' : 'AI Provider', status: `${ai.provider || 'gemini'} -> ${ai.fallback_provider || 'claude'}` }].map((item) => <div key={item.label} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><div className="flex items-center gap-3"><item.icon size={18} className="text-emerald-500" /><span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span></div><span className="text-xs text-slate-500 dark:text-slate-400">{item.status}</span></div>)}
           </div>
         </Panel>
       </div>

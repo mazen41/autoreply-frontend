@@ -62,9 +62,7 @@ function CallbackHandler() {
         const text = await res.text()
         try {
           const data = JSON.parse(text)
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('user', JSON.stringify(data))
-          }
+          // User data not stored - we'll fetch on demand
         } catch {
           // User fetch failed but token is saved — still redirect
           console.warn('Could not parse user response, redirecting anyway')
