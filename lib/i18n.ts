@@ -121,7 +121,6 @@ export const translations = {
       continueWithGoogle: 'المتابعة عبر Google',
       continueWithFacebook: 'المتابعة عبر Facebook',
       orDivider: 'أو',
-      signingIn: 'جاري تسجيل الدخول...',
       authFailed: 'فشل تسجيل الدخول. حاول مرة أخرى',
       // Auth Panel
       welcomeBack: 'مرحباً بعودتك',
@@ -415,7 +414,6 @@ export const translations = {
       continueWithGoogle: 'Continue with Google',
       continueWithFacebook: 'Continue with Facebook',
       orDivider: 'OR',
-      signingIn: 'Signing you in...',
       authFailed: 'Authentication failed. Please try again',
       // Auth Panel
       welcomeBack: 'Welcome back',
