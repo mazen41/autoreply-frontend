@@ -83,10 +83,10 @@ export default function LoginForm() {
           </span>
         </div>
         <h1 className="font-black mb-1.5" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-          {isRTL ? 'مرحباً بعودتك.' : 'Welcome back.'}
+          {t.auth.welcomeBack}.
         </h1>
         <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
-          {isRTL ? 'سجّل دخولك للوصول إلى نظامك.' : 'Sign in to access your AI system.'}
+          {t.auth.loginToAccess}
         </p>
       </motion.div>
 
@@ -171,7 +171,7 @@ export default function LoginForm() {
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
             </svg>
           )}
-          {loading ? (isRTL ? 'جاري الدخول...' : 'Signing in...') : t.auth.signIn}
+          {loading ? (isRTL ? t.auth.signingIn : t.auth.signingInEn) : t.auth.signIn}
         </motion.button>
       </form>
 
@@ -183,9 +183,9 @@ export default function LoginForm() {
       </p>
 
       <p className="text-center text-[11px] mt-4" style={{ color: 'var(--text-secondary)' }}>
-        {isRTL ? 'بالمتابعة توافق على ' : 'By continuing you agree to our '}
+        {isRTL ? `${t.auth.byContinuing} ` : `${t.auth.byContinuing} `}
         <span className="underline cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
-          {isRTL ? 'الشروط والسياسة' : 'Terms & Privacy'}
+          {t.auth.termsPrivacy}
         </span>
       </p>
     </div>

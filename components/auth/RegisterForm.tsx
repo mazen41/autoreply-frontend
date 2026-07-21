@@ -102,10 +102,10 @@ export default function RegisterForm() {
           </span>
         </div>
         <h1 className="font-black mb-1.5" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-          {isRTL ? 'ابدأ رحلتك.' : 'Start your journey.'}
+          {t.auth.startJourney}.
         </h1>
         <p className="text-sm mb-7" style={{ color: 'var(--text-secondary)' }}>
-          {isRTL ? 'أنشئ حسابك وفعّل موظفك الذكي في دقائق.' : 'Create your account and activate your AI in minutes.'}
+          {isRTL ? t.auth.createAccountActivate : t.auth.createAccountActivateEn}
         </p>
       </motion.div>
 
@@ -181,9 +181,9 @@ export default function RegisterForm() {
                 }} />
             ))}
             <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>
-              {form.password.length < 6 ? (isRTL ? 'ضعيفة' : 'Weak')
-                : form.password.length < 10 ? (isRTL ? 'متوسطة' : 'Fair')
-                : (isRTL ? 'قوية' : 'Strong')}
+              {form.password.length < 6 ? t.auth.passwordWeak
+                : form.password.length < 10 ? t.auth.passwordFair
+                : t.auth.passwordStrong}
             </span>
           </div>
         )}
@@ -205,16 +205,16 @@ export default function RegisterForm() {
               <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
             </svg>
           )}
-          {loading ? (isRTL ? 'جاري إنشاء الحساب...' : 'Creating account...')
+          {loading ? (isRTL ? t.auth.creatingAccount : t.auth.creatingAccountEn)
             : t.auth.signUp}
         </motion.button>
 
         {/* Trust badges */}
         <div className="flex items-center justify-center gap-4 pt-1">
           {[
-            { icon: '🔒', t: isRTL ? 'آمن' : 'Secure' },
-            { icon: '✅', t: isRTL ? '14 يوم مجاني' : '14 days free' },
-            { icon: '⚡', t: isRTL ? 'جاهز فوراً' : 'Instant setup' },
+            { icon: '🔒', t: isRTL ? t.auth.secure : t.auth.secureEn },
+            { icon: '✅', t: isRTL ? t.auth.daysFree : t.auth.daysFreeEn },
+            { icon: '⚡', t: isRTL ? t.auth.instantSetup : t.auth.instantSetupEn },
           ].map((b, i) => (
             <div key={i} className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
               <span style={{ fontSize: 10 }}>{b.icon}</span>{b.t}

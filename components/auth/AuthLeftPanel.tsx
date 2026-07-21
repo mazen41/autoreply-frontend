@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import { useLang } from '../../lib/LangContext'
 
 // Mini AI Core for the left panel
 function MiniCore({ size = 90 }: { size?: number }) {
@@ -45,24 +46,25 @@ interface AuthLeftPanelProps {
 }
 
 export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
+  const { isRTL, t } = useLang()
   const isLogin = mode === 'login'
 
   const stats = [
-    { v: '500+', l: 'عمل تجاري', c: 'var(--accent)' },
-    { v: '3.2M', l: 'رد تلقائي', c: 'var(--accent)' },
-    { v: '8s',   l: 'متوسط الرد', c: 'var(--accent)' },
+    { v: '500+', l: t.auth.stats.businesses, c: 'var(--accent)' },
+    { v: '3.2M', l: t.auth.stats.autoReplies, c: 'var(--accent)' },
+    { v: '8s',   l: t.auth.stats.avgReply, c: 'var(--accent)' },
   ]
 
   const bullets = isLogin
     ? [
-        { icon: '⚡', text: 'رد في 8 ثوانٍ على كل رسالة', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> },
-        { icon: '🤖', text: 'ذكاء اصطناعي يفهم لهجتك', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg> },
-        { icon: '📊', text: 'تقارير لحظية لأداء نشاطك', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> },
+        { icon: '⚡', text: t.auth.features.reply8sec, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg> },
+        { icon: '🤖', text: t.auth.features.aiUnderstands, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg> },
+        { icon: '📊', text: t.auth.features.instantReports, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> },
       ]
     : [
-        { icon: '✅', text: '14 يوم تجربة مجانية كاملة', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> },
-        { icon: '🔒', text: 'لا حاجة لبطاقة ائتمانية', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> },
-        { icon: '🚀', text: 'جاهز في أقل من 5 دقائق', svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> },
+        { icon: '✅', text: t.auth.features.freeTrial, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> },
+        { icon: '🔒', text: t.auth.features.noCreditCard, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> },
+        { icon: '🚀', text: t.auth.features.ready5min, svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> },
       ]
 
   return (
@@ -108,11 +110,11 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--success)' }} />
               <span className="text-[10px] font-bold tracking-[0.12em]" style={{ color: 'var(--success)' }}>
-                SYSTEM ONLINE
+                {t.auth.systemOnline}
               </span>
             </div>
             <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {isLogin ? 'مرحباً بعودتك' : 'انضم اليوم'}
+              {isLogin ? t.auth.welcomeBack : t.auth.joinToday}
             </div>
           </div>
         </div>
@@ -121,16 +123,16 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
         <h2 className="font-black mb-3 leading-[1.1]"
           style={{ fontSize: 'clamp(1.6rem,2.5vw,2.2rem)', letterSpacing: '-0.04em' }}>
           <span className="block" style={{ color: 'var(--text-primary)' }}>
-            {isLogin ? 'مرحباً بعودتك.' : 'ابدأ مجاناً.'}
+            {isLogin ? `${t.auth.welcomeBack}.` : `${t.auth.startFree}.`}
           </span>
           <span className="block" style={{ color: 'var(--accent)' }}>
-            {isLogin ? 'نظامك في انتظارك.' : 'بدون بطاقة ائتمانية.'}
+            {isLogin ? `${t.auth.yourSystemAwaits}.` : `${t.auth.noCreditCard}.`}
           </span>
         </h2>
         <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
           {isLogin
-            ? 'سجل دخولك للوصول إلى لوحة تحكم الذكاء الاصطناعي'
-            : 'انضم لأكثر من 500 عمل يستخدم Naz لأتمتة ردوده'}
+            ? t.auth.loginToAccess
+            : `${isRTL ? 'انضم لأكثر من 500 عمل يستخدم Naz لأتمتة ردوده' : 'Join 500+ businesses using Naz to automate their replies'}`}
         </p>
 
         {/* Stats */}
@@ -165,11 +167,11 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
-            <span className="text-[10px] font-bold tracking-widest" style={{ color: 'var(--accent)' }}>LIVE ACTIVITY</span>
+            <span className="text-[10px] font-bold tracking-widest" style={{ color: 'var(--accent)' }}>{t.auth.liveActivity}</span>
           </div>
           {[
-            { t: 'أحمد — WhatsApp', r: 'تم الرد ✓', c: '#25D366' },
-            { t: 'سارة — Instagram', r: 'عميل محتمل ⚡', c: '#E1306C' },
+            { t: t.auth.activity.ahmedWhatsapp, r: t.auth.activity.replied, c: '#25D366' },
+            { t: t.auth.activity.saraInstagram, r: t.auth.activity.potentialLead, c: '#E1306C' },
           ].map((a, i) => (
             <div key={i} className="flex items-center justify-between text-[11px] mb-1">
               <span style={{ color: 'var(--text-secondary)' }}>{a.t}</span>
@@ -177,7 +179,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             </div>
           ))}
         </div>
-        <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>© 2025 Naz. All rights reserved.</p>
+        <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{t.auth.allRightsReserved}</p>
       </div>
     </div>
   )
