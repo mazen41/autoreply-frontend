@@ -23,6 +23,21 @@ export default function AIKnowledgeContent() {
   const [testQuestion, setTestQuestion] = useState('')
   const [testResponse, setTestResponse] = useState('')
 
+  const [profile, setProfile] = useState({
+    business_name: '',
+    business_type: '',
+    phone: '',
+    city: '',
+    country: '',
+    working_days: [] as string[],
+    working_from: '',
+    working_to: '',
+    services: '',
+    reply_style: '',
+  })
+  const [faqs, setFaqs] = useState<{question: string, answer: string}[]>([])
+  const [savingProfile, setSavingProfile] = useState(false)
+
   useEffect(() => {
     fetchKnowledge()
   }, [])
@@ -39,6 +54,21 @@ export default function AIKnowledgeContent() {
       if (res.ok) {
         setFiles(data.files || [])
         setAiInstructions(data.ai_instructions || '')
+        if (data.profile) {
+          setProfile({
+            business_name: data.profile.business_name || '',
+            business_type: data.profile.business_type || '',
+            phone: data.profile.phone || '',
+            city: data.profile.city || '',
+            country: data.profile.country || '',
+            working_days: data.profile.working_days || [],
+            working_from: data.profile.working_from || '',
+            working_to: data.profile.working_to || '',
+            services: data.profile.services || '',
+            reply_style: data.profile.reply_style || '',
+          })
+          setFaqs(data.profile.faqs || [])
+        }
       }
     } catch (error) {
       console.error('Failed to fetch knowledge:', error)
@@ -145,6 +175,35 @@ export default function AIKnowledgeContent() {
     }
   }
 
+  const handleSaveProfile = async () => {
+    setSavingProfile(true)
+    try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/profile`, {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ ...profile, faqs }),
+      })
+      const data = await res.json()
+      
+      if (res.ok) {
+        toast.success(t.aiKnowledge?.profileSaved || 'Business profile saved successfully')
+      } else {
+        toast.error(data.error || 'Failed to save profile')
+      }
+    } catch (error) {
+      toast.error('Failed to save profile')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   const handleTestResponse = async () => {
     if (!testQuestion.trim()) {
       toast.error(t.aiKnowledge.testQuestion)
@@ -203,6 +262,95 @@ export default function AIKnowledgeContent() {
         <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
           {t.aiKnowledge.subtitle}
         </p>
+      </motion.div>
+
+      {/* Business Profile Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.05 }}
+        className="rounded-2xl p-6"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
+        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
+          {t.onboarding?.businessDetails || 'Business Details'}
+        </h2>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+          {t.aiKnowledge?.profileDesc || 'Update your core business information that the AI uses to answer customer questions.'}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Name</label>
+            <input type="text" value={profile.business_name} onChange={e => setProfile({...profile, business_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Type</label>
+            <input type="text" value={profile.business_type} onChange={e => setProfile({...profile, business_type: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Phone</label>
+            <input type="text" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>City & Country</label>
+            <div className="flex gap-2">
+              <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({...profile, country: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Working Hours</label>
+            <div className="flex gap-2">
+              <input type="text" placeholder="From (e.g. 09:00)" value={profile.working_from} onChange={e => setProfile({...profile, working_from: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="To (e.g. 18:00)" value={profile.working_to} onChange={e => setProfile({...profile, working_to: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Reply Style</label>
+            <input type="text" value={profile.reply_style} onChange={e => setProfile({...profile, reply_style: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Services & Products</label>
+          <textarea value={profile.services} onChange={e => setProfile({...profile, services: e.target.value})} rows={3} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200 resize-none" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Frequently Asked Questions</label>
+          <div className="space-y-3">
+            {faqs.map((faq, index) => (
+              <div key={index} className="flex gap-2 relative">
+                <input type="text" placeholder="Question" value={faq.question} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].question = e.target.value; setFaqs(newFaqs) }} className="w-1/3 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+                <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].answer = e.target.value; setFaqs(newFaqs) }} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+                <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-lg hover:bg-red-500/10" style={{ color: 'var(--error)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+            ))}
+            <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-xs font-medium mt-2 px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--accent)' }}>
+              + Add FAQ
+            </button>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleSaveProfile}
+            disabled={savingProfile}
+            className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
+            style={{
+              background: savingProfile ? 'rgba(59,130,246,0.5)' : 'var(--accent)',
+              color: '#ffffff',
+            }}
+          >
+            {savingProfile && (
+              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
+            )}
+            {t.aiKnowledge?.saveProfile || 'Save Profile'}
+          </button>
+        </div>
       </motion.div>
 
       {/* Knowledge Base Section */}
