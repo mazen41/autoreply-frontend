@@ -193,7 +193,7 @@ export default function AIKnowledgeContent() {
       const data = await res.json()
       
       if (res.ok) {
-        toast.success(t.aiKnowledge?.profileSaved || 'Business profile saved successfully')
+        toast.success((t.aiKnowledge as any)?.profileSaved || 'Business profile saved successfully')
       } else {
         toast.error(data.error || 'Failed to save profile')
       }
@@ -273,10 +273,10 @@ export default function AIKnowledgeContent() {
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
         <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          {t.onboarding?.businessDetails || 'Business Details'}
+          {(t.onboarding as any)?.businessDetails || 'Business Details'}
         </h2>
         <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          {t.aiKnowledge?.profileDesc || 'Update your core business information that the AI uses to answer customer questions.'}
+          {(t.aiKnowledge as any)?.profileDesc || 'Update your core business information that the AI uses to answer customer questions.'}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -348,7 +348,7 @@ export default function AIKnowledgeContent() {
             {savingProfile && (
               <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
             )}
-            {t.aiKnowledge?.saveProfile || 'Save Profile'}
+            {(t.aiKnowledge as any)?.saveProfile || 'Save Profile'}
           </button>
         </div>
       </motion.div>
