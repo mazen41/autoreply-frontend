@@ -175,6 +175,26 @@ export const BillingIcon = ({ size = 20, className = '', strokeWidth = 1.5, styl
   </svg>
 )
 
+export const AIKnowledgeIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth}
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+    className={className}
+    style={style}
+  >
+    <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+    <path d="M12 2a10 10 0 0 1 10 10" />
+    <path d="M12 12v4" />
+    <path d="M12 16h.01" />
+  </svg>
+)
+
 export const HelpIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
   <svg 
     width={size} 

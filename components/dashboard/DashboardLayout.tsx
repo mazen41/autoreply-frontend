@@ -13,6 +13,7 @@ import {
   ContentIcon,
   ReputationIcon,
   ReportsIcon,
+  AIKnowledgeIcon,
   SettingsIcon,
   BillingIcon,
   HelpIcon,
@@ -27,18 +28,19 @@ import {
 } from '../ui/DashboardIcons'
 
 const NAV = [
-  { icon: HomeIcon, ar: 'الرئيسية', en: 'Overview', href: '/dashboard' },
-  { icon: InboxIcon, ar: 'صندوق الوارد', en: 'Inbox', href: '/dashboard/inbox' },
-  { icon: ChannelsIcon, ar: 'القنوات', en: 'Channels', href: '/dashboard/channels' },
-  { icon: WhatsAppIcon, ar: 'واتساب', en: 'WhatsApp', href: '/dashboard/whatsapp' },
-  { icon: ContentIcon, ar: 'المحتوى', en: 'Content', href: '/dashboard/content' },
-  { icon: ReputationIcon, ar: 'السمعة', en: 'Reputation', href: '/dashboard/reputation' },
-  { icon: ReportsIcon, ar: 'التقارير', en: 'Reports', href: '/dashboard/reports' },
+  { icon: HomeIcon, key: 'dashboard', href: '/dashboard' },
+  { icon: InboxIcon, key: 'inbox', href: '/dashboard/inbox' },
+  { icon: ChannelsIcon, key: 'channels', href: '/dashboard/channels' },
+  { icon: WhatsAppIcon, key: 'whatsapp', href: '/dashboard/whatsapp' },
+  { icon: ContentIcon, key: 'content', href: '/dashboard/content' },
+  { icon: ReputationIcon, key: 'reputation', href: '/dashboard/reputation' },
+  { icon: ReportsIcon, key: 'reports', href: '/dashboard/reports' },
+  { icon: AIKnowledgeIcon, key: 'aiKnowledge', href: '/dashboard/ai-knowledge' },
 ]
 
 const NAV_BOTTOM = [
-  { icon: SettingsIcon, ar: 'الإعدادات', en: 'Settings', href: '/dashboard/settings' },
-  { icon: BillingIcon, ar: 'الاشتراك', en: 'Billing', href: '/dashboard/billing' },
+  { icon: SettingsIcon, key: 'settings', href: '/dashboard/settings' },
+  { icon: BillingIcon, key: 'billing', href: '/dashboard/billing' },
 ]
 
 const NOTIFICATIONS = [
@@ -72,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const allNav = [...NAV, ...NAV_BOTTOM]
   const current = allNav.find(n => n.href === pathname)
-  const pageTitle = current ? (isRTL ? current.ar : current.en) : t.nav.dashboard
+  const pageTitle = current ? (t.nav as any)[current.key] : t.nav.dashboard
 
   const logout = () => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
@@ -89,6 +91,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const NavItem = ({ item, isBottom = false }: { item: any; isBottom?: boolean }) => {
     const active = pathname === item.href
     const Icon = item.icon
+    const label = (t.nav as any)[item.key]
 
     return (
       <Link
@@ -117,14 +120,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <Icon size={20} />
         {(!collapsed || mobileSidebar) && (
-          <span className="text-sm font-semibold flex-1">{isRTL ? item.ar : item.en}</span>
+          <span className="text-sm font-semibold flex-1">{label}</span>
         )}
         {collapsed && !mobileSidebar && (
           <div
             className={`absolute ${isRTL ? 'right-full mr-2' : 'left-full ml-2'} px-2 py-1 rounded-lg text-xs font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50`}
             style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.06)', color: '#F0F0FF' }}
           >
-            {isRTL ? item.ar : item.en}
+            {label}
           </div>
         )}
       </Link>
