@@ -38,7 +38,7 @@ export default function HowItWorks() {
         <div className="text-center mb-16">
           <h2
             className={`text-3xl sm:text-4xl font-black ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
           >
             {t.howItWorks.title}
           </h2>
@@ -54,8 +54,8 @@ export default function HowItWorks() {
           >
             <defs>
               <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#C7DAF8" />
-                <stop offset="100%" stopColor="#C7DAF8" />
+                <stop offset="0%" stopColor="var(--accent)" />
+                <stop offset="100%" stopColor="var(--accent)" />
               </linearGradient>
             </defs>
             <line
@@ -80,7 +80,7 @@ export default function HowItWorks() {
                       <div
                         ref={stepRef}
                         className="reveal card-hover p-6 rounded-2xl text-right"
-                        style={{ background: '#121317', animationDelay: `${i * 0.15}s` }}
+                        style={{ background: 'var(--surface)', animationDelay: `${i * 0.15}s` }}
                       >
                         <StepContent step={step} i={i} />
                       </div>
@@ -91,13 +91,9 @@ export default function HowItWorks() {
                   <div
                     className="absolute left-1/2 -translate-x-1/2 w-10 h-10 rounded-full flex items-center justify-center font-black text-sm z-10"
                     style={{
-                      background: i % 2 === 0
-                        ? 'linear-gradient(135deg, #C7DAF8, #00C896)'
-                        : 'linear-gradient(135deg, #C7DAF8, #8B00CC)',
-                      color: '#121317',
-                      boxShadow: i % 2 === 0
-                        ? '0 0 20px rgba(199,218,248,0.4)'
-                        : '0 0 20px rgba(199,218,248,0.4)',
+                      background: 'var(--accent)',
+                      color: 'var(--text-primary)',
+                      boxShadow: '0 0 20px var(--accent-subtle)',
                     }}
                   >
                     {(i + 1).toString().padStart(2, '0')}
@@ -109,7 +105,7 @@ export default function HowItWorks() {
                       <div
                         ref={stepRef}
                         className="reveal card-hover p-6 rounded-2xl text-left"
-                        style={{ background: '#121317', animationDelay: `${i * 0.15}s` }}
+                        style={{ background: 'var(--surface)', animationDelay: `${i * 0.15}s` }}
                       >
                         <StepContent step={step} i={i} />
                       </div>
@@ -129,21 +125,19 @@ export default function HowItWorks() {
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0"
                   style={{
-                    background: i % 2 === 0
-                      ? 'linear-gradient(135deg, #C7DAF8, #00C896)'
-                      : 'linear-gradient(135deg, #C7DAF8, #8B00CC)',
-                    color: '#121317',
+                    background: 'var(--accent)',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   {(i + 1).toString().padStart(2, '0')}
                 </div>
                 {i < steps.length - 1 && (
-                  <div className="w-px flex-1 mt-2" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                  <div className="w-px flex-1 mt-2" style={{ background: 'var(--divider)' }} />
                 )}
               </div>
               <div className="pb-6">
-                <h3 className="font-bold text-lg mb-2" style={{ color: '#FFFFFF' }}>{step.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{step.desc}</p>
+                <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>{step.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{step.desc}</p>
               </div>
             </div>
           ))}
@@ -159,9 +153,7 @@ function StepContent({ step, i }: { step: { num: string; title: string; desc: st
       <div
         className="text-4xl font-black mb-2"
         style={{
-          background: i % 2 === 0
-            ? 'linear-gradient(135deg, #C7DAF8, #00C896)'
-            : 'linear-gradient(135deg, #C7DAF8, #8B00CC)',
+          background: 'var(--accent)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -170,8 +162,8 @@ function StepContent({ step, i }: { step: { num: string; title: string; desc: st
       >
         {(i + 1).toString().padStart(2, '0')}
       </div>
-      <h3 className="font-bold text-lg mb-2" style={{ color: '#FFFFFF' }}>{step.title}</h3>
-      <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>{step.desc}</p>
+      <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>{step.title}</h3>
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>{step.desc}</p>
     </>
   )
 }
