@@ -5,15 +5,15 @@ import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 const FLOW_STEPS = [
-  { icon: '💬', labelAr: 'رسالة واردة',     labelEn: 'Incoming Message',  color: '#C7DAF8', desc_ar: 'واتساب، انستغرام، إيميل', desc_en: 'WhatsApp, Instagram, Email' },
-  { icon: '🧠', labelAr: 'تحليل الذكاء',     labelEn: 'AI Analysis',       color: '#C7DAF8', desc_ar: 'النية، السياق، الأولوية', desc_en: 'Intent, context, priority' },
-  { icon: '⚡', labelAr: 'إجراء تلقائي',     labelEn: 'Auto Action',       color: '#C7DAF8', desc_ar: 'رد، تصنيف، إشعار', desc_en: 'Reply, classify, notify' },
-  { icon: '🎯', labelAr: 'نتيجة محققة',      labelEn: 'Result Achieved',   color: '#C7DAF8', desc_ar: 'عميل راضٍ، عقد محتمل', desc_en: 'Satisfied customer, lead' },
+  { icon: '💬', labelAr: 'رسالة واردة',     labelEn: 'Incoming Message',  desc_ar: 'واتساب، انستغرام، إيميل', desc_en: 'WhatsApp, Instagram, Email' },
+  { icon: '🧠', labelAr: 'تحليل الذكاء',     labelEn: 'AI Analysis',       desc_ar: 'النية، السياق، الأولوية', desc_en: 'Intent, context, priority' },
+  { icon: '⚡', labelAr: 'إجراء تلقائي',     labelEn: 'Auto Action',       desc_ar: 'رد، تصنيف، إشعار', desc_en: 'Reply, classify, notify' },
+  { icon: '🎯', labelAr: 'نتيجة محققة',      labelEn: 'Result Achieved',   desc_ar: 'عميل راضٍ، عقد محتمل', desc_en: 'Satisfied customer, lead' },
 ]
 
 const AUTOMATIONS = [
   {
-    icon: '🌙',
+    icon: '⏰',
     titleAr: 'الرد بعد الدوام',
     titleEn: 'After-Hours Reply',
     descAr: 'يرد على كل رسالة خارج ساعات العمل فوراً',
@@ -75,19 +75,19 @@ export default function AutomationEcosystem() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
-            <span style={{ color: '#C7DAF8' }}>◈</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
+            style={{ border: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--accent)' }}>◈</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)' }}>
               {isRTL ? 'نظام الأتمتة' : 'AUTOMATION ECOSYSTEM'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'الرسالة تصل. الذكاء يعمل.' : 'Message in. Magic out.'}
           </h2>
-          <p className="text-lg max-w-lg mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-lg max-w-lg mx-auto" style={{ color: 'var(--text-secondary)' }}>
             {isRTL
               ? 'مسارات تلقائية تعمل في الخلفية، بدون تدخل منك.'
               : 'Automated workflows running silently in the background — without you.'}
@@ -109,17 +109,17 @@ export default function AutomationEcosystem() {
                     className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl transition-all duration-500"
                     style={{
                       background: activeStep === i
-                        ? `${step.color}15`
-                        : 'rgba(18,19,23,0.8)',
-                      border: `2px solid ${activeStep === i ? step.color : 'rgba(255,255,255,0.08)'}`,
-                      boxShadow: activeStep === i ? `0 0 40px ${step.color}30` : 'none',
+                        ? 'color-mix(in srgb, var(--accent) 15%, transparent)'
+                        : 'var(--surface)',
+                      border: `2px solid ${activeStep === i ? 'var(--accent)' : 'var(--border)'}`,
+                      boxShadow: activeStep === i ? '0 0 40px color-mix(in srgb, var(--accent) 30%, transparent)' : 'none',
                     }}
                   >
                     {step.icon}
                     {activeStep === i && (
                       <motion.div
                         className="absolute inset-0 rounded-2xl"
-                        style={{ border: `1px solid ${step.color}`, boxShadow: `0 0 20px ${step.color}30` }}
+                        style={{ border: '1px solid var(--accent)', boxShadow: '0 0 20px color-mix(in srgb, var(--accent) 30%, transparent)' }}
                         initial={{ scale: 1, opacity: 0.8 }}
                         animate={{ scale: 1.3, opacity: 0 }}
                         transition={{ duration: 0.8, repeat: Infinity }}
@@ -129,24 +129,22 @@ export default function AutomationEcosystem() {
                   <div className="text-center">
                     <div
                       className="text-xs sm:text-sm font-bold mb-1 transition-colors duration-300"
-                      style={{ color: activeStep === i ? step.color : '#FFFFFF' }}
+                      style={{ color: activeStep === i ? 'var(--accent)' : 'var(--text-primary)' }}
                     >
                       {isRTL ? step.labelAr : step.labelEn}
                     </div>
-                    <div className="text-xs hidden sm:block" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    <div className="text-xs hidden sm:block" style={{ color: 'var(--text-tertiary)' }}>
                       {isRTL ? step.desc_ar : step.desc_en}
                     </div>
                   </div>
                 </motion.div>
 
-                {/* Connector arrow */}
                 {i < FLOW_STEPS.length - 1 && (
                   <div className="flex-shrink-0 flex flex-col items-center gap-1" style={{ width: 40 }}>
-                    {/* Animated signal */}
-                    <div className="relative w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="relative w-full h-1 rounded-full" style={{ background: 'var(--divider)' }}>
                       <motion.div
                         className="absolute top-0 h-full rounded-full"
-                        style={{ width: '30%', background: FLOW_STEPS[i].color, boxShadow: `0 0 8px ${FLOW_STEPS[i].color}` }}
+                        style={{ width: '30%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }}
                         animate={visible ? {
                           left: ['-30%', '130%'],
                           opacity: [0, 1, 1, 0],
@@ -159,7 +157,7 @@ export default function AutomationEcosystem() {
                         }}
                       />
                     </div>
-                    <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>
+                    <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
                       {isRTL ? '←' : '→'}
                     </span>
                   </div>
@@ -175,41 +173,39 @@ export default function AutomationEcosystem() {
             <motion.div
               key={i}
               className="card-os rounded-2xl p-5 glass group"
-              style={{ background: 'rgba(18,19,23,0.7)' }}
+              style={{ background: 'var(--surface)' }}
               initial={{ opacity: 0, y: 40 }}
               animate={visible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.4 + i * 0.12 }}
             >
-              {/* Top */}
               <div className="flex items-center justify-between mb-4">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: 'rgba(199,218,248,0.08)', border: '1px solid rgba(199,218,248,0.15)' }}
+                  style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border)' }}
                 >
                   {auto.icon}
                 </div>
                 <div
                   className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={{ background: 'rgba(199,218,248,0.06)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.12)' }}
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--border)' }}
                 >
                   {isRTL ? auto.trigger_ar : auto.trigger_en}
                 </div>
               </div>
 
-              <h3 className="text-base font-black mb-2" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+              <h3 className="text-base font-black mb-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 {isRTL ? auto.titleAr : auto.titleEn}
               </h3>
-              <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? auto.descAr : auto.descEn}
               </p>
 
-              {/* Result */}
               <div
                 className="flex items-center gap-2 pt-4"
-                style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                style={{ borderTop: '1px solid var(--divider)' }}
               >
-                <span style={{ color: '#C7DAF8', fontSize: 14 }}>✓</span>
-                <span className="text-sm font-bold" style={{ color: '#C7DAF8' }}>
+                <span style={{ color: 'var(--accent)', fontSize: 14 }}>✓</span>
+                <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
                   {isRTL ? auto.result_ar : auto.result_en}
                 </span>
               </div>

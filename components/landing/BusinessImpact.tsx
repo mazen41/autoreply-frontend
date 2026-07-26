@@ -24,17 +24,17 @@ const IMPACTS = [
   {
     before: { val: 4.2, label_ar: 'تقييم قبل ناز', label_en: 'Rating before Naz', suffix: '★' },
     after:  { val: 4.9, label_ar: 'تقييم بعد ناز',  label_en: 'Rating after Naz',  suffix: '★' },
-    icon: '⭐', title_ar: 'تقييمات أعلى', title_en: 'Higher Ratings', color: '#C7DAF8',
+    icon: '⭐', title_ar: 'تقييمات أعلى', title_en: 'Higher Ratings',
   },
   {
     before: { val: 45,  label_ar: 'وقت الرد قبل (دقيقة)', label_en: 'Response time before (min)', suffix: 'm' },
     after:  { val: 8,   label_ar: 'وقت الرد بعد (ثانية)',  label_en: 'Response time after (sec)',  suffix: 's' },
-    icon: '⚡', title_ar: 'ردود أسرع', title_en: 'Faster Replies', color: '#C7DAF8',
+    icon: '⚡', title_ar: 'ردود أسرع', title_en: 'Faster Replies',
   },
   {
     before: { val: 12,  label_ar: 'تحويل قبل (%)', label_en: 'Conversion before (%)', suffix: '%' },
     after:  { val: 38,  label_ar: 'تحويل بعد (%)', label_en: 'Conversion after (%)',  suffix: '%' },
-    icon: '💰', title_ar: 'مبيعات أكثر', title_en: 'More Sales', color: '#C7DAF8',
+    icon: '💰', title_ar: 'مبيعات أكثر', title_en: 'More Sales',
   },
 ]
 
@@ -91,19 +91,19 @@ export default function BusinessImpact() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
-            <span style={{ color: '#C7DAF8' }}>◎</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
+            style={{ border: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--accent)' }}>◎</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)' }}>
               {isRTL ? 'الأثر على العمل' : 'BUSINESS IMPACT'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'الأرقام تتحول أمامك.' : 'Watch numbers transform.'}
           </h2>
-          <p className="text-lg max-w-lg mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-lg max-w-lg mx-auto" style={{ color: 'var(--text-secondary)' }}>
             {isRTL
               ? 'قبل وبعد — نتائج حقيقية من أعمال حقيقية.'
               : 'Before and after — real results from real businesses.'}
@@ -116,61 +116,59 @@ export default function BusinessImpact() {
             <motion.div
               key={i}
               className="card-os rounded-2xl p-6 glass"
-              style={{ background: 'rgba(18,19,23,0.7)' }}
+              style={{ background: 'var(--surface)' }}
               initial={{ opacity: 0, y: 40 }}
               animate={visible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: i * 0.15 }}
             >
               <div className="text-3xl mb-3">{imp.icon}</div>
-              <h3 className="text-base font-black mb-5" style={{ color: imp.color, letterSpacing: '-0.02em' }}>
+              <h3 className="text-base font-black mb-5" style={{ color: 'var(--accent)', letterSpacing: '-0.02em' }}>
                 {isRTL ? imp.title_ar : imp.title_en}
               </h3>
 
               {/* Before */}
               <div className="mb-3">
-                <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                <div className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
                   {isRTL ? imp.before.label_ar : imp.before.label_en}
                 </div>
                 <div className="flex items-end gap-1">
-                  <span className="text-3xl font-black" style={{ color: 'rgba(255,255,255,0.25)', letterSpacing: '-0.03em' }}>
+                  <span className="text-3xl font-black" style={{ color: 'var(--text-tertiary)', letterSpacing: '-0.03em' }}>
                     {(counts[i].before / 10).toFixed(imp.before.val % 1 !== 0 ? 1 : 0)}
                   </span>
-                  <span className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>{imp.before.suffix}</span>
+                  <span className="text-sm mb-1" style={{ color: 'var(--text-tertiary)' }}>{imp.before.suffix}</span>
                 </div>
-                {/* Bar */}
-                <div className="mt-2 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="mt-2 h-1.5 rounded-full" style={{ background: 'var(--divider)' }}>
                   <div
                     className="h-full rounded-full"
                     style={{
                       width: `${(imp.before.val / Math.max(imp.before.val, imp.after.val)) * 100}%`,
-                      background: 'rgba(255,255,255,0.15)',
+                      background: 'var(--text-tertiary)',
                     }}
                   />
                 </div>
               </div>
 
               {/* Arrow */}
-              <div className="text-center my-2" style={{ color: imp.color, fontSize: 20 }}>↓</div>
+              <div className="text-center my-2" style={{ color: 'var(--accent)', fontSize: 20 }}>↓</div>
 
               {/* After */}
               <div>
-                <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>
                   {isRTL ? imp.after.label_ar : imp.after.label_en}
                 </div>
                 <div className="flex items-end gap-1">
                   <motion.span
                     className="text-4xl font-black"
-                    style={{ color: imp.color, letterSpacing: '-0.03em' }}
+                    style={{ color: 'var(--accent)', letterSpacing: '-0.03em' }}
                   >
                     {(counts[i].after / 10).toFixed(imp.after.val % 1 !== 0 ? 1 : 0)}
                   </motion.span>
-                  <span className="text-sm mb-1" style={{ color: imp.color + '80' }}>{imp.after.suffix}</span>
+                  <span className="text-sm mb-1" style={{ color: 'color-mix(in srgb, var(--accent) 80%, transparent)' }}>{imp.after.suffix}</span>
                 </div>
-                {/* Bar */}
-                <div className="mt-2 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="mt-2 h-1.5 rounded-full" style={{ background: 'var(--divider)' }}>
                   <motion.div
                     className="h-full rounded-full"
-                    style={{ background: imp.color, boxShadow: `0 0 10px ${imp.color}60` }}
+                    style={{ background: 'var(--accent)', boxShadow: '0 0 10px color-mix(in srgb, var(--accent) 60%, transparent)' }}
                     initial={{ width: 0 }}
                     animate={visible ? { width: `${(imp.after.val / Math.max(imp.before.val, imp.after.val)) * 100}%` } : {}}
                     transition={{ duration: 1.5, delay: 0.3 + i * 0.15 }}
@@ -187,29 +185,29 @@ export default function BusinessImpact() {
             <motion.div
               key={i}
               className="card-os rounded-2xl p-5 glass"
-              style={{ background: 'rgba(18,19,23,0.6)' }}
+              style={{ background: 'var(--surface)' }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={visible ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.5 + i * 0.12 }}
             >
               <div className="flex mb-3">
                 {Array(t.rating).fill(0).map((_, j) => (
-                  <span key={j} style={{ color: '#C7DAF8', fontSize: 14 }}>★</span>
+                  <span key={j} style={{ color: 'var(--accent)', fontSize: 14 }}>★</span>
                 ))}
               </div>
-              <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>
                 &ldquo;{isRTL ? t.quote_ar : t.quote_en}&rdquo;
               </p>
-              <div className="flex items-center gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="flex items-center gap-3 pt-3" style={{ borderTop: '1px solid var(--divider)' }}>
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.15)' }}
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--border)' }}
                 >
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{t.name}</div>
-                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{isRTL ? t.biz_ar : t.biz_en}</div>
+                  <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{t.name}</div>
+                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? t.biz_ar : t.biz_en}</div>
                 </div>
               </div>
             </motion.div>

@@ -67,19 +67,19 @@ export default function AIBrain() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
-            <span style={{ color: '#C7DAF8' }}>⬡</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
+            style={{ border: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--accent)' }}>⬡</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)' }}>
               {isRTL ? 'شبكة الذكاء الاصطناعي' : 'NEURAL CAPABILITY NETWORK'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'عقل متصل بكل شيء.' : 'A brain connected to everything.'}
           </h2>
-          <p className="text-lg max-w-lg mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-lg max-w-lg mx-auto" style={{ color: 'var(--text-tertiary)' }}>
             {isRTL
               ? 'قدرات تتفعل أثناء التمرير. كل عقدة تمثل قوة حقيقية.'
               : 'Capabilities activate as you scroll. Every node is real power.'}
@@ -92,9 +92,9 @@ export default function AIBrain() {
           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#C7DAF8" stopOpacity="0.1" />
-                <stop offset="50%" stopColor="#C7DAF8" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#C7DAF8" stopOpacity="0.1" />
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.1" />
+                <stop offset="50%" stopColor="var(--accent)" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.1" />
               </linearGradient>
             </defs>
             {CONNECTIONS.map(([a, b], i) => {
@@ -105,7 +105,7 @@ export default function AIBrain() {
                 <line
                   key={i}
                   x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y}
-                  stroke={isHighlighted ? '#C7DAF8' : 'url(#lineGrad)'}
+                  stroke={isHighlighted ? 'var(--accent)' : 'url(#lineGrad)'}
                   strokeWidth={isHighlighted ? 0.5 : 0.25}
                   strokeOpacity={isActive ? (isHighlighted ? 0.8 : 0.35) : 0}
                   style={{ transition: 'stroke-opacity 0.5s ease, stroke-width 0.3s ease' }}
@@ -144,8 +144,8 @@ export default function AIBrain() {
                       className="absolute rounded-full"
                       style={{
                         width: 60, height: 60,
-                        border: '2px solid rgba(199,218,248,0.5)',
-                        boxShadow: '0 0 30px rgba(199,218,248,0.3)',
+                        border: '2px solid var(--accent-subtle)',
+                        boxShadow: '0 0 30px var(--accent-subtle)',
                         top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
                       }}
@@ -159,11 +159,11 @@ export default function AIBrain() {
                     className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all duration-300"
                     style={{
                       background: isHighlighted
-                        ? 'rgba(199,218,248,0.15)'
-                        : 'rgba(18,19,23,0.9)',
-                      border: `2px solid ${isHighlighted ? 'rgba(199,218,248,0.5)' : 'rgba(199,218,248,0.15)'}`,
+                        ? 'var(--accent-subtle)'
+                        : 'var(--surface)',
+                      border: `2px solid ${isHighlighted ? 'var(--accent-subtle)' : 'var(--border)'}`,
                       backdropFilter: 'blur(10px)',
-                      boxShadow: isHighlighted ? '0 0 30px rgba(199,218,248,0.25)' : '0 0 20px rgba(199,218,248,0.05)',
+                      boxShadow: isHighlighted ? '0 0 30px var(--accent-subtle)' : '0 0 20px var(--accent-subtle)',
                     }}
                   >
                     {cap.icon}
@@ -171,9 +171,9 @@ export default function AIBrain() {
                   <div
                     className="text-xs font-bold text-center whitespace-nowrap px-2 py-1 rounded-lg"
                     style={{
-                      background: 'rgba(18,19,23,0.9)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      color: isHighlighted ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      color: isHighlighted ? 'var(--accent)' : 'var(--text-secondary)',
                       backdropFilter: 'blur(8px)',
                       maxWidth: 120,
                     }}
@@ -201,8 +201,8 @@ export default function AIBrain() {
               <div
                 className="w-20 h-20 rounded-full flex items-center justify-center core-glow"
                 style={{
-                  background: 'radial-gradient(circle, rgba(199,218,248,0.2) 0%, rgba(199,218,248,0.05) 60%, transparent 80%)',
-                  border: '2px solid rgba(199,218,248,0.4)',
+                  background: 'radial-gradient(circle, var(--accent-subtle) 0%, var(--accent-subtle) 60%, transparent 80%)',
+                  border: '2px solid var(--border)',
                 }}
               >
                 <span className="text-2xl font-black text-lime">✦</span>
@@ -220,10 +220,10 @@ export default function AIBrain() {
               animate={visible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}
               className="flex items-center gap-3 p-4 rounded-xl card-os glass"
-              style={{ background: 'rgba(18,19,23,0.6)' }}
+              style={{ background: 'var(--surface)' }}
             >
               <span className="text-2xl">{cap.icon}</span>
-              <span className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {isRTL ? cap.labelAr : cap.labelEn}
               </span>
             </motion.div>
