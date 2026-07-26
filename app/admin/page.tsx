@@ -71,7 +71,7 @@ export default function AdminDashboard() {
   }, [data])
 
   if (loading) return <AdminShell><PageHeader title={isRTL ? 'نظرة عامة على المشرف' : 'Admin Overview'} description={isRTL ? 'جاري تحميل ذكاء المنصة.' : 'Loading platform intelligence.'} /><SkeletonRows rows={8} /></AdminShell>
-  if (error) return <AdminShell><Panel className="border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200">{error}</Panel></AdminShell>
+  if (error) return <AdminShell><Panel className="border-white/20 bg-white/50 text-white/70 dark:border-white/40 dark:bg-white/40 dark:text-white/20">{error}</Panel></AdminShell>
 
   const stats = data!.stats
   const ai = data!.ai_settings || {}
@@ -95,44 +95,44 @@ export default function AdminDashboard() {
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <Panel className="overflow-hidden p-0">
-          <div className="flex items-center justify-between border-b border-slate-200 p-5 dark:border-white/10">
+          <div className="flex items-center justify-between border-b border-white/10 p-5 dark:border-white/10">
             <div>
-              <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? 'ملخص الأداء' : 'Performance Summary'}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{isRTL ? 'إشارات يومية وأسبوعية وشهرية من بيانات المنصة الحية.' : 'Daily, weekly, and monthly signals from live platform data.'}</p>
+              <h2 className="text-lg font-black text-white/70 dark:text-white">{isRTL ? 'ملخص الأداء' : 'Performance Summary'}</h2>
+              <p className="text-sm text-white/70 dark:text-white/70">{isRTL ? 'إشارات يومية وأسبوعية وشهرية من بيانات المنصة الحية.' : 'Daily, weekly, and monthly signals from live platform data.'}</p>
             </div>
             <Badge tone={providerConfigured ? 'emerald' : 'amber'}>{providerConfigured ? (isRTL ? 'الذكاء الاصطناعي جاهز' : 'AI Ready') : (isRTL ? 'مطلوب مفتاح API' : 'API key needed')}</Badge>
           </div>
           <div className="grid gap-4 p-5 md:grid-cols-3">
             {[{ label: isRTL ? 'الرسائل اليوم' : 'Messages today', value: stats.messages_today || 0, total: Math.max(stats.total_messages, 1) }, { label: isRTL ? 'القنوات المتصلة' : 'Connected channels', value: stats.total_channels, total: Math.max(stats.total_users, 1) }, { label: isRTL ? 'الاشتراكات النشطة' : 'Active subscriptions', value: stats.active_subscriptions, total: Math.max(stats.total_users, 1) }].map((item) => (
-              <div key={item.label} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
-                <div className="flex items-center justify-between text-sm"><span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span><span className="text-slate-500 dark:text-slate-400">{number(item.value)}</span></div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" style={{ width: `${Math.min(100, Math.round((item.value / item.total) * 100))}%` }} /></div>
+              <div key={item.label} className="rounded-2xl bg-white/5 p-4 dark:bg-white/5">
+                <div className="flex items-center justify-between text-sm"><span className="font-bold text-white/70 dark:text-white/70">{item.label}</span><span className="text-white/70 dark:text-white/70">{number(item.value)}</span></div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5 dark:bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-[#C7DAF8]/40 to-white/40" style={{ width: `${Math.min(100, Math.round((item.value / item.total) * 100))}%` }} /></div>
               </div>
             ))}
           </div>
         </Panel>
 
         <Panel>
-          <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? 'حالة النظام' : 'System Status'}</h2>
+          <h2 className="text-lg font-black text-white/70 dark:text-white">{isRTL ? 'حالة النظام' : 'System Status'}</h2>
           <div className="mt-4 space-y-3">
-            {[{ icon: Server, label: isRTL ? 'الخادم' : 'Server', status: isRTL ? 'يعمل' : 'Operational' }, { icon: Database, label: isRTL ? 'قاعدة البيانات' : 'Database', status: isRTL ? 'متصل' : 'Connected' }, { icon: Wifi, label: isRTL ? 'واجهة API' : 'API', status: isRTL ? 'صحي' : 'Healthy' }, { icon: Bot, label: isRTL ? 'مزود الذكاء الاصطناعي' : 'AI Provider', status: `${ai.provider || 'gemini'} -> ${ai.fallback_provider || 'claude'}` }].map((item) => <div key={item.label} className="flex items-center justify-between rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><div className="flex items-center gap-3"><item.icon size={18} className="text-emerald-500" /><span className="font-bold text-slate-700 dark:text-slate-200">{item.label}</span></div><span className="text-xs text-slate-500 dark:text-slate-400">{item.status}</span></div>)}
+            {[{ icon: Server, label: isRTL ? 'الخادم' : 'Server', status: isRTL ? 'يعمل' : 'Operational' }, { icon: Database, label: isRTL ? 'قاعدة البيانات' : 'Database', status: isRTL ? 'متصل' : 'Connected' }, { icon: Wifi, label: isRTL ? 'واجهة API' : 'API', status: isRTL ? 'صحي' : 'Healthy' }, { icon: Bot, label: isRTL ? 'مزود الذكاء الاصطناعي' : 'AI Provider', status: `${ai.provider || 'gemini'} -> ${ai.fallback_provider || 'claude'}` }].map((item) => <div key={item.label} className="flex items-center justify-between rounded-2xl bg-white/5 p-3 dark:bg-white/5"><div className="flex items-center gap-3"><item.icon size={18} className="text-white/50" /><span className="font-bold text-white/70 dark:text-white/70">{item.label}</span></div><span className="text-xs text-white/70 dark:text-white/70">{item.status}</span></div>)}
           </div>
         </Panel>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <Panel className="xl:col-span-2">
-          <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? '?????? ??????' : 'Recent Activity'}</h2><Badge tone="cyan">{number(data!.recent_activity?.length)} {isRTL ? '???' : 'events'}</Badge></div>
+          <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-black text-white/70 dark:text-white">{isRTL ? '?????? ??????' : 'Recent Activity'}</h2><Badge tone="cyan">{number(data!.recent_activity?.length)} {isRTL ? '???' : 'events'}</Badge></div>
           <div className="space-y-3">
-            {(data!.recent_activity || []).map((item) => <div key={item.id} className="flex items-start gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-white/5"><div className="mt-0.5 grid h-9 w-9 place-items-center rounded-xl bg-white text-slate-600 shadow-sm dark:bg-slate-900 dark:text-slate-300">{item.is_ai ? <Bot size={17} /> : <CheckCircle2 size={17} />}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="font-bold text-slate-900 dark:text-white">{item.conversation?.sender_name || (isRTL ? '????' : 'Customer')}</span><Badge tone={item.is_ai ? 'violet' : 'slate'}>{item.is_ai ? 'AI' : item.direction}</Badge><span className="text-xs text-slate-500">{item.conversation?.channel?.type || 'channel'}</span></div><p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{item.content}</p></div><div className="whitespace-nowrap text-xs text-slate-500"><Clock size={13} className="mb-1 inline" /> {formatDate(item.created_at)}</div></div>)}
-            {(!data!.recent_activity || data!.recent_activity.length === 0) && <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm text-slate-500 dark:bg-white/5 dark:text-slate-400">{isRTL ? '?? ???? ???? ???? ???.' : 'No recent activity yet.'}</div>}
+            {(data!.recent_activity || []).map((item) => <div key={item.id} className="flex items-start gap-3 rounded-2xl bg-white/5 p-4 dark:bg-white/5"><div className="mt-0.5 grid h-9 w-9 place-items-center rounded-xl bg-white text-white/70 shadow-sm dark:bg-white/5 dark:text-white/70">{item.is_ai ? <Bot size={17} /> : <CheckCircle2 size={17} />}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="font-bold text-white/70 dark:text-white">{item.conversation?.sender_name || (isRTL ? '????' : 'Customer')}</span><Badge tone={item.is_ai ? 'violet' : 'slate'}>{item.is_ai ? 'AI' : item.direction}</Badge><span className="text-xs text-white/70">{item.conversation?.channel?.type || 'channel'}</span></div><p className="mt-1 line-clamp-2 text-sm text-white/70 dark:text-white/70">{item.content}</p></div><div className="whitespace-nowrap text-xs text-white/70"><Clock size={13} className="mb-1 inline" /> {formatDate(item.created_at)}</div></div>)}
+            {(!data!.recent_activity || data!.recent_activity.length === 0) && <div className="rounded-2xl bg-white/5 p-8 text-center text-sm text-white/70 dark:bg-white/5 dark:text-white/70">{isRTL ? '?? ???? ???? ???? ???.' : 'No recent activity yet.'}</div>}
           </div>
         </Panel>
 
         <Panel>
-          <h2 className="text-lg font-black text-slate-950 dark:text-white">{isRTL ? '???? ??????????' : 'Latest Subscriptions'}</h2>
+          <h2 className="text-lg font-black text-white/70 dark:text-white">{isRTL ? '???? ??????????' : 'Latest Subscriptions'}</h2>
           <div className="mt-4 space-y-3">
-            {data!.recent_subscriptions.map((sub) => <div key={sub.id} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5"><div className="flex items-center justify-between gap-3"><div><div className="font-bold text-slate-900 dark:text-white">{sub.user?.name}</div><div className="text-xs text-slate-500">{sub.package?.name || 'Package'}</div></div><Badge tone={sub.status === 'active' ? 'emerald' : 'rose'}>{sub.status}</Badge></div><div className="mt-3 flex items-center justify-between text-sm"><span className="text-slate-500">{formatDate(sub.created_at)}</span><span className="font-black text-slate-950 dark:text-white">{currency(sub.amount_paid)}</span></div></div>)}
+            {data!.recent_subscriptions.map((sub) => <div key={sub.id} className="rounded-2xl bg-white/5 p-4 dark:bg-white/5"><div className="flex items-center justify-between gap-3"><div><div className="font-bold text-white/70 dark:text-white">{sub.user?.name}</div><div className="text-xs text-white/70">{sub.package?.name || 'Package'}</div></div><Badge tone={sub.status === 'active' ? 'emerald' : 'rose'}>{sub.status}</Badge></div><div className="mt-3 flex items-center justify-between text-sm"><span className="text-white/70">{formatDate(sub.created_at)}</span><span className="font-black text-white/70 dark:text-white">{currency(sub.amount_paid)}</span></div></div>)}
           </div>
         </Panel>
       </div>

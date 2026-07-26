@@ -16,12 +16,12 @@ function getToken(): string {
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const CHANNELS_DEFS = [
-  { id: 'instagram', name: 'Instagram',      color: '#E1306C', plan: 'free' },
-  { id: 'facebook',  name: 'Facebook',       color: '#1877F2', plan: 'free' },
-  { id: 'gmail',     name: 'Gmail',          color: '#EA4335', plan: 'free' },
-  { id: 'whatsapp',  name: 'WhatsApp',       color: '#25D366', plan: 'free' },
-  { id: 'reviews',   name: 'Google Reviews', color: '#FBBC05', plan: 'free' },
-  { id: 'webchat',   name: 'Web Chat',       color: '#60A5FA', plan: 'starter' },
+  { id: 'instagram', name: 'Instagram',      color: '#C7DAF8', plan: 'free' },
+  { id: 'facebook',  name: 'Facebook',       color: '#C7DAF8', plan: 'free' },
+  { id: 'gmail',     name: 'Gmail',          color: '#C7DAF8', plan: 'free' },
+  { id: 'whatsapp',  name: 'WhatsApp',       color: '#C7DAF8', plan: 'free' },
+  { id: 'reviews',   name: 'Google Reviews', color: '#C7DAF8', plan: 'free' },
+  { id: 'webchat',   name: 'Web Chat',       color: '#C7DAF8', plan: 'starter' },
 ]
 
 function ConnectModal({
@@ -90,10 +90,10 @@ function ConnectModal({
           <div className="flex items-center gap-3 mb-5">
             <ChannelIcon type={ch.id as any} size={48} />
             <div>
-              <h3 className="font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+              <h3 className="font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
                 {t.channels.connect} {ch.name}
               </h3>
-              <p className="text-xs" style={{ color: 'rgba(136,136,170,0.8)' }}>
+              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
                 {t.channels.willNeedSignIn}
               </p>
             </div>
@@ -101,7 +101,7 @@ function ConnectModal({
 
           <div className="p-3 rounded-xl mb-5"
             style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-            <p className="text-xs" style={{ color: 'rgba(136,136,170,0.8)' }}>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
               {t.channels.permissionText.replace('{channel}', ch.name)}
             </p>
           </div>
@@ -201,11 +201,11 @@ export default function ChannelsPage() {
         body: JSON.stringify({ ai_enabled: !currentStatus }),
       })
       if (res.ok) {
-        setToast({ 
-          message: !currentStatus 
-            ? t.channels.aiEnabled 
-            : t.channels.aiDisabled, 
-          type: 'success' 
+        setToast({
+          message: !currentStatus
+            ? t.channels.aiEnabled
+            : t.channels.aiDisabled,
+          type: 'success'
         })
         fetchChannels()
       }
@@ -217,10 +217,10 @@ export default function ChannelsPage() {
 
   const CHANNELS = CHANNELS_DEFS.map(def => {
     const apiCh = apiChannels.find(c => c.type === def.id)
-    return { 
-      ...def, 
-      connected: !!apiCh, 
-      dbId: apiCh?.id ?? null, 
+    return {
+      ...def,
+      connected: !!apiCh,
+      dbId: apiCh?.id ?? null,
       pageName: apiCh?.page_name ?? null,
       aiEnabled: apiCh?.ai_enabled ?? false,
       connectedAt: apiCh?.connected_at ?? null,
@@ -230,17 +230,17 @@ export default function ChannelsPage() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+        <h2 className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
           {t.channels.title}
         </h2>
-        <p className="text-sm mt-1" style={{ color: 'rgba(136,136,170,0.8)' }}>
+        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
           {t.channels.subtitle}
         </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#3B82F6' }}>
+          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#C7DAF8' }}>
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
           </svg>
@@ -254,30 +254,30 @@ export default function ChannelsPage() {
               transition={{ delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
               className="card-os rounded-2xl p-5 relative"
               style={{
-                background: 'rgba(17,17,17,0.7)',
-                border: `1px solid ${ch.connected ? 'rgba(198,255,0,0.15)' : 'rgba(255,255,255,0.05)'}`,
+                background: 'rgba(18,19,23,0.7)',
+                border: `1px solid ${ch.connected ? 'rgba(199,218,248,0.15)' : 'rgba(255,255,255,0.05)'}`,
               }}
             >
 
               <div className="flex items-center gap-3 mb-4">
                 <ChannelIcon type={ch.id as any} size={48} />
                 <div>
-                  <div className="font-bold text-sm" style={{ color: '#F0F0FF' }}>{ch.name}</div>
+                  <div className="font-bold text-sm" style={{ color: '#FFFFFF' }}>{ch.name}</div>
                   {ch.pageName && (
-                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       {ch.pageName}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {ch.connected ? (
                       <>
-                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#10B981' }} />
-                        <span className="text-[11px] font-semibold" style={{ color: '#10B981' }}>
+                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+                        <span className="text-[11px] font-semibold" style={{ color: '#C7DAF8' }}>
                           {t.channels.connected}
                         </span>
                       </>
                     ) : (
-                      <span className="text-[11px]" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                      <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         {t.channels.notConnected}
                       </span>
                     )}
@@ -288,13 +288,13 @@ export default function ChannelsPage() {
               <div className="flex gap-2">
                 {ch.connected ? (
                   <>
-                    <button 
+                    <button
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost"
-                      style={{ 
-                        background: ch.aiEnabled ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.04)', 
-                        border: ch.aiEnabled ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)', 
-                        color: ch.aiEnabled ? '#3B82F6' : 'rgba(136,136,170,0.8)' 
+                      style={{
+                        background: ch.aiEnabled ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.04)',
+                        border: ch.aiEnabled ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                        color: ch.aiEnabled ? '#C7DAF8' : 'rgba(255,255,255,0.8)'
                       }}
                     >
                       <div className="flex items-center justify-center gap-1.5">
@@ -304,14 +304,14 @@ export default function ChannelsPage() {
                     </button>
                     <button onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
                       className="py-2.5 px-3 rounded-xl text-xs font-bold"
-                      style={{ background: 'rgba(255,77,109,0.07)', border: '1px solid rgba(255,77,109,0.18)', color: '#FF4D6D' }}>
+                      style={{ background: 'rgba(199,218,248,0.07)', border: '1px solid rgba(199,218,248,0.18)', color: '#C7DAF8' }}>
                       {t.channels.disconnect}
                     </button>
                   </>
                 ) : (
                   <button onClick={() => setConnecting(ch)}
                     className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost flex items-center justify-center gap-1.5"
-                    style={{ color: 'rgba(136,136,170,0.8)' }}>
+                    style={{ color: 'rgba(255,255,255,0.8)' }}>
                     <PlusIcon size={14} />
                     {t.channels.connect}
                   </button>
@@ -340,9 +340,9 @@ export default function ChannelsPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-bold"
             style={{
-              background: toast.type === 'success' ? 'rgba(59,130,246,0.1)' : 'rgba(255,77,109,0.1)',
-              border: toast.type === 'success' ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,77,109,0.3)',
-              color: toast.type === 'success' ? '#3B82F6' : '#FF4D6D',
+              background: toast.type === 'success' ? 'rgba(199,218,248,0.1)' : 'rgba(199,218,248,0.1)',
+              border: toast.type === 'success' ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(199,218,248,0.3)',
+              color: toast.type === 'success' ? '#C7DAF8' : '#C7DAF8',
             }}
           >
             {toast.message}

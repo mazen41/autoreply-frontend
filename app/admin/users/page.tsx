@@ -99,12 +99,12 @@ export default function AdminUsersPage() {
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Panel><div className="text-sm font-bold text-slate-500 dark:text-slate-400">{isRTL ? '?????? ???????' : 'Total results'}</div><div className="mt-2 text-3xl font-black text-slate-950 dark:text-white">{total.toLocaleString(isRTL ? 'ar-SA' : 'en-US')}</div></Panel>
-        <Panel><div className="text-sm font-bold text-slate-500 dark:text-slate-400">{isRTL ? '??????? ?? ??????' : 'Admins on page'}</div><div className="mt-2 text-3xl font-black text-slate-950 dark:text-white">{summary.admins}</div></Panel>
-        <Panel><div className="text-sm font-bold text-slate-500 dark:text-slate-400">{isRTL ? '???????? ????' : 'Active subscriptions'}</div><div className="mt-2 text-3xl font-black text-slate-950 dark:text-white">{summary.active}</div></Panel>
+        <Panel><div className="text-sm font-bold text-white/70 dark:text-white/70">{isRTL ? '?????? ???????' : 'Total results'}</div><div className="mt-2 text-3xl font-black text-white/70 dark:text-white">{total.toLocaleString(isRTL ? 'ar-SA' : 'en-US')}</div></Panel>
+        <Panel><div className="text-sm font-bold text-white/70 dark:text-white/70">{isRTL ? '??????? ?? ??????' : 'Admins on page'}</div><div className="mt-2 text-3xl font-black text-white/70 dark:text-white">{summary.admins}</div></Panel>
+        <Panel><div className="text-sm font-bold text-white/70 dark:text-white/70">{isRTL ? '???????? ????' : 'Active subscriptions'}</div><div className="mt-2 text-3xl font-black text-white/70 dark:text-white">{summary.active}</div></Panel>
       </div>
 
-      {error && <Panel className="border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200">{error}</Panel>}
+      {error && <Panel className="border-white/20 bg-white/50 text-white/70 dark:border-white/40 dark:bg-white/40 dark:text-white/20">{error}</Panel>}
 
       <Panel>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -116,7 +116,7 @@ export default function AdminUsersPage() {
               <option value="true">{isRTL ? '???????' : 'Admins'}</option>
             </select>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400"><Filter size={16} />{isRTL ? '??? ??? ??????' : 'Sorted newest first'}</div>
+          <div className="flex items-center gap-2 text-sm text-white/70 dark:text-white/70"><Filter size={16} />{isRTL ? '??? ??? ??????' : 'Sorted newest first'}</div>
         </div>
       </Panel>
 
@@ -125,26 +125,26 @@ export default function AdminUsersPage() {
           <>
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[900px] text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-white/5 dark:text-slate-400"><tr><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????????' : 'User'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '?????' : 'Role'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????????' : 'Subscription'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '??????' : 'Activity'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????' : 'Joined'}</th><th className="px-5 py-4 text-right rtl:text-left">{isRTL ? '?????????' : 'Actions'}</th></tr></thead>
+                <thead className="bg-white/5 text-xs uppercase tracking-wide text-white/70 dark:bg-white/5 dark:text-white/70"><tr><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????????' : 'User'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '?????' : 'Role'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????????' : 'Subscription'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '??????' : 'Activity'}</th><th className="px-5 py-4 text-left rtl:text-right">{isRTL ? '????' : 'Joined'}</th><th className="px-5 py-4 text-right rtl:text-left">{isRTL ? '?????????' : 'Actions'}</th></tr></thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/10">
-                  {users.map((user) => <tr key={user.id} className="transition hover:bg-slate-50 dark:hover:bg-white/5"><td className="px-5 py-4"><UserIdentity user={user} /></td><td className="px-5 py-4"><Badge tone={user.is_admin ? 'emerald' : 'slate'}>{user.is_admin ? (isRTL ? '?????' : 'Admin') : (isRTL ? '??????' : 'User')}</Badge></td><td className="px-5 py-4"><div className="font-bold text-slate-800 dark:text-slate-100">{user.subscription?.package?.name || (isRTL ? '???? ????' : 'No plan')}</div><div className="text-xs text-slate-500">{user.subscription?.status || 'inactive'}</div></td><td className="px-5 py-4 text-slate-600 dark:text-slate-300">{user.channels_count || 0} {isRTL ? '?????' : 'channels'} · {user.messages_count || 0} {isRTL ? '?????' : 'messages'}</td><td className="px-5 py-4 text-slate-500">{formatDate(user.created_at)}</td><td className="px-5 py-4"><div className="flex justify-end gap-2 rtl:justify-start"><Button variant="ghost" onClick={() => handleToggleAdmin(user)}><UserCog size={15} />{user.is_admin ? (isRTL ? '?????' : 'Revoke') : (isRTL ? '?????' : 'Promote')}</Button><Button variant="danger" onClick={() => handleDeleteUser(user)}><Trash2 size={15} />{isRTL ? '???' : 'Delete'}</Button></div></td></tr>)}
+                  {users.map((user) => <tr key={user.id} className="transition hover:bg-white/5 dark:hover:bg-white/5"><td className="px-5 py-4"><UserIdentity user={user} /></td><td className="px-5 py-4"><Badge tone={user.is_admin ? 'emerald' : 'slate'}>{user.is_admin ? (isRTL ? '?????' : 'Admin') : (isRTL ? '??????' : 'User')}</Badge></td><td className="px-5 py-4"><div className="font-bold text-white/70 dark:text-white/70">{user.subscription?.package?.name || (isRTL ? '???? ????' : 'No plan')}</div><div className="text-xs text-white/70">{user.subscription?.status || 'inactive'}</div></td><td className="px-5 py-4 text-white/70 dark:text-white/70">{user.channels_count || 0} {isRTL ? '?????' : 'channels'} · {user.messages_count || 0} {isRTL ? '?????' : 'messages'}</td><td className="px-5 py-4 text-white/70">{formatDate(user.created_at)}</td><td className="px-5 py-4"><div className="flex justify-end gap-2 rtl:justify-start"><Button variant="ghost" onClick={() => handleToggleAdmin(user)}><UserCog size={15} />{user.is_admin ? (isRTL ? '?????' : 'Revoke') : (isRTL ? '?????' : 'Promote')}</Button><Button variant="danger" onClick={() => handleDeleteUser(user)}><Trash2 size={15} />{isRTL ? '???' : 'Delete'}</Button></div></td></tr>)}
                 </tbody>
               </table>
             </div>
-            <div className="space-y-3 p-4 lg:hidden">{users.map((user) => <div key={user.id} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5"><div className="flex items-start justify-between gap-3"><UserIdentity user={user} /><Badge tone={user.is_admin ? 'emerald' : 'slate'}>{user.is_admin ? 'Admin' : 'User'}</Badge></div><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-500"><span>{formatDate(user.created_at)}</span><span>{user.channels_count || 0} channels</span></div><div className="mt-4 flex gap-2"><Button variant="ghost" className="flex-1" onClick={() => handleToggleAdmin(user)}><Shield size={15} />{user.is_admin ? 'Revoke' : 'Promote'}</Button><Button variant="danger" className="flex-1" onClick={() => handleDeleteUser(user)}><Trash2 size={15} />Delete</Button></div></div>)}</div>
-            {users.length === 0 && <div className="p-10 text-center text-sm text-slate-500 dark:text-slate-400">{isRTL ? '?? ???? ????? ??????.' : 'No matching users found.'}</div>}
+            <div className="space-y-3 p-4 lg:hidden">{users.map((user) => <div key={user.id} className="rounded-2xl bg-white/5 p-4 dark:bg-white/5"><div className="flex items-start justify-between gap-3"><UserIdentity user={user} /><Badge tone={user.is_admin ? 'emerald' : 'slate'}>{user.is_admin ? 'Admin' : 'User'}</Badge></div><div className="mt-4 grid grid-cols-2 gap-3 text-sm text-white/70"><span>{formatDate(user.created_at)}</span><span>{user.channels_count || 0} channels</span></div><div className="mt-4 flex gap-2"><Button variant="ghost" className="flex-1" onClick={() => handleToggleAdmin(user)}><Shield size={15} />{user.is_admin ? 'Revoke' : 'Promote'}</Button><Button variant="danger" className="flex-1" onClick={() => handleDeleteUser(user)}><Trash2 size={15} />Delete</Button></div></div>)}</div>
+            {users.length === 0 && <div className="p-10 text-center text-sm text-white/70 dark:text-white/70">{isRTL ? '?? ???? ????? ??????.' : 'No matching users found.'}</div>}
           </>
         )}
       </Panel>
 
-      {totalPages > 1 && <div className="flex items-center justify-center gap-2"><Button variant="ghost" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>{isRTL ? '??????' : 'Previous'}</Button><span className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-slate-700 shadow-sm dark:bg-white/8 dark:text-slate-200">{page} / {totalPages}</span><Button variant="ghost" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>{isRTL ? '??????' : 'Next'}</Button></div>}
+      {totalPages > 1 && <div className="flex items-center justify-center gap-2"><Button variant="ghost" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>{isRTL ? '??????' : 'Previous'}</Button><span className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-white/70 shadow-sm dark:bg-white/8 dark:text-white/70">{page} / {totalPages}</span><Button variant="ghost" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>{isRTL ? '??????' : 'Next'}</Button></div>}
     </AdminShell>
   )
 }
 
 function UserIdentity({ user }: { user: User }) {
   const initials = (user.name || user.email || '?').slice(0, 1).toUpperCase()
-  return <div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-400 to-cyan-400 text-sm font-black text-slate-950">{initials}</div><div className="min-w-0"><div className="truncate font-black text-slate-950 dark:text-white">{user.name}</div><div className="truncate text-xs text-slate-500 dark:text-slate-400">{user.email}</div></div></div>
+  return <div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#C7DAF8]/40 to-white/40 text-sm font-black text-white/70">{initials}</div><div className="min-w-0"><div className="truncate font-black text-white/70 dark:text-white">{user.name}</div><div className="truncate text-xs text-white/70 dark:text-white/70">{user.email}</div></div></div>
 }
 
 

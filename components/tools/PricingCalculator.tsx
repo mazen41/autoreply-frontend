@@ -37,7 +37,7 @@ export default function PricingCalculator() {
   return (
     <div>
       {/* Info Banner */}
-      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
           This calculator helps you determine the optimal selling price for your products
         </p>
@@ -56,10 +56,10 @@ export default function PricingCalculator() {
             placeholder="0.00"
             step="0.01"
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
             تكلفة الشحن / Shipping Cost ($)
@@ -71,10 +71,10 @@ export default function PricingCalculator() {
             placeholder="0.00"
             step="0.01"
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
             الإعلان لكل وحدة / Ad Spend per Unit ($)
@@ -86,10 +86,10 @@ export default function PricingCalculator() {
             placeholder="0.00"
             step="0.01"
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
             هامش الربح المطلوب / Desired Profit Margin (%)
@@ -111,7 +111,7 @@ export default function PricingCalculator() {
               min="10"
               max="80"
               className="w-20 px-3 py-2 rounded-lg text-sm text-center outline-none"
-              style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+              style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
             />
           </div>
         </div>
@@ -122,29 +122,29 @@ export default function PricingCalculator() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="p-6 rounded-xl"
-        style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
+        style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
       >
-        <h3 className="font-bold mb-4" style={{ color: '#F5F5F5' }}>النتائج / Results</h3>
-        
+        <h3 className="font-bold mb-4" style={{ color: '#FFFFFF' }}>النتائج / Results</h3>
+
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.2)' }}>
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.2)' }}>
             <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>السعر المقترح / Recommended Price</div>
-            <div className="text-2xl font-bold" style={{ color: '#C6FF00' }}>${calculations.recommendedPrice}</div>
+            <div className="text-2xl font-bold" style={{ color: '#C7DAF8' }}>${calculations.recommendedPrice}</div>
           </div>
-          
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>الربح لكل وحدة / Profit per Unit</div>
-            <div className="text-2xl font-bold" style={{ color: '#F5F5F5' }}>${calculations.profitPerUnit}</div>
+            <div className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>${calculations.profitPerUnit}</div>
           </div>
-          
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>هامش الربح الفعلي / Actual Margin</div>
-            <div className="text-2xl font-bold" style={{ color: '#F5F5F5' }}>{calculations.actualMargin}%</div>
+            <div className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>{calculations.actualMargin}%</div>
           </div>
-          
-          <div className="p-4 rounded-lg" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+
+          <div className="p-4 rounded-lg" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>نقطة التعادل / Break-even Units</div>
-            <div className="text-2xl font-bold" style={{ color: '#F5F5F5' }}>{calculations.breakEvenUnits}</div>
+            <div className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>{calculations.breakEvenUnits}</div>
           </div>
         </div>
 
@@ -164,12 +164,12 @@ export default function PricingCalculator() {
         </div>
 
         {/* Upsell CTA */}
-        <div className="mt-6 p-4 rounded-xl text-center" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+        <div className="mt-6 p-4 rounded-xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
           <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
             هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
           </p>
           <Link href="/register" className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
-            style={{ background: '#C6FF00', color: '#050505' }}>
+            style={{ background: '#C7DAF8', color: '#121317' }}>
             جرّب مجاناً
           </Link>
         </div>

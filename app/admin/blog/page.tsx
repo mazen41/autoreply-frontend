@@ -24,7 +24,7 @@ export default function AdminBlogPage() {
   const [editingPost, setEditingPost] = useState<Post | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
+
   const [formData, setFormData] = useState({
     title: '',
     body: '',
@@ -158,7 +158,7 @@ export default function AdminBlogPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00FFB2]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
       </div>
     )
   }
@@ -167,10 +167,10 @@ export default function AdminBlogPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black mb-2" style={{ color: '#F0F0FF' }}>
+          <h1 className="text-3xl font-black mb-2" style={{ color: '#FFFFFF' }}>
             {isRTL ? 'المدونة' : 'Blog'}
           </h1>
-          <p style={{ color: 'rgba(240,240,255,0.6)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)' }}>
             {isRTL ? 'إدارة المقالات والمحتوى' : 'Manage posts and content'}
           </p>
         </div>
@@ -178,8 +178,8 @@ export default function AdminBlogPage() {
           onClick={() => setShowModal(true)}
           className="px-6 py-3 rounded-xl font-bold transition-all"
           style={{
-            background: 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-            color: '#050508',
+            background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+            color: '#121317',
           }}
         >
           {isRTL ? '+ مقال جديد' : '+ New Post'}
@@ -187,35 +187,35 @@ export default function AdminBlogPage() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(255,0,0,0.1)', color: '#FF6B6B' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}>
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(0,255,178,0.1)', color: '#00FFB2' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}>
           {success}
         </div>
       )}
 
       {/* Posts Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#0F0F1A' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: '#121317' }}>
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <th className="text-left p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'العنوان' : 'Title'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'التصنيف' : 'Category'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'الحالة' : 'Status'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'التاريخ' : 'Date'}
               </th>
-              <th className="text-right p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <th className="text-right p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'الإجراءات' : 'Actions'}
               </th>
             </tr>
@@ -223,7 +223,7 @@ export default function AdminBlogPage() {
           <tbody>
             {posts.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center" style={{ color: 'rgba(240,240,255,0.4)' }}>
+                <td colSpan={5} className="p-8 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
                   {isRTL ? 'لا توجد مقالات' : 'No posts yet'}
                 </td>
               </tr>
@@ -232,27 +232,27 @@ export default function AdminBlogPage() {
                 <tr key={post.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td className="p-4">
                     <div>
-                      <div className="font-bold" style={{ color: '#F0F0FF' }}>{post.title}</div>
-                      <div className="text-xs mt-1" style={{ color: 'rgba(240,240,255,0.4)' }}>
+                      <div className="font-bold" style={{ color: '#FFFFFF' }}>{post.title}</div>
+                      <div className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
                         {post.slug}
                       </div>
                     </div>
                   </td>
-                  <td className="p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                  <td className="p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     {post.category || '-'}
                   </td>
                   <td className="p-4">
                     <span
                       className="px-3 py-1 rounded-full text-xs font-bold"
                       style={{
-                        background: post.status === 'published' ? 'rgba(0,255,178,0.1)' : 'rgba(255,255,255,0.05)',
-                        color: post.status === 'published' ? '#00FFB2' : 'rgba(240,240,255,0.6)',
+                        background: post.status === 'published' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
+                        color: post.status === 'published' ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
                       }}
                     >
                       {post.status === 'published' ? (isRTL ? 'منشور' : 'Published') : (isRTL ? 'مسودة' : 'Draft')}
                     </span>
                   </td>
-                  <td className="p-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                  <td className="p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     {formatDate(post.published_at || post.created_at)}
                   </td>
                   <td className="p-4 text-right">
@@ -263,9 +263,9 @@ export default function AdminBlogPage() {
                             onClick={() => handlePublish(post.id)}
                             className="px-3 py-1 rounded-lg text-xs font-bold transition-all"
                             style={{
-                              background: 'rgba(0,255,178,0.1)',
-                              color: '#00FFB2',
-                              border: '1px solid rgba(0,255,178,0.3)',
+                              background: 'rgba(199,218,248,0.1)',
+                              color: '#C7DAF8',
+                              border: '1px solid rgba(199,218,248,0.3)',
                             }}
                           >
                             {isRTL ? 'نشر' : 'Publish'}
@@ -274,9 +274,9 @@ export default function AdminBlogPage() {
                             onClick={() => handleReject(post.id)}
                             className="px-3 py-1 rounded-lg text-xs font-bold transition-all"
                             style={{
-                              background: 'rgba(255,107,107,0.1)',
+                              background: 'rgba(199,218,248,0.1)',
                               color: '#FF6B6B',
-                              border: '1px solid rgba(255,107,107,0.3)',
+                              border: '1px solid rgba(199,218,248,0.3)',
                             }}
                           >
                             {isRTL ? 'حذف' : 'Delete'}
@@ -284,7 +284,7 @@ export default function AdminBlogPage() {
                         </>
                       )}
                       {post.status === 'published' && (
-                        <span className="text-xs" style={{ color: 'rgba(240,240,255,0.4)' }}>
+                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                           {isRTL ? 'منشور' : 'Published'}
                         </span>
                       )}
@@ -300,15 +300,15 @@ export default function AdminBlogPage() {
       {/* Create Post Modal */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="rounded-2xl p-6 w-full max-w-2xl" style={{ background: '#0F0F1A', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="rounded-2xl p-6 w-full max-w-2xl" style={{ background: '#121317', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold" style={{ color: '#F0F0FF' }}>
+              <h2 className="text-xl font-bold" style={{ color: '#FFFFFF' }}>
                 {isRTL ? 'مقال جديد' : 'New Post'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-2xl"
-                style={{ color: 'rgba(240,240,255,0.6)' }}
+                style={{ color: 'rgba(255,255,255,0.6)' }}
               >
                 ×
               </button>
@@ -316,7 +316,7 @@ export default function AdminBlogPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'العنوان' : 'Title'}
                 </label>
                 <input
@@ -325,12 +325,12 @@ export default function AdminBlogPage() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'المحتوى' : 'Content'}
                 </label>
                 <textarea
@@ -339,12 +339,12 @@ export default function AdminBlogPage() {
                   required
                   rows={10}
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF', resize: 'vertical' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', resize: 'vertical' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'مقتطف (اختياري)' : 'Excerpt (optional)'}
                 </label>
                 <textarea
@@ -352,12 +352,12 @@ export default function AdminBlogPage() {
                   onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF', resize: 'vertical' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', resize: 'vertical' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'التصنيف (اختياري)' : 'Category (optional)'}
                 </label>
                 <input
@@ -365,12 +365,12 @@ export default function AdminBlogPage() {
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'الوسوم (اختياري - مفصولة بفواصل)' : 'Tags (optional - comma separated)'}
                 </label>
                 <input
@@ -378,12 +378,12 @@ export default function AdminBlogPage() {
                   value={formData.tags}
                   onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {isRTL ? 'رابط الصورة المميزة (اختياري)' : 'Featured Image URL (optional)'}
                 </label>
                 <input
@@ -391,7 +391,7 @@ export default function AdminBlogPage() {
                   value={formData.featured_image_url}
                   onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl bg-transparent"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
                 />
               </div>
 
@@ -400,8 +400,8 @@ export default function AdminBlogPage() {
                   type="submit"
                   className="flex-1 py-3 rounded-xl font-bold transition-all"
                   style={{
-                    background: 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-                    color: '#050508',
+                    background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+                    color: '#121317',
                   }}
                 >
                   {isRTL ? 'إنشاء كمسودة' : 'Create as Draft'}
@@ -412,7 +412,7 @@ export default function AdminBlogPage() {
                   className="px-6 py-3 rounded-xl font-bold transition-all"
                   style={{
                     background: 'rgba(255,255,255,0.05)',
-                    color: 'rgba(240,240,255,0.6)',
+                    color: 'rgba(255,255,255,0.6)',
                     border: '1px solid rgba(255,255,255,0.1)',
                   }}
                 >

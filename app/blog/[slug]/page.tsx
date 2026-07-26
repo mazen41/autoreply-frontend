@@ -38,13 +38,13 @@ async function getPost(slug: string) {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await getPost(params.slug)
-  
+
   if (!post) {
     return {
       title: 'Article Not Found',
     }
   }
-  
+
   return {
     title: post.title,
     description: post.meta_description || post.excerpt,
@@ -58,13 +58,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function BlogArticlePage({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug)
-  
+
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <h1 className="font-black text-2xl mb-4" style={{ color: '#F5F5F5' }}>المقال غير موجود</h1>
-          <Link href="/blog" className="text-sm" style={{ color: '#3B82F6' }}>العودة للمدونة</Link>
+          <h1 className="font-black text-2xl mb-4" style={{ color: '#FFFFFF' }}>المقال غير موجود</h1>
+          <Link href="/blog" className="text-sm" style={{ color: '#C7DAF8' }}>العودة للمدونة</Link>
         </div>
       </div>
     )
@@ -88,11 +88,11 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#3B82F6', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
+            style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -122,12 +122,12 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
             {post.category && (
               <div className="inline-block px-4 py-2 rounded-lg text-sm font-bold mb-4"
-                style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
+                style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
                 {post.category}
               </div>
             )}
 
-            <h1 className="font-black mb-4" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: '#F5F5F5', letterSpacing: '-0.04em' }}>
+            <h1 className="font-black mb-4" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
               {post.title}
             </h1>
 
@@ -138,21 +138,21 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             </div>
 
             {/* Article Body */}
-            <div 
+            <div
               className="prose prose-invert max-w-none mb-12"
               style={{ color: 'rgba(255,255,255,0.8)' }}
               dangerouslySetInnerHTML={{ __html: post.body }}
             />
 
             {/* Related Tools */}
-            <div className="p-6 rounded-2xl mb-8" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="font-bold mb-4" style={{ color: '#F5F5F5' }}>أدوات مجانية ذات صلة</h3>
+            <div className="p-6 rounded-2xl mb-8" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <h3 className="font-bold mb-4" style={{ color: '#FFFFFF' }}>أدوات مجانية ذات صلة</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {relatedToolObjects.map((tool) => (
                   <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                     <div className="p-4 rounded-xl transition-all hover:scale-105"
                       style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div className="font-bold mb-1" style={{ color: '#3B82F6' }}>{tool.nameAr}</div>
+                      <div className="font-bold mb-1" style={{ color: '#C7DAF8' }}>{tool.nameAr}</div>
                       <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
                     </div>
                   </Link>
@@ -161,8 +161,8 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             </div>
 
             {/* Upsell Banner */}
-            <div className="p-6 rounded-2xl text-center" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)' }}>
-              <h3 className="font-bold mb-3" style={{ color: '#3B82F6' }}>
+            <div className="p-6 rounded-2xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
+              <h3 className="font-bold mb-3" style={{ color: '#C7DAF8' }}>
                 اكتشف كيف يمكن لـ Naz Autoreply أن يضاعف مبيعاتك
               </h3>
               <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -178,20 +178,20 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
-              <div className="p-6 rounded-2xl" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h3 className="font-bold mb-4" style={{ color: '#F5F5F5' }}>أدوات مجانية قد تعجبك</h3>
+              <div className="p-6 rounded-2xl" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h3 className="font-bold mb-4" style={{ color: '#FFFFFF' }}>أدوات مجانية قد تعجبك</h3>
                 <div className="space-y-3">
                   {tools.slice(0, 3).map((tool) => (
                     <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                       <div className="p-3 rounded-xl transition-all hover:scale-105"
                         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div className="font-bold text-sm mb-1" style={{ color: '#3B82F6' }}>{tool.nameAr}</div>
+                        <div className="font-bold text-sm mb-1" style={{ color: '#C7DAF8' }}>{tool.nameAr}</div>
                         <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
                       </div>
                     </Link>
                   ))}
                 </div>
-                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: '#3B82F6' }}>
+                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: '#C7DAF8' }}>
                   عرض جميع الأدوات →
                 </Link>
               </div>

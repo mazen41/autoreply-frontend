@@ -14,10 +14,10 @@ import { useLang } from '../../lib/LangContext'
 // Phase 5: 0.78–1.0  — DEPLOY YOUR AI (pricing)
 
 const CHANNELS = [
-  { id: 'wa',  label: 'WhatsApp',  icon: '💬', color: '#25D366', angle: -130 },
-  { id: 'ig',  label: 'Instagram', icon: '📸', color: '#E1306C', angle: -80  },
-  { id: 'em',  label: 'Email',     icon: '📧', color: '#7DF9FF', angle: 80   },
-  { id: 'web', label: 'Website',   icon: '🌐', color: '#C6FF00', angle: 130  },
+  { id: 'wa',  label: 'WhatsApp',  icon: '💬', color: '#C7DAF8', angle: -130 },
+  { id: 'ig',  label: 'Instagram', icon: '📸', color: '#C7DAF8', angle: -80  },
+  { id: 'em',  label: 'Email',     icon: '📧', color: '#C7DAF8', angle: 80   },
+  { id: 'web', label: 'Website',   icon: '🌐', color: '#C7DAF8', angle: 130  },
 ]
 
 const CAPABILITIES = [
@@ -30,18 +30,18 @@ const CAPABILITIES = [
 ]
 
 const MESSAGES = [
-  { from: 'Ahmed K.',  platform: 'WhatsApp',  color: '#25D366', icon: '💬', msgAr: 'هل التوصيل متاح؟',          msgEn: 'Is delivery available?',    statusAr: 'تم الرد',   statusEn: 'Responded', sc: '#C6FF00' },
-  { from: 'سارة م.',   platform: 'Instagram', color: '#E1306C', icon: '📸', msgAr: 'ما هي ساعات العمل؟',         msgEn: 'What are the hours?',       statusAr: 'يعالج...',  statusEn: 'Processing', sc: '#C6FF00' },
-  { from: 'Nora H.',   platform: 'Email',     color: '#7DF9FF', icon: '📧', msgAr: 'أريد حجز طاولة لـ 4 أشخاص', msgEn: 'Table for 4 please',        statusAr: 'تم الرد',   statusEn: 'Responded', sc: '#C6FF00' },
-  { from: 'خالد ع.',   platform: 'Website',   color: '#C6FF00', icon: '🌐', msgAr: 'كم سعر الباقة؟',             msgEn: 'Business plan price?',      statusAr: 'عميل ⚡',   statusEn: 'Lead ⚡',   sc: '#FFD700' },
-  { from: 'Omar F.',   platform: 'WhatsApp',  color: '#25D366', icon: '💬', msgAr: 'شكراً على الرد السريع!',     msgEn: 'Thanks for the quick reply!', statusAr: 'مغلق',    statusEn: 'Closed',    sc: 'rgba(255,255,255,0.4)' },
+  { from: 'Ahmed K.',  platform: 'WhatsApp',  color: '#C7DAF8', icon: '💬', msgAr: 'هل التوصيل متاح؟',          msgEn: 'Is delivery available?',    statusAr: 'تم الرد',   statusEn: 'Responded', sc: '#C7DAF8' },
+  { from: 'سارة م.',   platform: 'Instagram', color: '#C7DAF8', icon: '📸', msgAr: 'ما هي ساعات العمل؟',         msgEn: 'What are the hours?',       statusAr: 'يعالج...',  statusEn: 'Processing', sc: '#C7DAF8' },
+  { from: 'Nora H.',   platform: 'Email',     color: '#C7DAF8', icon: '📧', msgAr: 'أريد حجز طاولة لـ 4 أشخاص', msgEn: 'Table for 4 please',        statusAr: 'تم الرد',   statusEn: 'Responded', sc: '#C7DAF8' },
+  { from: 'خالد ع.',   platform: 'Website',   color: '#C7DAF8', icon: '🌐', msgAr: 'كم سعر الباقة؟',             msgEn: 'Business plan price?',      statusAr: 'عميل ⚡',   statusEn: 'Lead ⚡',   sc: '#FFD700' },
+  { from: 'Omar F.',   platform: 'WhatsApp',  color: '#C7DAF8', icon: '💬', msgAr: 'شكراً على الرد السريع!',     msgEn: 'Thanks for the quick reply!', statusAr: 'مغلق',    statusEn: 'Closed',    sc: 'rgba(255,255,255,0.4)' },
 ]
 
 const WORKFLOW = [
-  { icon: '💬', labelAr: 'رسالة واردة',   labelEn: 'Message In',       color: '#7DF9FF' },
-  { icon: '🧠', labelAr: 'الذكاء يحلل',   labelEn: 'AI Analyzes',      color: '#C6FF00' },
-  { icon: '⚡', labelAr: 'إجراء تلقائي',  labelEn: 'Auto Action',      color: '#C6FF00' },
-  { icon: '🎯', labelAr: 'نتيجة محققة',   labelEn: 'Result Achieved',  color: '#7DF9FF' },
+  { icon: '💬', labelAr: 'رسالة واردة',   labelEn: 'Message In',       color: '#C7DAF8' },
+  { icon: '🧠', labelAr: 'الذكاء يحلل',   labelEn: 'AI Analyzes',      color: '#C7DAF8' },
+  { icon: '⚡', labelAr: 'إجراء تلقائي',  labelEn: 'Auto Action',      color: '#C7DAF8' },
+  { icon: '🎯', labelAr: 'نتيجة محققة',   labelEn: 'Result Achieved',  color: '#C7DAF8' },
 ]
 
 const IMPACT = [
@@ -81,7 +81,7 @@ function AICore({ phase, size = 120 }: { phase: number; size?: number }) {
       {[0, 1, 2].map(i => (
         <div key={i} className="absolute rounded-full" style={{
           width: s * 0.95, height: s * 0.95,
-          border: '1px solid rgba(198,255,0,0.35)',
+          border: '1px solid rgba(199,218,248,0.35)',
           animation: `energyPulse 2.5s ease-out ${i * 0.83}s infinite`,
         }} />
       ))}
@@ -89,32 +89,32 @@ function AICore({ phase, size = 120 }: { phase: number; size?: number }) {
       <div className="absolute rounded-full core-rotate" style={{
         width: s * 0.93, height: s * 0.93,
         border: '1px solid transparent',
-        borderTop: `1px solid rgba(198,255,0,${0.3 + phase * 0.07})`,
-        borderRight: `1px solid rgba(198,255,0,${0.1 + phase * 0.03})`,
+        borderTop: `1px solid rgba(199,218,248,${0.3 + phase * 0.07})`,
+        borderRight: `1px solid rgba(199,218,248,${0.1 + phase * 0.03})`,
       }} />
       {/* Inner orbit */}
       <div className="absolute rounded-full core-rotate-rev" style={{
         width: s * 0.72, height: s * 0.72,
         border: '1px solid transparent',
-        borderBottom: `1px solid rgba(125,249,255,${0.3 + phase * 0.07})`,
-        borderLeft: `1px solid rgba(125,249,255,${0.1 + phase * 0.03})`,
+        borderBottom: `1px solid rgba(199,218,248,${0.3 + phase * 0.07})`,
+        borderLeft: `1px solid rgba(199,218,248,${0.1 + phase * 0.03})`,
       }} />
       {/* Core sphere */}
       <div className="relative core-glow" style={{
         width: s * 0.52, height: s * 0.52,
         borderRadius: '50%',
-        background: 'radial-gradient(circle at 38% 33%, rgba(198,255,0,0.22) 0%, rgba(198,255,0,0.05) 55%, transparent 80%)',
-        border: `2px solid rgba(198,255,0,${0.25 + phase * 0.07})`,
+        background: 'radial-gradient(circle at 38% 33%, rgba(199,218,248,0.22) 0%, rgba(199,218,248,0.05) 55%, transparent 80%)',
+        border: `2px solid rgba(199,218,248,${0.25 + phase * 0.07})`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: s * 0.18, filter: 'drop-shadow(0 0 16px rgba(198,255,0,0.9))' }}>✦</span>
+        <span style={{ fontSize: s * 0.18, filter: 'drop-shadow(0 0 16px rgba(199,218,248,0.9))' }}>✦</span>
       </div>
       {/* Orbit dots */}
       {[0, 72, 144, 216, 288].map((deg, i) => (
         <div key={i} className="absolute" style={{
           width: 5, height: 5, borderRadius: '50%',
-          background: i % 2 === 0 ? '#C6FF00' : '#7DF9FF',
-          boxShadow: `0 0 6px ${i % 2 === 0 ? '#C6FF00' : '#7DF9FF'}`,
+          background: i % 2 === 0 ? '#C7DAF8' : '#C7DAF8',
+          boxShadow: `0 0 6px ${i % 2 === 0 ? '#C7DAF8' : '#C7DAF8'}`,
           top: `${50 - 46 * Math.cos((deg * Math.PI) / 180)}%`,
           left: `${50 + 46 * Math.sin((deg * Math.PI) / 180)}%`,
           transform: 'translate(-50%,-50%)',
@@ -147,10 +147,10 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
   const counts = [c0, c1, c2, c3]
 
   const metrics = [
-    { labelAr: 'محادثة نشطة',    labelEn: 'Active Convos',    val: counts[0], suffix: '',  color: '#C6FF00' },
-    { labelAr: 'رد اليوم',        labelEn: 'Replies Today',    val: counts[1], suffix: '+', color: '#7DF9FF' },
-    { labelAr: 'عميل محتمل',      labelEn: 'Leads Generated', val: counts[2], suffix: '',  color: '#C6FF00' },
-    { labelAr: 'وقت الرد ثانية', labelEn: 'Avg Response',    val: counts[3], suffix: 's', color: '#7DF9FF' },
+    { labelAr: 'محادثة نشطة',    labelEn: 'Active Convos',    val: counts[0], suffix: '',  color: '#C7DAF8' },
+    { labelAr: 'رد اليوم',        labelEn: 'Replies Today',    val: counts[1], suffix: '+', color: '#C7DAF8' },
+    { labelAr: 'عميل محتمل',      labelEn: 'Leads Generated', val: counts[2], suffix: '',  color: '#C7DAF8' },
+    { labelAr: 'وقت الرد ثانية', labelEn: 'Avg Response',    val: counts[3], suffix: 's', color: '#C7DAF8' },
   ]
 
   return (
@@ -162,10 +162,10 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
         animate={visible ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.15 }}
         className="flex items-center gap-2.5 mb-10 px-5 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(198,255,0,0.18)' }}
+        style={{ border: '1px solid rgba(199,218,248,0.18)' }}
       >
-        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C6FF00' }} />
-        <span className="text-xs font-bold tracking-[0.1em]" style={{ color: '#C6FF00' }}>
+        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+        <span className="text-xs font-bold tracking-[0.1em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'نظام الذكاء الاصطناعي — مشغّل' : 'AI OPERATING SYSTEM — ONLINE'}
         </span>
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>v4.1.0</span>
@@ -179,7 +179,7 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
         className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12 w-full max-w-2xl"
       >
         {metrics.map((m, i) => (
-          <div key={i} className="card-os rounded-2xl p-4 text-center glass" style={{ background: 'rgba(17,17,17,0.8)' }}>
+          <div key={i} className="card-os rounded-2xl p-4 text-center glass" style={{ background: 'rgba(18,19,23,0.8)' }}>
             <div className="text-2xl font-black mb-1" style={{ color: m.color, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>
               {m.val.toLocaleString()}{m.suffix}
             </div>
@@ -209,16 +209,16 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
           transition={{ duration: 0.9, delay: 0.55 }}
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-16" style={{ background: 'linear-gradient(to left, rgba(198,255,0,0.5), transparent)' }} />
+            <div className="h-px w-16" style={{ background: 'linear-gradient(to left, rgba(199,218,248,0.5), transparent)' }} />
             <span className="text-[11px] font-bold tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
               {isRTL ? 'نظام الردود الذكية' : 'INTELLIGENT REPLY SYSTEM'}
             </span>
-            <div className="h-px w-16" style={{ background: 'linear-gradient(to right, rgba(198,255,0,0.5), transparent)' }} />
+            <div className="h-px w-16" style={{ background: 'linear-gradient(to right, rgba(199,218,248,0.5), transparent)' }} />
           </div>
 
           <h1 className="font-black leading-[1.05] mb-5"
             style={{ fontSize: 'clamp(2.4rem,5.5vw,4.5rem)', letterSpacing: '-0.04em' }}>
-            <span className="block" style={{ color: '#F5F5F5' }}>
+            <span className="block" style={{ color: '#FFFFFF' }}>
               {isRTL ? 'عملك لا ينام.' : 'Your Business Never Sleeps.'}
             </span>
             <span className="block text-dual" style={{ paddingBottom: '0.05em' }}>
@@ -251,7 +251,7 @@ function ScreenCore({ visible, isRTL, phase }: { visible: boolean; isRTL: boolea
         <span className="text-[10px] tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.2)' }}>
           {isRTL ? 'مرر للاكتشاف' : 'SCROLL TO EXPLORE'}
         </span>
-        <div className="w-px h-12" style={{ background: 'linear-gradient(to bottom, rgba(198,255,0,0.5), transparent)' }} />
+        <div className="w-px h-12" style={{ background: 'linear-gradient(to bottom, rgba(199,218,248,0.5), transparent)' }} />
       </motion.div>
     </div>
   )
@@ -271,9 +271,9 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
       {/* Section label */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={visible ? { opacity: 1, y: 0 } : {}}
         className="flex items-center gap-2.5 mb-12 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(125,249,255,0.2)' }}>
-        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#7DF9FF' }} />
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#7DF9FF' }}>
+        style={{ border: '1px solid rgba(199,218,248,0.2)' }}>
+        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'بث مباشر — الصندوق الموحد' : 'LIVE — UNIFIED INBOX'}
         </span>
       </motion.div>
@@ -351,7 +351,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
         <div>
           <motion.h2 className="font-black mb-2" initial={{ opacity: 0, y: 20 }}
             animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.2 }}
-            style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#F5F5F5' }}>
+            style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#FFFFFF' }}>
             {isRTL ? 'رسائل تتحول إلى نتائج.' : 'Messages become outcomes.'}
           </motion.h2>
           <motion.p className="text-base mb-8" initial={{ opacity: 0 }} animate={visible ? { opacity: 1 } : {}}
@@ -371,7 +371,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
                   className="flex items-center gap-3 p-3.5 rounded-2xl glass card-os"
-                  style={{ background: 'rgba(17,17,17,0.8)', opacity: visible ? 1 : 0 }}
+                  style={{ background: 'rgba(18,19,23,0.8)', opacity: visible ? 1 : 0 }}
                 >
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
                     style={{ background: `${msg.color}14`, border: `1px solid ${msg.color}28` }}>
@@ -379,7 +379,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{msg.from}</span>
+                      <span className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{msg.from}</span>
                       <span className="text-[11px]" style={{ color: msg.color }}>{msg.platform}</span>
                     </div>
                     <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
@@ -389,7 +389,7 @@ function ScreenInbox({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                   {activeMsg === i && (
                     <div className="flex items-center gap-0.5 flex-shrink-0">
                       {[0,1,2].map(j => (
-                        <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: '#C6FF00',
+                        <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: '#C7DAF8',
                           animation: `typingDot 1.2s ease ${j * 0.2}s infinite` }} />
                       ))}
                     </div>
@@ -435,9 +435,9 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
     <div className="relative min-h-screen flex flex-col items-center justify-center py-24 px-4">
       <motion.div initial={{ opacity: 0, y: -16 }} animate={visible ? { opacity: 1, y: 0 } : {}}
         className="flex items-center gap-2.5 mb-12 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(198,255,0,0.15)' }}>
-        <span style={{ color: '#C6FF00', fontSize: 13 }}>⬡</span>
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C6FF00' }}>
+        style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+        <span style={{ color: '#C7DAF8', fontSize: 13 }}>⬡</span>
+        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'شبكة الذكاء العصبي' : 'NEURAL CAPABILITY NETWORK'}
         </span>
       </motion.div>
@@ -452,9 +452,9 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
               <linearGradient id="ng" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#C6FF00" stopOpacity="0.05" />
-                <stop offset="50%" stopColor="#C6FF00" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#7DF9FF" stopOpacity="0.05" />
+                <stop offset="0%" stopColor="#C7DAF8" stopOpacity="0.05" />
+                <stop offset="50%" stopColor="#C7DAF8" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#C7DAF8" stopOpacity="0.05" />
               </linearGradient>
             </defs>
             {CAPABILITIES.map((a, ai) =>
@@ -464,7 +464,7 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                 return (
                   <line key={`${a.id}-${b.id}-${bi}`}
                     x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                    stroke={isHot ? '#C6FF00' : 'url(#ng)'}
+                    stroke={isHot ? '#C7DAF8' : 'url(#ng)'}
                     strokeWidth={isHot ? 0.4 : 0.2}
                     strokeOpacity={isActive ? (isHot ? 0.9 : 0.35) : 0}
                     style={{ transition: 'stroke-opacity 0.4s, stroke-width 0.3s' }}
@@ -478,7 +478,7 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
               return (
                 <line key={`core-${c.id}`}
                   x1="50" y1="50" x2={c.x} y2={c.y}
-                  stroke={isHot ? '#C6FF00' : '#7DF9FF'}
+                  stroke={isHot ? '#C7DAF8' : '#C7DAF8'}
                   strokeWidth={isHot ? 0.5 : 0.15}
                   strokeOpacity={active.has(c.id) ? (isHot ? 0.8 : 0.2) : 0}
                   strokeDasharray="2 3"
@@ -505,23 +505,23 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                   onMouseLeave={() => setPulse(null)}>
                   {isHot && (
                     <motion.div className="absolute rounded-full"
-                      style={{ width: 52, height: 52, border: '2px solid rgba(198,255,0,0.6)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
+                      style={{ width: 52, height: 52, border: '2px solid rgba(199,218,248,0.6)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
                       initial={{ scale: 0.85, opacity: 0.8 }}
                       animate={{ scale: 1.4, opacity: 0 }}
                       transition={{ duration: 0.7, repeat: Infinity }} />
                   )}
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center text-lg transition-all duration-250"
                     style={{
-                      background: isHot ? 'rgba(198,255,0,0.14)' : 'rgba(17,17,17,0.9)',
-                      border: `2px solid ${isHot ? 'rgba(198,255,0,0.5)' : 'rgba(198,255,0,0.15)'}`,
-                      boxShadow: isHot ? '0 0 28px rgba(198,255,0,0.25)' : 'none',
+                      background: isHot ? 'rgba(199,218,248,0.14)' : 'rgba(18,19,23,0.9)',
+                      border: `2px solid ${isHot ? 'rgba(199,218,248,0.5)' : 'rgba(199,218,248,0.15)'}`,
+                      boxShadow: isHot ? '0 0 28px rgba(199,218,248,0.25)' : 'none',
                       backdropFilter: 'blur(8px)',
                     }}>
                     {cap.icon}
                   </div>
                   <div className="text-[10px] font-bold text-center whitespace-nowrap px-1.5 py-0.5 rounded-lg"
-                    style={{ background: 'rgba(5,5,5,0.9)', border: '1px solid rgba(255,255,255,0.06)',
-                      color: isHot ? '#C6FF00' : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(6px)', maxWidth: 110 }}>
+                    style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.06)',
+                      color: isHot ? '#C7DAF8' : 'rgba(255,255,255,0.55)', backdropFilter: 'blur(6px)', maxWidth: 110 }}>
                     {isRTL ? cap.labelAr : cap.labelEn}
                   </div>
                 </div>
@@ -541,7 +541,7 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
         <div>
           <motion.h2 className="font-black mb-3" initial={{ opacity: 0, y: 20 }}
             animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.2 }}
-            style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#F5F5F5' }}>
+            style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#FFFFFF' }}>
             {isRTL ? 'عقل متصل بكل شيء.' : 'A brain connected to everything.'}
           </motion.h2>
           <motion.p className="text-base mb-8" initial={{ opacity: 0 }} animate={visible ? { opacity: 1 } : {}}
@@ -558,9 +558,9 @@ function ScreenBrain({ visible, isRTL }: { visible: boolean; isRTL: boolean }) {
                 onMouseEnter={() => setPulse(cap.id)}
                 onMouseLeave={() => setPulse(null)}
                 className="flex items-center gap-2.5 p-3 rounded-xl card-os glass cursor-default transition-all duration-200"
-                style={{ background: pulse === cap.id ? 'rgba(198,255,0,0.06)' : 'rgba(17,17,17,0.7)' }}>
+                style={{ background: pulse === cap.id ? 'rgba(199,218,248,0.06)' : 'rgba(18,19,23,0.7)' }}>
                 <span className="text-xl">{cap.icon}</span>
-                <span className="text-xs font-semibold" style={{ color: pulse === cap.id ? '#C6FF00' : '#F5F5F5' }}>
+                <span className="text-xs font-semibold" style={{ color: pulse === cap.id ? '#C7DAF8' : '#FFFFFF' }}>
                   {isRTL ? cap.labelAr : cap.labelEn}
                 </span>
               </motion.div>
@@ -597,16 +597,16 @@ function ScreenAutomation({ visible, isRTL }: { visible: boolean; isRTL: boolean
     <div className="relative min-h-screen flex flex-col items-center justify-center py-24 px-4">
       <motion.div initial={{ opacity: 0, y: -16 }} animate={visible ? { opacity: 1, y: 0 } : {}}
         className="flex items-center gap-2.5 mb-12 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(198,255,0,0.15)' }}>
-        <span style={{ color: '#C6FF00', fontSize: 13 }}>◈</span>
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C6FF00' }}>
+        style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+        <span style={{ color: '#C7DAF8', fontSize: 13 }}>◈</span>
+        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'شبكة الأتمتة' : 'AUTOMATION NETWORK'}
         </span>
       </motion.div>
 
       <motion.h2 className="font-black text-center mb-3" initial={{ opacity: 0, y: 20 }}
         animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.1 }}
-        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#F5F5F5' }}>
+        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#FFFFFF' }}>
         {isRTL ? 'الرسالة تصل. الذكاء يعمل.' : 'Message in. Magic out.'}
       </motion.h2>
       <motion.p className="text-base text-center mb-14 max-w-lg" initial={{ opacity: 0 }}
@@ -625,7 +625,7 @@ function ScreenAutomation({ visible, isRTL }: { visible: boolean; isRTL: boolean
                 transition={{ delay: 0.15 + i * 0.12 }}>
                 <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl transition-all duration-400"
                   style={{
-                    background: activeStep === i ? `${step.color}15` : 'rgba(17,17,17,0.8)',
+                    background: activeStep === i ? `${step.color}15` : 'rgba(18,19,23,0.8)',
                     border: `2px solid ${activeStep === i ? step.color : 'rgba(255,255,255,0.07)'}`,
                     boxShadow: activeStep === i ? `0 0 40px ${step.color}30` : 'none',
                   }}>
@@ -664,26 +664,26 @@ function ScreenAutomation({ visible, isRTL }: { visible: boolean; isRTL: boolean
           <motion.div key={i} className="card-os rounded-2xl p-5 glass"
             initial={{ opacity: 0, y: 40 }} animate={visible ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.35 + i * 0.12 }}
-            style={{ background: 'rgba(17,17,17,0.7)' }}>
+            style={{ background: 'rgba(18,19,23,0.7)' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
-                style={{ background: 'rgba(198,255,0,0.08)', border: '1px solid rgba(198,255,0,0.15)' }}>
+                style={{ background: 'rgba(199,218,248,0.08)', border: '1px solid rgba(199,218,248,0.15)' }}>
                 {a.icon}
               </div>
               <div className="px-2.5 py-1 rounded-full text-[11px] font-bold"
-                style={{ background: 'rgba(198,255,0,0.06)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.12)' }}>
+                style={{ background: 'rgba(199,218,248,0.06)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.12)' }}>
                 {isRTL ? a.triggerAr : a.triggerEn}
               </div>
             </div>
-            <h3 className="text-sm font-black mb-1.5" style={{ color: '#F5F5F5', letterSpacing: '-0.02em' }}>
+            <h3 className="text-sm font-black mb-1.5" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
               {isRTL ? a.titleAr : a.titleEn}
             </h3>
             <p className="text-xs leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.42)' }}>
               {isRTL ? a.descAr : a.descEn}
             </p>
             <div className="flex items-center gap-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <span style={{ color: '#C6FF00', fontSize: 12 }}>✓</span>
-              <span className="text-xs font-bold" style={{ color: '#C6FF00' }}>
+              <span style={{ color: '#C7DAF8', fontSize: 12 }}>✓</span>
+              <span className="text-xs font-bold" style={{ color: '#C7DAF8' }}>
                 {isRTL ? a.resultAr : a.resultEn}
               </span>
             </div>
@@ -700,10 +700,10 @@ function ImpactStat({ item, visible, isRTL }: { item: typeof IMPACT[0]; visible:
   return (
     <motion.div className="card-os rounded-2xl p-5 glass text-center"
       initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}}
-      style={{ background: 'rgba(17,17,17,0.7)' }}>
+      style={{ background: 'rgba(18,19,23,0.7)' }}>
       <div className="text-2xl mb-3">{item.icon}</div>
       <div className="text-xs mb-3 font-medium" style={{ color: 'rgba(255,255,255,0.35)' }}>
-        {isRTL ? 'قبل' : 'Before'} → <span style={{ color: 'rgba(255,100,100,0.8)' }}>{item.before}</span>
+        {isRTL ? 'قبل' : 'Before'} → <span style={{ color: 'rgba(199,218,248,0.8)' }}>{item.before}</span>
       </div>
       <div className="text-3xl font-black mb-1 text-lime" style={{ letterSpacing: '-0.04em' }}>
         {afterVal}
@@ -712,8 +712,8 @@ function ImpactStat({ item, visible, isRTL }: { item: typeof IMPACT[0]; visible:
         {isRTL ? item.labelAr : item.labelEn}
       </div>
       <div className="mt-3 flex items-center justify-center gap-1.5">
-        <span style={{ color: '#C6FF00', fontSize: 11 }}>▲</span>
-        <span className="text-[11px] font-bold" style={{ color: '#C6FF00' }}>{isRTL ? 'تحسن' : 'Improved'}</span>
+        <span style={{ color: '#C7DAF8', fontSize: 11 }}>▲</span>
+        <span className="text-[11px] font-bold" style={{ color: '#C7DAF8' }}>{isRTL ? 'تحسن' : 'Improved'}</span>
       </div>
     </motion.div>
   )
@@ -724,16 +724,16 @@ function ScreenImpact({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
     <div className="relative min-h-screen flex flex-col items-center justify-center py-24 px-4">
       <motion.div initial={{ opacity: 0, y: -16 }} animate={visible ? { opacity: 1, y: 0 } : {}}
         className="flex items-center gap-2.5 mb-12 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(125,249,255,0.2)' }}>
-        <span style={{ color: '#7DF9FF', fontSize: 13 }}>◉</span>
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#7DF9FF' }}>
+        style={{ border: '1px solid rgba(199,218,248,0.2)' }}>
+        <span style={{ color: '#C7DAF8', fontSize: 13 }}>◉</span>
+        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'التأثير على الأعمال' : 'BUSINESS IMPACT'}
         </span>
       </motion.div>
 
       <motion.h2 className="font-black text-center mb-3" initial={{ opacity: 0, y: 20 }}
         animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.1 }}
-        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#F5F5F5' }}>
+        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#FFFFFF' }}>
         {isRTL ? 'الأعمال تتحول أمام عينيك.' : 'Watch your business transform.'}
       </motion.h2>
       <motion.p className="text-base text-center mb-14 max-w-lg" initial={{ opacity: 0 }}
@@ -753,14 +753,14 @@ function ScreenImpact({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
       {/* Visual transformation bar */}
       <motion.div className="w-full max-w-2xl glass rounded-2xl p-6"
         initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 0.5 }} style={{ background: 'rgba(17,17,17,0.8)' }}>
+        transition={{ delay: 0.5 }} style={{ background: 'rgba(18,19,23,0.8)' }}>
         <div className="text-center text-sm font-bold mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>
           {isRTL ? 'متوسط النتائج بعد 30 يوم' : 'Average results after 30 days'}
         </div>
         {[
-          { labelAr: 'رضا العملاء', labelEn: 'Customer Satisfaction', pct: 94, color: '#C6FF00' },
-          { labelAr: 'سرعة الرد',   labelEn: 'Response Speed',        pct: 98, color: '#7DF9FF' },
-          { labelAr: 'معدل التحويل', labelEn: 'Conversion Rate',      pct: 41, color: '#C6FF00' },
+          { labelAr: 'رضا العملاء', labelEn: 'Customer Satisfaction', pct: 94, color: '#C7DAF8' },
+          { labelAr: 'سرعة الرد',   labelEn: 'Response Speed',        pct: 98, color: '#C7DAF8' },
+          { labelAr: 'معدل التحويل', labelEn: 'Conversion Rate',      pct: 41, color: '#C7DAF8' },
         ].map((bar, i) => (
           <div key={i} className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
@@ -824,16 +824,16 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
     <div className="relative min-h-screen flex flex-col items-center justify-center py-24 px-4">
       <motion.div initial={{ opacity: 0, y: -16 }} animate={visible ? { opacity: 1, y: 0 } : {}}
         className="flex items-center gap-2.5 mb-10 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid rgba(198,255,0,0.15)' }}>
-        <span style={{ color: '#C6FF00', fontSize: 13 }}>⬡</span>
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C6FF00' }}>
+        style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+        <span style={{ color: '#C7DAF8', fontSize: 13 }}>⬡</span>
+        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: '#C7DAF8' }}>
           {isRTL ? 'نشر بنية الذكاء الاصطناعي' : 'DEPLOY AI INFRASTRUCTURE'}
         </span>
       </motion.div>
 
       <motion.h2 className="font-black text-center mb-2" initial={{ opacity: 0, y: 20 }}
         animate={visible ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.1 }}
-        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#F5F5F5' }}>
+        style={{ fontSize: 'clamp(1.8rem,3.5vw,3rem)', letterSpacing: '-0.04em', color: '#FFFFFF' }}>
         {isRTL ? 'اختر مستوى التفعيل.' : 'Choose your activation tier.'}
       </motion.h2>
       <motion.p className="text-base text-center mb-8" initial={{ opacity: 0 }}
@@ -845,19 +845,19 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
       {/* Toggle */}
       <motion.div className="flex items-center gap-4 mb-10" initial={{ opacity: 0 }}
         animate={visible ? { opacity: 1 } : {}} transition={{ delay: 0.25 }}>
-        <span className="text-sm font-medium" style={{ color: !annual ? '#F5F5F5' : 'rgba(255,255,255,0.4)' }}>
+        <span className="text-sm font-medium" style={{ color: !annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
           {isRTL ? 'شهري' : 'Monthly'}
         </span>
         <button onClick={() => setAnnual(!annual)}
           className="relative w-11 h-6 rounded-full transition-colors duration-300"
-          style={{ background: annual ? '#C6FF00' : 'rgba(255,255,255,0.1)' }}>
+          style={{ background: annual ? '#C7DAF8' : 'rgba(255,255,255,0.1)' }}>
           <span className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all duration-300"
             style={{ [isRTL ? 'right' : 'left']: annual ? 24 : 4 }} />
         </button>
-        <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? '#F5F5F5' : 'rgba(255,255,255,0.4)' }}>
+        <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
           {isRTL ? 'سنوي' : 'Annual'}
           {annual && <span className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(198,255,0,0.12)', color: '#C6FF00' }}>
+            style={{ background: 'rgba(199,218,248,0.12)', color: '#C7DAF8' }}>
             {isRTL ? 'وفر 20%' : 'Save 20%'}
           </span>}
         </span>
@@ -871,14 +871,14 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
           const inner = (
             <div className={`relative rounded-2xl p-5 flex flex-col h-full ${isPopular ? '' : 'card-os'}`}
               style={{
-                background: isPopular ? 'rgba(22,22,22,0.98)' : 'rgba(17,17,17,0.75)',
+                background: isPopular ? 'rgba(199,218,248,0.98)' : 'rgba(18,19,23,0.75)',
                 border: isPopular ? 'none' : '1px solid rgba(255,255,255,0.05)',
                 backdropFilter: 'blur(20px)',
               }}>
               {isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                   <span className="text-xs font-bold px-4 py-1.5 rounded-full"
-                    style={{ background: 'linear-gradient(135deg,#C6FF00,#7DF9FF)', color: '#050505' }}>
+                    style={{ background: 'linear-gradient(135deg,#C7DAF8,#C7DAF8)', color: '#121317' }}>
                     {isRTL ? 'الأكثر طلباً' : 'Most Popular'}
                   </span>
                 </div>
@@ -886,13 +886,13 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <div className="text-[10px] font-bold tracking-widest mb-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>MODULE</div>
-                  <h3 className="text-base font-black" style={{ color: isPopular ? '#C6FF00' : '#F5F5F5' }}>
+                  <h3 className="text-base font-black" style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF' }}>
                     {isRTL ? plan.nameAr : plan.nameEn}
                   </h3>
                 </div>
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: isPopular ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: isPopular ? '#C6FF00' : 'rgba(255,255,255,0.3)', fontSize: 12 }}>◈</span>
+                  style={{ background: isPopular ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: isPopular ? '#C7DAF8' : 'rgba(255,255,255,0.3)', fontSize: 12 }}>◈</span>
                 </div>
               </div>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.38)' }}>
@@ -900,7 +900,7 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
               </p>
               <div className="mb-4">
                 <div className="flex items-end gap-1">
-                  <span className="text-3xl font-black" style={{ color: isPopular ? '#C6FF00' : '#F5F5F5', letterSpacing: '-0.04em' }}>
+                  <span className="text-3xl font-black" style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF', letterSpacing: '-0.04em' }}>
                     ${price}
                   </span>
                   <span className="text-xs mb-1.5" style={{ color: 'rgba(255,255,255,0.38)' }}>/{isRTL ? 'شهر' : 'mo'}</span>
@@ -909,15 +909,15 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
               <ul className="space-y-2 flex-1 mb-5">
                 {plan.features.map((f, j) => (
                   <li key={j} className="flex items-start gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.52)' }}>
-                    <span style={{ color: '#C6FF00', fontSize: 11, marginTop: 1, flexShrink: 0 }}>✓</span>
+                    <span style={{ color: '#C7DAF8', fontSize: 11, marginTop: 1, flexShrink: 0 }}>✓</span>
                     <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <Link href="/register" className="block text-center py-2.5 rounded-xl text-sm font-bold transition-all duration-200"
                 style={isPopular
-                  ? { background: 'linear-gradient(135deg,#C6FF00,#7DF9FF)', color: '#050505' }
-                  : { border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', background: 'rgba(255,255,255,0.02)' }
+                  ? { background: 'linear-gradient(135deg,#C7DAF8,#C7DAF8)', color: '#121317' }
+                  : { border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', background: 'rgba(255,255,255,0.02)' }
                 }>
                 {isRTL ? 'تفعيل الوحدة' : 'Deploy Module'}
               </Link>
@@ -943,7 +943,7 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
           { icon: '⚡', ar: 'إلغاء في أي وقت',   en: 'Cancel anytime' },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>
-            <span style={{ color: '#C6FF00' }}>{item.icon}</span>
+            <span style={{ color: '#C7DAF8' }}>{item.icon}</span>
             <span>{isRTL ? item.ar : item.en}</span>
           </div>
         ))}
@@ -956,10 +956,10 @@ function ScreenDeploy({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
 function FlowDivider({ phase }: { phase: number }) {
   return (
     <div className="relative flex items-center justify-center py-4 overflow-hidden">
-      <div className="absolute left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(198,255,0,0.12), rgba(125,249,255,0.12), transparent)' }} />
+      <div className="absolute left-0 right-0 h-px" style={{ background: 'linear-gradient(to right, transparent, rgba(199,218,248,0.12), rgba(199,218,248,0.12), transparent)' }} />
       <div className="relative z-10 w-8 h-8 rounded-full flex items-center justify-center glass"
-        style={{ border: '1px solid rgba(198,255,0,0.2)', boxShadow: '0 0 20px rgba(198,255,0,0.08)' }}>
-        <span style={{ color: '#C6FF00', fontSize: 12 }}>✦</span>
+        style={{ border: '1px solid rgba(199,218,248,0.2)', boxShadow: '0 0 20px rgba(199,218,248,0.08)' }}>
+        <span style={{ color: '#C7DAF8', fontSize: 12 }}>✦</span>
       </div>
       {/* Phase label */}
       <div className="absolute right-8 text-[10px] font-bold tracking-[0.15em]" style={{ color: 'rgba(255,255,255,0.15)' }}>

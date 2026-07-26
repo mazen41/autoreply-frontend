@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <footer
       className="relative pt-16 pb-8"
-      style={{ borderTop: '1px solid rgba(198,255,0,0.06)' }}
+      style={{ borderTop: '1px solid rgba(199,218,248,0.06)' }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-12">
@@ -20,12 +20,12 @@ export default function Footer() {
             <div className="flex items-center gap-2.5 mb-4">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-                style={{ background: 'rgba(198,255,0,0.1)', border: '1px solid rgba(198,255,0,0.2)', color: '#C6FF00' }}
+                style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.2)', color: '#C7DAF8' }}
               >
                 ✦
               </div>
-              <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(198,255,0,0.08)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.15)' }}>AI OS</span>
+              <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(199,218,248,0.08)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.15)' }}>AI OS</span>
             </div>
             <p className="text-sm leading-relaxed mb-5 max-w-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
               {isRTL ? t.footer.tagline : 'Your AI employee that never sleeps.'}
@@ -37,7 +37,7 @@ export default function Footer() {
                   key={i}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all duration-200"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(198,255,0,0.3)'; e.currentTarget.style.color = '#C6FF00' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'; e.currentTarget.style.color = '#C7DAF8' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
                 >
                   {s}
@@ -55,7 +55,7 @@ export default function Footer() {
               {(t.footer.productLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C6FF00'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
                     onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
                   >{link}</a>
                 </li>
@@ -72,7 +72,7 @@ export default function Footer() {
               {(t.footer.companyLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C6FF00'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
                     onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
                   >{link}</a>
                 </li>
@@ -89,7 +89,7 @@ export default function Footer() {
               {(t.footer.supportLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C6FF00'}
+                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
                     onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
                   >{link}</a>
                 </li>
@@ -107,7 +107,7 @@ export default function Footer() {
             {isRTL ? t.footer.copyright : '© 2025 Naz. All rights reserved.'}
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
+            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
             <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
               {isRTL ? 'جميع الأنظمة تعمل' : 'All systems operational'}
             </span>

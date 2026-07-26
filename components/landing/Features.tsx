@@ -48,10 +48,10 @@ function FeatureCard({
   idx: number
 }) {
   const isTeal = layout.glow === 'teal'
-  const glowColor = isTeal ? 'rgba(0,255,178,0.12)' : 'rgba(191,0,255,0.12)'
-  const borderHover = isTeal ? 'rgba(0,255,178,0.3)' : 'rgba(191,0,255,0.3)'
-  const iconBg = isTeal ? 'rgba(0,255,178,0.1)' : 'rgba(191,0,255,0.1)'
-  const iconColor = isTeal ? '#00FFB2' : '#BF00FF'
+  const glowColor = isTeal ? 'rgba(199,218,248,0.12)' : 'rgba(199,218,248,0.12)'
+  const borderHover = isTeal ? 'rgba(199,218,248,0.3)' : 'rgba(199,218,248,0.3)'
+  const iconBg = isTeal ? 'rgba(199,218,248,0.1)' : 'rgba(199,218,248,0.1)'
+  const iconColor = isTeal ? '#C7DAF8' : '#C7DAF8'
 
   return (
     <div
@@ -59,7 +59,7 @@ function FeatureCard({
       style={{
         gridColumn: `span ${layout.cols}`,
         gridRow: `span ${layout.rows}`,
-        background: '#0F0F1A',
+        background: '#121317',
         animationDelay: `${idx * 0.08}s`,
         minHeight: layout.cols === 2 ? 180 : 160,
       }}
@@ -91,11 +91,11 @@ function FeatureCard({
         </div>
         <h3
           className="font-bold text-base mb-2 leading-tight"
-          style={{ color: '#F0F0FF', letterSpacing: '-0.01em' }}
+          style={{ color: '#FFFFFF', letterSpacing: '-0.01em' }}
         >
           {item.title}
         </h3>
-        <p className="text-sm leading-relaxed" style={{ color: 'rgba(240,240,255,0.45)' }}>
+        <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
           {item.desc}
         </p>
       </div>
@@ -119,7 +119,7 @@ export default function Features() {
       {/* Top divider */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-20"
-        style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,255,178,0.4))' }}
+        style={{ background: 'linear-gradient(to bottom, transparent, rgba(199,218,248,0.4))' }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,7 +128,7 @@ export default function Features() {
         <div ref={sectionRef} className="reveal mb-20">
           <h2
             className={`text-3xl sm:text-4xl font-black text-center mb-12 ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
           >
             {t.problems.title}
           </h2>
@@ -137,14 +137,14 @@ export default function Features() {
               <div
                 key={i}
                 className="card-hover flex items-start gap-4 p-5 rounded-2xl transition-all duration-300"
-                style={{ background: '#0F0F1A' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(191,0,255,0.25)' }}
+                style={{ background: '#121317' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(199,218,248,0.25)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
               >
                 <span className="text-2xl flex-shrink-0">{item.icon}</span>
                 <div>
-                  <h3 className="font-semibold mb-1" style={{ color: '#F0F0FF' }}>{item.title}</h3>
-                  <p className="text-sm" style={{ color: 'rgba(240,240,255,0.45)' }}>{item.desc}</p>
+                  <h3 className="font-semibold mb-1" style={{ color: '#FFFFFF' }}>{item.title}</h3>
+                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -154,7 +154,7 @@ export default function Features() {
         {/* Arrow divider */}
         <div className="flex items-center gap-4 mb-16">
           <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <span style={{ color: '#00FFB2', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(0,255,178,0.5))' }}>↓</span>
+          <span style={{ color: '#C7DAF8', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.5))' }}>↓</span>
           <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
         </div>
 
@@ -162,7 +162,7 @@ export default function Features() {
         <div ref={titleRef} className="reveal text-center mb-12">
           <h2
             className={`text-3xl sm:text-4xl font-black mb-3 ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
           >
             {t.features.title}
           </h2>

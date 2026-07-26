@@ -22,29 +22,29 @@ export default function PolicyGenerator() {
 
   const handleGenerate = async () => {
     if (!storeName) return
-    
+
     const selectedPolicies = Object.entries(policies)
       .filter(([_, checked]) => checked)
       .map(([policy]) => policy)
-    
+
     if (selectedPolicies.length === 0) return
-    
+
     setLoading(true)
     setResult('')
-    
+
     const response = await askClaude(
       `Write professional Arabic store policies for an e-commerce store called "${storeName}". Be clear, fair to both customer and merchant. Include these policy types: ${selectedPolicies.join(', ')}. Format each policy with a clear heading and detailed terms in Arabic.`,
       `Store: ${storeName}\nPolicies needed: ${selectedPolicies.join(', ')}`,
       'policy-generator'
     )
-    
+
     setLoading(false)
-    
+
     if (response.limitReached) {
       setLimitReached(true)
       return
     }
-    
+
     if (response.success && response.result) {
       setResult(response.result)
     }
@@ -57,10 +57,10 @@ export default function PolicyGenerator() {
   return (
     <div>
       {/* Usage Indicator */}
-      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
         <div className="flex items-center justify-between">
           <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Free uses remaining today: <span className="font-bold" style={{ color: '#C6FF00' }}>{usage.remaining}/{usage.max}</span>
+            Free uses remaining today: <span className="font-bold" style={{ color: '#C7DAF8' }}>{usage.remaining}/{usage.max}</span>
           </span>
         </div>
       </div>
@@ -77,10 +77,10 @@ export default function PolicyGenerator() {
             onChange={(e) => setStoreName(e.target.value)}
             placeholder="مثال: متجر الأناقة، عالم الجمال"
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-semibold mb-3" style={{ color: 'rgba(255,255,255,0.7)' }}>
             اختر السياسات / Select Policies
@@ -93,7 +93,7 @@ export default function PolicyGenerator() {
               { key: 'shipping', labelAr: 'سياسة الشحن', labelEn: 'Shipping Policy' },
             ].map((policy) => (
               <label key={policy.key} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: policies[policy.key as keyof typeof policies] ? 'rgba(198,255,0,0.1)' : 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                style={{ background: policies[policy.key as keyof typeof policies] ? 'rgba(199,218,248,0.1)' : 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <input
                   type="checkbox"
                   checked={policies[policy.key as keyof typeof policies]}
@@ -101,21 +101,21 @@ export default function PolicyGenerator() {
                   className="w-4 h-4"
                 />
                 <div className="text-sm">
-                  <div style={{ color: '#F5F5F5' }}>{policy.labelAr}</div>
+                  <div style={{ color: '#FFFFFF' }}>{policy.labelAr}</div>
                   <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{policy.labelEn}</div>
                 </div>
               </label>
             ))}
           </div>
         </div>
-        
+
         <motion.button
           onClick={handleGenerate}
           disabled={loading || !storeName || Object.values(policies).every(v => !v) || usage.remaining === 0}
           className="w-full py-3.5 rounded-xl font-bold text-sm transition-all"
           style={{
-            background: loading || usage.remaining === 0 ? 'rgba(198,255,0,0.3)' : 'linear-gradient(135deg, #C6FF00, #a8e000)',
-            color: '#050505',
+            background: loading || usage.remaining === 0 ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #a8e000)',
+            color: '#121317',
           }}
           whileHover={!loading && usage.remaining > 0 ? { scale: 1.02 } : {}}
           whileTap={!loading && usage.remaining > 0 ? { scale: 0.98 } : {}}
@@ -126,7 +126,7 @@ export default function PolicyGenerator() {
 
       {/* Limit Reached Message */}
       {limitReached && (
-        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'rgba(255,60,60,0.1)', border: '1px solid rgba(255,60,60,0.3)' }}>
+        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)' }}>
           <p className="text-lg font-bold mb-4" style={{ color: '#FF7070' }}>
             You've reached your daily limit
           </p>
@@ -134,7 +134,7 @@ export default function PolicyGenerator() {
             Sign up for unlimited access to all AI tools
           </p>
           <Link href="/register" className="inline-block px-6 py-3 rounded-xl font-bold text-sm"
-            style={{ background: '#C6FF00', color: '#050505' }}>
+            style={{ background: '#C7DAF8', color: '#121317' }}>
             Sign Up Free
           </Link>
         </div>
@@ -146,14 +146,14 @@ export default function PolicyGenerator() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-6 rounded-xl"
-          style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold" style={{ color: '#F5F5F5' }}>السياسات المقترحة / Generated Policies</h3>
+            <h3 className="font-bold" style={{ color: '#FFFFFF' }}>السياسات المقترحة / Generated Policies</h3>
             <button
               onClick={copyToClipboard}
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-              style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}
+              style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}
             >
               Copy / نسخ
             </button>
@@ -163,12 +163,12 @@ export default function PolicyGenerator() {
           </div>
 
           {/* Upsell CTA */}
-          <div className="mt-6 p-4 rounded-xl text-center" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+          <div className="mt-6 p-4 rounded-xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
             <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
             <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
-              style={{ background: '#C6FF00', color: '#050505' }}>
+              style={{ background: '#C7DAF8', color: '#121317' }}>
               {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
