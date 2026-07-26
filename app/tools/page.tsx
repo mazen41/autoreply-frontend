@@ -83,11 +83,11 @@ export default function ToolsPage() {
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#3B82F6', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
+            style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -97,13 +97,13 @@ export default function ToolsPage() {
       <div className="max-w-7xl mx-auto px-6 py-16 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full"
-            style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)' }}>
-            <span style={{ color: '#3B82F6', fontSize: 12 }}>✦</span>
-            <span className="text-xs font-bold tracking-[0.1em]" style={{ color: '#3B82F6' }}>
+            style={{ background: 'rgba(199,218,248,0.08)', border: '1px solid rgba(199,218,248,0.18)' }}>
+            <span style={{ color: '#C7DAF8', fontSize: 12 }}>✦</span>
+            <span className="text-xs font-bold tracking-[0.1em]" style={{ color: '#C7DAF8' }}>
               10 FREE AI TOOLS
             </span>
           </div>
-          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#F5F5F5', letterSpacing: '-0.04em' }}>
+          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
             أدوات تسويقية مجانية
           </h1>
           <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -124,11 +124,11 @@ export default function ToolsPage() {
             >
               <Link href={`/tools/${tool.slug}`}>
                 <div className="p-6 rounded-2xl h-full transition-all duration-300 hover:scale-105"
-                  style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="mb-4">
-                    <span style={{ color: '#3B82F6', fontSize: 24 }}>⚡</span>
+                    <span style={{ color: '#C7DAF8', fontSize: 24 }}>⚡</span>
                   </div>
-                  <h3 className="font-bold mb-2" style={{ color: '#F5F5F5', fontSize: '1.1rem' }}>
+                  <h3 className="font-bold mb-2" style={{ color: '#FFFFFF', fontSize: '1.1rem' }}>
                     {tool.nameAr}
                   </h3>
                   <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -141,7 +141,7 @@ export default function ToolsPage() {
                     {tool.descriptionEn}
                   </p>
                   <div className="px-4 py-2 rounded-lg text-sm font-bold text-center"
-                    style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}>
+                    style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}>
                     جرّبها مجاناً
                   </div>
                 </div>

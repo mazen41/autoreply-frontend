@@ -245,16 +245,16 @@ export default function TermsPage() {
       <header className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span style={{ color: 'var(--primary)', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(108,99,255,0.8))' }}>✦</span>
+            <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.8))' }}>✦</span>
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <button
             onClick={toggleLang}
             className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ 
-              background: 'rgba(255,255,255,0.04)', 
-              border: '1px solid var(--border)', 
-              color: 'var(--text-secondary)' 
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-secondary)'
             }}
           >
             {lang === 'ar' ? '🇬🇧 English' : '🇸🇦 العربية'}
@@ -292,7 +292,7 @@ export default function TermsPage() {
                 <ul className="space-y-3" style={{ color: 'var(--text-secondary)' }}>
                   {section.items?.map((item, itemIndex) => (
                     <li key={itemIndex} className="flex items-start gap-3">
-                      <span style={{ color: 'var(--primary)', marginTop: '2px' }}>•</span>
+                      <span style={{ color: 'var(--accent)', marginTop: '2px' }}>•</span>
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}
@@ -307,14 +307,14 @@ export default function TermsPage() {
             {c.lastUpdated}
           </p>
           <div className="flex items-center gap-6">
-            <Link 
+            <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
-              style={{ color: 'var(--primary)' }}
+              style={{ color: 'var(--accent)' }}
             >
               {c.backHome}
             </Link>
-            <Link 
+            <Link
               href="/privacy"
               className="text-sm font-bold transition-colors"
               style={{ color: 'var(--text-secondary)' }}

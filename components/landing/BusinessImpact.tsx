@@ -24,17 +24,17 @@ const IMPACTS = [
   {
     before: { val: 4.2, label_ar: 'تقييم قبل ناز', label_en: 'Rating before Naz', suffix: '★' },
     after:  { val: 4.9, label_ar: 'تقييم بعد ناز',  label_en: 'Rating after Naz',  suffix: '★' },
-    icon: '⭐', title_ar: 'تقييمات أعلى', title_en: 'Higher Ratings', color: '#C6FF00',
+    icon: '⭐', title_ar: 'تقييمات أعلى', title_en: 'Higher Ratings', color: '#C7DAF8',
   },
   {
     before: { val: 45,  label_ar: 'وقت الرد قبل (دقيقة)', label_en: 'Response time before (min)', suffix: 'm' },
     after:  { val: 8,   label_ar: 'وقت الرد بعد (ثانية)',  label_en: 'Response time after (sec)',  suffix: 's' },
-    icon: '⚡', title_ar: 'ردود أسرع', title_en: 'Faster Replies', color: '#7DF9FF',
+    icon: '⚡', title_ar: 'ردود أسرع', title_en: 'Faster Replies', color: '#C7DAF8',
   },
   {
     before: { val: 12,  label_ar: 'تحويل قبل (%)', label_en: 'Conversion before (%)', suffix: '%' },
     after:  { val: 38,  label_ar: 'تحويل بعد (%)', label_en: 'Conversion after (%)',  suffix: '%' },
-    icon: '💰', title_ar: 'مبيعات أكثر', title_en: 'More Sales', color: '#C6FF00',
+    icon: '💰', title_ar: 'مبيعات أكثر', title_en: 'More Sales', color: '#C7DAF8',
   },
 ]
 
@@ -91,15 +91,15 @@ export default function BusinessImpact() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(125,249,255,0.15)' }}>
-            <span style={{ color: '#7DF9FF' }}>◎</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#7DF9FF' }}>
+            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+            <span style={{ color: '#C7DAF8' }}>◎</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
               {isRTL ? 'الأثر على العمل' : 'BUSINESS IMPACT'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'الأرقام تتحول أمامك.' : 'Watch numbers transform.'}
           </h2>
@@ -116,7 +116,7 @@ export default function BusinessImpact() {
             <motion.div
               key={i}
               className="card-os rounded-2xl p-6 glass"
-              style={{ background: 'rgba(17,17,17,0.7)' }}
+              style={{ background: 'rgba(18,19,23,0.7)' }}
               initial={{ opacity: 0, y: 40 }}
               animate={visible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: i * 0.15 }}
@@ -187,14 +187,14 @@ export default function BusinessImpact() {
             <motion.div
               key={i}
               className="card-os rounded-2xl p-5 glass"
-              style={{ background: 'rgba(17,17,17,0.6)' }}
+              style={{ background: 'rgba(18,19,23,0.6)' }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={visible ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.5 + i * 0.12 }}
             >
               <div className="flex mb-3">
                 {Array(t.rating).fill(0).map((_, j) => (
-                  <span key={j} style={{ color: '#C6FF00', fontSize: 14 }}>★</span>
+                  <span key={j} style={{ color: '#C7DAF8', fontSize: 14 }}>★</span>
                 ))}
               </div>
               <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
@@ -203,12 +203,12 @@ export default function BusinessImpact() {
               <div className="flex items-center gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.15)' }}
+                  style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.15)' }}
                 >
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{t.name}</div>
+                  <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{t.name}</div>
                   <div className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{isRTL ? t.biz_ar : t.biz_en}</div>
                 </div>
               </div>

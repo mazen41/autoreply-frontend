@@ -32,13 +32,13 @@ export default function Testimonials() {
       {/* Faint mid glow */}
       <div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(0,255,178,0.04) 0%, transparent 70%)', filter: 'blur(40px)' }}
+        style={{ background: 'radial-gradient(ellipse, rgba(199,218,248,0.04) 0%, transparent 70%)', filter: 'blur(40px)' }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           className={`text-3xl sm:text-4xl font-black text-center mb-12 ${isRTL ? 'font-arabic' : ''}`}
-          style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}
+          style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
         >
           {t.testimonials.title}
         </h2>
@@ -54,19 +54,19 @@ export default function Testimonials() {
                 <div
                   className="rounded-2xl p-8 text-center"
                   style={{
-                    background: '#0F0F1A',
+                    background: '#121317',
                     border: '1px solid rgba(255,255,255,0.06)',
-                    boxShadow: i === active ? '0 0 40px rgba(0,255,178,0.06)' : 'none',
+                    boxShadow: i === active ? '0 0 40px rgba(199,218,248,0.06)' : 'none',
                   }}
                 >
                   <div className="flex gap-1 justify-center mb-5">
                     {Array.from({ length: item.rating }).map((_, j) => (
-                      <span key={j} style={{ color: '#FFB800' }}>★</span>
+                      <span key={j} style={{ color: '#C7DAF8' }}>★</span>
                     ))}
                   </div>
                   <p
                     className="text-base sm:text-lg leading-relaxed mb-8 italic"
-                    style={{ color: 'rgba(240,240,255,0.65)', maxWidth: 600, margin: '0 auto 2rem' }}
+                    style={{ color: 'rgba(255,255,255,0.65)', maxWidth: 600, margin: '0 auto 2rem' }}
                   >
                     &ldquo;{item.quote}&rdquo;
                   </p>
@@ -74,16 +74,16 @@ export default function Testimonials() {
                     <div
                       className="w-11 h-11 rounded-full flex items-center justify-center font-bold"
                       style={{
-                        background: 'linear-gradient(135deg, rgba(0,255,178,0.15), rgba(191,0,255,0.15))',
-                        border: '1px solid rgba(0,255,178,0.2)',
-                        color: '#00FFB2',
+                        background: 'linear-gradient(135deg, rgba(199,218,248,0.15), rgba(199,218,248,0.15))',
+                        border: '1px solid rgba(199,218,248,0.2)',
+                        color: '#C7DAF8',
                       }}
                     >
                       {item.name.charAt(0)}
                     </div>
                     <div className={isRTL ? 'text-right' : 'text-left'}>
-                      <p className="font-semibold text-sm" style={{ color: '#F0F0FF' }}>{item.name}</p>
-                      <p className="text-xs" style={{ color: 'rgba(240,240,255,0.4)' }}>{item.business}</p>
+                      <p className="font-semibold text-sm" style={{ color: '#FFFFFF' }}>{item.name}</p>
+                      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.business}</p>
                     </div>
                   </div>
                 </div>
@@ -102,7 +102,7 @@ export default function Testimonials() {
               style={{
                 width: i === active ? 28 : 8,
                 height: 8,
-                background: i === active ? '#00FFB2' : 'rgba(255,255,255,0.15)',
+                background: i === active ? '#C7DAF8' : 'rgba(255,255,255,0.15)',
               }}
             />
           ))}

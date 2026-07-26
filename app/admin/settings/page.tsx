@@ -147,26 +147,26 @@ export default function AdminSettingsPage() {
         actions={<><Button variant="ghost" onClick={fetchSettings}><RotateCw size={16} />{isRTL ? '????? ?????' : 'Reload'}</Button><Button onClick={handleSubmit} disabled={saving}><Save size={16} />{saving ? (isRTL ? '???? ?????' : 'Saving') : (isRTL ? '???' : 'Save')}</Button></>}
       />
 
-      {error && <Panel className="border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-400/10 dark:text-rose-200">{error}</Panel>}
+      {error && <Panel className="border-white/20 bg-white/50 text-white/70 dark:border-white/40 dark:bg-white/40 dark:text-white/20">{error}</Panel>}
 
       <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Panel>
-          <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-slate-950 dark:text-white">{isRTL ? '???? ?????? ?????????' : 'AI Provider'}</h2><p className="text-sm text-slate-500 dark:text-slate-400">{isRTL ? '?? ????? ?????? ????????? ?????? ??? ????????.' : 'All system AI requests follow this selection.'}</p></div><Bot className="text-emerald-500" /></div>
+          <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-white/70 dark:text-white">{isRTL ? '???? ?????? ?????????' : 'AI Provider'}</h2><p className="text-sm text-white/70 dark:text-white/70">{isRTL ? '?? ????? ?????? ????????? ?????? ??? ????????.' : 'All system AI requests follow this selection.'}</p></div><Bot className="text-white/50" /></div>
           <div className="grid gap-3 sm:grid-cols-2">
             {(['gemini', 'claude'] as Provider[]).map((provider) => {
               const selected = formData.ai_provider === provider
               const configured = provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
-              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-emerald-400 bg-emerald-50 shadow-lg shadow-emerald-500/10 dark:bg-emerald-400/10' : 'border-slate-200 bg-white hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-slate-950 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? '????' : 'Ready') : (isRTL ? '????' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{provider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'}</p></button>
+              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-white/40 bg-white/50 shadow-lg shadow-black/30 dark:bg-white/40' : 'border-white/10 bg-white hover:border-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-white/70 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? '????' : 'Ready') : (isRTL ? '????' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-white/70 dark:text-white/70">{provider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'}</p></button>
             })}
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label={isRTL ? '?????? ?????????' : 'Fallback provider'}><select className={inputClass} value={formData.ai_fallback_provider} onChange={(e) => update('ai_fallback_provider', e.target.value)}><option value="gemini">Gemini</option><option value="claude">Claude</option></select></Field>
-            <Field label={isRTL ? '???? ???????' : 'Connection status'}><div className="flex min-h-[46px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"><CheckCircle2 size={17} className={primaryConfigured ? 'text-emerald-500' : 'text-amber-500'} />{primaryConfigured ? (isRTL ? '?????? ??????? ????' : 'Primary provider ready') : (isRTL ? '??? ????? API' : 'Add API key')}</div></Field>
+            <Field label={isRTL ? '???? ???????' : 'Connection status'}><div className="flex min-h-[46px] items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-bold text-white/70 dark:border-white/10 dark:bg-white/5 dark:text-white/70"><CheckCircle2 size={17} className={primaryConfigured ? 'text-white/50' : 'text-white/50'} />{primaryConfigured ? (isRTL ? '?????? ??????? ????' : 'Primary provider ready') : (isRTL ? '??? ????? API' : 'Add API key')}</div></Field>
           </div>
         </Panel>
 
         <Panel>
-          <div className="mb-5 flex items-center gap-3"><SlidersHorizontal className="text-cyan-500" /><div><h2 className="text-xl font-black text-slate-950 dark:text-white">{isRTL ? '???? ???????' : 'Model Behavior'}</h2><p className="text-sm text-slate-500 dark:text-slate-400">{isRTL ? '???????? ??????? ??????? ?????? ????????.' : 'Temperature, tokens, timeout, and retry policy.'}</p></div></div>
+          <div className="mb-5 flex items-center gap-3"><SlidersHorizontal className="text-white/50" /><div><h2 className="text-xl font-black text-white/70 dark:text-white">{isRTL ? '???? ???????' : 'Model Behavior'}</h2><p className="text-sm text-white/70 dark:text-white/70">{isRTL ? '???????? ??????? ??????? ?????? ????????.' : 'Temperature, tokens, timeout, and retry policy.'}</p></div></div>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Gemini Model"><input className={inputClass} value={formData.gemini_model} onChange={(e) => update('gemini_model', e.target.value)} /></Field>
             <Field label="Claude Model"><input className={inputClass} value={formData.claude_model} onChange={(e) => update('claude_model', e.target.value)} /></Field>
@@ -192,11 +192,11 @@ export default function AdminSettingsPage() {
 }
 
 function SectionTitle({ icon, title }: { icon: React.ReactNode; title: string }) {
-  return <div className="mb-5 flex items-center gap-3 text-slate-950 dark:text-white"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-emerald-600 dark:bg-white/8 dark:text-emerald-300">{icon}</span><h2 className="text-xl font-black">{title}</h2></div>
+  return <div className="mb-5 flex items-center gap-3 text-white/70 dark:text-white"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-white/5 text-white/60 dark:bg-white/8 dark:text-white/30">{icon}</span><h2 className="text-xl font-black">{title}</h2></div>
 }
 
 function Health({ label, provider, ready }: { label: string; provider: string; ready: boolean }) {
-  return <div className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5"><div className="flex items-center justify-between"><span className="text-sm font-bold text-slate-500 dark:text-slate-400">{label}</span><Badge tone={ready ? 'emerald' : 'amber'}>{ready ? 'Ready' : 'Needs key'}</Badge></div><div className="mt-3 text-2xl font-black capitalize text-slate-950 dark:text-white">{provider}</div></div>
+  return <div className="rounded-2xl bg-white/5 p-4 dark:bg-white/5"><div className="flex items-center justify-between"><span className="text-sm font-bold text-white/70 dark:text-white/70">{label}</span><Badge tone={ready ? 'emerald' : 'amber'}>{ready ? 'Ready' : 'Needs key'}</Badge></div><div className="mt-3 text-2xl font-black capitalize text-white/70 dark:text-white">{provider}</div></div>
 }
 
 

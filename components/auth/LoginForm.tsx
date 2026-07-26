@@ -67,7 +67,7 @@ export default function LoginForm() {
     <div className="w-full">
       {/* Mobile logo */}
       <div className="flex items-center gap-2.5 justify-center mb-8 lg:hidden">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.7))' }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.7))' }}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
         <span className="text-2xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
@@ -76,7 +76,7 @@ export default function LoginForm() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full"
-          style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)' }}>
+          style={{ background: 'rgba(199,218,248,0.08)', border: '1px solid rgba(199,218,248,0.18)' }}>
           <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
           <span className="text-[11px] font-bold tracking-[0.1em]" style={{ color: 'var(--accent)' }}>
             {t.auth.login.toUpperCase()}
@@ -97,7 +97,7 @@ export default function LoginForm() {
       {error && (
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
           className="mb-5 p-3.5 rounded-xl text-sm text-center"
-          style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.22)', color: 'var(--error)' }}>
+          style={{ background: 'rgba(199,218,248,0.07)', border: '1px solid rgba(199,218,248,0.22)', color: 'var(--error)' }}>
           {error}
         </motion.div>
       )}
@@ -122,7 +122,7 @@ export default function LoginForm() {
                   border: '1px solid var(--border)',
                   color: 'var(--text-primary)',
                 }}
-                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(59,130,246,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.08)' }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'rgba(199,218,248,0.45)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(199,218,248,0.08)' }}
                 onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
               />
               {key === 'password' && (
@@ -158,8 +158,8 @@ export default function LoginForm() {
         <motion.button type="submit" disabled={loading}
           className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200"
           style={{
-            background: loading ? 'rgba(59,130,246,0.5)' : 'var(--accent)',
-            color: theme === 'dark' ? '#0A0A0F' : '#F4F4FF',
+            background: loading ? 'rgba(199,218,248,0.5)' : 'var(--accent)',
+            color: theme === 'dark' ? '#121317' : '#FFFFFF',
           }}
           whileHover={!loading ? { scale: 1.015 } : {}}
           whileTap={!loading ? { scale: 0.985 } : {}}

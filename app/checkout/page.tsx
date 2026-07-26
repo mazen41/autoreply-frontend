@@ -34,11 +34,11 @@ interface Package {
 // Card brand detection
 function detectCardBrand(number: string): 'visa' | 'mastercard' | 'mada' | 'unknown' {
   const cleaned = number.replace(/\D/g, '')
-  
+
   if (/^4/.test(cleaned)) return 'visa'
   if (/^5[1-5]/.test(cleaned)) return 'mastercard'
   if (/^4[0-9]{12}/.test(cleaned) || /^6[0-9]{13}/.test(cleaned)) return 'mada'
-  
+
   return 'unknown'
 }
 
@@ -64,7 +64,7 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
   const displayNumber = number.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim() || '•••• •••• •••• ••••'
   const displayName = name || 'YOUR NAME'
   const displayExpiry = expiry || '••/••'
-  
+
   return (
     <motion.div
       className="relative w-full h-48 rounded-2xl cursor-pointer"
@@ -72,7 +72,7 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
       animate={{ rotateY: isFlipped ? 180 : 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="absolute inset-0 rounded-2xl" style={{ 
+      <div className="absolute inset-0 rounded-2xl" style={{
         transformStyle: 'preserve-3d',
         background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
@@ -85,26 +85,26 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
         }}>
           <div className="flex justify-between items-start mb-8">
             <div className="text-2xl">📱</div>
-            <div className="text-xl font-bold" style={{ color: '#3B82F6' }}>
+            <div className="text-xl font-bold" style={{ color: '#C7DAF8' }}>
               {getCardBrandIcon(brand)}
             </div>
           </div>
-          
+
           <div className="mb-6">
             <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
               CARD NUMBER
             </div>
-            <div className="text-xl font-mono tracking-wider" style={{ color: '#fff' }}>
+            <div className="text-xl font-mono tracking-wider" style={{ color: '#FFFFFF' }}>
               {displayNumber}
             </div>
           </div>
-          
+
           <div className="flex justify-between">
             <div>
               <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 CARDHOLDER
               </div>
-              <div className="text-sm font-bold" style={{ color: '#fff' }}>
+              <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
                 {displayName.toUpperCase()}
               </div>
             </div>
@@ -112,13 +112,13 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
               <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
                 EXPIRES
               </div>
-              <div className="text-sm font-bold" style={{ color: '#fff' }}>
+              <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
                 {displayExpiry}
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Back of card */}
         <div className="absolute inset-0 rounded-2xl p-6" style={{
           transform: 'rotateY(180deg)',
@@ -130,7 +130,7 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
             <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
               CVC
             </div>
-            <div className="text-xl font-mono" style={{ color: '#fff' }}>
+            <div className="text-xl font-mono" style={{ color: '#FFFFFF' }}>
               {cvc || '•••'}
             </div>
           </div>
@@ -165,7 +165,7 @@ function CheckoutContent() {
   useEffect(() => {
     const pkgId = searchParams.get('package')
     const billing = searchParams.get('billing') as 'monthly' | 'yearly'
-    
+
     if (pkgId) {
       setPackageId(parseInt(pkgId))
       if (billing) setBillingCycle(billing)
@@ -188,11 +188,11 @@ function CheckoutContent() {
   const handleExpiryChange = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 4)
     let formatted = cleaned
-    
+
     if (cleaned.length >= 2) {
       formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2)
     }
-    
+
     setExpiry(formatted)
     setFieldErrors(prev => ({ ...prev, expiry: '' }))
   }
@@ -200,14 +200,14 @@ function CheckoutContent() {
   // Field validation
   const validateField = (field: string, value: string) => {
     const errors: Record<string, string> = {}
-    
+
     if (field === 'cardNumber' || field === 'all') {
       const cleaned = cardNumber.replace(/\D/g, '')
       if (cleaned.length !== 16) {
         errors.cardNumber = isRTL ? 'رقم البطاقة يجب أن يكون 16 رقم' : 'Card number must be 16 digits'
       }
     }
-    
+
     if (field === 'expiry' || field === 'all') {
       const cleaned = expiry.replace(/\D/g, '')
       if (cleaned.length !== 4) {
@@ -217,7 +217,7 @@ function CheckoutContent() {
         const year = parseInt('20' + cleaned.slice(2))
         const now = new Date()
         const expiryDate = new Date(year, month - 1)
-        
+
         if (month < 1 || month > 12) {
           errors.expiry = isRTL ? 'شهر غير صالح' : 'Invalid month'
         } else if (expiryDate < now) {
@@ -225,19 +225,19 @@ function CheckoutContent() {
         }
       }
     }
-    
+
     if (field === 'cvc' || field === 'all') {
       if (cvc.length !== 3) {
         errors.cvc = isRTL ? 'CVC يجب أن يكون 3 أرقام' : 'CVC must be 3 digits'
       }
     }
-    
+
     if (field === 'cardholderName' || field === 'all') {
       if (cardholderName.trim().length < 2) {
         errors.cardholderName = isRTL ? 'الاسم مطلوب' : 'Name is required'
       }
     }
-    
+
     setFieldErrors(prev => ({ ...prev, ...errors }))
     return Object.keys(errors).length === 0
   }
@@ -258,7 +258,7 @@ function CheckoutContent() {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
+
     // Validate all fields
     if (!validateField('all', '')) {
       setError(isRTL ? 'يرجى تصحيح الأخطاء' : 'Please fix the errors')
@@ -279,7 +279,7 @@ function CheckoutContent() {
       const [expiryMonth, expiryYear] = expiry.split('/').map(s => s.replace(/\D/g, ''))
       const fullYear = '20' + expiryYear
 
-      const source = paymentMethod === 'card' 
+      const source = paymentMethod === 'card'
         ? {
             type: 'creditcard',
             name: cardholderName,
@@ -335,7 +335,7 @@ function CheckoutContent() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
-          <p style={{ color: '#F0F0FF' }}>Loading...</p>
+          <p style={{ color: '#FFFFFF' }}>Loading...</p>
         </div>
       </div>
     )
@@ -345,8 +345,8 @@ function CheckoutContent() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <p style={{ color: '#F0F0FF' }}>Package not found</p>
-          <Link href="/pricing" className="mt-4 inline-block" style={{ color: '#3B82F6' }}>
+          <p style={{ color: '#FFFFFF' }}>Package not found</p>
+          <Link href="/pricing" className="mt-4 inline-block" style={{ color: '#C7DAF8' }}>
             Back to Pricing
           </Link>
         </div>
@@ -362,12 +362,12 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen py-8 px-4" style={{ background: 'var(--background)' }}>
       <div className="max-w-6xl mx-auto">
-        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: '#3B82F6' }}>
+        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: '#C7DAF8' }}>
           <span>{isRTL ? '→' : '←'}</span>
           <span>{t.common.back}</span>
         </Link>
 
-        <h1 className="text-3xl font-black mb-8" style={{ color: '#F0F0FF' }}>
+        <h1 className="text-3xl font-black mb-8" style={{ color: '#FFFFFF' }}>
           {isRTL ? 'إتمام الدفع' : 'Complete Payment'}
         </h1>
 
@@ -378,21 +378,21 @@ function CheckoutContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl p-6"
-            style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.05)' }}
+            style={{ background: '#121317', border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#F0F0FF' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: '#FFFFFF' }}>
               {isRTL ? 'ملخص الطلب' : 'Order Summary'}
             </h2>
 
             <div className="mb-6 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <h3 className="font-bold text-lg mb-2" style={{ color: '#F0F0FF' }}>{name}</h3>
-              <p className="text-sm mb-4" style={{ color: 'rgba(240,240,255,0.6)' }}>{description}</p>
-              
+              <h3 className="font-bold text-lg mb-2" style={{ color: '#FFFFFF' }}>{name}</h3>
+              <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{description}</p>
+
               <div className="flex justify-between items-center mb-4">
-                <span style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {billingCycle === 'yearly' ? t.pricing.annual : t.pricing.monthly}
                 </span>
-                <span className="font-bold" style={{ color: '#3B82F6' }}>
+                <span className="font-bold" style={{ color: '#C7DAF8' }}>
                   {formatPrice(price)}
                 </span>
               </div>
@@ -401,11 +401,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('monthly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'monthly' ? 'ring-2 ring-[#3B82F6]' : ''
+                    billingCycle === 'monthly' ? 'ring-2 ring-[#C7DAF8]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'monthly' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'monthly' ? '#3B82F6' : 'rgba(240,240,255,0.6)',
+                    background: billingCycle === 'monthly' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: billingCycle === 'monthly' ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
                   }}
                 >
                   {t.pricing.monthly}
@@ -413,11 +413,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('yearly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'yearly' ? 'ring-2 ring-[#3B82F6]' : ''
+                    billingCycle === 'yearly' ? 'ring-2 ring-[#C7DAF8]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'yearly' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'yearly' ? '#3B82F6' : 'rgba(240,240,255,0.6)',
+                    background: billingCycle === 'yearly' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: billingCycle === 'yearly' ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
                   }}
                 >
                   {t.pricing.annual}
@@ -427,18 +427,18 @@ function CheckoutContent() {
 
             <ul className="space-y-3 mb-6">
               {features.map((f, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
-                  <span style={{ color: '#3B82F6' }}>✓</span>
+                <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <span style={{ color: '#C7DAF8' }}>✓</span>
                   <span>{f}</span>
                 </li>
               ))}
             </ul>
 
             <div className="flex justify-between items-center pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <span className="font-bold" style={{ color: '#F0F0FF' }}>
+              <span className="font-bold" style={{ color: '#FFFFFF' }}>
                 {isRTL ? 'الإجمالي' : 'Total'}
               </span>
-              <span className="text-2xl font-black" style={{ color: '#3B82F6' }}>
+              <span className="text-2xl font-black" style={{ color: '#C7DAF8' }}>
                 {formatPrice(price)}
               </span>
             </div>
@@ -450,9 +450,9 @@ function CheckoutContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl p-6"
-            style={{ background: '#0F0F1A', border: '1px solid rgba(255,255,255,0.05)' }}
+            style={{ background: '#121317', border: '1px solid rgba(255,255,255,0.05)' }}
           >
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#F0F0FF' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: '#FFFFFF' }}>
               {isRTL ? 'طريقة الدفع' : 'Payment Method'}
             </h2>
 
@@ -460,11 +460,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('card')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'card' ? 'ring-2 ring-[#3B82F6]' : ''
+                  paymentMethod === 'card' ? 'ring-2 ring-[#C7DAF8]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'card' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'card' ? '#3B82F6' : '#F0F0FF',
+                  background: paymentMethod === 'card' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
+                  color: paymentMethod === 'card' ? '#C7DAF8' : '#FFFFFF',
                 }}
               >
                 {isRTL ? 'بطاقة ائتمان' : 'Credit Card'}
@@ -472,11 +472,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('applepay')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'applepay' ? 'ring-2 ring-[#3B82F6]' : ''
+                  paymentMethod === 'applepay' ? 'ring-2 ring-[#C7DAF8]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'applepay' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'applepay' ? '#3B82F6' : '#F0F0FF',
+                  background: paymentMethod === 'applepay' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
+                  color: paymentMethod === 'applepay' ? '#C7DAF8' : '#FFFFFF',
                 }}
               >
                 Apple Pay
@@ -500,7 +500,7 @@ function CheckoutContent() {
                 <form onSubmit={handlePayment}>
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                      <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         {isRTL ? 'رقم البطاقة' : 'Card Number'}
                       </label>
                       <div className="relative">
@@ -513,7 +513,7 @@ function CheckoutContent() {
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
                             border: fieldErrors.cardNumber ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#F0F0FF',
+                            color: '#FFFFFF',
                           }}
                           placeholder="4242 4242 4242 4242"
                         />
@@ -529,7 +529,7 @@ function CheckoutContent() {
                     </div>
 
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                      <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                         {isRTL ? 'اسم حامل البطاقة' : 'Cardholder Name'}
                       </label>
                       <input
@@ -544,7 +544,7 @@ function CheckoutContent() {
                         className="w-full px-4 py-3 rounded-xl bg-transparent"
                         style={{
                           border: fieldErrors.cardholderName ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                          color: '#F0F0FF',
+                          color: '#FFFFFF',
                         }}
                         placeholder="John Doe"
                       />
@@ -557,7 +557,7 @@ function CheckoutContent() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                        <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                           {isRTL ? 'تاريخ الانتهاء' : 'Expiry (MM/YY)'}
                         </label>
                         <input
@@ -569,7 +569,7 @@ function CheckoutContent() {
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
                             border: fieldErrors.expiry ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#F0F0FF',
+                            color: '#FFFFFF',
                           }}
                           placeholder="MM/YY"
                         />
@@ -580,7 +580,7 @@ function CheckoutContent() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm mb-2" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                        <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
                           CVC
                         </label>
                         <input
@@ -599,7 +599,7 @@ function CheckoutContent() {
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
                             border: fieldErrors.cvc ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#F0F0FF',
+                            color: '#FFFFFF',
                           }}
                           placeholder="123"
                         />
@@ -617,7 +617,7 @@ function CheckoutContent() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-4 p-3 rounded-xl text-sm"
-                      style={{ background: 'rgba(255,0,0,0.1)', color: '#FF6B6B' }}
+                      style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}
                     >
                       {error}
                     </motion.div>
@@ -628,7 +628,7 @@ function CheckoutContent() {
                     disabled={processing}
                     className="w-full mt-6 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                     style={{
-                      background: processing ? 'rgba(59,130,246,0.3)' : 'var(--accent)',
+                      background: processing ? 'rgba(199,218,248,0.3)' : 'var(--accent)',
                       color: '#FFFFFF',
                       opacity: processing ? 0.7 : 1,
                     }}
@@ -649,7 +649,7 @@ function CheckoutContent() {
 
                 {/* Trust Signals */}
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-xs" style={{ color: 'rgba(240,240,255,0.4)' }}>
+                  <div className="flex items-center justify-center gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
                     <span>🔒</span>
                     <span>{isRTL ? 'الدفع مشفر ومأمون' : 'Encrypted & Secure Payment'}</span>
                   </div>
@@ -658,7 +658,7 @@ function CheckoutContent() {
                     <div className="w-10 h-6 rounded" style={{ background: '#eb001b' }}>💳</div>
                     <div className="w-10 h-6 rounded" style={{ background: '#0079be' }}>💳</div>
                   </div>
-                  <div className="text-xs text-center" style={{ color: 'rgba(240,240,255,0.4)' }}>
+                  <div className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
                     {isRTL ? 'مدعوم بواسطة Moyasar' : 'Powered by Moyasar'}
                   </div>
                 </div>
@@ -669,7 +669,7 @@ function CheckoutContent() {
                 disabled={processing}
                 className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                 style={{
-                  background: processing ? 'rgba(0,0,0,0.3)' : '#000',
+                  background: processing ? 'rgba(0,0,0,0.3)' : '#121317',
                   color: '#FFF',
                   opacity: processing ? 0.7 : 1,
                 }}
@@ -691,7 +691,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
-          <p style={{ color: '#F0F0FF' }}>Loading...</p>
+          <p style={{ color: '#FFFFFF' }}>Loading...</p>
         </div>
       </div>
     }>

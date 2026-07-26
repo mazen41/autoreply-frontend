@@ -22,10 +22,10 @@ function useCountUp(target: number, duration = 2000, start = false) {
 }
 
 const METRICS = [
-  { labelAr: 'محادثة نشطة',    labelEn: 'Active Convos',    value: 247,    suffix: '',  color: '#C6FF00' },
-  { labelAr: 'رد اليوم',        labelEn: 'Replies Today',    value: 3842,   suffix: '+', color: '#7DF9FF' },
-  { labelAr: 'عميل محتمل',      labelEn: 'Leads Generated', value: 128,    suffix: '',  color: '#C6FF00' },
-  { labelAr: 'وقت الرد (ثانية)', labelEn: 'Avg Response',   value: 8,      suffix: 's', color: '#7DF9FF' },
+  { labelAr: 'محادثة نشطة',    labelEn: 'Active Convos',    value: 247,    suffix: '',  color: '#C7DAF8' },
+  { labelAr: 'رد اليوم',        labelEn: 'Replies Today',    value: 3842,   suffix: '+', color: '#C7DAF8' },
+  { labelAr: 'عميل محتمل',      labelEn: 'Leads Generated', value: 128,    suffix: '',  color: '#C7DAF8' },
+  { labelAr: 'وقت الرد (ثانية)', labelEn: 'Avg Response',   value: 8,      suffix: 's', color: '#C7DAF8' },
 ]
 
 export default function CommandCenter() {
@@ -57,10 +57,10 @@ export default function CommandCenter() {
         animate={visible ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="flex items-center gap-3 mb-10 px-5 py-2.5 rounded-full glass"
-        style={{ border: '1px solid rgba(198,255,0,0.15)' }}
+        style={{ border: '1px solid rgba(199,218,248,0.15)' }}
       >
-        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C6FF00' }} />
-        <span className="text-xs font-semibold" style={{ color: '#C6FF00', letterSpacing: '0.08em' }}>
+        <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+        <span className="text-xs font-semibold" style={{ color: '#C7DAF8', letterSpacing: '0.08em' }}>
           {isRTL ? 'نظام الذكاء الاصطناعي — نشط' : 'AI OPERATING SYSTEM — ONLINE'}
         </span>
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>v4.1.0</span>
@@ -77,7 +77,7 @@ export default function CommandCenter() {
           <div
             key={i}
             className="card-os rounded-2xl p-4 text-center glass"
-            style={{ background: 'rgba(17,17,17,0.8)' }}
+            style={{ background: 'rgba(18,19,23,0.8)' }}
           >
             <div
               className="text-3xl font-black mb-1 count-reveal"
@@ -118,8 +118,8 @@ export default function CommandCenter() {
               width: 200, height: 200,
               borderRadius: '50%',
               border: '1px solid transparent',
-              borderTop: '1px solid rgba(198,255,0,0.4)',
-              borderRight: '1px solid rgba(198,255,0,0.15)',
+              borderTop: '1px solid rgba(199,218,248,0.4)',
+              borderRight: '1px solid rgba(199,218,248,0.15)',
             }}
           />
           {/* Inner orbit ring */}
@@ -129,8 +129,8 @@ export default function CommandCenter() {
               width: 160, height: 160,
               borderRadius: '50%',
               border: '1px solid transparent',
-              borderBottom: '1px solid rgba(125,249,255,0.4)',
-              borderLeft: '1px solid rgba(125,249,255,0.15)',
+              borderBottom: '1px solid rgba(199,218,248,0.4)',
+              borderLeft: '1px solid rgba(199,218,248,0.15)',
             }}
           />
 
@@ -140,15 +140,15 @@ export default function CommandCenter() {
             style={{
               width: 120, height: 120,
               borderRadius: '50%',
-              background: 'radial-gradient(circle at 40% 35%, rgba(198,255,0,0.25) 0%, rgba(198,255,0,0.05) 50%, transparent 75%)',
-              border: '2px solid rgba(198,255,0,0.3)',
+              background: 'radial-gradient(circle at 40% 35%, rgba(199,218,248,0.25) 0%, rgba(199,218,248,0.05) 50%, transparent 75%)',
+              border: '2px solid rgba(199,218,248,0.3)',
               backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <span style={{ fontSize: 40, filter: 'drop-shadow(0 0 20px rgba(198,255,0,0.8))' }}>✦</span>
+            <span style={{ fontSize: 40, filter: 'drop-shadow(0 0 20px rgba(199,218,248,0.8))' }}>✦</span>
           </div>
 
           {/* Orbit dots */}
@@ -159,8 +159,8 @@ export default function CommandCenter() {
               style={{
                 width: 6, height: 6,
                 borderRadius: '50%',
-                background: i % 2 === 0 ? '#C6FF00' : '#7DF9FF',
-                boxShadow: `0 0 8px ${i % 2 === 0 ? '#C6FF00' : '#7DF9FF'}`,
+                background: i % 2 === 0 ? '#C7DAF8' : '#C7DAF8',
+                boxShadow: `0 0 8px ${i % 2 === 0 ? '#C7DAF8' : '#C7DAF8'}`,
                 top: `${50 - 47 * Math.cos((deg * Math.PI) / 180)}%`,
                 left: `${50 + 47 * Math.sin((deg * Math.PI) / 180)}%`,
                 transform: 'translate(-50%, -50%)',
@@ -179,18 +179,18 @@ export default function CommandCenter() {
         >
           {/* System label */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to left, rgba(198,255,0,0.4), transparent)' }} />
+            <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to left, rgba(199,218,248,0.4), transparent)' }} />
             <span className="text-xs font-semibold tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.35)' }}>
               {isRTL ? 'نظام الردود الذكية' : 'INTELLIGENT REPLY SYSTEM'}
             </span>
-            <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to right, rgba(198,255,0,0.4), transparent)' }} />
+            <div className="h-px flex-1 max-w-[80px]" style={{ background: 'linear-gradient(to right, rgba(199,218,248,0.4), transparent)' }} />
           </div>
 
           <h1
             className="font-black leading-[1.05] mb-5"
             style={{ fontSize: 'clamp(2.4rem, 6vw, 5rem)', letterSpacing: '-0.04em' }}
           >
-            <span className="block" style={{ color: '#F5F5F5' }}>
+            <span className="block" style={{ color: '#FFFFFF' }}>
               {isRTL ? 'عملك لا ينام.' : 'Your Business Never Sleeps.'}
             </span>
             <span className="block text-dual" style={{ paddingBottom: '0.05em' }}>
@@ -253,7 +253,7 @@ export default function CommandCenter() {
         </span>
         <div
           className="w-px h-12"
-          style={{ background: 'linear-gradient(to bottom, rgba(198,255,0,0.5), transparent)' }}
+          style={{ background: 'linear-gradient(to bottom, rgba(199,218,248,0.5), transparent)' }}
         />
       </motion.div>
     </section>

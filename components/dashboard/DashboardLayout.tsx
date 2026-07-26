@@ -100,21 +100,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         onClick={() => setMobileSidebar(false)}
         className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
         style={{
-          background: active ? 'rgba(198,255,0,0.08)' : 'transparent',
-          borderLeft: active ? '2px solid #3B82F6' : '2px solid transparent',
-          borderRight: isRTL ? (active ? '2px solid #3B82F6' : '2px solid transparent') : '2px solid transparent',
-          color: active ? '#3B82F6' : 'rgba(136,136,170,0.8)',
+          background: active ? 'rgba(199,218,248,0.08)' : 'transparent',
+          borderLeft: active ? '2px solid #C7DAF8' : '2px solid transparent',
+          borderRight: isRTL ? (active ? '2px solid #C7DAF8' : '2px solid transparent') : '2px solid transparent',
+          color: active ? '#C7DAF8' : 'rgba(255,255,255,0.8)',
         }}
         onMouseEnter={(e) => {
           if (!active) {
-            e.currentTarget.style.background = 'rgba(198,255,0,0.04)'
-            e.currentTarget.style.color = 'rgba(240,240,255,0.9)'
+            e.currentTarget.style.background = 'rgba(199,218,248,0.04)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.9)'
           }
         }}
         onMouseLeave={(e) => {
           if (!active) {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'rgba(136,136,170,0.8)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
           }
         }}
       >
@@ -125,7 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {collapsed && !mobileSidebar && (
           <div
             className={`absolute ${isRTL ? 'right-full mr-2' : 'left-full ml-2'} px-2 py-1 rounded-lg text-xs font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50`}
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.06)', color: '#F0F0FF' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.06)', color: '#FFFFFF' }}
           >
             {label}
           </div>
@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#0A0A0F' }}>
+    <div className="min-h-screen" style={{ background: '#121317' }}>
       {/* Background effects */}
       <div className="os-bg">
         <div className="orb-lime" />
@@ -162,14 +162,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         variants={sidebarVariants}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full z-50 glass`}
-        style={{ background: '#0D0D13', borderRight: isRTL ? 'none' : '1px solid rgba(255,255,255,0.06)', borderLeft: isRTL ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
+        style={{ background: '#121317', borderRight: isRTL ? 'none' : '1px solid rgba(255,255,255,0.06)', borderLeft: isRTL ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-5 py-5 mb-2">
             <NazLogoIcon size={24} />
             {(!collapsed || mobileSidebar) && (
-              <span className="text-xl font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.04em', fontFamily: 'Space Grotesk, sans-serif' }}>
+              <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em', fontFamily: 'Space Grotesk, sans-serif' }}>
                 Naz
               </span>
             )}
@@ -191,9 +191,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {(!collapsed || mobileSidebar) && (
               <button
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full"
-                style={{ color: 'rgba(136,136,170,0.8)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#F0F0FF'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(136,136,170,0.8)'}
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
               >
                 <HelpIcon size={20} />
                 <span className="text-sm font-semibold">{isRTL ? 'مساعدة' : 'Help'}</span>
@@ -212,10 +212,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold truncate" style={{ color: '#F0F0FF' }}>
+                  <div className="text-sm font-semibold truncate" style={{ color: '#FFFFFF' }}>
                     {user.name}
                   </div>
-                  <div className="text-xs" style={{ color: 'rgba(136,136,170,0.8)' }}>
+                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
                     {user.email}
                   </div>
                 </div>
@@ -232,7 +232,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Topbar */}
         <header
           className="sticky top-0 z-30 glass"
-          style={{ height: 64, background: 'rgba(10,10,15,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ height: 64, background: 'rgba(18,19,23,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         >
           <div className="flex items-center justify-between h-full px-4 md:px-6">
             {/* Left side */}
@@ -240,9 +240,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 onClick={() => setMobileSidebar(!mobileSidebar)}
                 className="md:hidden p-2 rounded-lg transition-colors"
-                style={{ color: 'rgba(136,136,170,0.8)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#F0F0FF'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(136,136,170,0.8)'}
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
               >
                 {mobileSidebar ? <XIcon size={20} /> : <MenuIcon size={20} />}
               </button>
@@ -250,15 +250,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 onClick={() => setCollapsed(!collapsed)}
                 className="hidden md:block p-2 rounded-lg transition-colors"
-                style={{ color: 'rgba(136,136,170,0.8)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#F0F0FF'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(136,136,170,0.8)'}
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
               >
                 <MenuIcon size={20} />
               </button>
 
               <div className="hidden md:block">
-                <h1 className="text-lg font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+                <h1 className="text-lg font-bold" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
                   {pageTitle}
                 </h1>
               </div>
@@ -267,14 +267,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Center - Search (desktop) */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
               <div className="relative w-full">
-                <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(136,136,170,0.6)' }} />
+                <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.6)' }} />
                 <input
                   type="text"
                   placeholder={isRTL ? 'بحث...' : 'Search...'}
                   className="w-full pl-10 pr-4 py-2 rounded-lg text-sm input-os"
-                  style={{ background: 'rgba(17,17,17,0.8)', border: '1px solid rgba(255,255,255,0.06)', color: '#F0F0FF' }}
+                  style={{ background: 'rgba(18,19,23,0.8)', border: '1px solid rgba(255,255,255,0.06)', color: '#FFFFFF' }}
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(136,136,170,0.6)' }}>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)' }}>
                   ⌘K
                 </div>
               </div>
@@ -286,23 +286,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 onClick={() => setLang(isRTL ? 'en' : 'ar')}
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(136,136,170,0.8)' }}
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.8)' }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-                  e.currentTarget.style.color = '#F0F0FF'
+                  e.currentTarget.style.color = '#FFFFFF'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-                  e.currentTarget.style.color = 'rgba(136,136,170,0.8)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
                 }}
               >
                 {isRTL ? 'AR' : 'EN'}
               </button>
 
               {/* Trial countdown */}
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.2)' }}>
-                <div className="w-2 h-2 rounded-full status-live" style={{ background: '#FFB800' }} />
-                <span className="text-xs font-semibold" style={{ color: '#FFB800' }}>
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.2)' }}>
+                <div className="w-2 h-2 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+                <span className="text-xs font-semibold" style={{ color: '#C7DAF8' }}>
                   {isRTL ? '٧ أيام متبقية' : '7 days left'}
                 </span>
               </div>
@@ -312,12 +312,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}
                   className="p-2 rounded-lg transition-colors relative"
-                  style={{ color: 'rgba(136,136,170,0.8)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#F0F0FF'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(136,136,170,0.8)'}
+                  style={{ color: 'rgba(255,255,255,0.8)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#FFFFFF'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
                 >
                   <BellIcon size={20} />
-                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#FF4D6D' }} />
+                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: '#C7DAF8' }} />
                 </button>
 
                 <AnimatePresence>
@@ -330,7 +330,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
                     >
                       <div className="p-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <h3 className="text-sm font-bold" style={{ color: '#F0F0FF' }}>
+                        <h3 className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
                           {isRTL ? 'الإشعارات' : 'Notifications'}
                         </h3>
                       </div>
@@ -343,12 +343,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             className="flex items-start gap-3 p-3 hover:bg-white/5 transition-colors"
                             style={{ borderBottom: i < NOTIFICATIONS.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
                           >
-                            <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: notif.type === 'alert' ? '#FF4D6D' : notif.type === 'review' ? '#FFB800' : '#00D68F' }} />
+                            <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: notif.type === 'alert' ? '#C7DAF8' : notif.type === 'review' ? '#C7DAF8' : '#C7DAF8' }} />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm" style={{ color: '#F0F0FF' }}>
+                              <p className="text-sm" style={{ color: '#FFFFFF' }}>
                                 {isRTL ? notif.ar : notif.en}
                               </p>
-                              <p className="text-xs mt-1" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                                 {notif.time}
                               </p>
                             </div>
@@ -380,10 +380,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       style={{ border: '1px solid rgba(255,255,255,0.06)' }}
                     >
                       <div className="p-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <p className="text-sm font-semibold" style={{ color: '#F0F0FF' }}>
+                        <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
                           {user?.name}
                         </p>
-                        <p className="text-xs" style={{ color: 'rgba(136,136,170,0.6)' }}>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>
                           {user?.email}
                         </p>
                       </div>
@@ -392,14 +392,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           href="/dashboard/settings"
                           onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-                          style={{ color: 'rgba(136,136,170,0.8)' }}
+                          style={{ color: 'rgba(255,255,255,0.8)' }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-                            e.currentTarget.style.color = '#F0F0FF'
+                            e.currentTarget.style.color = '#FFFFFF'
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = 'transparent'
-                            e.currentTarget.style.color = 'rgba(136,136,170,0.8)'
+                            e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
                           }}
                         >
                           <UserIcon size={16} />
@@ -408,14 +408,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <button
                           onClick={logout}
                           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors w-full"
-                          style={{ color: 'rgba(136,136,170,0.8)' }}
+                          style={{ color: 'rgba(255,255,255,0.8)' }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,77,109,0.1)'
-                            e.currentTarget.style.color = '#FF4D6D'
+                            e.currentTarget.style.background = 'rgba(199,218,248,0.1)'
+                            e.currentTarget.style.color = '#C7DAF8'
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = 'transparent'
-                            e.currentTarget.style.color = 'rgba(136,136,170,0.8)'
+                            e.currentTarget.style.color = 'rgba(255,255,255,0.8)'
                           }}
                         >
                           <LogOutIcon size={16} />

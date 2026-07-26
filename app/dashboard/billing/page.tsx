@@ -138,7 +138,7 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00FFB2]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
       </div>
     )
   }
@@ -150,7 +150,7 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: '#F0F0FF' }}>
+        <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>
           {t.nav.billing}
         </h1>
         {!isFree && subscription && (
@@ -159,29 +159,29 @@ export default function BillingPage() {
             disabled={cancelling || subscription.status !== 'active'}
             className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
             style={{
-              background: cancelling || subscription.status !== 'active' 
-                ? 'rgba(255,0,0,0.1)' 
-                : 'rgba(255,0,0,0.2)',
+              background: cancelling || subscription.status !== 'active'
+                ? 'rgba(199,218,248,0.1)'
+                : 'rgba(199,218,248,0.2)',
               color: '#FF6B6B',
               opacity: cancelling || subscription.status !== 'active' ? 0.5 : 1,
             }}
           >
-            {cancelling 
-              ? (isRTL ? 'جاري الإلغاء...' : 'Cancelling...') 
+            {cancelling
+              ? (isRTL ? 'جاري الإلغاء...' : 'Cancelling...')
               : (isRTL ? 'إلغاء الاشتراك' : 'Cancel Subscription')}
           </button>
         )}
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(255,0,0,0.1)', color: '#FF6B6B' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}>
           {error}
         </div>
       )}
 
       {/* Current Plan */}
-      <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+      <div className="rounded-2xl p-6" style={{ background: '#121317' }}>
+        <h2 className="text-xl font-bold mb-4" style={{ color: '#FFFFFF' }}>
           {isRTL ? 'الباقة الحالية' : 'Current Plan'}
         </h2>
 
@@ -189,14 +189,14 @@ export default function BillingPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <div>
-                <h3 className="text-2xl font-bold" style={{ color: '#00FFB2' }}>{name}</h3>
-                <p className="text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>{description}</p>
+                <h3 className="text-2xl font-bold" style={{ color: '#C7DAF8' }}>{name}</h3>
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{description}</p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-black" style={{ color: '#F0F0FF' }}>
+                <div className="text-3xl font-black" style={{ color: '#FFFFFF' }}>
                   {formatPrice(pkg.price_monthly)}
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   /{t.pricing.monthly}
                 </div>
               </div>
@@ -206,28 +206,28 @@ export default function BillingPage() {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                    <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       {isRTL ? 'تاريخ البدء' : 'Start Date'}
                     </div>
-                    <div className="font-bold" style={{ color: '#F0F0FF' }}>
+                    <div className="font-bold" style={{ color: '#FFFFFF' }}>
                       {formatDate(subscription.starts_at)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                    <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       {isRTL ? 'تاريخ الانتهاء' : 'End Date'}
                     </div>
-                    <div className="font-bold" style={{ color: '#F0F0FF' }}>
+                    <div className="font-bold" style={{ color: '#FFFFFF' }}>
                       {formatDate(subscription.ends_at)}
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 p-4 rounded-xl" style={{ background: 'rgba(0,255,178,0.05)', border: '1px solid rgba(0,255,178,0.15)' }}>
+                <div className="mt-4 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                       {isRTL ? 'الأيام المتبقية' : 'Days Remaining'}
                     </span>
-                    <span className="text-2xl font-bold" style={{ color: '#00FFB2' }}>
+                    <span className="text-2xl font-bold" style={{ color: '#C7DAF8' }}>
                       {getDaysRemaining(subscription.ends_at)}
                     </span>
                   </div>
@@ -236,11 +236,11 @@ export default function BillingPage() {
             )}
 
             {subscription && subscription.status === 'cancelled' && (
-              <div className="p-4 rounded-xl" style={{ background: 'rgba(255,0,0,0.1)' }}>
+              <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)' }}>
                 <div className="font-bold mb-1" style={{ color: '#FF6B6B' }}>
                   {isRTL ? 'الاشتراك ملغي' : 'Subscription Cancelled'}
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(255,107,107,0.8)' }}>
+                <div className="text-sm" style={{ color: 'rgba(199,218,248,0.8)' }}>
                   {isRTL ? 'سيستمر الوصول حتى' : 'Access continues until'} {formatDate(subscription.ends_at)}
                 </div>
               </div>
@@ -251,44 +251,44 @@ export default function BillingPage() {
 
       {/* Usage */}
       {pkg && (
-        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
-          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+        <div className="rounded-2xl p-6" style={{ background: '#121317' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#FFFFFF' }}>
             {isRTL ? 'الاستخدام' : 'Usage'}
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'ردود الذكاء الاصطناعي' : 'AI Replies'}
               </span>
-              <span className="font-bold" style={{ color: '#F0F0FF' }}>
+              <span className="font-bold" style={{ color: '#FFFFFF' }}>
                 {getLimitDisplay(pkg.ai_replies_limit)}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'القنوات' : 'Channels'}
               </span>
-              <span className="font-bold" style={{ color: '#F0F0FF' }}>
+              <span className="font-bold" style={{ color: '#FFFFFF' }}>
                 {getLimitDisplay(pkg.channels_limit)}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'الأدوات' : 'Tools'}
               </span>
-              <span className="font-bold" style={{ color: '#F0F0FF' }}>
+              <span className="font-bold" style={{ color: '#FFFFFF' }}>
                 {getLimitDisplay(pkg.tools_limit)}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span style={{ color: 'rgba(240,240,255,0.6)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.6)' }}>
                 {isRTL ? 'مقالات المدونة' : 'Blog Posts'}
               </span>
-              <span className="font-bold" style={{ color: '#F0F0FF' }}>
+              <span className="font-bold" style={{ color: '#FFFFFF' }}>
                 {getLimitDisplay(pkg.blog_posts_limit)}
               </span>
             </div>
@@ -298,21 +298,21 @@ export default function BillingPage() {
 
       {/* Upgrade Options */}
       {isFree && (
-        <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(0,255,178,0.1), rgba(191,0,255,0.1))' }}>
-          <h2 className="text-xl font-bold mb-2" style={{ color: '#F0F0FF' }}>
+        <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, rgba(199,218,248,0.1), rgba(199,218,248,0.1))' }}>
+          <h2 className="text-xl font-bold mb-2" style={{ color: '#FFFFFF' }}>
             {isRTL ? 'ترقية الباقة' : 'Upgrade Your Plan'}
           </h2>
-          <p className="text-sm mb-4" style={{ color: 'rgba(240,240,255,0.6)' }}>
-            {isRTL 
-              ? 'احصل على المزيد من المميزات والردود غير المحدودة' 
+          <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            {isRTL
+              ? 'احصل على المزيد من المميزات والردود غير المحدودة'
               : 'Get more features and unlimited replies'}
           </p>
           <Link
             href="/pricing"
             className="inline-block px-6 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-              color: '#050508',
+              background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+              color: '#121317',
             }}
           >
             {isRTL ? 'عرض الباقات' : 'View Plans'}
@@ -322,28 +322,28 @@ export default function BillingPage() {
 
       {/* Payment History */}
       {subscription && (
-        <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
-          <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+        <div className="rounded-2xl p-6" style={{ background: '#121317' }}>
+          <h2 className="text-xl font-bold mb-4" style={{ color: '#FFFFFF' }}>
             {isRTL ? 'سجل الدفعات' : 'Payment History'}
           </h2>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
               <div>
-                <div className="font-bold" style={{ color: '#F0F0FF' }}>
+                <div className="font-bold" style={{ color: '#FFFFFF' }}>
                   {isRTL ? 'اشتراك' : 'Subscription'} - {name}
                 </div>
-                <div className="text-sm" style={{ color: 'rgba(240,240,255,0.6)' }}>
+                <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                   {formatDate(subscription.created_at)}
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-bold" style={{ color: '#00FFB2' }}>
+                <div className="font-bold" style={{ color: '#C7DAF8' }}>
                   {formatPrice(subscription.amount_paid)}
                 </div>
-                <div className="text-sm" style={{ color: subscription.status === 'active' ? '#00FFB2' : '#FF6B6B' }}>
-                  {subscription.status === 'active' 
-                    ? (isRTL ? 'مدفوع' : 'Paid') 
+                <div className="text-sm" style={{ color: subscription.status === 'active' ? '#C7DAF8' : '#FF6B6B' }}>
+                  {subscription.status === 'active'
+                    ? (isRTL ? 'مدفوع' : 'Paid')
                     : (isRTL ? 'ملغي' : 'Cancelled')}
                 </div>
               </div>
