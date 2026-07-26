@@ -436,7 +436,7 @@ export const NazLogoIcon = ({ size = 24, className = '', style }: IconProps) => 
     viewBox="0 0 24 24"
     fill="currentColor"
     className={className}
-    style={{ color: '#C7DAF8', ...style }}
+    style={{ color: 'var(--accent)', ...style }}
   >
     <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2Z" transform="scale(0.8) translate(2.4, 2.4)" />
   </svg>

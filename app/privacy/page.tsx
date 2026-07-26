@@ -191,14 +191,14 @@ export default function PrivacyPage() {
       <header className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.8))' }}>✦</span>
+            <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent))' }}>✦</span>
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <button
             onClick={toggleLang}
             className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
             style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: 'var(--divider)',
               border: '1px solid var(--border)',
               color: 'var(--text-secondary)'
             }}

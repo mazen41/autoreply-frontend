@@ -63,8 +63,8 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <h1 className="font-black text-2xl mb-4" style={{ color: '#FFFFFF' }}>المقال غير موجود</h1>
-          <Link href="/blog" className="text-sm" style={{ color: '#C7DAF8' }}>العودة للمدونة</Link>
+          <h1 className="font-black text-2xl mb-4" style={{ color: 'var(--text-primary)' }}>المقال غير موجود</h1>
+          <Link href="/blog" className="text-sm" style={{ color: 'var(--accent)' }}>العودة للمدونة</Link>
         </div>
       </div>
     )
@@ -85,14 +85,14 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
-      <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
+            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -104,14 +104,14 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           <div className="lg:col-span-2">
             {/* Back Link */}
             <Link href="/blog" className="inline-flex items-center gap-2 text-sm mb-6"
-              style={{ color: 'rgba(255,255,255,0.5)' }}>
+              style={{ color: 'var(--text-secondary)' }}>
               ← العودة للمدونة
             </Link>
 
             {/* Article Header */}
             {post.featured_image_url && (
               <div className="mb-8 aspect-video rounded-2xl overflow-hidden"
-                style={{ background: 'rgba(255,255,255,0.05)' }}>
+                style={{ background: 'var(--border)' }}>
                 <img
                   src={post.featured_image_url}
                   alt={post.title}
@@ -122,16 +122,16 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
 
             {post.category && (
               <div className="inline-block px-4 py-2 rounded-lg text-sm font-bold mb-4"
-                style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
+                style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
                 {post.category}
               </div>
             )}
 
-            <h1 className="font-black mb-4" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
+            <h1 className="font-black mb-4" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-4 text-sm mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <div className="flex items-center gap-4 text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
               <span>{post.author}</span>
               <span>•</span>
               <span>{formatDate(post.published_at)}</span>
@@ -140,20 +140,20 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             {/* Article Body */}
             <div
               className="prose prose-invert max-w-none mb-12"
-              style={{ color: 'rgba(255,255,255,0.8)' }}
+              style={{ color: 'var(--text-secondary)' }}
               dangerouslySetInnerHTML={{ __html: post.body }}
             />
 
             {/* Related Tools */}
-            <div className="p-6 rounded-2xl mb-8" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <h3 className="font-bold mb-4" style={{ color: '#FFFFFF' }}>أدوات مجانية ذات صلة</h3>
+            <div className="p-6 rounded-2xl mb-8" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>أدوات مجانية ذات صلة</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {relatedToolObjects.map((tool) => (
                   <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                     <div className="p-4 rounded-xl transition-all hover:scale-105"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div className="font-bold mb-1" style={{ color: '#C7DAF8' }}>{tool.nameAr}</div>
-                      <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
+                      style={{ background: 'var(--border)', border: '1px solid var(--border)' }}>
+                      <div className="font-bold mb-1" style={{ color: 'var(--accent)' }}>{tool.nameAr}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tool.nameEn}</div>
                     </div>
                   </Link>
                 ))}
@@ -161,15 +161,15 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             </div>
 
             {/* Upsell Banner */}
-            <div className="p-6 rounded-2xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
-              <h3 className="font-bold mb-3" style={{ color: '#C7DAF8' }}>
+            <div className="p-6 rounded-2xl text-center" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
+              <h3 className="font-bold mb-3" style={{ color: 'var(--accent)' }}>
                 اكتشف كيف يمكن لـ Naz Autoreply أن يضاعف مبيعاتك
               </h3>
-              <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
                 دع الذكاء الاصطناعي يرد على عملائك تلقائياً على جميع المنصات
               </p>
               <Link href="/register" className="inline-block px-6 py-3 rounded-lg font-bold text-sm"
-                style={{ background: 'var(--accent)', color: '#FFFFFF' }}>
+                style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}>
                 جرّب مجاناً
               </Link>
             </div>
@@ -178,20 +178,20 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
-              <div className="p-6 rounded-2xl" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <h3 className="font-bold mb-4" style={{ color: '#FFFFFF' }}>أدوات مجانية قد تعجبك</h3>
+              <div className="p-6 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>أدوات مجانية قد تعجبك</h3>
                 <div className="space-y-3">
                   {tools.slice(0, 3).map((tool) => (
                     <Link key={tool.slug} href={`/tools/${tool.slug}`}>
                       <div className="p-3 rounded-xl transition-all hover:scale-105"
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div className="font-bold text-sm mb-1" style={{ color: '#C7DAF8' }}>{tool.nameAr}</div>
-                        <div className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{tool.nameEn}</div>
+                        style={{ background: 'var(--border)', border: '1px solid var(--border)' }}>
+                        <div className="font-bold text-sm mb-1" style={{ color: 'var(--accent)' }}>{tool.nameAr}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{tool.nameEn}</div>
                       </div>
                     </Link>
                   ))}
                 </div>
-                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: '#C7DAF8' }}>
+                <Link href="/tools" className="block text-center text-sm mt-4" style={{ color: 'var(--accent)' }}>
                   عرض جميع الأدوات →
                 </Link>
               </div>

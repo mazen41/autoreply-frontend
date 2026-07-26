@@ -282,39 +282,39 @@ export default function AIKnowledgeContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Name</label>
-            <input type="text" value={profile.business_name} onChange={e => setProfile({...profile, business_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            <input type="text" value={profile.business_name} onChange={e => setProfile({...profile, business_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Type</label>
-            <input type="text" value={profile.business_type} onChange={e => setProfile({...profile, business_type: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            <input type="text" value={profile.business_type} onChange={e => setProfile({...profile, business_type: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Phone</label>
-            <input type="text" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            <input type="text" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>City & Country</label>
             <div className="flex gap-2">
-              <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
-              <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({...profile, country: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({...profile, country: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Working Hours</label>
             <div className="flex gap-2">
-              <input type="text" placeholder="From (e.g. 09:00)" value={profile.working_from} onChange={e => setProfile({...profile, working_from: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
-              <input type="text" placeholder="To (e.g. 18:00)" value={profile.working_to} onChange={e => setProfile({...profile, working_to: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="From (e.g. 09:00)" value={profile.working_from} onChange={e => setProfile({...profile, working_from: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              <input type="text" placeholder="To (e.g. 18:00)" value={profile.working_to} onChange={e => setProfile({...profile, working_to: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Reply Style</label>
-            <input type="text" value={profile.reply_style} onChange={e => setProfile({...profile, reply_style: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+            <input type="text" value={profile.reply_style} onChange={e => setProfile({...profile, reply_style: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
           </div>
         </div>
 
         <div className="mb-4">
           <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Services & Products</label>
-          <textarea value={profile.services} onChange={e => setProfile({...profile, services: e.target.value})} rows={3} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200 resize-none" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+          <textarea value={profile.services} onChange={e => setProfile({...profile, services: e.target.value})} rows={3} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200 resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
         </div>
 
         <div className="mb-6">
@@ -322,14 +322,14 @@ export default function AIKnowledgeContent() {
           <div className="space-y-3">
             {faqs.map((faq, index) => (
               <div key={index} className="flex gap-2 relative">
-                <input type="text" placeholder="Question" value={faq.question} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].question = e.target.value; setFaqs(newFaqs) }} className="w-1/3 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
-                <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].answer = e.target.value; setFaqs(newFaqs) }} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-primary)' }} />
+                <input type="text" placeholder="Question" value={faq.question} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].question = e.target.value; setFaqs(newFaqs) }} className="w-1/3 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].answer = e.target.value; setFaqs(newFaqs) }} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                 <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-lg hover:bg-white/50" style={{ color: 'var(--error)' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
             ))}
-            <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-xs font-medium mt-2 px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'rgba(199,218,248,0.1)', color: 'var(--accent)' }}>
+            <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-xs font-medium mt-2 px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
               + Add FAQ
             </button>
           </div>
@@ -341,8 +341,8 @@ export default function AIKnowledgeContent() {
             disabled={savingProfile}
             className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
             style={{
-              background: savingProfile ? 'rgba(199,218,248,0.5)' : 'var(--accent)',
-              color: '#FFFFFF',
+              background: savingProfile ? 'var(--accent-focus)' : 'var(--accent)',
+              color: 'var(--text-primary)',
             }}
           >
             {savingProfile && (
@@ -371,7 +371,7 @@ export default function AIKnowledgeContent() {
         {/* Upload Button */}
         <div className="mb-6">
           <label className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-80"
-            style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)', color: 'var(--accent)' }}>
+            style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--accent)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
@@ -396,7 +396,7 @@ export default function AIKnowledgeContent() {
 
         {/* Files List */}
         {files.length === 0 ? (
-          <div className="text-center py-8 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+          <div className="text-center py-8 rounded-xl" style={{ background: 'var(--surface-elevated)' }}>
             <p style={{ color: 'var(--text-tertiary)' }}>{t.aiKnowledge.noFiles}</p>
           </div>
         ) : (
@@ -405,11 +405,11 @@ export default function AIKnowledgeContent() {
               <div
                 key={file.id}
                 className="flex items-center justify-between p-4 rounded-xl"
-                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}
+                style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ background: 'rgba(199,218,248,0.1)', color: 'var(--accent)' }}>
+                    style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
                     {file.file_type === 'pdf' ? (
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -473,16 +473,16 @@ export default function AIKnowledgeContent() {
           rows={8}
           className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 resize-none"
           style={{
-            background: 'rgba(18,19,23,0.9)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
             color: 'var(--text-primary)',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(199,218,248,0.45)'
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(199,218,248,0.08)'
+            e.currentTarget.style.borderColor = 'var(--accent-focus)'
+            e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+            e.currentTarget.style.borderColor = 'var(--border)'
             e.currentTarget.style.boxShadow = 'none'
           }}
         />
@@ -493,8 +493,8 @@ export default function AIKnowledgeContent() {
             disabled={savingInstructions}
             className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
             style={{
-              background: savingInstructions ? 'rgba(199,218,248,0.5)' : 'var(--accent)',
-              color: '#FFFFFF',
+              background: savingInstructions ? 'var(--accent-focus)' : 'var(--accent)',
+              color: 'var(--text-primary)',
             }}
           >
             {savingInstructions && (
@@ -533,16 +533,16 @@ export default function AIKnowledgeContent() {
                 placeholder={t.aiKnowledge.testQuestionPlaceholder}
                 className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
                 style={{
-                  background: 'rgba(18,19,23,0.9)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
                   color: 'var(--text-primary)',
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(199,218,248,0.45)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(199,218,248,0.08)'
+                  e.currentTarget.style.borderColor = 'var(--accent-focus)'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
                   e.currentTarget.style.boxShadow = 'none'
                 }}
               />
@@ -551,8 +551,8 @@ export default function AIKnowledgeContent() {
                 disabled={testing}
                 className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
                 style={{
-                  background: testing ? 'rgba(199,218,248,0.5)' : 'var(--accent)',
-                  color: '#FFFFFF',
+                  background: testing ? 'var(--accent-focus)' : 'var(--accent)',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {testing && (
@@ -564,7 +564,7 @@ export default function AIKnowledgeContent() {
           </div>
 
           {testResponse && (
-            <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.2)' }}>
+            <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
               <label className="block text-sm font-medium mb-2" style={{ color: 'var(--accent)' }}>
                 {t.aiKnowledge.testResponse}
               </label>

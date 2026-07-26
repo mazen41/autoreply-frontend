@@ -16,12 +16,12 @@ function getToken(): string {
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const CHANNELS_DEFS = [
-  { id: 'instagram', name: 'Instagram',      color: '#C7DAF8', plan: 'free' },
-  { id: 'facebook',  name: 'Facebook',       color: '#C7DAF8', plan: 'free' },
-  { id: 'gmail',     name: 'Gmail',          color: '#C7DAF8', plan: 'free' },
-  { id: 'whatsapp',  name: 'WhatsApp',       color: '#C7DAF8', plan: 'free' },
-  { id: 'reviews',   name: 'Google Reviews', color: '#C7DAF8', plan: 'free' },
-  { id: 'webchat',   name: 'Web Chat',       color: '#C7DAF8', plan: 'starter' },
+  { id: 'instagram', name: 'Instagram',      color: 'var(--accent)', plan: 'free' },
+  { id: 'facebook',  name: 'Facebook',       color: 'var(--accent)', plan: 'free' },
+  { id: 'gmail',     name: 'Gmail',          color: 'var(--accent)', plan: 'free' },
+  { id: 'whatsapp',  name: 'WhatsApp',       color: 'var(--accent)', plan: 'free' },
+  { id: 'reviews',   name: 'Google Reviews', color: 'var(--accent)', plan: 'free' },
+  { id: 'webchat',   name: 'Web Chat',       color: 'var(--accent)', plan: 'starter' },
 ]
 
 function ConnectModal({
@@ -80,28 +80,28 @@ function ConnectModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div className="absolute inset-0" style={{ background: 'color-mix(in srgb, var(--text-primary) 75%, transparent)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
       <motion.div
         className="relative w-full max-w-sm rounded-2xl p-6 glass"
         initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }}
-        style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ border: '1px solid var(--border)' }}
       >
         <>
           <div className="flex items-center gap-3 mb-5">
             <ChannelIcon type={ch.id as any} size={48} />
             <div>
-              <h3 className="font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+              <h3 className="font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                 {t.channels.connect} {ch.name}
               </h3>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {t.channels.willNeedSignIn}
               </p>
             </div>
           </div>
 
           <div className="p-3 rounded-xl mb-5"
-            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            style={{ background: 'var(--surface-elevated)', border: '1px solid var(--divider)' }}>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
               {t.channels.permissionText.replace('{channel}', ch.name)}
             </p>
           </div>
@@ -230,17 +230,17 @@ export default function ChannelsPage() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+        <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
           {t.channels.title}
         </h2>
-        <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
           {t.channels.subtitle}
         </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: '#C7DAF8' }}>
+          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--accent)' }}>
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
           </svg>
@@ -254,30 +254,30 @@ export default function ChannelsPage() {
               transition={{ delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
               className="card-os rounded-2xl p-5 relative"
               style={{
-                background: 'rgba(18,19,23,0.7)',
-                border: `1px solid ${ch.connected ? 'rgba(199,218,248,0.15)' : 'rgba(255,255,255,0.05)'}`,
+                background: 'var(--surface)',
+                border: `1px solid ${ch.connected ? 'var(--accent-focus)' : 'var(--border)'}`,
               }}
             >
 
               <div className="flex items-center gap-3 mb-4">
                 <ChannelIcon type={ch.id as any} size={48} />
                 <div>
-                  <div className="font-bold text-sm" style={{ color: '#FFFFFF' }}>{ch.name}</div>
+                  <div className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{ch.name}</div>
                   {ch.pageName && (
-                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'var(--text-secondary)' }}>
                       {ch.pageName}
                     </div>
                   )}
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {ch.connected ? (
                       <>
-                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
-                        <span className="text-[11px] font-semibold" style={{ color: '#C7DAF8' }}>
+                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+                        <span className="text-[11px] font-semibold" style={{ color: 'var(--accent)' }}>
                           {t.channels.connected}
                         </span>
                       </>
                     ) : (
-                      <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                         {t.channels.notConnected}
                       </span>
                     )}
@@ -292,9 +292,9 @@ export default function ChannelsPage() {
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost"
                       style={{
-                        background: ch.aiEnabled ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.04)',
-                        border: ch.aiEnabled ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(255,255,255,0.1)',
-                        color: ch.aiEnabled ? '#C7DAF8' : 'rgba(255,255,255,0.8)'
+                        background: ch.aiEnabled ? 'var(--accent-subtle)' : 'var(--divider)',
+                        border: ch.aiEnabled ? '1px solid var(--accent-focus)' : '1px solid var(--border)',
+                        color: ch.aiEnabled ? 'var(--accent)' : 'var(--text-secondary)'
                       }}
                     >
                       <div className="flex items-center justify-center gap-1.5">
@@ -304,14 +304,14 @@ export default function ChannelsPage() {
                     </button>
                     <button onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
                       className="py-2.5 px-3 rounded-xl text-xs font-bold"
-                      style={{ background: 'rgba(199,218,248,0.07)', border: '1px solid rgba(199,218,248,0.18)', color: '#C7DAF8' }}>
+                      style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--accent)' }}>
                       {t.channels.disconnect}
                     </button>
                   </>
                 ) : (
                   <button onClick={() => setConnecting(ch)}
                     className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost flex items-center justify-center gap-1.5"
-                    style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    style={{ color: 'var(--text-secondary)' }}>
                     <PlusIcon size={14} />
                     {t.channels.connect}
                   </button>
@@ -340,9 +340,9 @@ export default function ChannelsPage() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-bold"
             style={{
-              background: toast.type === 'success' ? 'rgba(199,218,248,0.1)' : 'rgba(199,218,248,0.1)',
-              border: toast.type === 'success' ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(199,218,248,0.3)',
-              color: toast.type === 'success' ? '#C7DAF8' : '#C7DAF8',
+              background: toast.type === 'success' ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
+              border: toast.type === 'success' ? '1px solid var(--accent-focus)' : '1px solid var(--accent-focus)',
+              color: toast.type === 'success' ? 'var(--accent)' : 'var(--accent)',
             }}
           >
             {toast.message}

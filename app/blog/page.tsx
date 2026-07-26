@@ -45,14 +45,14 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
-      <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
+            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -61,10 +61,10 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 py-16 text-center">
         <div>
-          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
+          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
             المدونة
           </h1>
-          <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <p className="text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
             Blog - Tips & insights for e-commerce success
           </p>
         </div>
@@ -79,9 +79,9 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               href={`/blog?category=${cat.value}`}
               className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{
-                background: category === cat.value ? 'rgba(199,218,248,0.15)' : 'rgba(18,19,23,0.9)',
-                color: category === cat.value ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
-                border: category === cat.value ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                background: category === cat.value ? 'var(--accent-focus)' : 'var(--surface)',
+                color: category === cat.value ? 'var(--accent)' : 'var(--text-secondary)',
+                border: category === cat.value ? '1px solid var(--accent-focus)' : '1px solid var(--border)',
               }}
             >
               {cat.labelAr}
@@ -94,7 +94,7 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
       <div className="max-w-7xl mx-auto px-6 pb-20">
         {posts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-lg" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
               لا توجد مقالات حالياً / No articles yet
             </p>
           </div>
@@ -106,11 +106,11 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               >
                 <Link href={`/blog/${post.slug}`}>
                   <div className="h-full p-6 rounded-2xl transition-all duration-300 hover:scale-105"
-                    style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                     {/* Featured Image */}
                     {post.featured_image_url && (
                       <div className="mb-4 aspect-video rounded-lg overflow-hidden"
-                        style={{ background: 'rgba(255,255,255,0.05)' }}>
+                        style={{ background: 'var(--border)' }}>
                         <img
                           src={post.featured_image_url}
                           alt={post.title}
@@ -122,23 +122,23 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
                     {/* Category Badge */}
                     {post.category && (
                       <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-3"
-                        style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
+                        style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
                         {post.category}
                       </div>
                     )}
 
                     {/* Title */}
-                    <h3 className="font-bold mb-3 line-clamp-2" style={{ color: '#FFFFFF', fontSize: '1.1rem' }}>
+                    <h3 className="font-bold mb-3 line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>
                       {post.title}
                     </h3>
 
                     {/* Excerpt */}
-                    <p className="text-sm mb-4 line-clamp-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
                       {post.excerpt}
                     </p>
 
                     {/* Meta */}
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       <span>{formatDate(post.published_at)}</span>
                       <span>•</span>
                       <span>{estimateReadTime(post.excerpt || '')} min read</span>
