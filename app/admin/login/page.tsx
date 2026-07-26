@@ -55,17 +55,17 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#121317' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--surface)' }}>
       <div className="w-full max-w-md p-8">
         {/* Admin Access Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4" style={{ background: 'rgba(199,218,248,0.1)', border: '2px solid rgba(199,218,248,0.3)' }}>
-            <ShieldIcon size={40} style={{ color: '#C7DAF8' }} />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4" style={{ background: 'var(--accent-subtle)', border: '2px solid var(--accent-focus)' }}>
+            <ShieldIcon size={40} style={{ color: 'var(--accent)' }} />
           </div>
-          <h1 className="text-3xl font-black mb-2" style={{ color: '#C7DAF8', letterSpacing: '-0.02em' }}>
+          <h1 className="text-3xl font-black mb-2" style={{ color: 'var(--accent)', letterSpacing: '-0.02em' }}>
             {isRTL ? 'الوصول الإداري' : 'Admin Access'}
           </h1>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             {isRTL ? 'ناز — لوحة التحكم' : 'Naz — Admin Console'}
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               {isRTL ? 'البريد الإلكتروني' : 'Email'}
             </label>
             <input
@@ -87,7 +87,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
               {isRTL ? 'كلمة المرور' : 'Password'}
             </label>
             <input
@@ -101,7 +101,7 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <div className="p-4 rounded-xl text-sm" style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)', color: '#FF6B6B' }}>
+            <div className="p-4 rounded-xl text-sm" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--error)' }}>
               {error}
             </div>
           )}
@@ -111,19 +111,19 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
             style={{
-              background: loading ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #00D494)',
-              color: '#121317',
+              background: loading ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--success))',
+              color: 'var(--surface)',
               opacity: loading ? 0.7 : 1
             }}
           >
             {loading ? (
               <>
-                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-[#121317]"></div>
+                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderColor: 'var(--surface)' }}></div>
                 {isRTL ? 'جاري التحقق...' : 'Verifying...'}
               </>
             ) : (
               <>
-                <ShieldIcon size={16} style={{ color: '#121317' }} />
+                <ShieldIcon size={16} style={{ color: 'var(--surface)' }} />
                 {isRTL ? 'تسجيل الدخول' : 'Sign In'}
               </>
             )}
@@ -131,14 +131,14 @@ export default function AdminLoginPage() {
         </form>
 
         {/* Security Notice */}
-        <div className="mt-8 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.1)' }}>
+        <div className="mt-8 p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-subtle)' }}>
           <div className="flex items-start gap-3">
-            <ShieldIcon size={16} style={{ color: '#C7DAF8', marginTop: 2 }} />
+            <ShieldIcon size={16} style={{ color: 'var(--accent)', marginTop: 2 }} />
             <div>
-              <p className="text-xs font-semibold mb-1" style={{ color: '#C7DAF8' }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--accent)' }}>
                 {isRTL ? 'منطقة آمنة' : 'Secure Area'}
               </p>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'يتطلب هذا القسم صلاحيات إدارية. يتم تسجيل جميع الأنشطة.' : 'This section requires administrative privileges. All activities are logged.'}
               </p>
             </div>

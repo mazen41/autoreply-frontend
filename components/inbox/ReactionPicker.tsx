@@ -33,14 +33,14 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
       >
         <div
           style={{
-            background: 'rgba(18,19,23, 0.98)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: 999,
             padding: 6,
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.35)',
+            boxShadow: '0 10px 30px var(--shadow-premium)',
             backdropFilter: 'blur(12px)',
             maxWidth: 'calc(100vw - 24px)',
             flexWrap: expanded ? 'wrap' : 'nowrap',
@@ -69,7 +69,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.18)'
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                e.currentTarget.style.background = 'var(--border)'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'
@@ -86,9 +86,9 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
               width: 34,
               height: 34,
               borderRadius: 999,
-              background: expanded ? 'rgba(199,218,248,0.16)' : 'rgba(255,255,255,0.06)',
+              background: expanded ? 'var(--accent-focus)' : 'var(--border)',
               border: 'none',
-              color: 'rgba(255,255,255,0.82)',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',

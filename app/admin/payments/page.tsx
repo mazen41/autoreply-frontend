@@ -113,22 +113,22 @@ export default function AdminPaymentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return '#C7DAF8'
+        return 'var(--accent)'
       case 'cancelled':
-        return '#FF6B6B'
+        return 'var(--error)'
       case 'expired':
-        return '#C7DAF8'
+        return 'var(--accent)'
       case 'trial':
-        return '#00BFFF'
+        return 'var(--accent-end)'
       default:
-        return 'rgba(255,255,255,0.6)'
+        return 'var(--text-secondary)'
     }
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
       </div>
     )
   }
@@ -136,16 +136,16 @@ export default function AdminPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black mb-2" style={{ color: '#FFFFFF' }}>
+        <h1 className="text-3xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>
           {isRTL ? 'المدفوعات والاشتراكات' : 'Payments & Subscriptions'}
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.6)' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'إدارة المدفوعات وحالة الاشتراكات' : 'Manage payments and subscription status'}
         </p>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}>
           {error}
         </div>
       )}
@@ -159,8 +159,8 @@ export default function AdminPaymentsPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-4 py-3 rounded-xl bg-transparent"
           style={{
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#FFFFFF',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
           }}
         />
         <select
@@ -168,8 +168,8 @@ export default function AdminPaymentsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-3 rounded-xl bg-transparent"
           style={{
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: '#FFFFFF',
+            border: '1px solid var(--border)',
+            color: 'var(--text-primary)',
           }}
         >
           <option value="">{isRTL ? 'كل الحالات' : 'All Status'}</option>
@@ -181,50 +181,50 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Subscriptions Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: '#121317' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)' }}>
         <table className="w-full">
           <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'المستخدم' : 'User'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'الباقة' : 'Package'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'المبلغ' : 'Amount'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'الحالة' : 'Status'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'تاريخ البدء' : 'Start Date'}
               </th>
-              <th className="text-left p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-left p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'تاريخ الانتهاء' : 'End Date'}
               </th>
-              <th className="text-right p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <th className="text-right p-4" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'الإجراءات' : 'Actions'}
               </th>
             </tr>
           </thead>
           <tbody>
             {subscriptions.map((sub) => (
-              <tr key={sub.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <tr key={sub.id} style={{ borderBottom: '1px solid var(--border)' }}>
                 <td className="p-4">
                   <div>
-                    <div className="font-bold" style={{ color: '#FFFFFF' }}>{sub.user.name}</div>
-                    <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{sub.user.email}</div>
+                    <div className="font-bold" style={{ color: 'var(--text-primary)' }}>{sub.user.name}</div>
+                    <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>{sub.user.email}</div>
                   </div>
                 </td>
-                <td className="p-4" style={{ color: '#FFFFFF' }}>
+                <td className="p-4" style={{ color: 'var(--text-primary)' }}>
                   {isRTL ? sub.package.name_ar : sub.package.name}
                 </td>
                 <td className="p-4">
-                  <span className="font-bold" style={{ color: '#C7DAF8' }}>
+                  <span className="font-bold" style={{ color: 'var(--accent)' }}>
                     {formatCurrency(sub.amount_paid)}
                   </span>
-                  <div className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {sub.billing_cycle}
                   </div>
                 </td>
@@ -239,10 +239,10 @@ export default function AdminPaymentsPage() {
                     {sub.status}
                   </span>
                 </td>
-                <td className="p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
                   {formatDate(sub.starts_at)}
                 </td>
-                <td className="p-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <td className="p-4" style={{ color: 'var(--text-secondary)' }}>
                   {formatDate(sub.ends_at)}
                 </td>
                 <td className="p-4 text-right">
@@ -251,8 +251,8 @@ export default function AdminPaymentsPage() {
                     onChange={(e) => handleUpdateStatus(sub.id, e.target.value)}
                     className="px-3 py-1 rounded-lg text-xs bg-transparent"
                     style={{
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: '#FFFFFF',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
                     }}
                   >
                     <option value="active">{isRTL ? 'نشط' : 'Active'}</option>
@@ -267,7 +267,7 @@ export default function AdminPaymentsPage() {
         </table>
 
         {subscriptions.length === 0 && (
-          <div className="p-8 text-center" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <div className="p-8 text-center" style={{ color: 'var(--text-secondary)' }}>
             {isRTL ? 'لا توجد اشتراكات' : 'No subscriptions found'}
           </div>
         )}
@@ -281,8 +281,8 @@ export default function AdminPaymentsPage() {
             disabled={page === 1}
             className="px-4 py-2 rounded-xl font-bold transition-all disabled:opacity-50"
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: '#FFFFFF',
+              background: 'var(--border)',
+              color: 'var(--text-primary)',
             }}
           >
             {isRTL ? '→' : '←'}
@@ -292,11 +292,11 @@ export default function AdminPaymentsPage() {
               key={p}
               onClick={() => setPage(p)}
               className={`px-4 py-2 rounded-xl font-bold transition-all ${
-                page === p ? 'ring-2 ring-[#C7DAF8]' : ''
+                page === p ? 'ring-2 ring-[var(--accent)]' : ''
               }`}
               style={{
-                background: page === p ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
-                color: page === p ? '#C7DAF8' : '#FFFFFF',
+                background: page === p ? 'var(--accent-subtle)' : 'var(--border)',
+                color: page === p ? 'var(--accent)' : 'var(--text-primary)',
               }}
             >
               {p}
@@ -307,8 +307,8 @@ export default function AdminPaymentsPage() {
             disabled={page === totalPages}
             className="px-4 py-2 rounded-xl font-bold transition-all disabled:opacity-50"
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: '#FFFFFF',
+              background: 'var(--border)',
+              color: 'var(--text-primary)',
             }}
           >
             {isRTL ? '←' : '→'}

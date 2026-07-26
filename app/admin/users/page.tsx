@@ -144,7 +144,7 @@ export default function AdminUsersPage() {
 
 function UserIdentity({ user }: { user: User }) {
   const initials = (user.name || user.email || '?').slice(0, 1).toUpperCase()
-  return <div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#C7DAF8]/40 to-white/40 text-sm font-black text-white/70">{initials}</div><div className="min-w-0"><div className="truncate font-black text-white/70 dark:text-white">{user.name}</div><div className="truncate text-xs text-white/70 dark:text-white/70">{user.email}</div></div></div>
+  return <div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/40 to-white/40 text-sm font-black text-white/70">{initials}</div><div className="min-w-0"><div className="truncate font-black text-white/70 dark:text-white">{user.name}</div><div className="truncate text-xs text-white/70 dark:text-white/70">{user.email}</div></div></div>
 }
 
 

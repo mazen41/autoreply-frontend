@@ -41,18 +41,18 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
-      <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+      <div className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/tools" className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <Link href="/tools" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
               All Tools
             </Link>
             <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
               Sign Up Free
             </Link>
           </div>
@@ -62,13 +62,13 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
       {/* Tool Header */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <Link href="/tools" className="inline-flex items-center gap-2 text-sm mb-6"
-          style={{ color: 'rgba(255,255,255,0.5)' }}>
+          style={{ color: 'var(--text-secondary)' }}>
           ← Back to Tools
         </Link>
-        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
+        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {toolName.ar}
         </h1>
-        <p className="text-lg" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
           {toolName.en}
         </p>
       </div>
