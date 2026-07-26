@@ -74,45 +74,45 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
     >
       <div className="absolute inset-0 rounded-2xl" style={{
         transformStyle: 'preserve-3d',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 50%, var(--accent) 100%)',
+        boxShadow: '0 25px 50px -12px var(--shadow-premium)',
       }}>
         {/* Front of card */}
         <div className="absolute inset-0 rounded-2xl p-6" style={{
           transform: 'rotateY(0deg)',
           backfaceVisibility: 'hidden',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 50%, var(--accent) 100%)',
         }}>
           <div className="flex justify-between items-start mb-8">
             <div className="text-2xl">📱</div>
-            <div className="text-xl font-bold" style={{ color: '#C7DAF8' }}>
+            <div className="text-xl font-bold" style={{ color: 'var(--accent)' }}>
               {getCardBrandIcon(brand)}
             </div>
           </div>
 
           <div className="mb-6">
-            <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
               CARD NUMBER
             </div>
-            <div className="text-xl font-mono tracking-wider" style={{ color: '#FFFFFF' }}>
+            <div className="text-xl font-mono tracking-wider" style={{ color: 'var(--text-primary)' }}>
               {displayNumber}
             </div>
           </div>
 
           <div className="flex justify-between">
             <div>
-              <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>
                 CARDHOLDER
               </div>
-              <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
+              <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 {displayName.toUpperCase()}
               </div>
             </div>
             <div>
-              <div className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>
                 EXPIRES
               </div>
-              <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
+              <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                 {displayExpiry}
               </div>
             </div>
@@ -123,18 +123,18 @@ function AnimatedCard({ number, name, expiry, cvc, isFlipped, brand }: {
         <div className="absolute inset-0 rounded-2xl p-6" style={{
           transform: 'rotateY(180deg)',
           backfaceVisibility: 'hidden',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          background: 'linear-gradient(135deg, var(--surface) 0%, var(--surface-elevated) 50%, var(--accent) 100%)',
         }}>
-          <div className="w-full h-12 mb-6" style={{ background: 'rgba(0,0,0,0.3)' }} />
+          <div className="w-full h-12 mb-6" style={{ background: 'var(--shadow-premium)' }} />
           <div className="mb-4">
-            <div className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>
               CVC
             </div>
-            <div className="text-xl font-mono" style={{ color: '#FFFFFF' }}>
+            <div className="text-xl font-mono" style={{ color: 'var(--text-primary)' }}>
               {cvc || '•••'}
             </div>
           </div>
-          <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
             This card is property of Naz Autoreply
           </div>
         </div>
@@ -335,7 +335,7 @@ function CheckoutContent() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
-          <p style={{ color: '#FFFFFF' }}>Loading...</p>
+          <p style={{ color: 'var(--text-primary)' }}>Loading...</p>
         </div>
       </div>
     )
@@ -345,8 +345,8 @@ function CheckoutContent() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
-          <p style={{ color: '#FFFFFF' }}>Package not found</p>
-          <Link href="/pricing" className="mt-4 inline-block" style={{ color: '#C7DAF8' }}>
+          <p style={{ color: 'var(--text-primary)' }}>Package not found</p>
+          <Link href="/pricing" className="mt-4 inline-block" style={{ color: 'var(--accent)' }}>
             Back to Pricing
           </Link>
         </div>
@@ -362,12 +362,12 @@ function CheckoutContent() {
   return (
     <div className="min-h-screen py-8 px-4" style={{ background: 'var(--background)' }}>
       <div className="max-w-6xl mx-auto">
-        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: '#C7DAF8' }}>
+        <Link href="/pricing" className="inline-flex items-center gap-2 mb-8" style={{ color: 'var(--accent)' }}>
           <span>{isRTL ? '→' : '←'}</span>
           <span>{t.common.back}</span>
         </Link>
 
-        <h1 className="text-3xl font-black mb-8" style={{ color: '#FFFFFF' }}>
+        <h1 className="text-3xl font-black mb-8" style={{ color: 'var(--text-primary)' }}>
           {isRTL ? 'إتمام الدفع' : 'Complete Payment'}
         </h1>
 
@@ -378,21 +378,21 @@ function CheckoutContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl p-6"
-            style={{ background: '#121317', border: '1px solid rgba(255,255,255,0.05)' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#FFFFFF' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               {isRTL ? 'ملخص الطلب' : 'Order Summary'}
             </h2>
 
-            <div className="mb-6 pb-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-              <h3 className="font-bold text-lg mb-2" style={{ color: '#FFFFFF' }}>{name}</h3>
-              <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{description}</p>
+            <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
+              <h3 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>{name}</h3>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{description}</p>
 
               <div className="flex justify-between items-center mb-4">
-                <span style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>
                   {billingCycle === 'yearly' ? t.pricing.annual : t.pricing.monthly}
                 </span>
-                <span className="font-bold" style={{ color: '#C7DAF8' }}>
+                <span className="font-bold" style={{ color: 'var(--accent)' }}>
                   {formatPrice(price)}
                 </span>
               </div>
@@ -401,11 +401,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('monthly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'monthly' ? 'ring-2 ring-[#C7DAF8]' : ''
+                    billingCycle === 'monthly' ? 'ring-2 ring-[var(--accent)]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'monthly' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'monthly' ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
+                    background: billingCycle === 'monthly' ? 'var(--accent-subtle)' : 'var(--border)',
+                    color: billingCycle === 'monthly' ? 'var(--accent)' : 'var(--text-secondary)',
                   }}
                 >
                   {t.pricing.monthly}
@@ -413,11 +413,11 @@ function CheckoutContent() {
                 <button
                   onClick={() => setBillingCycle('yearly')}
                   className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                    billingCycle === 'yearly' ? 'ring-2 ring-[#C7DAF8]' : ''
+                    billingCycle === 'yearly' ? 'ring-2 ring-[var(--accent)]' : ''
                   }`}
                   style={{
-                    background: billingCycle === 'yearly' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: billingCycle === 'yearly' ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
+                    background: billingCycle === 'yearly' ? 'var(--accent-subtle)' : 'var(--border)',
+                    color: billingCycle === 'yearly' ? 'var(--accent)' : 'var(--text-secondary)',
                   }}
                 >
                   {t.pricing.annual}
@@ -427,18 +427,18 @@ function CheckoutContent() {
 
             <ul className="space-y-3 mb-6">
               {features.map((f, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                  <span style={{ color: '#C7DAF8' }}>✓</span>
+                <li key={i} className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  <span style={{ color: 'var(--accent)' }}>✓</span>
                   <span>{f}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="flex justify-between items-center pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <span className="font-bold" style={{ color: '#FFFFFF' }}>
+            <div className="flex justify-between items-center pt-6" style={{ borderTop: '1px solid var(--border)' }}>
+              <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
                 {isRTL ? 'الإجمالي' : 'Total'}
               </span>
-              <span className="text-2xl font-black" style={{ color: '#C7DAF8' }}>
+              <span className="text-2xl font-black" style={{ color: 'var(--accent)' }}>
                 {formatPrice(price)}
               </span>
             </div>
@@ -450,9 +450,9 @@ function CheckoutContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="rounded-2xl p-6"
-            style={{ background: '#121317', border: '1px solid rgba(255,255,255,0.05)' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#FFFFFF' }}>
+            <h2 className="text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               {isRTL ? 'طريقة الدفع' : 'Payment Method'}
             </h2>
 
@@ -460,11 +460,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('card')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'card' ? 'ring-2 ring-[#C7DAF8]' : ''
+                  paymentMethod === 'card' ? 'ring-2 ring-[var(--accent)]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'card' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'card' ? '#C7DAF8' : '#FFFFFF',
+                  background: paymentMethod === 'card' ? 'var(--accent-subtle)' : 'var(--border)',
+                  color: paymentMethod === 'card' ? 'var(--accent)' : 'var(--text-primary)',
                 }}
               >
                 {isRTL ? 'بطاقة ائتمان' : 'Credit Card'}
@@ -472,11 +472,11 @@ function CheckoutContent() {
               <button
                 onClick={() => setPaymentMethod('applepay')}
                 className={`flex-1 py-3 rounded-xl font-bold transition-all ${
-                  paymentMethod === 'applepay' ? 'ring-2 ring-[#C7DAF8]' : ''
+                  paymentMethod === 'applepay' ? 'ring-2 ring-[var(--accent)]' : ''
                 }`}
                 style={{
-                  background: paymentMethod === 'applepay' ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.05)',
-                  color: paymentMethod === 'applepay' ? '#C7DAF8' : '#FFFFFF',
+                  background: paymentMethod === 'applepay' ? 'var(--accent-subtle)' : 'var(--border)',
+                  color: paymentMethod === 'applepay' ? 'var(--accent)' : 'var(--text-primary)',
                 }}
               >
                 Apple Pay
@@ -500,7 +500,7 @@ function CheckoutContent() {
                 <form onSubmit={handlePayment}>
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                         {isRTL ? 'رقم البطاقة' : 'Card Number'}
                       </label>
                       <div className="relative">
@@ -512,8 +512,8 @@ function CheckoutContent() {
                           required
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
-                            border: fieldErrors.cardNumber ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#FFFFFF',
+                            border: fieldErrors.cardNumber ? '1px solid var(--error)' : '1px solid var(--border)',
+                            color: 'var(--text-primary)',
                           }}
                           placeholder="4242 4242 4242 4242"
                         />
@@ -522,14 +522,14 @@ function CheckoutContent() {
                         </div>
                       </div>
                       {fieldErrors.cardNumber && (
-                        <div className="text-xs mt-1" style={{ color: '#FF6B6B' }}>
+                        <div className="text-xs mt-1" style={{ color: 'var(--error)' }}>
                           {fieldErrors.cardNumber}
                         </div>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                         {isRTL ? 'اسم حامل البطاقة' : 'Cardholder Name'}
                       </label>
                       <input
@@ -543,13 +543,13 @@ function CheckoutContent() {
                         required
                         className="w-full px-4 py-3 rounded-xl bg-transparent"
                         style={{
-                          border: fieldErrors.cardholderName ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                          color: '#FFFFFF',
+                          border: fieldErrors.cardholderName ? '1px solid var(--error)' : '1px solid var(--border)',
+                          color: 'var(--text-primary)',
                         }}
                         placeholder="John Doe"
                       />
                       {fieldErrors.cardholderName && (
-                        <div className="text-xs mt-1" style={{ color: '#FF6B6B' }}>
+                        <div className="text-xs mt-1" style={{ color: 'var(--error)' }}>
                           {fieldErrors.cardholderName}
                         </div>
                       )}
@@ -557,7 +557,7 @@ function CheckoutContent() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                           {isRTL ? 'تاريخ الانتهاء' : 'Expiry (MM/YY)'}
                         </label>
                         <input
@@ -568,19 +568,19 @@ function CheckoutContent() {
                           required
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
-                            border: fieldErrors.expiry ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#FFFFFF',
+                            border: fieldErrors.expiry ? '1px solid var(--error)' : '1px solid var(--border)',
+                            color: 'var(--text-primary)',
                           }}
                           placeholder="MM/YY"
                         />
                         {fieldErrors.expiry && (
-                          <div className="text-xs mt-1" style={{ color: '#FF6B6B' }}>
+                          <div className="text-xs mt-1" style={{ color: 'var(--error)' }}>
                             {fieldErrors.expiry}
                           </div>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                           CVC
                         </label>
                         <input
@@ -598,13 +598,13 @@ function CheckoutContent() {
                           required
                           className="w-full px-4 py-3 rounded-xl bg-transparent"
                           style={{
-                            border: fieldErrors.cvc ? '1px solid #FF6B6B' : '1px solid rgba(255,255,255,0.1)',
-                            color: '#FFFFFF',
+                            border: fieldErrors.cvc ? '1px solid var(--error)' : '1px solid var(--border)',
+                            color: 'var(--text-primary)',
                           }}
                           placeholder="123"
                         />
                         {fieldErrors.cvc && (
-                          <div className="text-xs mt-1" style={{ color: '#FF6B6B' }}>
+                          <div className="text-xs mt-1" style={{ color: 'var(--error)' }}>
                             {fieldErrors.cvc}
                           </div>
                         )}
@@ -617,7 +617,7 @@ function CheckoutContent() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-4 p-3 rounded-xl text-sm"
-                      style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}
+                      style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}
                     >
                       {error}
                     </motion.div>
@@ -628,8 +628,8 @@ function CheckoutContent() {
                     disabled={processing}
                     className="w-full mt-6 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                     style={{
-                      background: processing ? 'rgba(199,218,248,0.3)' : 'var(--accent)',
-                      color: '#FFFFFF',
+                      background: processing ? 'var(--accent-focus)' : 'var(--accent)',
+                      color: 'var(--text-primary)',
                       opacity: processing ? 0.7 : 1,
                     }}
                   >
@@ -649,16 +649,16 @@ function CheckoutContent() {
 
                 {/* Trust Signals */}
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center justify-center gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <div className="flex items-center justify-center gap-2 text-xs" style={{ color: 'var(--text-tertiary)' }}>
                     <span>🔒</span>
                     <span>{isRTL ? 'الدفع مشفر ومأمون' : 'Encrypted & Secure Payment'}</span>
                   </div>
                   <div className="flex items-center justify-center gap-3">
-                    <div className="w-10 h-6 rounded" style={{ background: '#1a1a71' }}>💳</div>
-                    <div className="w-10 h-6 rounded" style={{ background: '#eb001b' }}>💳</div>
-                    <div className="w-10 h-6 rounded" style={{ background: '#0079be' }}>💳</div>
+                    <div className="w-10 h-6 rounded" style={{ background: 'var(--accent)' }}>💳</div>
+                    <div className="w-10 h-6 rounded" style={{ background: 'var(--error)' }}>💳</div>
+                    <div className="w-10 h-6 rounded" style={{ background: 'var(--accent-end)' }}>💳</div>
                   </div>
-                  <div className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <div className="text-xs text-center" style={{ color: 'var(--text-tertiary)' }}>
                     {isRTL ? 'مدعوم بواسطة Moyasar' : 'Powered by Moyasar'}
                   </div>
                 </div>
@@ -669,7 +669,7 @@ function CheckoutContent() {
                 disabled={processing}
                 className="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
                 style={{
-                  background: processing ? 'rgba(0,0,0,0.3)' : '#121317',
+                  background: processing ? 'var(--shadow-premium)' : 'var(--surface)',
                   color: '#FFF',
                   opacity: processing ? 0.7 : 1,
                 }}
@@ -691,7 +691,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)] mb-4"></div>
-          <p style={{ color: '#FFFFFF' }}>Loading...</p>
+          <p style={{ color: 'var(--text-primary)' }}>Loading...</p>
         </div>
       </div>
     }>

@@ -73,10 +73,10 @@ export default function TitleGenerator() {
   return (
     <div>
       {/* Usage Indicator */}
-      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
+      <div className="mb-6 p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
         <div className="flex items-center justify-between">
-          <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Free uses remaining today: <span className="font-bold" style={{ color: '#C7DAF8' }}>{usage.remaining}/{usage.max}</span>
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Free uses remaining today: <span className="font-bold" style={{ color: 'var(--accent)' }}>{usage.remaining}/{usage.max}</span>
           </span>
         </div>
       </div>
@@ -84,13 +84,13 @@ export default function TitleGenerator() {
       {/* Input Form */}
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
             نوع العنوان / Title Type
           </label>
           <div className="grid grid-cols-2 gap-2">
             {titleTypes.map((type) => (
               <label key={type.value} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: titleType === type.value ? 'rgba(199,218,248,0.1)' : 'rgba(18,19,23,0.9)', border: titleType === type.value ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(255,255,255,0.1)' }}>
+                style={{ background: titleType === type.value ? 'var(--accent-subtle)' : 'var(--surface)', border: titleType === type.value ? '1px solid var(--accent-focus)' : '1px solid var(--border)' }}>
                 <input
                   type="radio"
                   name="titleType"
@@ -100,8 +100,8 @@ export default function TitleGenerator() {
                   className="w-4 h-4"
                 />
                 <div className="text-sm">
-                  <div style={{ color: '#FFFFFF' }}>{type.labelAr}</div>
-                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{type.labelEn}</div>
+                  <div style={{ color: 'var(--text-primary)' }}>{type.labelAr}</div>
+                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{type.labelEn}</div>
                 </div>
               </label>
             ))}
@@ -109,7 +109,7 @@ export default function TitleGenerator() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
             الموضوع أو المنتج / Topic or Product
           </label>
           <input
@@ -118,7 +118,7 @@ export default function TitleGenerator() {
             onChange={(e) => setTopic(e.target.value)}
             placeholder="مثال: دورة تدريبية، منتج تجميلي، خدمة استشارات"
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
           />
         </div>
 
@@ -127,8 +127,8 @@ export default function TitleGenerator() {
           disabled={loading || !topic.trim() || usage.remaining === 0}
           className="w-full py-3.5 rounded-xl font-bold text-sm transition-all"
           style={{
-            background: loading || usage.remaining === 0 ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #a8e000)',
-            color: '#121317',
+            background: loading || usage.remaining === 0 ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
+            color: 'var(--surface)',
           }}
           whileHover={!loading && usage.remaining > 0 ? { scale: 1.02 } : {}}
           whileTap={!loading && usage.remaining > 0 ? { scale: 0.98 } : {}}
@@ -139,15 +139,15 @@ export default function TitleGenerator() {
 
       {/* Limit Reached Message */}
       {limitReached && (
-        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)' }}>
-          <p className="text-lg font-bold mb-4" style={{ color: '#FF7070' }}>
+        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
+          <p className="text-lg font-bold mb-4" style={{ color: 'var(--error)' }}>
             You've reached your daily limit
           </p>
-          <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
             Sign up for unlimited access to all AI tools
           </p>
           <Link href="/register" className="inline-block px-6 py-3 rounded-xl font-bold text-sm"
-            style={{ background: '#C7DAF8', color: '#121317' }}>
+            style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -161,11 +161,11 @@ export default function TitleGenerator() {
           className="space-y-3"
         >
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold" style={{ color: '#FFFFFF' }}>العناوين المقترحة / Generated Titles</h3>
+            <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>العناوين المقترحة / Generated Titles</h3>
             <button
               onClick={copyAllTitles}
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-              style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}
             >
               Copy All
             </button>
@@ -173,17 +173,17 @@ export default function TitleGenerator() {
 
           {result.map((title, i) => (
             <div key={i} className="p-4 rounded-lg flex items-center justify-between gap-3"
-              style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3 flex-1">
-                <span className="text-xs font-bold px-2 py-1 rounded" style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}>
+                <span className="text-xs font-bold px-2 py-1 rounded" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
                   {i + 1}
                 </span>
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>{title}</span>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{title}</span>
               </div>
               <button
                 onClick={() => copyToClipboard(title)}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0"
-                style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}
+                style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}
               >
                 Copy
               </button>
@@ -191,12 +191,12 @@ export default function TitleGenerator() {
           ))}
 
           {/* Upsell CTA */}
-          <div className="p-4 rounded-xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
-            <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
             <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
-              style={{ background: '#C7DAF8', color: '#121317' }}>
+              style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
               {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>

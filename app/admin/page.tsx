@@ -106,7 +106,7 @@ export default function AdminDashboard() {
             {[{ label: isRTL ? 'الرسائل اليوم' : 'Messages today', value: stats.messages_today || 0, total: Math.max(stats.total_messages, 1) }, { label: isRTL ? 'القنوات المتصلة' : 'Connected channels', value: stats.total_channels, total: Math.max(stats.total_users, 1) }, { label: isRTL ? 'الاشتراكات النشطة' : 'Active subscriptions', value: stats.active_subscriptions, total: Math.max(stats.total_users, 1) }].map((item) => (
               <div key={item.label} className="rounded-2xl bg-white/5 p-4 dark:bg-white/5">
                 <div className="flex items-center justify-between text-sm"><span className="font-bold text-white/70 dark:text-white/70">{item.label}</span><span className="text-white/70 dark:text-white/70">{number(item.value)}</span></div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5 dark:bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-[#C7DAF8]/40 to-white/40" style={{ width: `${Math.min(100, Math.round((item.value / item.total) * 100))}%` }} /></div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/5 dark:bg-white/10"><div className="h-full rounded-full bg-gradient-to-r from-[var(--accent)]/40 to-white/40" style={{ width: `${Math.min(100, Math.round((item.value / item.total) * 100))}%` }} /></div>
               </div>
             ))}
           </div>

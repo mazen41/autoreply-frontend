@@ -11,10 +11,10 @@ function Hero() {
   return (
     <section className="relative z-10 px-6 py-16 md:py-24" style={{ background: 'transparent' }}>
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl md:text-6xl font-black mb-4" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>
+        <h1 className="text-4xl md:text-6xl font-black mb-4" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           Naz
         </h1>
-        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'rgba(255,255,255,0.64)', lineHeight: 1.6 }}>
+        <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           {isRTL
             ? 'منصة ذكاء اصطناعي ترد تلقائياً على رسائل عملائك على واتساب، إنستغرام، وفيسبوك — على مدار الساعة.'
             : 'An AI platform that automatically replies to your customers on WhatsApp, Instagram, and Facebook — 24/7.'}
@@ -24,16 +24,16 @@ function Hero() {
             href="/pricing"
             className="px-8 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: '#C7DAF8',
-              color: '#121317',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              background: 'var(--accent)',
+              color: 'var(--surface)',
+              boxShadow: '0 4px 20px var(--shadow-premium)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#C7DAF8'
+              e.currentTarget.style.background = 'var(--accent)'
               e.currentTarget.style.transform = 'translateY(-1px)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#C7DAF8'
+              e.currentTarget.style.background = 'var(--accent)'
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
@@ -43,17 +43,17 @@ function Hero() {
             href="/login"
             className="px-8 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255,255,255,0.06)',
+              background: 'var(--border)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
+              e.currentTarget.style.background = 'var(--border)'
+              e.currentTarget.style.borderColor = 'var(--border)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+              e.currentTarget.style.background = 'var(--border)'
+              e.currentTarget.style.borderColor = 'var(--border)'
             }}
           >
             {isRTL ? 'تسجيل الدخول' : 'Sign In'}

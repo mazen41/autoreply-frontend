@@ -10,11 +10,11 @@ import ReactionPicker from '../../../components/inbox/ReactionPicker'
 import { Download, FileText, Mic, Paperclip, Pause, Send, SmilePlus, Trash2, Video, X } from 'lucide-react'
 
 function channelMeta(type: string) {
-  if (type === 'facebook')  return { label: 'FB',  color: '#C7DAF8', glow: 'rgba(199,218,248,0.35)' }
-  if (type === 'instagram') return { label: 'IG',  color: '#C7DAF8', glow: 'rgba(199,218,248,0.35)' }
-  if (type === 'gmail')     return { label: 'GM',  color: '#C7DAF8', glow: 'rgba(199,218,248,0.35)'  }
-  if (type === 'whatsapp') return { label: 'WA',  color: '#C7DAF8', glow: 'rgba(199,218,248,0.35)' }
-  return { label: '??', color: 'rgba(255,255,255,0.55)', glow: 'rgba(255,255,255,0.2)' }
+  if (type === 'facebook')  return { label: 'FB',  color: 'var(--accent)', glow: 'var(--accent-focus)' }
+  if (type === 'instagram') return { label: 'IG',  color: 'var(--accent)', glow: 'var(--accent-focus)' }
+  if (type === 'gmail')     return { label: 'GM',  color: 'var(--accent)', glow: 'var(--accent-focus)'  }
+  if (type === 'whatsapp') return { label: 'WA',  color: 'var(--accent)', glow: 'var(--accent-focus)' }
+  return { label: '??', color: 'var(--text-secondary)', glow: 'var(--border)' }
 }
 
 function senderLabel(conv: ApiConversation) {
@@ -88,10 +88,10 @@ function groupMessagesByDate(msgs: ApiMessage[]) {
 function ConvSkeleton() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px' }}>
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--border)', flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
-        <div style={{ height: 11, borderRadius: 6, background: 'rgba(255,255,255,0.06)', width: '55%', marginBottom: 6 }} />
-        <div style={{ height: 9, borderRadius: 6, background: 'rgba(255,255,255,0.04)', width: '80%' }} />
+        <div style={{ height: 11, borderRadius: 6, background: 'var(--border)', width: '55%', marginBottom: 6 }} />
+        <div style={{ height: 9, borderRadius: 6, background: 'var(--divider)', width: '80%' }} />
       </div>
     </div>
   )
@@ -110,7 +110,7 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
       style={{
         display: 'flex', alignItems: 'center', gap: 12, width: '100%',
         padding: '11px 16px', textAlign: 'left',
-        background: active ? 'rgba(199,218,248,0.06)' : 'transparent',
+        background: active ? 'var(--accent-subtle)' : 'transparent',
         cursor: 'pointer', transition: 'background 0.15s', border: 'none',
         borderLeftWidth: 3, borderLeftStyle: 'solid',
         borderLeftColor: active ? 'var(--accent)' : 'transparent',
@@ -147,9 +147,9 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
         style={{
           padding: '4px 8px',
           borderRadius: 6,
-          background: conv.ai_enabled ? 'rgba(199,218,248,0.15)' : 'rgba(255,255,255,0.05)',
-          border: `1px solid ${conv.ai_enabled ? 'rgba(199,218,248,0.3)' : 'rgba(255,255,255,0.1)'}`,
-          color: conv.ai_enabled ? '#C7DAF8' : 'rgba(255,255,255,0.4)',
+          background: conv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)',
+          border: `1px solid ${conv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)'}`,
+          color: conv.ai_enabled ? 'var(--accent)' : 'var(--text-tertiary)',
           fontSize: 10,
           fontWeight: 600,
           cursor: 'pointer',
@@ -220,9 +220,9 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
               width: 28,
               height: 28,
               borderRadius: 999,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(18,19,23,0.78)',
-              color: 'rgba(255,255,255,0.72)',
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -240,14 +240,14 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
             style={{
               padding: hasMedia ? 6 : '12px 16px',
               borderRadius: isIn ? '4px 18px 18px 18px' : '18px 4px 18px 18px',
-              background: isIn ? 'rgba(18,19,23,0.8)' : msg.is_ai ? 'var(--accent)' : '#C7DAF8',
-              border: `1px solid ${isIn ? 'rgba(255,255,255,0.08)' : msg.is_ai ? 'rgba(199,218,248,0.3)' : 'rgba(199,218,248,0.3)'}`,
+              background: isIn ? 'var(--surface)' : msg.is_ai ? 'var(--accent)' : 'var(--accent)',
+              border: `1px solid ${isIn ? 'var(--border)' : msg.is_ai ? 'var(--accent-focus)' : 'var(--accent-focus)'}`,
               fontSize: 14,
               lineHeight: 1.5,
-              color: isIn ? '#FFFFFF' : '#FFFFFF',
+              color: isIn ? 'var(--text-primary)' : 'var(--text-primary)',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
-              boxShadow: isIn ? 'none' : '0 2px 8px rgba(0,0,0,0.2)',
+              boxShadow: isIn ? 'none' : '0 2px 8px var(--shadow-premium)',
               position: 'relative',
               minWidth: hasMedia ? 220 : 'auto',
             }}
@@ -262,13 +262,13 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
             {hasMedia && msg.media_type === 'audio' && (
               <div style={{ width: 280, maxWidth: '66vw', padding: '8px 10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 999, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 34, height: 34, borderRadius: 999, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Mic size={17} />
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ height: 22, display: 'flex', alignItems: 'center', gap: 3 }}>
                       {Array.from({ length: 28 }).map((_, i) => (
-                        <span key={i} style={{ width: 3, height: 5 + ((i * 7) % 18), borderRadius: 4, background: 'rgba(255,255,255,0.42)', display: 'inline-block' }} />
+                        <span key={i} style={{ width: 3, height: 5 + ((i * 7) % 18), borderRadius: 4, background: 'var(--text-tertiary)', display: 'inline-block' }} />
                       ))}
                     </div>
                     <div style={{ fontSize: 10, opacity: 0.72 }}>{formatDuration(msg.duration) || (isRTL ? 'رسالة صوتية' : 'Voice note')}</div>
@@ -279,12 +279,12 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
             )}
 
             {hasMedia && msg.media_type === 'video' && (
-              <video controls src={mediaUrl} style={{ display: 'block', width: '100%', maxWidth: 380, maxHeight: 360, borderRadius: 12, background: '#121317' }} />
+              <video controls src={mediaUrl} style={{ display: 'block', width: '100%', maxWidth: 380, maxHeight: 360, borderRadius: 12, background: 'var(--surface)' }} />
             )}
 
             {hasMedia && msg.media_type === 'document' && (
-              <a href={mediaUrl} download target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 12, width: 300, maxWidth: '66vw', padding: 10, color: 'inherit', textDecoration: 'none', borderRadius: 12, background: 'rgba(255,255,255,0.08)' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <a href={mediaUrl} download target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 12, width: 300, maxWidth: '66vw', padding: 10, color: 'inherit', textDecoration: 'none', borderRadius: 12, background: 'var(--border)' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <FileText size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -303,14 +303,14 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
                 bottom: '-13px',
                 right: isIn ? 'auto' : 8,
                 left: isIn ? 8 : 'auto',
-                background: 'rgba(199,218,248,0.96)',
-                border: '1px solid rgba(255,255,255,0.16)',
+                background: 'var(--accent)',
+                border: '1px solid var(--border)',
                 borderRadius: 999,
                 padding: uniqueReactions.length === 1 ? '2px 6px' : '2px 7px',
                 display: 'flex',
                 gap: 3,
                 fontSize: 13,
-                boxShadow: '0 3px 10px rgba(0,0,0,0.24)',
+                boxShadow: '0 3px 10px var(--shadow-premium)',
               }}>
                 {uniqueReactions.map((r, i) => <span key={i}>{r.emoji}</span>)}
               </div>
@@ -320,9 +320,9 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
           {showPicker && canReact && <ReactionPicker onSelect={handleReact} onClose={() => setShowPicker(false)} position={pickerPosition} />}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, paddingInline: 4, justifyContent: isIn ? 'flex-start' : 'flex-end' }}>
-            {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: '#C7DAF8', fontWeight: 600 }}>AI</span>}
-            {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: '#C7DAF8', fontWeight: 600 }}>{isRTL ? 'يدوي' : 'manual'}</span>}
-            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>{formatMsgTime(msg.created_at)}</span>
+            {!isIn && msg.is_ai && <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600 }}>AI</span>}
+            {!isIn && !msg.is_ai && <span style={{ fontSize: 9, color: 'var(--accent)', fontWeight: 600 }}>{isRTL ? 'يدوي' : 'manual'}</span>}
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{formatMsgTime(msg.created_at)}</span>
           </div>
         </div>
       </div>
@@ -334,9 +334,9 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setLightbox(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'color-mix(in srgb, var(--text-primary) 88%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
           >
-            <button onClick={() => setLightbox(false)} style={{ position: 'absolute', top: 18, right: 18, width: 38, height: 38, borderRadius: 999, border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.08)', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button onClick={() => setLightbox(false)} style={{ position: 'absolute', top: 18, right: 18, width: 38, height: 38, borderRadius: 999, border: '1px solid var(--border)', background: 'var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <X size={20} />
             </button>
             <img src={mediaUrl} alt={msg.file_name || 'WhatsApp image'} style={{ maxWidth: '96vw', maxHeight: '92vh', borderRadius: 8, objectFit: 'contain' }} />
@@ -487,7 +487,7 @@ export default function InboxPage() {
                   fontSize: 12,
                   fontWeight: 600,
                   background: filter === f.id ? 'var(--accent)' : 'transparent',
-                  color: filter === f.id ? '#121317' : 'var(--text-secondary)',
+                  color: filter === f.id ? 'var(--surface)' : 'var(--text-secondary)',
                   border: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
@@ -507,7 +507,7 @@ export default function InboxPage() {
               width: '100%',
               padding: '8px 12px',
               borderRadius: 8,
-              background: 'rgba(255,255,255,0.04)',
+              background: 'var(--divider)',
               border: '1px solid var(--border)',
               color: 'var(--text-primary)',
               fontSize: 13,
@@ -575,9 +575,9 @@ export default function InboxPage() {
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
-                  background: selectedConv.ai_enabled ? 'rgba(199,218,248,0.15)' : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${selectedConv.ai_enabled ? 'rgba(199,218,248,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                  color: selectedConv.ai_enabled ? '#C7DAF8' : 'rgba(255,255,255,0.4)',
+                  background: selectedConv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)',
+                  border: `1px solid ${selectedConv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)'}`,
+                  color: selectedConv.ai_enabled ? 'var(--accent)' : 'var(--text-tertiary)',
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -622,8 +622,8 @@ export default function InboxPage() {
             {/* Input */}
             <div style={{ padding: '16px', borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
               {selectedFile && (
-                <div style={{ marginBottom: 10, padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 10, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                <div style={{ marginBottom: 10, padding: 10, borderRadius: 12, background: 'var(--border)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 10, background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                     {mediaTypeFromFile(selectedFile) === 'image' && filePreview ? (
                       <img src={filePreview} alt={selectedFile.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : mediaTypeFromFile(selectedFile) === 'video' ? (
@@ -638,7 +638,7 @@ export default function InboxPage() {
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedFile.name}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{formatFileSize(selectedFile.size)}</div>
                   </div>
-                  <button onClick={clearSelectedFile} title={isRTL ? 'إلغاء' : 'Cancel'} style={{ width: 34, height: 34, borderRadius: 999, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <button onClick={clearSelectedFile} title={isRTL ? 'إلغاء' : 'Cancel'} style={{ width: 34, height: 34, borderRadius: 999, border: '1px solid var(--border)', background: 'var(--border)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -656,7 +656,7 @@ export default function InboxPage() {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={sending || selectedConv.channel?.type !== 'whatsapp'}
                   title={isRTL ? 'إرفاق ملف' : 'Attach file'}
-                  style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sending ? 'not-allowed' : 'pointer', opacity: selectedConv.channel?.type === 'whatsapp' ? 1 : 0.45 }}
+                  style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--divider)', border: '1px solid var(--border)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sending ? 'not-allowed' : 'pointer', opacity: selectedConv.channel?.type === 'whatsapp' ? 1 : 0.45 }}
                 >
                   <Paperclip size={18} />
                 </button>
@@ -664,7 +664,7 @@ export default function InboxPage() {
                   onClick={toggleRecording}
                   disabled={sending || selectedConv.channel?.type !== 'whatsapp'}
                   title={isRecording ? (isRTL ? 'إيقاف التسجيل' : 'Stop recording') : (isRTL ? 'تسجيل صوت' : 'Record voice note')}
-                  style={{ width: 44, height: 44, borderRadius: 12, background: isRecording ? 'rgba(199,218,248,0.18)' : 'rgba(255,255,255,0.04)', border: `1px solid ${isRecording ? 'rgba(199,218,248,0.35)' : 'var(--border)'}`, color: isRecording ? '#C7DAF8' : 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sending ? 'not-allowed' : 'pointer', opacity: selectedConv.channel?.type === 'whatsapp' ? 1 : 0.45 }}
+                  style={{ width: 44, height: 44, borderRadius: 12, background: isRecording ? 'var(--accent-focus)' : 'var(--divider)', border: `1px solid ${isRecording ? 'var(--accent-focus)' : 'var(--border)'}`, color: isRecording ? 'var(--accent)' : 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sending ? 'not-allowed' : 'pointer', opacity: selectedConv.channel?.type === 'whatsapp' ? 1 : 0.45 }}
                 >
                   {isRecording ? <Pause size={18} /> : <Mic size={18} />}
                 </button>
@@ -679,7 +679,7 @@ export default function InboxPage() {
                     flex: 1,
                     padding: '12px 16px',
                     borderRadius: 12,
-                    background: 'rgba(255,255,255,0.04)',
+                    background: 'var(--divider)',
                     border: '1px solid var(--border)',
                     color: 'var(--text-primary)',
                     fontSize: 14,
@@ -692,8 +692,8 @@ export default function InboxPage() {
                     width: 44,
                     height: 44,
                     borderRadius: 12,
-                    background: sending ? 'rgba(199,218,248,0.3)' : 'var(--accent)',
-                    color: sending ? 'rgba(255,255,255,0.5)' : '#121317',
+                    background: sending ? 'var(--accent-focus)' : 'var(--accent)',
+                    color: sending ? 'var(--text-secondary)' : 'var(--surface)',
                     border: 'none',
                     cursor: sending ? 'not-allowed' : 'pointer',
                     display: 'flex',
@@ -723,8 +723,8 @@ export default function InboxPage() {
               right: 24,
               padding: '12px 20px',
               borderRadius: 12,
-              background: 'rgba(199,218,248,0.15)',
-              border: '1px solid rgba(199,218,248,0.3)',
+              background: 'var(--accent-focus)',
+              border: '1px solid var(--accent-focus)',
               color: 'var(--accent)',
               fontSize: 14,
               fontWeight: 600,
