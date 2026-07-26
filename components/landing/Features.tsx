@@ -48,10 +48,10 @@ function FeatureCard({
   idx: number
 }) {
   const isTeal = layout.glow === 'teal'
-  const glowColor = isTeal ? 'rgba(199,218,248,0.12)' : 'rgba(199,218,248,0.12)'
-  const borderHover = isTeal ? 'rgba(199,218,248,0.3)' : 'rgba(199,218,248,0.3)'
-  const iconBg = isTeal ? 'rgba(199,218,248,0.1)' : 'rgba(199,218,248,0.1)'
-  const iconColor = isTeal ? '#C7DAF8' : '#C7DAF8'
+  const glowColor = 'var(--accent-subtle)'
+  const borderHover = 'var(--accent-subtle)'
+  const iconBg = 'var(--accent-subtle)'
+  const iconColor = 'var(--accent)'
 
   return (
     <div
@@ -59,7 +59,7 @@ function FeatureCard({
       style={{
         gridColumn: `span ${layout.cols}`,
         gridRow: `span ${layout.rows}`,
-        background: '#121317',
+        background: 'var(--surface)',
         animationDelay: `${idx * 0.08}s`,
         minHeight: layout.cols === 2 ? 180 : 160,
       }}
@@ -71,7 +71,7 @@ function FeatureCard({
       }}
       onMouseLeave={e => {
         const el = e.currentTarget
-        el.style.borderColor = 'rgba(255,255,255,0.06)'
+        el.style.borderColor = 'var(--border)'
         el.style.boxShadow = 'none'
         el.style.transform = 'translateY(0)'
       }}
@@ -87,15 +87,15 @@ function FeatureCard({
           className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4 transition-all duration-300 group-hover:scale-110"
           style={{ background: iconBg, fontSize: 22 }}
         >
-          <span style={{ filter: `drop-shadow(0 0 6px ${iconColor})` }}>{item.icon}</span>
+          <span style={{ filter: `drop-shadow(0 0 6px var(--accent))` }}>{item.icon}</span>
         </div>
         <h3
           className="font-bold text-base mb-2 leading-tight"
-          style={{ color: '#FFFFFF', letterSpacing: '-0.01em' }}
+          style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}
         >
           {item.title}
         </h3>
-        <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
           {item.desc}
         </p>
       </div>
@@ -103,7 +103,7 @@ function FeatureCard({
       {/* Bottom accent line */}
       <div
         className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-500"
-        style={{ background: `linear-gradient(to right, ${iconColor}, transparent)` }}
+        style={{ background: `linear-gradient(to right, var(--accent), transparent)` }}
       />
     </div>
   )
@@ -119,7 +119,7 @@ export default function Features() {
       {/* Top divider */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-20"
-        style={{ background: 'linear-gradient(to bottom, transparent, rgba(199,218,248,0.4))' }}
+        style={{ background: 'linear-gradient(to bottom, transparent, var(--accent-subtle))' }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,7 +128,7 @@ export default function Features() {
         <div ref={sectionRef} className="reveal mb-20">
           <h2
             className={`text-3xl sm:text-4xl font-black text-center mb-12 ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
           >
             {t.problems.title}
           </h2>
@@ -137,14 +137,14 @@ export default function Features() {
               <div
                 key={i}
                 className="card-hover flex items-start gap-4 p-5 rounded-2xl transition-all duration-300"
-                style={{ background: '#121317' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(199,218,248,0.25)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
+                style={{ background: 'var(--surface)' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-subtle)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
               >
                 <span className="text-2xl flex-shrink-0">{item.icon}</span>
                 <div>
-                  <h3 className="font-semibold mb-1" style={{ color: '#FFFFFF' }}>{item.title}</h3>
-                  <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{item.desc}</p>
+                  <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>{item.title}</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -153,16 +153,16 @@ export default function Features() {
 
         {/* Arrow divider */}
         <div className="flex items-center gap-4 mb-16">
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <span style={{ color: '#C7DAF8', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.5))' }}>↓</span>
-          <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
+          <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent-subtle))' }}>↓</span>
+          <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
         </div>
 
         {/* Features bento grid */}
         <div ref={titleRef} className="reveal text-center mb-12">
           <h2
             className={`text-3xl sm:text-4xl font-black mb-3 ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
           >
             {t.features.title}
           </h2>

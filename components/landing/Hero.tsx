@@ -65,14 +65,14 @@ export default function Hero() {
               <div
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                 style={{
-                  background: 'rgba(199,218,248,0.08)',
-                  border: '1px solid rgba(199,218,248,0.25)',
-                  color: '#C7DAF8',
+                  background: 'var(--accent-subtle)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--accent)',
                   opacity: badgeVisible ? 1 : 0,
                   transform: badgeVisible ? 'translateY(0)' : 'translateY(6px)',
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C7DAF8', display: 'inline-block', boxShadow: '0 0 6px #C7DAF8', animation: 'tealPulse 2s infinite' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', boxShadow: '0 0 6px var(--accent)', animation: 'tealPulse 2s infinite' }} />
                 {BADGE_PHRASES[badgeIdx]}
               </div>
             </div>
@@ -85,13 +85,13 @@ export default function Hero() {
                 letterSpacing: '-0.03em',
               }}
             >
-              <span className="block slide-left" style={{ color: '#FFFFFF' }}>
+              <span className="block slide-left" style={{ color: 'var(--text-primary)' }}>
                 {t.hero.headline1}
               </span>
               <span
                 className="block slide-right delay-200"
                 style={{
-                  background: 'linear-gradient(135deg, #C7DAF8 0%, #C7DAF8 100%)',
+                  background: 'var(--accent)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -104,7 +104,7 @@ export default function Hero() {
             {/* Subheadline */}
             <p
               className={`text-lg leading-relaxed mb-8 fade-up delay-300 max-w-lg ${isRTL ? 'mr-0 ml-auto' : ''}`}
-              style={{ color: 'rgba(255,255,255,0.5)' }}
+              style={{ color: 'var(--text-secondary)' }}
             >
               {t.hero.subheadline}
             </p>
@@ -115,16 +115,16 @@ export default function Hero() {
                 href="/register"
                 className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200"
                 style={{
-                  background: '#C7DAF8',
-                  color: '#121317',
+                  background: 'var(--accent)',
+                  color: 'var(--text-primary)',
                   letterSpacing: '-0.01em',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = '#00E8A0'
+                  e.currentTarget.style.background = 'var(--accent-hover)'
                   e.currentTarget.style.transform = 'scale(1.03)'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = '#C7DAF8'
+                  e.currentTarget.style.background = 'var(--accent)'
                   e.currentTarget.style.transform = 'scale(1)'
                 }}
               >
@@ -133,19 +133,19 @@ export default function Hero() {
               <button
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200"
                 style={{
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(255,255,255,0.7)',
-                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)',
+                  background: 'var(--surface-elevated)',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'
-                  e.currentTarget.style.color = '#FFFFFF'
-                  e.currentTarget.style.background = 'rgba(199,218,248,0.05)'
+                  e.currentTarget.style.borderColor = 'var(--accent-subtle)'
+                  e.currentTarget.style.color = 'var(--text-primary)'
+                  e.currentTarget.style.background = 'var(--accent-subtle)'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.7)'
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
+                  e.currentTarget.style.background = 'var(--surface-elevated)'
                 }}
               >
                 <span style={{ fontSize: 13 }}>▶</span>
@@ -161,15 +161,15 @@ export default function Hero() {
                     key={i}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
                     style={{
-                      background: '#121317',
-                      border: '2px solid #121317',
+                      background: 'var(--surface)',
+                      border: '2px solid var(--surface)',
                     }}
                   >
                     {e}
                   </div>
                 ))}
               </div>
-              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14 }}>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
                 ⭐ {t.hero.socialProof}
               </span>
             </div>
@@ -187,8 +187,8 @@ export default function Hero() {
                 left: '6%',
                 bottom: '-12px',
                 borderRadius: 20,
-                background: '#0A0A12',
-                border: '1px solid rgba(255,255,255,0.04)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
                 filter: 'blur(2px)',
                 transform: 'scale(0.97)',
               }}
@@ -198,32 +198,32 @@ export default function Hero() {
             <div
               className="relative w-full max-w-sm"
               style={{
-                background: 'rgba(199,218,248,0.9)',
+                background: 'var(--surface)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderLeft: '2px solid #C7DAF8',
-                boxShadow: '0 0 60px rgba(199,218,248,0.08), 0 0 120px rgba(199,218,248,0.04)',
+                border: '1px solid var(--border)',
+                borderLeft: '2px solid var(--accent)',
+                boxShadow: '0 0 60px var(--accent-subtle), 0 0 120px var(--accent-subtle)',
                 overflow: 'hidden',
               }}
             >
               {/* Card header */}
               <div
                 className="flex items-center justify-between px-5 py-4"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                style={{ borderBottom: '1px solid var(--divider)' }}
               >
                 <div className="flex items-center gap-2">
-                  <span style={{ color: '#C7DAF8', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
+                  <span style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}
+                    style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
                   >
                     Inbox
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C7DAF8', boxShadow: '0 0 6px #C7DAF8', animation: 'tealPulse 2s infinite' }} />
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>AI Active</span>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 6px var(--accent)', animation: 'tealPulse 2s infinite' }} />
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>AI Active</span>
                 </div>
               </div>
 
@@ -236,17 +236,17 @@ export default function Hero() {
                   <div
                     key={i}
                     className="flex items-start gap-3 p-3 rounded-xl"
-                    style={{ background: 'rgba(199,218,248,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
                   >
                     <span>{item.platform}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center">
-                        <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 600 }}>{item.name}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{item.time} ago</span>
+                        <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{item.name}</span>
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>{item.time} ago</span>
                       </div>
-                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 }} className="truncate">{item.msg}</p>
+                      <p style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 2 }} className="truncate">{item.msg}</p>
                     </div>
-                    <span style={{ color: '#C7DAF8', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
+                    <span style={{ color: 'var(--accent)', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
                   </div>
                 ))}
 
@@ -254,8 +254,8 @@ export default function Hero() {
                 <div
                   className="p-3 rounded-xl"
                   style={{
-                    background: 'rgba(199,218,248,0.6)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: 'var(--surface-elevated)',
+                    border: '1px solid var(--border)',
                     minHeight: 64,
                     transition: 'all 0.3s ease',
                   }}
@@ -265,10 +265,10 @@ export default function Hero() {
                       <span>📸</span>
                       <div className="flex-1">
                         <div className="flex justify-between">
-                          <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 600 }}>سارة محمد</span>
-                          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>now</span>
+                          <span style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>سارة محمد</span>
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>now</span>
                         </div>
-                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2 }}>ما هي ساعات العمل؟</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 2 }}>ما هي ساعات العمل؟</p>
                       </div>
                     </div>
                   )}
@@ -276,14 +276,14 @@ export default function Hero() {
                     <div className="flex items-center gap-3 fade-in">
                       <span>🤖</span>
                       <div>
-                        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>AI يرد الآن</span>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>AI يرد الآن</span>
                         <div className="flex gap-1 mt-1">
                           {[0,1,2].map(i => (
                             <div
                               key={i}
                               style={{
                                 width: 5, height: 5, borderRadius: '50%',
-                                background: '#C7DAF8',
+                                background: 'var(--accent)',
                                 animation: `typingDot 1.2s ease ${i * 0.2}s infinite`,
                               }}
                             />
@@ -296,8 +296,8 @@ export default function Hero() {
                     <div className="flex items-start gap-3 fade-in">
                       <span>✅</span>
                       <div className="flex-1">
-                        <p style={{ color: '#FFFFFF', fontSize: 13 }}>ساعات العمل: 9 صباحاً – 9 مساءً 🕘</p>
-                        <span style={{ color: '#C7DAF8', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
+                        <p style={{ color: 'var(--text-primary)', fontSize: 13 }}>ساعات العمل: 9 صباحاً – 9 مساءً 🕘</p>
+                        <span style={{ color: 'var(--accent)', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
                       </div>
                     </div>
                   )}
@@ -307,12 +307,12 @@ export default function Hero() {
               {/* Bottom bar */}
               <div
                 className="px-5 py-3 flex items-center justify-between"
-                style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                style={{ borderTop: '1px solid var(--divider)' }}
               >
-                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>340 رد اليوم</span>
+                <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>340 رد اليوم</span>
                 <span
                   className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
                 >
                   ⚡ 8 ثوانٍ avg
                 </span>
@@ -323,10 +323,10 @@ export default function Hero() {
             <div
               className="absolute -top-5 -right-4 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(199,218,248,0.95)',
-                border: '1px solid rgba(199,218,248,0.2)',
-                color: '#C7DAF8',
-                boxShadow: '0 0 20px rgba(199,218,248,0.08)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent)',
+                boxShadow: '0 0 20px var(--accent-subtle)',
                 animation: 'floatPill 4s ease-in-out infinite',
                 backdropFilter: 'blur(12px)',
               }}
@@ -337,10 +337,10 @@ export default function Hero() {
             <div
               className="absolute top-1/3 -left-5 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(199,218,248,0.95)',
-                border: '1px solid rgba(199,218,248,0.2)',
-                color: '#C7DAF8',
-                boxShadow: '0 0 20px rgba(199,218,248,0.08)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent)',
+                boxShadow: '0 0 20px var(--accent-subtle)',
                 animation: 'floatPill 5s ease-in-out infinite 1s',
                 backdropFilter: 'blur(12px)',
               }}
@@ -351,9 +351,9 @@ export default function Hero() {
             <div
               className="absolute -bottom-4 right-8 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(199,218,248,0.95)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#FFFFFF',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-primary)',
                 animation: 'floatPill 6s ease-in-out infinite 2s',
                 backdropFilter: 'blur(12px)',
               }}
