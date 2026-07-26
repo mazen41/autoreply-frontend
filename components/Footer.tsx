@@ -20,21 +20,21 @@ export default function Footer() {
 
           {/* Legal Links */}
           <div className="flex items-center gap-6">
-            <Link 
+            <Link
               href="/privacy"
               className="text-sm transition-colors hover:opacity-80"
               style={{ color: 'var(--text-secondary)' }}
             >
               {isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}
             </Link>
-            <Link 
+            <Link
               href="/terms"
               className="text-sm transition-colors hover:opacity-80"
               style={{ color: 'var(--text-secondary)' }}
             >
               {isRTL ? 'شروط الخدمة' : 'Terms of Service'}
             </Link>
-            <a 
+            <a
               href="mailto:support@nazautoreply.com"
               className="text-sm transition-colors hover:opacity-80"
               style={{ color: 'var(--text-secondary)' }}

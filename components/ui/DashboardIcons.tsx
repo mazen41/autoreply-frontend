@@ -10,14 +10,14 @@ interface IconProps {
 }
 
 export const HomeIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -28,14 +28,14 @@ export const HomeIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const InboxIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -46,14 +46,14 @@ export const InboxIcon = ({ size = 20, className = '', strokeWidth = 1.5, style 
 )
 
 export const ChannelsIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -66,14 +66,14 @@ export const ChannelsIcon = ({ size = 20, className = '', strokeWidth = 1.5, sty
 )
 
 export const WhatsAppIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -83,14 +83,14 @@ export const WhatsAppIcon = ({ size = 20, className = '', strokeWidth = 1.5, sty
 )
 
 export const ContentIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -104,14 +104,14 @@ export const ContentIcon = ({ size = 20, className = '', strokeWidth = 1.5, styl
 )
 
 export const ReputationIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -121,14 +121,14 @@ export const ReputationIcon = ({ size = 20, className = '', strokeWidth = 1.5, s
 )
 
 export const ReportsIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -140,14 +140,14 @@ export const ReportsIcon = ({ size = 20, className = '', strokeWidth = 1.5, styl
 )
 
 export const SettingsIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -158,14 +158,14 @@ export const SettingsIcon = ({ size = 20, className = '', strokeWidth = 1.5, sty
 )
 
 export const BillingIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -176,14 +176,14 @@ export const BillingIcon = ({ size = 20, className = '', strokeWidth = 1.5, styl
 )
 
 export const AIKnowledgeIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -196,14 +196,14 @@ export const AIKnowledgeIcon = ({ size = 20, className = '', strokeWidth = 1.5, 
 )
 
 export const HelpIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -215,14 +215,14 @@ export const HelpIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const SearchIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -233,14 +233,14 @@ export const SearchIcon = ({ size = 20, className = '', strokeWidth = 1.5, style
 )
 
 export const BellIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -251,14 +251,14 @@ export const BellIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const MenuIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -270,14 +270,14 @@ export const MenuIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const XIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -288,14 +288,14 @@ export const XIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: I
 )
 
 export const ChevronLeftIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -305,14 +305,14 @@ export const ChevronLeftIcon = ({ size = 20, className = '', strokeWidth = 1.5, 
 )
 
 export const ChevronRightIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -322,14 +322,14 @@ export const ChevronRightIcon = ({ size = 20, className = '', strokeWidth = 1.5,
 )
 
 export const UserIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -340,14 +340,14 @@ export const UserIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const LogOutIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -359,14 +359,14 @@ export const LogOutIcon = ({ size = 20, className = '', strokeWidth = 1.5, style
 )
 
 export const PlusIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -377,14 +377,14 @@ export const PlusIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const TrendUpIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -395,14 +395,14 @@ export const TrendUpIcon = ({ size = 20, className = '', strokeWidth = 1.5, styl
 )
 
 export const TrendDownIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -413,14 +413,14 @@ export const TrendDownIcon = ({ size = 20, className = '', strokeWidth = 1.5, st
 )
 
 export const LightningIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -430,27 +430,27 @@ export const LightningIcon = ({ size = 20, className = '', strokeWidth = 1.5, st
 )
 
 export const NazLogoIcon = ({ size = 24, className = '', style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
     fill="currentColor"
     className={className}
-    style={{ color: '#C6FF00', ...style }}
+    style={{ color: '#C7DAF8', ...style }}
   >
     <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2Z" transform="scale(0.8) translate(2.4, 2.4)" />
   </svg>
 )
 
 export const StarIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
     stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}
@@ -460,14 +460,14 @@ export const StarIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }
 )
 
 export const ShieldIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
-  <svg 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
     strokeWidth={strokeWidth}
-    strokeLinecap="round" 
+    strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
     style={style}

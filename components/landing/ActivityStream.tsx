@@ -15,15 +15,15 @@ const FEED_ITEMS = [
 ]
 
 const STATUS_CONFIG: Record<string, { label: string; labelAr: string; color: string; bg: string }> = {
-  received:   { label: 'Received',   labelAr: 'واصلت',    color: '#7DF9FF', bg: 'rgba(125,249,255,0.08)' },
-  processing: { label: 'Processing', labelAr: 'يعالج...',  color: '#C6FF00', bg: 'rgba(198,255,0,0.08)' },
-  responded:  { label: 'Responded',  labelAr: 'تم الرد',   color: '#C6FF00', bg: 'rgba(198,255,0,0.08)' },
-  lead:       { label: 'Lead ⚡',    labelAr: 'عميل محتمل', color: '#FFD700', bg: 'rgba(255,215,0,0.08)' },
+  received:   { label: 'Received',   labelAr: 'واصلت',    color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
+  processing: { label: 'Processing', labelAr: 'يعالج...',  color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
+  responded:  { label: 'Responded',  labelAr: 'تم الرد',   color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
+  lead:       { label: 'Lead ⚡',    labelAr: 'عميل محتمل', color: '#FFD700', bg: 'rgba(199,218,248,0.08)' },
   closed:     { label: 'Closed',     labelAr: 'مغلق',      color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.04)' },
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  WhatsApp: '#25D366', Instagram: '#E1306C', Email: '#7DF9FF', Website: '#C6FF00',
+  WhatsApp: '#C7DAF8', Instagram: '#C7DAF8', Email: '#C7DAF8', Website: '#C7DAF8',
 }
 
 export default function ActivityStream() {
@@ -67,15 +67,15 @@ export default function ActivityStream() {
         {/* Section header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(125,249,255,0.15)' }}>
-            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#7DF9FF' }} />
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#7DF9FF' }}>
+            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
               {isRTL ? 'بث مباشر' : 'LIVE ACTIVITY STREAM'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'رسائل تتحول إلى نتائج' : 'Messages become outcomes.'}
           </h2>
@@ -119,7 +119,7 @@ export default function ActivityStream() {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
                     className="flex items-center gap-4 p-4 rounded-2xl glass card-os"
-                    style={{ background: 'rgba(17,17,17,0.8)' }}
+                    style={{ background: 'rgba(18,19,23,0.8)' }}
                   >
                     {/* Platform icon */}
                     <div
@@ -135,7 +135,7 @@ export default function ActivityStream() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-bold" style={{ color: '#F5F5F5' }}>{item.name}</span>
+                        <span className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{item.name}</span>
                         <span className="text-xs" style={{ color: PLATFORM_COLORS[item.platform] }}>
                           {item.platform}
                         </span>
@@ -150,7 +150,7 @@ export default function ActivityStream() {
                       <div className="flex items-center gap-1">
                         {[0,1,2].map(j => (
                           <div key={j} style={{
-                            width: 5, height: 5, borderRadius: '50%', background: '#C6FF00',
+                            width: 5, height: 5, borderRadius: '50%', background: '#C7DAF8',
                             animation: `typingDot 1.2s ease ${j * 0.2}s infinite`,
                           }} />
                         ))}
@@ -180,17 +180,17 @@ export default function ActivityStream() {
             {/* AI Brain card */}
             <div
               className="rounded-2xl p-5 glass animated-border"
-              style={{ background: 'rgba(17,17,17,0.9)' }}
+              style={{ background: 'rgba(18,19,23,0.9)' }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: 'rgba(198,255,0,0.1)', border: '1px solid rgba(198,255,0,0.2)' }}
+                  style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.2)' }}
                 >
-                  <span style={{ color: '#C6FF00', fontSize: 18 }}>🧠</span>
+                  <span style={{ color: '#C7DAF8', fontSize: 18 }}>🧠</span>
                 </div>
                 <div>
-                  <div className="text-sm font-bold" style={{ color: '#F5F5F5' }}>
+                  <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
                     {isRTL ? 'نواة الذكاء الاصطناعي' : 'AI Core Processing'}
                   </div>
                   <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -198,16 +198,16 @@ export default function ActivityStream() {
                   </div>
                 </div>
                 <div className="ms-auto flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C6FF00' }} />
-                  <span className="text-xs" style={{ color: '#C6FF00' }}>Live</span>
+                  <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
+                  <span className="text-xs" style={{ color: '#C7DAF8' }}>Live</span>
                 </div>
               </div>
 
               {/* Progress bars */}
               {[
-                { label: isRTL ? 'تحليل النص' : 'Text Analysis', pct: 94, color: '#C6FF00' },
-                { label: isRTL ? 'توليد الرد' : 'Response Gen', pct: 88, color: '#7DF9FF' },
-                { label: isRTL ? 'إدارة السياق' : 'Context Mgmt', pct: 97, color: '#C6FF00' },
+                { label: isRTL ? 'تحليل النص' : 'Text Analysis', pct: 94, color: '#C7DAF8' },
+                { label: isRTL ? 'توليد الرد' : 'Response Gen', pct: 88, color: '#C7DAF8' },
+                { label: isRTL ? 'إدارة السياق' : 'Context Mgmt', pct: 97, color: '#C7DAF8' },
               ].map((bar, i) => (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between text-xs mb-1">
@@ -230,15 +230,15 @@ export default function ActivityStream() {
             {/* Stats mini */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { val: '99.9%', label: isRTL ? 'نسبة التشغيل' : 'Uptime', color: '#C6FF00' },
-                { val: '<10ms', label: isRTL ? 'زمن الاستجابة' : 'Latency', color: '#7DF9FF' },
-                { val: '128',   label: isRTL ? 'نموذج AI' : 'Model Size', color: '#C6FF00' },
-                { val: '4.9★',  label: isRTL ? 'رضا العملاء' : 'Satisfaction', color: '#7DF9FF' },
+                { val: '99.9%', label: isRTL ? 'نسبة التشغيل' : 'Uptime', color: '#C7DAF8' },
+                { val: '<10ms', label: isRTL ? 'زمن الاستجابة' : 'Latency', color: '#C7DAF8' },
+                { val: '128',   label: isRTL ? 'نموذج AI' : 'Model Size', color: '#C7DAF8' },
+                { val: '4.9★',  label: isRTL ? 'رضا العملاء' : 'Satisfaction', color: '#C7DAF8' },
               ].map((s, i) => (
                 <div
                   key={i}
                   className="p-3 rounded-xl text-center card-os glass"
-                  style={{ background: 'rgba(17,17,17,0.7)' }}
+                  style={{ background: 'rgba(18,19,23,0.7)' }}
                 >
                   <div className="text-xl font-black" style={{ color: s.color }}>{s.val}</div>
                   <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>

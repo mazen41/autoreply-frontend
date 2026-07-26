@@ -16,23 +16,23 @@ export default function SEOKeywords() {
 
   const handleExtract = async () => {
     if (!inputText.trim()) return
-    
+
     setLoading(true)
     setResult(null)
-    
+
     const response = await askClaude(
       'Extract the top 15 Arabic SEO keywords from this product description. Group them into: primary keywords (5), secondary keywords (5), and long-tail keywords (5). Format your response as JSON with these keys: "primary" (array), "secondary" (array), "longtail" (array).',
       inputText,
       'seo-keywords'
     )
-    
+
     setLoading(false)
-    
+
     if (response.limitReached) {
       setLimitReached(true)
       return
     }
-    
+
     if (response.success && response.result) {
       try {
         const jsonMatch = response.result.match(/\{[\s\S]*\}/)
@@ -64,10 +64,10 @@ export default function SEOKeywords() {
   return (
     <div>
       {/* Usage Indicator */}
-      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+      <div className="mb-6 p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
         <div className="flex items-center justify-between">
           <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            Free uses remaining today: <span className="font-bold" style={{ color: '#C6FF00' }}>{usage.remaining}/{usage.max}</span>
+            Free uses remaining today: <span className="font-bold" style={{ color: '#C7DAF8' }}>{usage.remaining}/{usage.max}</span>
           </span>
         </div>
       </div>
@@ -84,17 +84,17 @@ export default function SEOKeywords() {
             placeholder="الصق وصف المنتج هنا..."
             rows={6}
             className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all resize-none"
-            style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5' }}
+            style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
           />
         </div>
-        
+
         <motion.button
           onClick={handleExtract}
           disabled={loading || !inputText.trim() || usage.remaining === 0}
           className="w-full py-3.5 rounded-xl font-bold text-sm transition-all"
           style={{
-            background: loading || usage.remaining === 0 ? 'rgba(198,255,0,0.3)' : 'linear-gradient(135deg, #C6FF00, #a8e000)',
-            color: '#050505',
+            background: loading || usage.remaining === 0 ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #a8e000)',
+            color: '#121317',
           }}
           whileHover={!loading && usage.remaining > 0 ? { scale: 1.02 } : {}}
           whileTap={!loading && usage.remaining > 0 ? { scale: 0.98 } : {}}
@@ -105,7 +105,7 @@ export default function SEOKeywords() {
 
       {/* Limit Reached Message */}
       {limitReached && (
-        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'rgba(255,60,60,0.1)', border: '1px solid rgba(255,60,60,0.3)' }}>
+        <div className="p-6 rounded-xl text-center mb-6" style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)' }}>
           <p className="text-lg font-bold mb-4" style={{ color: '#FF7070' }}>
             You've reached your daily limit
           </p>
@@ -113,7 +113,7 @@ export default function SEOKeywords() {
             Sign up for unlimited access to all AI tools
           </p>
           <Link href="/register" className="inline-block px-6 py-3 rounded-xl font-bold text-sm"
-            style={{ background: '#C6FF00', color: '#050505' }}>
+            style={{ background: '#C7DAF8', color: '#121317' }}>
             Sign Up Free
           </Link>
         </div>
@@ -127,23 +127,23 @@ export default function SEOKeywords() {
           className="space-y-4"
         >
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold" style={{ color: '#F5F5F5' }}>كلمات المفتاحية / SEO Keywords</h3>
+            <h3 className="font-bold" style={{ color: '#FFFFFF' }}>كلمات المفتاحية / SEO Keywords</h3>
             <button
               onClick={copyAllKeywords}
               className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-              style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}
+              style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}
             >
               Copy All
             </button>
           </div>
 
           {/* Primary Keywords */}
-          <div className="p-4 rounded-xl" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h4 className="font-bold text-sm mb-3" style={{ color: '#C6FF00' }}>الكلمات الأساسية / Primary Keywords</h4>
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h4 className="font-bold text-sm mb-3" style={{ color: '#C7DAF8' }}>الكلمات الأساسية / Primary Keywords</h4>
             <div className="flex flex-wrap gap-2">
               {result.primary?.map((keyword: string, i: number) => (
                 <span key={i} className="px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-all hover:scale-105"
-                  style={{ background: 'rgba(198,255,0,0.1)', color: '#C6FF00', border: '1px solid rgba(198,255,0,0.3)' }}
+                  style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}
                   onClick={() => copyToClipboard(keyword)}>
                   {keyword}
                 </span>
@@ -152,7 +152,7 @@ export default function SEOKeywords() {
           </div>
 
           {/* Secondary Keywords */}
-          <div className="p-4 rounded-xl" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h4 className="font-bold text-sm mb-3" style={{ color: 'rgba(255,255,255,0.7)' }}>الكلمات الثانوية / Secondary Keywords</h4>
             <div className="flex flex-wrap gap-2">
               {result.secondary?.map((keyword: string, i: number) => (
@@ -166,7 +166,7 @@ export default function SEOKeywords() {
           </div>
 
           {/* Long-tail Keywords */}
-          <div className="p-4 rounded-xl" style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <h4 className="font-bold text-sm mb-3" style={{ color: 'rgba(255,255,255,0.7)' }}>الكلمات الطويلة / Long-tail Keywords</h4>
             <div className="flex flex-wrap gap-2">
               {result.longtail?.map((keyword: string, i: number) => (
@@ -180,12 +180,12 @@ export default function SEOKeywords() {
           </div>
 
           {/* Upsell CTA */}
-          <div className="p-4 rounded-xl text-center" style={{ background: 'rgba(198,255,0,0.05)', border: '1px solid rgba(198,255,0,0.15)' }}>
+          <div className="p-4 rounded-xl text-center" style={{ background: 'rgba(199,218,248,0.05)', border: '1px solid rgba(199,218,248,0.15)' }}>
             <p className="text-sm mb-3" style={{ color: 'rgba(255,255,255,0.8)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
             <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
-              style={{ background: '#C6FF00', color: '#050505' }}>
+              style={{ background: '#C7DAF8', color: '#121317' }}>
               {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>

@@ -65,14 +65,14 @@ export default function Hero() {
               <div
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                 style={{
-                  background: 'rgba(0,255,178,0.08)',
-                  border: '1px solid rgba(0,255,178,0.25)',
-                  color: '#00FFB2',
+                  background: 'rgba(199,218,248,0.08)',
+                  border: '1px solid rgba(199,218,248,0.25)',
+                  color: '#C7DAF8',
                   opacity: badgeVisible ? 1 : 0,
                   transform: badgeVisible ? 'translateY(0)' : 'translateY(6px)',
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00FFB2', display: 'inline-block', boxShadow: '0 0 6px #00FFB2', animation: 'tealPulse 2s infinite' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#C7DAF8', display: 'inline-block', boxShadow: '0 0 6px #C7DAF8', animation: 'tealPulse 2s infinite' }} />
                 {BADGE_PHRASES[badgeIdx]}
               </div>
             </div>
@@ -85,13 +85,13 @@ export default function Hero() {
                 letterSpacing: '-0.03em',
               }}
             >
-              <span className="block slide-left" style={{ color: '#F0F0FF' }}>
+              <span className="block slide-left" style={{ color: '#FFFFFF' }}>
                 {t.hero.headline1}
               </span>
               <span
                 className="block slide-right delay-200"
                 style={{
-                  background: 'linear-gradient(135deg, #00FFB2 0%, #BF00FF 100%)',
+                  background: 'linear-gradient(135deg, #C7DAF8 0%, #C7DAF8 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
@@ -104,7 +104,7 @@ export default function Hero() {
             {/* Subheadline */}
             <p
               className={`text-lg leading-relaxed mb-8 fade-up delay-300 max-w-lg ${isRTL ? 'mr-0 ml-auto' : ''}`}
-              style={{ color: 'rgba(240,240,255,0.5)' }}
+              style={{ color: 'rgba(255,255,255,0.5)' }}
             >
               {t.hero.subheadline}
             </p>
@@ -115,8 +115,8 @@ export default function Hero() {
                 href="/register"
                 className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200"
                 style={{
-                  background: '#00FFB2',
-                  color: '#050508',
+                  background: '#C7DAF8',
+                  color: '#121317',
                   letterSpacing: '-0.01em',
                 }}
                 onMouseEnter={e => {
@@ -124,7 +124,7 @@ export default function Hero() {
                   e.currentTarget.style.transform = 'scale(1.03)'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = '#00FFB2'
+                  e.currentTarget.style.background = '#C7DAF8'
                   e.currentTarget.style.transform = 'scale(1)'
                 }}
               >
@@ -134,17 +134,17 @@ export default function Hero() {
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200"
                 style={{
                   border: '1px solid rgba(255,255,255,0.12)',
-                  color: 'rgba(240,240,255,0.7)',
+                  color: 'rgba(255,255,255,0.7)',
                   background: 'rgba(255,255,255,0.03)',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'rgba(0,255,178,0.3)'
-                  e.currentTarget.style.color = '#F0F0FF'
-                  e.currentTarget.style.background = 'rgba(0,255,178,0.05)'
+                  e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'
+                  e.currentTarget.style.color = '#FFFFFF'
+                  e.currentTarget.style.background = 'rgba(199,218,248,0.05)'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
-                  e.currentTarget.style.color = 'rgba(240,240,255,0.7)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.7)'
                   e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
                 }}
               >
@@ -161,15 +161,15 @@ export default function Hero() {
                     key={i}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
                     style={{
-                      background: '#0F0F1A',
-                      border: '2px solid #050508',
+                      background: '#121317',
+                      border: '2px solid #121317',
                     }}
                   >
                     {e}
                   </div>
                 ))}
               </div>
-              <span style={{ color: 'rgba(240,240,255,0.45)', fontSize: 14 }}>
+              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14 }}>
                 ⭐ {t.hero.socialProof}
               </span>
             </div>
@@ -198,12 +198,12 @@ export default function Hero() {
             <div
               className="relative w-full max-w-sm"
               style={{
-                background: 'rgba(15,15,26,0.9)',
+                background: 'rgba(199,218,248,0.9)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: 20,
                 border: '1px solid rgba(255,255,255,0.08)',
-                borderLeft: '2px solid #00FFB2',
-                boxShadow: '0 0 60px rgba(0,255,178,0.08), 0 0 120px rgba(191,0,255,0.04)',
+                borderLeft: '2px solid #C7DAF8',
+                boxShadow: '0 0 60px rgba(199,218,248,0.08), 0 0 120px rgba(199,218,248,0.04)',
                 overflow: 'hidden',
               }}
             >
@@ -213,17 +213,17 @@ export default function Hero() {
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
               >
                 <div className="flex items-center gap-2">
-                  <span style={{ color: '#00FFB2', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
+                  <span style={{ color: '#C7DAF8', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ background: 'rgba(0,255,178,0.1)', color: '#00FFB2' }}
+                    style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}
                   >
                     Inbox
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#00FFB2', boxShadow: '0 0 6px #00FFB2', animation: 'tealPulse 2s infinite' }} />
-                  <span style={{ color: 'rgba(240,240,255,0.4)', fontSize: 11 }}>AI Active</span>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#C7DAF8', boxShadow: '0 0 6px #C7DAF8', animation: 'tealPulse 2s infinite' }} />
+                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>AI Active</span>
                 </div>
               </div>
 
@@ -236,17 +236,17 @@ export default function Hero() {
                   <div
                     key={i}
                     className="flex items-start gap-3 p-3 rounded-xl"
-                    style={{ background: 'rgba(5,5,8,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ background: 'rgba(199,218,248,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
                   >
                     <span>{item.platform}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center">
-                        <span style={{ color: '#F0F0FF', fontSize: 13, fontWeight: 600 }}>{item.name}</span>
-                        <span style={{ color: 'rgba(240,240,255,0.3)', fontSize: 11 }}>{item.time} ago</span>
+                        <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 600 }}>{item.name}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>{item.time} ago</span>
                       </div>
-                      <p style={{ color: 'rgba(240,240,255,0.4)', fontSize: 12, marginTop: 2 }} className="truncate">{item.msg}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 }} className="truncate">{item.msg}</p>
                     </div>
-                    <span style={{ color: '#00FFB2', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
+                    <span style={{ color: '#C7DAF8', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
                   </div>
                 ))}
 
@@ -254,7 +254,7 @@ export default function Hero() {
                 <div
                   className="p-3 rounded-xl"
                   style={{
-                    background: 'rgba(5,5,8,0.6)',
+                    background: 'rgba(199,218,248,0.6)',
                     border: '1px solid rgba(255,255,255,0.07)',
                     minHeight: 64,
                     transition: 'all 0.3s ease',
@@ -265,10 +265,10 @@ export default function Hero() {
                       <span>📸</span>
                       <div className="flex-1">
                         <div className="flex justify-between">
-                          <span style={{ color: '#F0F0FF', fontSize: 13, fontWeight: 600 }}>سارة محمد</span>
-                          <span style={{ color: 'rgba(240,240,255,0.3)', fontSize: 11 }}>now</span>
+                          <span style={{ color: '#FFFFFF', fontSize: 13, fontWeight: 600 }}>سارة محمد</span>
+                          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>now</span>
                         </div>
-                        <p style={{ color: 'rgba(240,240,255,0.5)', fontSize: 12, marginTop: 2 }}>ما هي ساعات العمل؟</p>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2 }}>ما هي ساعات العمل؟</p>
                       </div>
                     </div>
                   )}
@@ -276,14 +276,14 @@ export default function Hero() {
                     <div className="flex items-center gap-3 fade-in">
                       <span>🤖</span>
                       <div>
-                        <span style={{ color: 'rgba(240,240,255,0.5)', fontSize: 13 }}>AI يرد الآن</span>
+                        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>AI يرد الآن</span>
                         <div className="flex gap-1 mt-1">
                           {[0,1,2].map(i => (
                             <div
                               key={i}
                               style={{
                                 width: 5, height: 5, borderRadius: '50%',
-                                background: '#00FFB2',
+                                background: '#C7DAF8',
                                 animation: `typingDot 1.2s ease ${i * 0.2}s infinite`,
                               }}
                             />
@@ -296,8 +296,8 @@ export default function Hero() {
                     <div className="flex items-start gap-3 fade-in">
                       <span>✅</span>
                       <div className="flex-1">
-                        <p style={{ color: '#F0F0FF', fontSize: 13 }}>ساعات العمل: 9 صباحاً – 9 مساءً 🕘</p>
-                        <span style={{ color: '#00FFB2', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
+                        <p style={{ color: '#FFFFFF', fontSize: 13 }}>ساعات العمل: 9 صباحاً – 9 مساءً 🕘</p>
+                        <span style={{ color: '#C7DAF8', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
                       </div>
                     </div>
                   )}
@@ -309,10 +309,10 @@ export default function Hero() {
                 className="px-5 py-3 flex items-center justify-between"
                 style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
               >
-                <span style={{ color: 'rgba(240,240,255,0.35)', fontSize: 12 }}>340 رد اليوم</span>
+                <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>340 رد اليوم</span>
                 <span
                   className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: 'rgba(0,255,178,0.1)', color: '#00FFB2' }}
+                  style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}
                 >
                   ⚡ 8 ثوانٍ avg
                 </span>
@@ -323,10 +323,10 @@ export default function Hero() {
             <div
               className="absolute -top-5 -right-4 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(15,15,26,0.95)',
-                border: '1px solid rgba(0,255,178,0.2)',
-                color: '#00FFB2',
-                boxShadow: '0 0 20px rgba(0,255,178,0.08)',
+                background: 'rgba(199,218,248,0.95)',
+                border: '1px solid rgba(199,218,248,0.2)',
+                color: '#C7DAF8',
+                boxShadow: '0 0 20px rgba(199,218,248,0.08)',
                 animation: 'floatPill 4s ease-in-out infinite',
                 backdropFilter: 'blur(12px)',
               }}
@@ -337,10 +337,10 @@ export default function Hero() {
             <div
               className="absolute top-1/3 -left-5 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(15,15,26,0.95)',
-                border: '1px solid rgba(191,0,255,0.2)',
-                color: '#BF00FF',
-                boxShadow: '0 0 20px rgba(191,0,255,0.08)',
+                background: 'rgba(199,218,248,0.95)',
+                border: '1px solid rgba(199,218,248,0.2)',
+                color: '#C7DAF8',
+                boxShadow: '0 0 20px rgba(199,218,248,0.08)',
                 animation: 'floatPill 5s ease-in-out infinite 1s',
                 backdropFilter: 'blur(12px)',
               }}
@@ -351,9 +351,9 @@ export default function Hero() {
             <div
               className="absolute -bottom-4 right-8 px-3 py-2 rounded-xl text-xs font-bold hidden sm:flex items-center gap-1.5"
               style={{
-                background: 'rgba(15,15,26,0.95)',
+                background: 'rgba(199,218,248,0.95)',
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
                 animation: 'floatPill 6s ease-in-out infinite 2s',
                 backdropFilter: 'blur(12px)',
               }}

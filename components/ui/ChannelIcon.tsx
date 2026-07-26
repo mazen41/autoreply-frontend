@@ -11,11 +11,11 @@ interface ChannelIconProps {
 }
 
 const channelColors: Record<ChannelType, string> = {
-  facebook: '#1877F2',
-  instagram: '#E1306C',
-  gmail: '#EA4335',
-  whatsapp: '#25D366',
-  twitter: '#000000',
+  facebook: '#C7DAF8',
+  instagram: '#C7DAF8',
+  gmail: '#C7DAF8',
+  whatsapp: '#C7DAF8',
+  twitter: '#121317',
 }
 
 const icons: Record<ChannelType, React.ReactNode> = {

@@ -48,11 +48,11 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
       <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: '#3B82F6', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}>Naz</span>
+            <span style={{ color: '#C7DAF8', fontSize: 20 }}>✦</span>
+            <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
           <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
+            style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
             Sign Up Free
           </Link>
         </div>
@@ -61,7 +61,7 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-6 py-16 text-center">
         <div>
-          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#F5F5F5', letterSpacing: '-0.04em' }}>
+          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: '#FFFFFF', letterSpacing: '-0.04em' }}>
             المدونة
           </h1>
           <p className="text-lg mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -79,9 +79,9 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               href={`/blog?category=${cat.value}`}
               className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{
-                background: category === cat.value ? 'rgba(59,130,246,0.15)' : 'rgba(17,17,17,0.9)',
-                color: category === cat.value ? '#3B82F6' : 'rgba(255,255,255,0.6)',
-                border: category === cat.value ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                background: category === cat.value ? 'rgba(199,218,248,0.15)' : 'rgba(18,19,23,0.9)',
+                color: category === cat.value ? '#C7DAF8' : 'rgba(255,255,255,0.6)',
+                border: category === cat.value ? '1px solid rgba(199,218,248,0.3)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               {cat.labelAr}
@@ -106,7 +106,7 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               >
                 <Link href={`/blog/${post.slug}`}>
                   <div className="h-full p-6 rounded-2xl transition-all duration-300 hover:scale-105"
-                    style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    style={{ background: 'rgba(18,19,23,0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     {/* Featured Image */}
                     {post.featured_image_url && (
                       <div className="mb-4 aspect-video rounded-lg overflow-hidden"
@@ -122,13 +122,13 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
                     {/* Category Badge */}
                     {post.category && (
                       <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-3"
-                        style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6', border: '1px solid rgba(59,130,246,0.3)' }}>
+                        style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.3)' }}>
                         {post.category}
                       </div>
                     )}
 
                     {/* Title */}
-                    <h3 className="font-bold mb-3 line-clamp-2" style={{ color: '#F5F5F5', fontSize: '1.1rem' }}>
+                    <h3 className="font-bold mb-3 line-clamp-2" style={{ color: '#FFFFFF', fontSize: '1.1rem' }}>
                       {post.title}
                     </h3>
 

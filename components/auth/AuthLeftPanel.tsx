@@ -12,28 +12,28 @@ function MiniCore({ size = 90 }: { size?: number }) {
       {[0, 1].map(i => (
         <div key={i} className="absolute rounded-full" style={{
           width: s * 0.95, height: s * 0.95,
-          border: '1px solid rgba(59,130,246,0.25)',
+          border: '1px solid rgba(199,218,248,0.25)',
           animation: `coreRing 2.5s ease-out ${i * 1.1}s infinite`,
         }} />
       ))}
       <div className="absolute rounded-full core-rotate" style={{
         width: s * 0.88, height: s * 0.88,
         border: '1px solid transparent',
-        borderTop: '1px solid rgba(59,130,246,0.5)',
-        borderRight: '1px solid rgba(59,130,246,0.15)',
+        borderTop: '1px solid rgba(199,218,248,0.5)',
+        borderRight: '1px solid rgba(199,218,248,0.15)',
       }} />
       <div className="absolute rounded-full core-rotate-rev" style={{
         width: s * 0.68, height: s * 0.68,
         border: '1px solid transparent',
-        borderBottom: '1px solid rgba(96,165,250,0.5)',
-        borderLeft: '1px solid rgba(96,165,250,0.15)',
+        borderBottom: '1px solid rgba(199,218,248,0.5)',
+        borderLeft: '1px solid rgba(199,218,248,0.15)',
       }} />
       <div className="relative core-glow flex items-center justify-center" style={{
         width: s * 0.5, height: s * 0.5, borderRadius: '50%',
-        background: 'radial-gradient(circle at 38% 33%, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.04) 55%, transparent 80%)',
-        border: '2px solid rgba(59,130,246,0.4)',
+        background: 'radial-gradient(circle at 38% 33%, rgba(199,218,248,0.2) 0%, rgba(199,218,248,0.04) 55%, transparent 80%)',
+        border: '2px solid rgba(199,218,248,0.4)',
       }}>
-        <svg width={s * 0.22} height={s * 0.22} viewBox="0 0 24 24" fill="currentColor" style={{ filter: 'drop-shadow(0 0 10px rgba(59,130,246,1))' }}>
+        <svg width={s * 0.22} height={s * 0.22} viewBox="0 0 24 24" fill="currentColor" style={{ filter: 'drop-shadow(0 0 10px rgba(199,218,248,1))' }}>
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       </div>
@@ -74,17 +74,17 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       {/* Background orbs */}
       <div className="absolute pointer-events-none" style={{
         bottom: '-80px', left: '-80px', width: 400, height: 400, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgba(199,218,248,0.08) 0%, transparent 65%)',
         filter: 'blur(40px)',
       }} />
       <div className="absolute pointer-events-none" style={{
         top: '-60px', right: '-60px', width: 320, height: 320, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgba(199,218,248,0.07) 0%, transparent 65%)',
         filter: 'blur(40px)',
       }} />
       {/* Grid texture */}
       <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: 'linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(199,218,248,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(199,218,248,0.03) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
         opacity: 0.6,
       }} />
@@ -93,12 +93,12 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-12">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px rgba(59,130,246,0.7))' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px rgba(199,218,248,0.7))' }}>
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
           <span className="text-2xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           <div className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-            style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--accent)', border: '1px solid rgba(59,130,246,0.2)' }}>
+            style={{ background: 'rgba(199,218,248,0.1)', color: 'var(--accent)', border: '1px solid rgba(199,218,248,0.2)' }}>
             AI
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + i * 0.1, duration: 0.5 }}
               className="flex items-center gap-3 px-4 py-3 rounded-xl"
-              style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.1)' }}>
+              style={{ background: 'rgba(199,218,248,0.04)', border: '1px solid rgba(199,218,248,0.1)' }}>
               <span style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center' }}>{b.svg}</span>
               <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{b.text}</span>
             </motion.div>
@@ -170,8 +170,8 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             <span className="text-[10px] font-bold tracking-widest" style={{ color: 'var(--accent)' }}>{t.auth.liveActivity}</span>
           </div>
           {[
-            { t: t.auth.activity.ahmedWhatsapp, r: t.auth.activity.replied, c: '#25D366' },
-            { t: t.auth.activity.saraInstagram, r: t.auth.activity.potentialLead, c: '#E1306C' },
+            { t: t.auth.activity.ahmedWhatsapp, r: t.auth.activity.replied, c: '#C7DAF8' },
+            { t: t.auth.activity.saraInstagram, r: t.auth.activity.potentialLead, c: '#C7DAF8' },
           ].map((a, i) => (
             <div key={i} className="flex items-center justify-between text-[11px] mb-1">
               <span style={{ color: 'var(--text-secondary)' }}>{a.t}</span>

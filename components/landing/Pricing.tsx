@@ -70,7 +70,7 @@ export default function Pricing() {
       <section id="pricing" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00FFB2]"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
           </div>
         </div>
       </section>
@@ -83,7 +83,7 @@ export default function Pricing() {
         <div ref={sectionRef} className="reveal text-center mb-4">
           <h2
             className={`text-3xl sm:text-4xl font-black ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}
           >
             {t.pricing.title}
           </h2>
@@ -91,23 +91,23 @@ export default function Pricing() {
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-4 mb-12">
-          <span className="text-sm font-medium" style={{ color: !annual ? '#F0F0FF' : 'rgba(240,240,255,0.4)' }}>
+          <span className="text-sm font-medium" style={{ color: !annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
             {t.pricing.monthly}
           </span>
           <button
             onClick={() => setAnnual(!annual)}
             className="relative w-12 h-6 rounded-full transition-colors duration-300"
-            style={{ background: annual ? '#00FFB2' : 'rgba(255,255,255,0.1)' }}
+            style={{ background: annual ? '#C7DAF8' : 'rgba(255,255,255,0.1)' }}
           >
             <span
               className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300"
               style={{ [isRTL ? 'right' : 'left']: annual ? 26 : 4 }}
             />
           </button>
-          <span className="text-sm font-medium" style={{ color: annual ? '#F0F0FF' : 'rgba(240,240,255,0.4)' }}>
+          <span className="text-sm font-medium" style={{ color: annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
             {t.pricing.annual}
             {annual && (
-              <span className="ms-2 text-xs font-semibold" style={{ color: '#00FFB2' }}>
+              <span className="ms-2 text-xs font-semibold" style={{ color: '#C7DAF8' }}>
                 ({t.pricing.annualSave})
               </span>
             )}
@@ -156,7 +156,7 @@ function PricingCard({
         ref={ref}
         className="reveal relative rounded-2xl p-[2px] flex flex-col"
         style={{
-          background: 'conic-gradient(from var(--angle, 0deg), #00FFB2, #BF00FF, #00FFB2)',
+          background: 'conic-gradient(from var(--angle, 0deg), #C7DAF8, #C7DAF8, #C7DAF8)',
           animation: 'rotateBorder 3s linear infinite',
           transform: 'scale(1.03)',
           animationDelay: `${delay}s`,
@@ -167,9 +167,9 @@ function PricingCard({
           <span
             className="text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap"
             style={{
-              background: 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-              color: '#050508',
-              boxShadow: '0 0 20px rgba(0,255,178,0.3)',
+              background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+              color: '#121317',
+              boxShadow: '0 0 20px rgba(199,218,248,0.3)',
             }}
           >
             {t.pricing.mostPopular}
@@ -178,17 +178,17 @@ function PricingCard({
 
         <div
           className="flex flex-col h-full rounded-[14px] p-6"
-          style={{ background: '#141424' }}
+          style={{ background: '#121317' }}
         >
-          <CardInner 
-            name={name} 
-            description={description} 
-            price={price} 
-            annual={annual} 
-            isRTL={isRTL} 
-            t={t} 
+          <CardInner
+            name={name}
+            description={description}
+            price={price}
+            annual={annual}
+            isRTL={isRTL}
+            t={t}
             features={features}
-            popular 
+            popular
             pkg={pkg}
           />
         </div>
@@ -200,15 +200,15 @@ function PricingCard({
     <div
       ref={ref}
       className="reveal card-hover rounded-2xl p-6 flex flex-col"
-      style={{ background: '#0F0F1A', animationDelay: `${delay}s` }}
+      style={{ background: '#121317', animationDelay: `${delay}s` }}
     >
-      <CardInner 
-        name={name} 
-        description={description} 
-        price={price} 
-        annual={annual} 
-        isRTL={isRTL} 
-        t={t} 
+      <CardInner
+        name={name}
+        description={description}
+        price={price}
+        annual={annual}
+        isRTL={isRTL}
+        t={t}
         features={features}
         pkg={pkg}
       />
@@ -276,22 +276,22 @@ function CardInner({
   return (
     <>
       <div className="mb-6">
-        <h3 className="font-bold text-xl mb-1" style={{ color: '#F0F0FF' }}>{name}</h3>
-        <p className="text-xs mb-4" style={{ color: 'rgba(240,240,255,0.4)' }}>{description}</p>
+        <h3 className="font-bold text-xl mb-1" style={{ color: '#FFFFFF' }}>{name}</h3>
+        <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>{description}</p>
         <div className="flex items-end gap-1">
-          <span className="text-4xl font-black" style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}>
+          <span className="text-4xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.03em' }}>
             {price === 0 ? 'Free' : `${price} SAR`}
           </span>
           {price > 0 && (
-            <span className="text-sm mb-2" style={{ color: 'rgba(240,240,255,0.4)' }}>/{t.pricing.monthly}</span>
+            <span className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>/{t.pricing.monthly}</span>
           )}
         </div>
       </div>
 
       <ul className="space-y-3 flex-1 mb-6">
         {features.map((f, j) => (
-          <li key={j} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(240,240,255,0.55)' }}>
-            <span style={{ color: popular ? '#00FFB2' : '#00FFB2', fontSize: 14 }}>✓</span>
+          <li key={j} className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            <span style={{ color: popular ? '#C7DAF8' : '#C7DAF8', fontSize: 14 }}>✓</span>
             <span>{f}</span>
           </li>
         ))}
@@ -303,19 +303,19 @@ function CardInner({
         style={
           popular
             ? {
-                background: 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-                color: '#050508',
+                background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+                color: '#121317',
               }
             : {
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
                 background: 'transparent',
               }
         }
         onMouseEnter={e => {
           if (!popular) {
-            e.currentTarget.style.borderColor = 'rgba(0,255,178,0.3)'
-            e.currentTarget.style.color = '#00FFB2'
+            e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'
+            e.currentTarget.style.color = '#C7DAF8'
           } else {
             e.currentTarget.style.opacity = '0.9'
           }
@@ -323,7 +323,7 @@ function CardInner({
         onMouseLeave={e => {
           if (!popular) {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-            e.currentTarget.style.color = '#F0F0FF'
+            e.currentTarget.style.color = '#FFFFFF'
           } else {
             e.currentTarget.style.opacity = '1'
           }

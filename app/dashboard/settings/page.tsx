@@ -17,11 +17,11 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  
+
   // Profile form
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  
+
   // Password form
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -144,38 +144,38 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00FFB2]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold" style={{ color: '#F0F0FF' }}>
+      <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>
         {isRTL ? 'الإعدادات' : 'Settings'}
       </h1>
 
       {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(255,0,0,0.1)', color: '#FF6B6B' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}>
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(0,255,178,0.1)', color: '#00FFB2' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#C7DAF8' }}>
           {success}
         </div>
       )}
 
       {/* Profile Section */}
-      <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+      <div className="rounded-2xl p-6" style={{ background: '#121317' }}>
+        <h2 className="text-xl font-bold mb-4" style={{ color: '#FFFFFF' }}>
           {isRTL ? 'الملف الشخصي' : 'Profile'}
         </h2>
 
         <form onSubmit={handleProfileUpdate} className="space-y-4">
           <div>
-            <label className="block text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+            <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'الاسم' : 'Name'}
             </label>
             <input
@@ -186,13 +186,13 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 rounded-xl bg-transparent"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+            <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'البريد الإلكتروني' : 'Email'}
             </label>
             <input
@@ -203,7 +203,7 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 rounded-xl bg-transparent"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
               }}
             />
           </div>
@@ -213,8 +213,8 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-6 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: saving ? 'rgba(0,255,178,0.3)' : 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-              color: '#050508',
+              background: saving ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+              color: '#121317',
               opacity: saving ? 0.7 : 1,
             }}
           >
@@ -224,14 +224,14 @@ export default function SettingsPage() {
       </div>
 
       {/* Password Section */}
-      <div className="rounded-2xl p-6" style={{ background: '#0F0F1A' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: '#F0F0FF' }}>
+      <div className="rounded-2xl p-6" style={{ background: '#121317' }}>
+        <h2 className="text-xl font-bold mb-4" style={{ color: '#FFFFFF' }}>
           {isRTL ? 'تغيير كلمة المرور' : 'Change Password'}
         </h2>
 
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+            <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'كلمة المرور الحالية' : 'Current Password'}
             </label>
             <input
@@ -242,13 +242,13 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 rounded-xl bg-transparent"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+            <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'كلمة المرور الجديدة' : 'New Password'}
             </label>
             <input
@@ -260,13 +260,13 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 rounded-xl bg-transparent"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
               }}
             />
           </div>
 
           <div>
-            <label className="block text-sm mb-1" style={{ color: 'rgba(240,240,255,0.6)' }}>
+            <label className="block text-sm mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'}
             </label>
             <input
@@ -278,7 +278,7 @@ export default function SettingsPage() {
               className="w-full px-4 py-3 rounded-xl bg-transparent"
               style={{
                 border: '1px solid rgba(255,255,255,0.1)',
-                color: '#F0F0FF',
+                color: '#FFFFFF',
               }}
             />
           </div>
@@ -288,8 +288,8 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-6 py-3 rounded-xl font-bold transition-all"
             style={{
-              background: saving ? 'rgba(0,255,178,0.3)' : 'linear-gradient(135deg, #00FFB2, #BF00FF)',
-              color: '#050508',
+              background: saving ? 'rgba(199,218,248,0.3)' : 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
+              color: '#121317',
               opacity: saving ? 0.7 : 1,
             }}
           >

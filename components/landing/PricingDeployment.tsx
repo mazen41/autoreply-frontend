@@ -34,15 +34,15 @@ export default function PricingDeployment() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(198,255,0,0.15)' }}>
-            <span style={{ color: '#C6FF00' }}>⬡</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C6FF00' }}>
+            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
+            <span style={{ color: '#C7DAF8' }}>⬡</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
               {isRTL ? 'نشر بنية الذكاء الاصطناعي' : 'DEPLOY AI INFRASTRUCTURE'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#F5F5F5', letterSpacing: '-0.04em' }}
+            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'اختر مستوى التفعيل.' : 'Choose your activation tier.'}
           </h2>
@@ -54,24 +54,24 @@ export default function PricingDeployment() {
 
           {/* Toggle */}
           <div className="flex items-center justify-center gap-4">
-            <span className="text-sm font-medium" style={{ color: !annual ? '#F5F5F5' : 'rgba(255,255,255,0.4)' }}>
+            <span className="text-sm font-medium" style={{ color: !annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
               {t.pricing.monthly}
             </span>
             <button
               onClick={() => setAnnual(!annual)}
               className="relative w-12 h-6 rounded-full transition-colors duration-300"
-              style={{ background: annual ? '#C6FF00' : 'rgba(255,255,255,0.1)' }}
+              style={{ background: annual ? '#C7DAF8' : 'rgba(255,255,255,0.1)' }}
             >
               <span
                 className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all duration-300"
                 style={{ [isRTL ? 'right' : 'left']: annual ? 26 : 4 }}
               />
             </button>
-            <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? '#F5F5F5' : 'rgba(255,255,255,0.4)' }}>
+            <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
               {t.pricing.annual}
               {annual && (
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(198,255,0,0.12)', color: '#C6FF00' }}>
+                  style={{ background: 'rgba(199,218,248,0.12)', color: '#C7DAF8' }}>
                   {t.pricing.annualSave}
                 </span>
               )}
@@ -121,7 +121,7 @@ export default function PricingDeployment() {
               { icon: '⚡', text_ar: 'إلغاء في أي وقت',   text_en: 'Cancel anytime' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                <span style={{ color: '#C6FF00' }}>{item.icon}</span>
+                <span style={{ color: '#C7DAF8' }}>{item.icon}</span>
                 <span>{isRTL ? item.text_ar : item.text_en}</span>
               </div>
             ))}
@@ -144,7 +144,7 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
     <div
       className={`relative rounded-2xl p-5 flex flex-col h-full ${isPopular ? '' : 'card-os'}`}
       style={{
-        background: isPopular ? 'rgba(22,22,22,0.98)' : 'rgba(17,17,17,0.75)',
+        background: isPopular ? 'rgba(199,218,248,0.98)' : 'rgba(18,19,23,0.75)',
         border: isPopular ? 'none' : '1px solid rgba(255,255,255,0.05)',
         backdropFilter: 'blur(20px)',
       }}
@@ -153,7 +153,7 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
           <span
             className="text-xs font-bold px-4 py-1.5 rounded-full"
-            style={{ background: 'linear-gradient(135deg, #C6FF00, #7DF9FF)', color: '#050505' }}
+            style={{ background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)', color: '#121317' }}
           >
             {t.pricing.mostPopular}
           </span>
@@ -166,15 +166,15 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
           <div className="text-xs font-semibold tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
             MODULE
           </div>
-          <h3 className="text-lg font-black" style={{ color: isPopular ? '#C6FF00' : '#F5F5F5' }}>
+          <h3 className="text-lg font-black" style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF' }}>
             {plan.nameAr}
           </h3>
         </div>
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: isPopular ? 'rgba(198,255,0,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{ background: isPopular ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <span style={{ color: isPopular ? '#C6FF00' : 'rgba(255,255,255,0.3)', fontSize: 14 }}>◈</span>
+          <span style={{ color: isPopular ? '#C7DAF8' : 'rgba(255,255,255,0.3)', fontSize: 14 }}>◈</span>
         </div>
       </div>
 
@@ -185,14 +185,14 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
         <div className="flex items-end gap-1">
           <span
             className="text-4xl font-black"
-            style={{ color: isPopular ? '#C6FF00' : '#F5F5F5', letterSpacing: '-0.04em' }}
+            style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF', letterSpacing: '-0.04em' }}
           >
             ${price}
           </span>
           <span className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>/{t.pricing.monthly}</span>
         </div>
         {annual && (
-          <div className="text-xs mt-1" style={{ color: '#C6FF00' }}>
+          <div className="text-xs mt-1" style={{ color: '#C7DAF8' }}>
             {isRTL ? `بدلاً من $${plan.price}` : `Was $${plan.price}`}
           </div>
         )}
@@ -202,7 +202,7 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
       <ul className="space-y-2.5 flex-1 mb-6">
         {plan.features.map((f, j) => (
           <li key={j} className="flex items-start gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            <span style={{ color: '#C6FF00', fontSize: 13, marginTop: 2, flexShrink: 0 }}>✓</span>
+            <span style={{ color: '#C7DAF8', fontSize: 13, marginTop: 2, flexShrink: 0 }}>✓</span>
             <span>{f}</span>
           </li>
         ))}
@@ -213,19 +213,19 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
         href="/register"
         className="block text-center py-3 rounded-xl text-sm font-bold transition-all duration-200"
         style={isPopular
-          ? { background: 'linear-gradient(135deg, #C6FF00, #7DF9FF)', color: '#050505' }
-          : { border: '1px solid rgba(255,255,255,0.1)', color: '#F5F5F5', background: 'rgba(255,255,255,0.02)' }
+          ? { background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)', color: '#121317' }
+          : { border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', background: 'rgba(255,255,255,0.02)' }
         }
         onMouseEnter={e => {
           if (!isPopular) {
-            e.currentTarget.style.borderColor = 'rgba(198,255,0,0.3)'
-            e.currentTarget.style.color = '#C6FF00'
+            e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'
+            e.currentTarget.style.color = '#C7DAF8'
           }
         }}
         onMouseLeave={e => {
           if (!isPopular) {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-            e.currentTarget.style.color = '#F5F5F5'
+            e.currentTarget.style.color = '#FFFFFF'
           }
         }}
       >

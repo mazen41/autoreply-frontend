@@ -33,7 +33,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
       >
         <div
           style={{
-            background: 'rgba(18, 22, 24, 0.98)',
+            background: 'rgba(18,19,23, 0.98)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             borderRadius: 999,
             padding: 6,
@@ -86,7 +86,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
               width: 34,
               height: 34,
               borderRadius: 999,
-              background: expanded ? 'rgba(37,211,102,0.16)' : 'rgba(255,255,255,0.06)',
+              background: expanded ? 'rgba(199,218,248,0.16)' : 'rgba(255,255,255,0.06)',
               border: 'none',
               color: 'rgba(255,255,255,0.82)',
               cursor: 'pointer',

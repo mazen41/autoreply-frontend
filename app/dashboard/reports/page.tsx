@@ -20,12 +20,12 @@ function MiniLineChart({ data }: { data: number[] }) {
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ width: '100%', height: 80 }}>
       <defs>
         <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15"/>
-          <stop offset="100%" stopColor="#3B82F6" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#C7DAF8" stopOpacity="0.15"/>
+          <stop offset="100%" stopColor="#C7DAF8" stopOpacity="0"/>
         </linearGradient>
       </defs>
       <path d={area} fill="url(#lg)"/>
-      <path d={line} fill="none" stroke="#3B82F6" strokeWidth="2"/>
+      <path d={line} fill="none" stroke="#C7DAF8" strokeWidth="2"/>
     </svg>
   )
 }
@@ -35,7 +35,7 @@ export default function ReportsPage() {
   const [range, setRange] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  
+
   const [dailyData, setDailyData] = useState<number[]>([])
   const [channelData, setChannelData] = useState<any[]>([])
   const [aiPerformance, setAiPerformance] = useState<any>(null)
@@ -118,14 +118,14 @@ export default function ReportsPage() {
 
     const type = 'messages' // Default to messages export
     const url = `${process.env.NEXT_PUBLIC_API_URL}/api/reports/export/${format}?type=${type}`
-    
+
     try {
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
+
       if (!response.ok) throw new Error('Export failed')
-      
+
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -152,7 +152,7 @@ export default function ReportsPage() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-5xl mx-auto">
-        <div className="rounded-2xl p-6 text-center" style={{ background: 'rgba(13,13,13,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl p-6 text-center" style={{ background: 'rgba(199,218,248,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{error}</p>
           <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: 'var(--accent)', color: '#FFFFFF' }}>
             {isRTL ? 'إعادة المحاولة' : 'Retry'}
@@ -171,9 +171,9 @@ export default function ReportsPage() {
           <button key={i} onClick={() => setRange(i)}
             className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 btn-ghost"
             style={{
-              background: range === i ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${range === i ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)'}`,
-              color: range === i ? '#3B82F6' : 'rgba(136,136,170,0.8)',
+              background: range === i ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${range === i ? 'rgba(199,218,248,0.3)' : 'rgba(255,255,255,0.06)'}`,
+              color: range === i ? '#C7DAF8' : 'rgba(255,255,255,0.8)',
             }}>
             {r}
           </button>
@@ -185,12 +185,12 @@ export default function ReportsPage() {
         {/* Line chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="card-os p-5 rounded-2xl"
-          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          style={{ background: 'rgba(18,19,23,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+            <h3 className="text-2xl font-bold" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
               {isRTL ? 'الرسائل اليومية' : 'Daily Messages'}
             </h3>
-            <span className="text-2xl font-black" style={{ color: '#3B82F6' }}>{dailyData.reduce((a, b) => a + b, 0)}</span>
+            <span className="text-2xl font-black" style={{ color: '#C7DAF8' }}>{dailyData.reduce((a, b) => a + b, 0)}</span>
           </div>
           <MiniLineChart data={dailyData.length > 0 ? dailyData : [0]} />
         </motion.div>
@@ -198,24 +198,24 @@ export default function ReportsPage() {
         {/* Bar chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
           className="card-os p-5 rounded-2xl"
-          style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <h3 className="text-2xl font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+          style={{ background: 'rgba(18,19,23,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <h3 className="text-2xl font-bold mb-4" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
             {isRTL ? 'توزيع حسب القناة' : 'By Channel'}
           </h3>
           {channelData.length === 0 ? (
-            <p className="text-sm" style={{ color: 'rgba(136,136,170,0.6)' }}>
+            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'لا توجد بيانات' : 'No data available'}
             </p>
           ) : (
             <div className="space-y-3">
               {channelData.map((c, i) => {
                 const colors: Record<string, string> = {
-                  instagram: '#E1306C',
-                  gmail: '#EA4335',
-                  facebook: '#1877F2',
-                  whatsapp: '#25D366',
+                  instagram: '#C7DAF8',
+                  gmail: '#C7DAF8',
+                  facebook: '#C7DAF8',
+                  whatsapp: '#C7DAF8',
                 }
-                const color = colors[c.type] || '#3B82F6'
+                const color = colors[c.type] || '#C7DAF8'
                 return (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: `${color}20`, color }}>
@@ -226,7 +226,7 @@ export default function ReportsPage() {
                         initial={{ width: 0 }} animate={{ width: maxMsg > 0 ? `${(c.messages_count / maxMsg) * 100}%` : '0%' }}
                         transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] as any }} />
                     </div>
-                    <span className="text-sm font-bold w-10 text-right" style={{ color: '#F0F0FF' }}>{c.messages_count}</span>
+                    <span className="text-sm font-bold w-10 text-right" style={{ color: '#FFFFFF' }}>{c.messages_count}</span>
                   </div>
                 )
               })}
@@ -238,25 +238,25 @@ export default function ReportsPage() {
       {/* AI Performance */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
         className="card-os p-5 rounded-2xl"
-        style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
-          <LightningIcon size={16} style={{ color: '#3B82F6' }} />
+        style={{ background: 'rgba(18,19,23,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+          <LightningIcon size={16} style={{ color: '#C7DAF8' }} />
           {isRTL ? 'أداء الذكاء الاصطناعي' : 'AI Performance'}
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {aiPerformance ? [
-            { label: isRTL ? 'الرسائل الواردة' : 'Total messages',      value: aiPerformance.total_messages, color: '#F0F0FF' },
-            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: `${aiPerformance.auto_replies} (${aiPerformance.auto_reply_rate}%)`, color: '#3B82F6' },
-            { label: isRTL ? 'تدخل يدوي' : 'Manual intervention',       value: aiPerformance.manual_interventions, color: '#FFB800' },
-            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: aiPerformance.avg_response_time_formatted, color: '#3B82F6' },
+            { label: isRTL ? 'الرسائل الواردة' : 'Total messages',      value: aiPerformance.total_messages, color: '#FFFFFF' },
+            { label: isRTL ? 'ردود تلقائية' : 'Auto-replies',           value: `${aiPerformance.auto_replies} (${aiPerformance.auto_reply_rate}%)`, color: '#C7DAF8' },
+            { label: isRTL ? 'تدخل يدوي' : 'Manual intervention',       value: aiPerformance.manual_interventions, color: '#C7DAF8' },
+            { label: isRTL ? 'متوسط وقت الرد' : 'Avg reply time',       value: aiPerformance.avg_response_time_formatted, color: '#C7DAF8' },
           ].map((item, i) => (
             <div key={i} className="p-3 rounded-xl"
               style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-              <div className="text-[11px] mb-1" style={{ color: 'rgba(136,136,170,0.6)' }}>{item.label}</div>
+              <div className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.label}</div>
               <div className="text-lg font-black" style={{ color: item.color }}>{item.value}</div>
             </div>
           )) : (
-            <p className="text-sm col-span-3" style={{ color: 'rgba(136,136,170,0.6)' }}>
+            <p className="text-sm col-span-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
               {isRTL ? 'لا توجد بيانات' : 'No data available'}
             </p>
           )}
@@ -266,23 +266,23 @@ export default function ReportsPage() {
       {/* Top questions */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
         className="card-os p-5 rounded-2xl"
-        style={{ background: 'rgba(17,17,17,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h3 className="text-2xl font-bold mb-4" style={{ color: '#F0F0FF', letterSpacing: '-0.02em' }}>
+        style={{ background: 'rgba(18,19,23,0.7)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <h3 className="text-2xl font-bold mb-4" style={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
           {isRTL ? 'أكثر الأسئلة تكراراً' : 'Top Questions'}
         </h3>
         {topQuestions.length === 0 ? (
-          <p className="text-sm" style={{ color: 'rgba(136,136,170,0.6)' }}>
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
             {isRTL ? 'لا توجد بيانات' : 'No data available'}
           </p>
         ) : (
           <div className="space-y-3">
             {topQuestions.map((q, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-xs font-black w-5 text-center" style={{ color: 'rgba(136,136,170,0.4)' }}>#{i + 1}</span>
+                <span className="text-xs font-black w-5 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>#{i + 1}</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm" style={{ color: '#F0F0FF' }}>{q.question}</span>
-                    <span className="text-xs font-bold" style={{ color: '#3B82F6' }}>{q.count}</span>
+                    <span className="text-sm" style={{ color: '#FFFFFF' }}>{q.question}</span>
+                    <span className="text-xs font-bold" style={{ color: '#C7DAF8' }}>{q.count}</span>
                   </div>
                   <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
                     <motion.div className="h-full rounded-full" style={{ background: 'var(--accent)' }}
@@ -300,8 +300,8 @@ export default function ReportsPage() {
       {/* Time saved */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
         className="p-6 rounded-2xl relative overflow-hidden card-os"
-        style={{ background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)' }}>
-        <h3 className="text-2xl font-bold mb-4 relative flex items-center gap-2" style={{ color: '#3B82F6', letterSpacing: '-0.02em' }}>
+        style={{ background: 'rgba(199,218,248,0.04)', border: '1px solid rgba(199,218,248,0.15)' }}>
+        <h3 className="text-2xl font-bold mb-4 relative flex items-center gap-2" style={{ color: '#C7DAF8', letterSpacing: '-0.02em' }}>
           <TrendUpIcon size={16} />
           {isRTL ? 'الوقت الذي وفّره البوت' : 'Time Saved by the Bot'}
         </h3>
@@ -314,13 +314,13 @@ export default function ReportsPage() {
               { label: isRTL ? 'القيمة التقديرية' : 'Estimated value', value: timeSaved.estimated_value_formatted, highlight: true },
             ].map((item, i) => (
               <div key={i}>
-                <div className="text-[11px] mb-1" style={{ color: 'rgba(136,136,170,0.6)' }}>{item.label}</div>
-                <div className="text-xl font-black" style={{ color: item.highlight ? '#3B82F6' : '#F0F0FF' }}>{item.value}</div>
+                <div className="text-[11px] mb-1" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.label}</div>
+                <div className="text-xl font-black" style={{ color: item.highlight ? '#C7DAF8' : '#FFFFFF' }}>{item.value}</div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm relative" style={{ color: 'rgba(136,136,170,0.6)' }}>
+          <p className="text-sm relative" style={{ color: 'rgba(255,255,255,0.6)' }}>
             {isRTL ? 'لا توجد بيانات' : 'No data available'}
           </p>
         )}
@@ -328,7 +328,7 @@ export default function ReportsPage() {
 
       {/* Export */}
       <div className="flex gap-3">
-        <button 
+        <button
           onClick={() => handleExport('pdf')}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold btn-ghost"
           style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}
@@ -336,10 +336,10 @@ export default function ReportsPage() {
           <ReportsIcon size={16} />
           {isRTL ? 'تصدير PDF' : 'Export PDF'}
         </button>
-        <button 
+        <button
           onClick={() => handleExport('csv')}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold"
-          style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', color: '#3B82F6' }}
+          style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.3)', color: '#C7DAF8' }}
         >
           <ReportsIcon size={16} />
           {isRTL ? 'تصدير Excel' : 'Export Excel'}
