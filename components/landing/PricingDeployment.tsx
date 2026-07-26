@@ -34,19 +34,19 @@ export default function PricingDeployment() {
         {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
-            <span style={{ color: '#C7DAF8' }}>⬡</span>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
+            style={{ border: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--accent)' }}>⬡</span>
+            <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)' }}>
               {isRTL ? 'نشر بنية الذكاء الاصطناعي' : 'DEPLOY AI INFRASTRUCTURE'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'اختر مستوى التفعيل.' : 'Choose your activation tier.'}
           </h2>
-          <p className="text-lg max-w-lg mx-auto mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-lg max-w-lg mx-auto mb-8" style={{ color: 'var(--text-secondary)' }}>
             {isRTL
               ? 'كل خطة وحدة ذكاء مستقلة — جاهزة للنشر فوراً.'
               : 'Each plan is a standalone AI module — ready to deploy instantly.'}
@@ -54,24 +54,24 @@ export default function PricingDeployment() {
 
           {/* Toggle */}
           <div className="flex items-center justify-center gap-4">
-            <span className="text-sm font-medium" style={{ color: !annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
+            <span className="text-sm font-medium" style={{ color: !annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
               {t.pricing.monthly}
             </span>
             <button
               onClick={() => setAnnual(!annual)}
               className="relative w-12 h-6 rounded-full transition-colors duration-300"
-              style={{ background: annual ? '#C7DAF8' : 'rgba(255,255,255,0.1)' }}
+              style={{ background: annual ? 'var(--accent)' : 'var(--surface-elevated)' }}
             >
               <span
-                className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all duration-300"
-                style={{ [isRTL ? 'right' : 'left']: annual ? 26 : 4 }}
+                className="absolute top-1 w-4 h-4 rounded-full transition-all duration-300"
+                style={{ [isRTL ? 'right' : 'left']: annual ? 26 : 4, background: 'var(--on-accent-text)' }}
               />
             </button>
-            <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? '#FFFFFF' : 'rgba(255,255,255,0.4)' }}>
+            <span className="text-sm font-medium flex items-center gap-2" style={{ color: annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
               {t.pricing.annual}
               {annual && (
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(199,218,248,0.12)', color: '#C7DAF8' }}>
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
                   {t.pricing.annualSave}
                 </span>
               )}
@@ -120,8 +120,8 @@ export default function PricingDeployment() {
               { icon: '✓',  text_ar: '14 يوم مجاني',      text_en: '14-day free trial' },
               { icon: '⚡', text_ar: 'إلغاء في أي وقت',   text_en: 'Cancel anytime' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                <span style={{ color: '#C7DAF8' }}>{item.icon}</span>
+              <div key={i} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                <span style={{ color: 'var(--accent)' }}>{item.icon}</span>
                 <span>{isRTL ? item.text_ar : item.text_en}</span>
               </div>
             ))}
@@ -144,8 +144,8 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
     <div
       className={`relative rounded-2xl p-5 flex flex-col h-full ${isPopular ? '' : 'card-os'}`}
       style={{
-        background: isPopular ? 'rgba(199,218,248,0.98)' : 'rgba(18,19,23,0.75)',
-        border: isPopular ? 'none' : '1px solid rgba(255,255,255,0.05)',
+        background: isPopular ? 'color-mix(in srgb, var(--accent) 92%, var(--surface))' : 'var(--surface)',
+        border: isPopular ? 'none' : '1px solid var(--border)',
         backdropFilter: 'blur(20px)',
       }}
     >
@@ -153,7 +153,7 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
           <span
             className="text-xs font-bold px-4 py-1.5 rounded-full"
-            style={{ background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)', color: '#121317' }}
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: 'var(--on-accent-text)' }}
           >
             {t.pricing.mostPopular}
           </span>
@@ -163,36 +163,39 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
       {/* Module ID */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-xs font-semibold tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <div className="text-xs font-semibold tracking-widest mb-1" style={{ color: isPopular ? 'color-mix(in srgb, var(--on-accent-text) 55%, transparent)' : 'var(--text-tertiary)' }}>
             MODULE
           </div>
-          <h3 className="text-lg font-black" style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF' }}>
+          <h3 className="text-lg font-black" style={{ color: isPopular ? 'var(--on-accent-text)' : 'var(--text-primary)' }}>
             {plan.nameAr}
           </h3>
         </div>
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: isPopular ? 'rgba(199,218,248,0.1)' : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+          style={{
+            background: isPopular ? 'color-mix(in srgb, var(--on-accent-text) 15%, transparent)' : 'var(--surface-elevated)',
+            border: `1px solid ${isPopular ? 'color-mix(in srgb, var(--on-accent-text) 20%, transparent)' : 'var(--border)'}`,
+          }}
         >
-          <span style={{ color: isPopular ? '#C7DAF8' : 'rgba(255,255,255,0.3)', fontSize: 14 }}>◈</span>
+          <span style={{ color: isPopular ? 'var(--on-accent-text)' : 'var(--text-tertiary)', fontSize: 14 }}>◈</span>
         </div>
       </div>
 
-      <p className="text-xs mb-5" style={{ color: 'rgba(255,255,255,0.4)' }}>{plan.desc}</p>
+      <p className="text-xs mb-5" style={{ color: isPopular ? 'color-mix(in srgb, var(--on-accent-text) 70%, transparent)' : 'var(--text-tertiary)' }}>{plan.desc}</p>
 
       {/* Price */}
       <div className="mb-5">
         <div className="flex items-end gap-1">
           <span
             className="text-4xl font-black"
-            style={{ color: isPopular ? '#C7DAF8' : '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: isPopular ? 'var(--on-accent-text)' : 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             ${price}
           </span>
-          <span className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>/{t.pricing.monthly}</span>
+          <span className="text-sm mb-2" style={{ color: isPopular ? 'color-mix(in srgb, var(--on-accent-text) 65%, transparent)' : 'var(--text-tertiary)' }}>/{t.pricing.monthly}</span>
         </div>
         {annual && (
-          <div className="text-xs mt-1" style={{ color: '#C7DAF8' }}>
+          <div className="text-xs mt-1" style={{ color: isPopular ? 'var(--on-accent-text)' : 'var(--accent)' }}>
             {isRTL ? `بدلاً من $${plan.price}` : `Was $${plan.price}`}
           </div>
         )}
@@ -201,36 +204,9 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
       {/* Features */}
       <ul className="space-y-2.5 flex-1 mb-6">
         {plan.features.map((f, j) => (
-          <li key={j} className="flex items-start gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            <span style={{ color: '#C7DAF8', fontSize: 13, marginTop: 2, flexShrink: 0 }}>✓</span>
+          <li key={j} className="flex items-start gap-2 text-sm" style={{ color: isPopular ? 'color-mix(in srgb, var(--on-accent-text) 80%, transparent)' : 'var(--text-secondary)' }}>
+            <span style={{ color: isPopular ? 'var(--on-accent-text)' : 'var(--accent)', fontSize: 13, marginTop: 2, flexShrink: 0 }}>✓</span>
             <span>{f}</span>
           </li>
         ))}
       </ul>
-
-      {/* Deploy button */}
-      <Link
-        href="/register"
-        className="block text-center py-3 rounded-xl text-sm font-bold transition-all duration-200"
-        style={isPopular
-          ? { background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)', color: '#121317' }
-          : { border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', background: 'rgba(255,255,255,0.02)' }
-        }
-        onMouseEnter={e => {
-          if (!isPopular) {
-            e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'
-            e.currentTarget.style.color = '#C7DAF8'
-          }
-        }}
-        onMouseLeave={e => {
-          if (!isPopular) {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
-            e.currentTarget.style.color = '#FFFFFF'
-          }
-        }}
-      >
-        {isRTL ? 'تفعيل الوحدة' : 'Deploy Module'}
-      </Link>
-    </div>
-  )
-}

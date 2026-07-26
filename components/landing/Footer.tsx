@@ -10,7 +10,7 @@ export default function Footer() {
   return (
     <footer
       className="relative pt-16 pb-8"
-      style={{ borderTop: '1px solid rgba(199,218,248,0.06)' }}
+      style={{ borderTop: '1px solid var(--divider)' }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-12">
@@ -20,14 +20,14 @@ export default function Footer() {
             <div className="flex items-center gap-2.5 mb-4">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm"
-                style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.2)', color: '#C7DAF8' }}
+                style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border)', color: 'var(--accent)' }}
               >
                 ✦
               </div>
-              <span className="text-xl font-black" style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}>Naz</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(199,218,248,0.08)', color: '#C7DAF8', border: '1px solid rgba(199,218,248,0.15)' }}>AI OS</span>
+              <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--border)' }}>AI OS</span>
             </div>
-            <p className="text-sm leading-relaxed mb-5 max-w-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="text-sm leading-relaxed mb-5 max-w-xs" style={{ color: 'var(--text-tertiary)' }}>
               {isRTL ? t.footer.tagline : 'Your AI employee that never sleeps.'}
             </p>
             {/* Social */}
@@ -36,9 +36,9 @@ export default function Footer() {
                 <div
                   key={i}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all duration-200"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(199,218,248,0.3)'; e.currentTarget.style.color = '#C7DAF8' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)' }}
+                  style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-tertiary)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-focus)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-tertiary)' }}
                 >
                   {s}
                 </div>
@@ -48,15 +48,15 @@ export default function Footer() {
 
           {/* Product */}
           <div>
-            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'var(--text-tertiary)' }}>
               {isRTL ? t.footer.product : 'PRODUCT'}
             </div>
             <ul className="space-y-2.5">
               {(t.footer.productLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>
               ))}
@@ -65,15 +65,15 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'var(--text-tertiary)' }}>
               {isRTL ? t.footer.company : 'COMPANY'}
             </div>
             <ul className="space-y-2.5">
               {(t.footer.companyLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>
               ))}
@@ -82,15 +82,15 @@ export default function Footer() {
 
           {/* Support */}
           <div>
-            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: 'var(--text-tertiary)' }}>
               {isRTL ? t.footer.support : 'SUPPORT'}
             </div>
             <ul className="space-y-2.5">
               {(t.footer.supportLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'rgba(255,255,255,0.45)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = '#C7DAF8'}
-                    onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}
+                  <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>
               ))}
@@ -101,14 +101,14 @@ export default function Footer() {
         {/* Bottom bar */}
         <div
           className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+          style={{ borderTop: '1px solid var(--divider)' }}
         >
-          <div className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
             {isRTL ? t.footer.copyright : '© 2025 Naz. All rights reserved.'}
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
               {isRTL ? 'جميع الأنظمة تعمل' : 'All systems operational'}
             </span>
           </div>

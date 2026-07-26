@@ -15,15 +15,15 @@ const FEED_ITEMS = [
 ]
 
 const STATUS_CONFIG: Record<string, { label: string; labelAr: string; color: string; bg: string }> = {
-  received:   { label: 'Received',   labelAr: 'واصلت',    color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
-  processing: { label: 'Processing', labelAr: 'يعالج...',  color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
-  responded:  { label: 'Responded',  labelAr: 'تم الرد',   color: '#C7DAF8', bg: 'rgba(199,218,248,0.08)' },
-  lead:       { label: 'Lead ⚡',    labelAr: 'عميل محتمل', color: '#FFD700', bg: 'rgba(199,218,248,0.08)' },
-  closed:     { label: 'Closed',     labelAr: 'مغلق',      color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.04)' },
+  received:   { label: 'Received',   labelAr: 'واصلت',    color: 'var(--accent)', bg: 'var(--accent-subtle)' },
+  processing: { label: 'Processing', labelAr: 'يعالج...',  color: 'var(--accent)', bg: 'var(--accent-subtle)' },
+  responded:  { label: 'Responded',  labelAr: 'تم الرد',   color: 'var(--accent)', bg: 'var(--accent-subtle)' },
+  lead:       { label: 'Lead ⚡',    labelAr: 'عميل محتمل', color: 'var(--accent)', bg: 'var(--accent-subtle)' },
+  closed:     { label: 'Closed',     labelAr: 'مغلق',      color: 'var(--text-tertiary)', bg: 'var(--surface-elevated)' },
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  WhatsApp: '#C7DAF8', Instagram: '#C7DAF8', Email: '#C7DAF8', Website: '#C7DAF8',
+  WhatsApp: 'var(--accent)', Instagram: 'var(--accent)', Email: 'var(--accent)', Website: 'var(--accent)',
 }
 
 export default function ActivityStream() {
@@ -67,19 +67,19 @@ export default function ActivityStream() {
         {/* Section header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full glass"
-            style={{ border: '1px solid rgba(199,218,248,0.15)' }}>
-            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
-            <span className="text-xs font-semibold tracking-widest" style={{ color: '#C7DAF8' }}>
+            style={{ border: '1px solid var(--border)' }}>
+            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+            <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--accent)' }}>
               {isRTL ? 'بث مباشر' : 'LIVE ACTIVITY STREAM'}
             </span>
           </div>
           <h2
             className="text-4xl sm:text-5xl font-black mb-4"
-            style={{ color: '#FFFFFF', letterSpacing: '-0.04em' }}
+            style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
           >
             {isRTL ? 'رسائل تتحول إلى نتائج' : 'Messages become outcomes.'}
           </h2>
-          <p className="text-lg max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-lg max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
             {isRTL
               ? 'كل قناة تتدفق في نظام واحد. الذكاء الاصطناعي يعالج. النتائج تظهر.'
               : 'Every channel flows into one system. AI processes. Results appear.'}
@@ -92,10 +92,10 @@ export default function ActivityStream() {
           <div className="relative">
             {/* Channel icons header */}
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-xs font-semibold tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <span className="text-xs font-semibold tracking-widest" style={{ color: 'var(--text-tertiary)' }}>
                 {isRTL ? 'القنوات المتصلة' : 'CONNECTED CHANNELS'}
               </span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
               {Object.entries(PLATFORM_COLORS).map(([name, color]) => (
                 <div
                   key={name}
@@ -119,7 +119,7 @@ export default function ActivityStream() {
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
                     className="flex items-center gap-4 p-4 rounded-2xl glass card-os"
-                    style={{ background: 'rgba(18,19,23,0.8)' }}
+                    style={{ background: 'var(--surface)' }}
                   >
                     {/* Platform icon */}
                     <div
@@ -135,12 +135,12 @@ export default function ActivityStream() {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-sm font-bold" style={{ color: '#FFFFFF' }}>{item.name}</span>
+                        <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                         <span className="text-xs" style={{ color: PLATFORM_COLORS[item.platform] }}>
                           {item.platform}
                         </span>
                       </div>
-                      <p className="text-sm truncate" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      <p className="text-sm truncate" style={{ color: 'var(--text-secondary)' }}>
                         {isRTL ? item.msgAr : item.msgEn}
                       </p>
                     </div>
@@ -150,7 +150,7 @@ export default function ActivityStream() {
                       <div className="flex items-center gap-1">
                         {[0,1,2].map(j => (
                           <div key={j} style={{
-                            width: 5, height: 5, borderRadius: '50%', background: '#C7DAF8',
+                            width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)',
                             animation: `typingDot 1.2s ease ${j * 0.2}s infinite`,
                           }} />
                         ))}
@@ -166,7 +166,7 @@ export default function ActivityStream() {
                     </div>
 
                     {/* Time */}
-                    <span className="text-xs flex-shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
                       {item.time}
                     </span>
                   </motion.div>
@@ -180,41 +180,41 @@ export default function ActivityStream() {
             {/* AI Brain card */}
             <div
               className="rounded-2xl p-5 glass animated-border"
-              style={{ background: 'rgba(18,19,23,0.9)' }}
+              style={{ background: 'var(--surface)' }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: 'rgba(199,218,248,0.1)', border: '1px solid rgba(199,218,248,0.2)' }}
+                  style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border)' }}
                 >
-                  <span style={{ color: '#C7DAF8', fontSize: 18 }}>🧠</span>
+                  <span style={{ color: 'var(--accent)', fontSize: 18 }}>🧠</span>
                 </div>
                 <div>
-                  <div className="text-sm font-bold" style={{ color: '#FFFFFF' }}>
+                  <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                     {isRTL ? 'نواة الذكاء الاصطناعي' : 'AI Core Processing'}
                   </div>
-                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'يعمل بتفاني كامل' : 'Running at full capacity'}
                   </div>
                 </div>
                 <div className="ms-auto flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: '#C7DAF8' }} />
-                  <span className="text-xs" style={{ color: '#C7DAF8' }}>Live</span>
+                  <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+                  <span className="text-xs" style={{ color: 'var(--accent)' }}>Live</span>
                 </div>
               </div>
 
               {/* Progress bars */}
               {[
-                { label: isRTL ? 'تحليل النص' : 'Text Analysis', pct: 94, color: '#C7DAF8' },
-                { label: isRTL ? 'توليد الرد' : 'Response Gen', pct: 88, color: '#C7DAF8' },
-                { label: isRTL ? 'إدارة السياق' : 'Context Mgmt', pct: 97, color: '#C7DAF8' },
+                { label: isRTL ? 'تحليل النص' : 'Text Analysis', pct: 94, color: 'var(--accent)' },
+                { label: isRTL ? 'توليد الرد' : 'Response Gen', pct: 88, color: 'var(--accent)' },
+                { label: isRTL ? 'إدارة السياق' : 'Context Mgmt', pct: 97, color: 'var(--accent)' },
               ].map((bar, i) => (
                 <div key={i} className="mb-3">
                   <div className="flex justify-between text-xs mb-1">
-                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>{bar.label}</span>
+                    <span style={{ color: 'var(--text-secondary)' }}>{bar.label}</span>
                     <span style={{ color: bar.color }}>{bar.pct}%</span>
                   </div>
-                  <div className="h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-1 rounded-full" style={{ background: 'var(--surface-elevated)' }}>
                     <motion.div
                       className="h-full rounded-full"
                       style={{ background: bar.color, boxShadow: `0 0 8px ${bar.color}60` }}
@@ -230,18 +230,18 @@ export default function ActivityStream() {
             {/* Stats mini */}
             <div className="grid grid-cols-2 gap-3">
               {[
-                { val: '99.9%', label: isRTL ? 'نسبة التشغيل' : 'Uptime', color: '#C7DAF8' },
-                { val: '<10ms', label: isRTL ? 'زمن الاستجابة' : 'Latency', color: '#C7DAF8' },
-                { val: '128',   label: isRTL ? 'نموذج AI' : 'Model Size', color: '#C7DAF8' },
-                { val: '4.9★',  label: isRTL ? 'رضا العملاء' : 'Satisfaction', color: '#C7DAF8' },
+                { val: '99.9%', label: isRTL ? 'نسبة التشغيل' : 'Uptime', color: 'var(--accent)' },
+                { val: '<10ms', label: isRTL ? 'زمن الاستجابة' : 'Latency', color: 'var(--accent)' },
+                { val: '128',   label: isRTL ? 'نموذج AI' : 'Model Size', color: 'var(--accent)' },
+                { val: '4.9★',  label: isRTL ? 'رضا العملاء' : 'Satisfaction', color: 'var(--accent)' },
               ].map((s, i) => (
                 <div
                   key={i}
                   className="p-3 rounded-xl text-center card-os glass"
-                  style={{ background: 'rgba(18,19,23,0.7)' }}
+                  style={{ background: 'var(--surface)' }}
                 >
                   <div className="text-xl font-black" style={{ color: s.color }}>{s.val}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{s.label}</div>
                 </div>
               ))}
             </div>
