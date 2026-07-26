@@ -33,7 +33,7 @@ const MESSAGES = [
   { from: 'Ahmed K.',  platform: 'WhatsApp',  color: 'var(--accent)', icon: '💬', msgAr: 'هل التوصيل متاح؟',          msgEn: 'Is delivery available?',    statusAr: 'تم الرد',   statusEn: 'Responded', sc: 'var(--accent)' },
   { from: 'سارة م.',   platform: 'Instagram', color: 'var(--accent)', icon: '📸', msgAr: 'ما هي ساعات العمل؟',         msgEn: 'What are the hours?',       statusAr: 'يعالج...',  statusEn: 'Processing', sc: 'var(--accent)' },
   { from: 'Nora H.',   platform: 'Email',     color: 'var(--accent)', icon: '📧', msgAr: 'أريد حجز طاولة لـ 4 أشخاص', msgEn: 'Table for 4 please',        statusAr: 'تم الرد',   statusEn: 'Responded', sc: 'var(--accent)' },
-  { from: 'خالد ع.',   platform: 'Website',   color: 'var(--accent)', icon: '🌐', msgAr: 'كم سعر الباقة؟',             msgEn: 'Business plan price?',      statusAr: 'عميل ⚡',   statusEn: 'Lead ⚡',   sc: '#FFD700' },
+  { from: 'خالد ع.',   platform: 'Website',   color: 'var(--accent)', icon: '🌐', msgAr: 'كم سعر الباقة؟',             msgEn: 'Business plan price?',      statusAr: 'عميل ⚡',   statusEn: 'Lead ⚡',   sc: 'var(--warning)' },
   { from: 'Omar F.',   platform: 'WhatsApp',  color: 'var(--accent)', icon: '💬', msgAr: 'شكراً على الرد السريع!',     msgEn: 'Thanks for the quick reply!', statusAr: 'مغلق',    statusEn: 'Closed',    sc: 'var(--text-tertiary)' },
 ]
 
@@ -89,15 +89,15 @@ function AICore({ phase, size = 120 }: { phase: number; size?: number }) {
       <div className="absolute rounded-full core-rotate" style={{
         width: s * 0.93, height: s * 0.93,
         border: '1px solid transparent',
-        borderTop: `1px solid rgba(199,218,248,${0.3 + phase * 0.07})`,
-        borderRight: `1px solid rgba(199,218,248,${0.1 + phase * 0.03})`,
+        borderTop: '1px solid var(--accent-focus)',
+        borderRight: '1px solid var(--accent-subtle)',
       }} />
       {/* Inner orbit */}
       <div className="absolute rounded-full core-rotate-rev" style={{
         width: s * 0.72, height: s * 0.72,
         border: '1px solid transparent',
-        borderBottom: `1px solid rgba(199,218,248,${0.3 + phase * 0.07})`,
-        borderLeft: `1px solid rgba(199,218,248,${0.1 + phase * 0.03})`,
+        borderBottom: '1px solid var(--accent-focus)',
+        borderLeft: '1px solid var(--accent-subtle)',
       }} />
       {/* Core sphere */}
       <div className="relative core-glow" style={{
@@ -753,21 +753,21 @@ function ScreenImpact({ visible, isRTL }: { visible: boolean; isRTL: boolean }) 
       {/* Visual transformation bar */}
       <motion.div className="w-full max-w-2xl glass rounded-2xl p-6"
         initial={{ opacity: 0, y: 30 }} animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 0.5 }} style={{ background: 'rgba(18,19,23,0.8)' }}>
-        <div className="text-center text-sm font-bold mb-5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        transition={{ delay: 0.5 }} style={{ background: 'var(--surface)' }}>
+        <div className="text-center text-sm font-bold mb-5" style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'متوسط النتائج بعد 30 يوم' : 'Average results after 30 days'}
         </div>
         {[
-          { labelAr: 'رضا العملاء', labelEn: 'Customer Satisfaction', pct: 94, color: '#C7DAF8' },
-          { labelAr: 'سرعة الرد',   labelEn: 'Response Speed',        pct: 98, color: '#C7DAF8' },
-          { labelAr: 'معدل التحويل', labelEn: 'Conversion Rate',      pct: 41, color: '#C7DAF8' },
+          { labelAr: 'رضا العملاء', labelEn: 'Customer Satisfaction', pct: 94, color: 'var(--accent)' },
+          { labelAr: 'سرعة الرد',   labelEn: 'Response Speed',        pct: 98, color: 'var(--accent)' },
+          { labelAr: 'معدل التحويل', labelEn: 'Conversion Rate',      pct: 41, color: 'var(--accent)' },
         ].map((bar, i) => (
           <div key={i} className="mb-4">
             <div className="flex justify-between text-xs mb-1.5">
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}>{isRTL ? bar.labelAr : bar.labelEn}</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{isRTL ? bar.labelAr : bar.labelEn}</span>
               <span style={{ color: bar.color }}>{bar.pct}%</span>
             </div>
-            <div className="h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <div className="h-1.5 rounded-full" style={{ background: 'var(--border)' }}>
               <motion.div className="h-full rounded-full"
                 style={{ background: bar.color, boxShadow: `0 0 8px ${bar.color}60` }}
                 initial={{ width: 0 }}

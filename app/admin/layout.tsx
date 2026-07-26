@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (pathname === '/admin/login') return <>{children}</>
 
   if (loading) {
-    return <div className="min-h-screen bg-white/5 text-white/70 dark:bg-white/5 dark:text-white"><div className="mx-auto flex min-h-screen max-w-sm items-center justify-center"><div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-[#C7DAF8]" /></div></div>
+    return <div className="min-h-screen bg-white/5 text-white/70 dark:bg-white/5 dark:text-white"><div className="mx-auto flex min-h-screen max-w-sm items-center justify-center"><div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-[var(--accent)]" /></div></div>
   }
 
   if (!isAdmin) return null
@@ -88,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <aside className="flex h-full w-72 flex-col border-white/10 bg-white/90 p-4 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:border-r lg:shadow-none rtl:lg:border-l rtl:lg:border-r-0">
       <div className="flex items-center justify-between p-2">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#C7DAF8]/40 via-[#C7DAF8] to-white/50 text-white/70 shadow-lg shadow-black/30"><Shield size={22} /></div>
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/40 via-[var(--accent)] to-white/50 text-white/70 shadow-lg shadow-black/30"><Shield size={22} /></div>
           <div>
             <div className="text-lg font-black text-white/70 dark:text-white">Naz Admin</div>
             <div className="text-xs font-medium text-white/70 dark:text-white/70">{isRTL ? '???? ??????' : 'Command Center'}</div>
@@ -118,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   )
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#121317] text-white/70 dark:bg-[#121317] dark:text-white">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen" style={{ background: 'var(--background)', color: 'var(--text-secondary)' }}>
       <div className="fixed inset-y-0 z-40 hidden lg:block">{Sidebar}</div>
       <AnimatePresence>{sidebarOpen && <motion.div className="fixed inset-0 z-50 bg-white/5 backdrop-blur-sm lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)}><motion.div className="h-full" initial={{ x: isRTL ? 320 : -320 }} animate={{ x: 0 }} exit={{ x: isRTL ? 320 : -320 }} onClick={(event) => event.stopPropagation()}>{Sidebar}</motion.div></motion.div>}</AnimatePresence>
 

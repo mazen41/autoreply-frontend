@@ -214,7 +214,7 @@ export default function AdminPackagesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#C7DAF8]"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
       </div>
     )
   }
@@ -223,10 +223,10 @@ export default function AdminPackagesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black mb-2" style={{ color: '#FFFFFF' }}>
+          <h1 className="text-3xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>
             {isRTL ? 'الباقات' : 'Packages'}
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p style={{ color: 'var(--text-secondary)' }}>
             {isRTL ? 'إدارة الباقات والأسعار' : 'Manage packages and pricing'}
           </p>
         </div>
@@ -234,8 +234,8 @@ export default function AdminPackagesPage() {
           onClick={handleCreate}
           className="px-6 py-3 rounded-xl font-bold transition-all"
           style={{
-            background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
-            color: '#121317',
+            background: 'linear-gradient(135deg, var(--accent), var(--accent))',
+            color: 'var(--surface)',
           }}
         >
           {isRTL ? '+ إضافة باقة' : '+ Add Package'}
@@ -243,7 +243,7 @@ export default function AdminPackagesPage() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}>
+        <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}>
           {error}
         </div>
       )}
@@ -255,62 +255,62 @@ export default function AdminPackagesPage() {
             key={pkg.id}
             className="rounded-2xl p-6 relative"
             style={{
-              background: '#121317',
-              border: pkg.is_popular ? '2px solid #C7DAF8' : '1px solid rgba(255,255,255,0.1)',
+              background: 'var(--surface)',
+              border: pkg.is_popular ? '2px solid var(--accent)' : '1px solid var(--border)',
             }}
           >
             {pkg.is_popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#C7DAF8', color: '#121317' }}>
+                <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
                   {isRTL ? 'الأكثر طلباً' : 'Popular'}
                 </span>
               </div>
             )}
 
             <div className="mb-4">
-              <h3 className="text-xl font-bold mb-1" style={{ color: '#FFFFFF' }}>{pkg.name}</h3>
-              <p className="text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>{pkg.name_ar}</p>
+              <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{pkg.name}</h3>
+              <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{pkg.name_ar}</p>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-black" style={{ color: '#C7DAF8' }}>
+                <span className="text-2xl font-black" style={{ color: 'var(--accent)' }}>
                   {formatPrice(pkg.price_monthly)}
                 </span>
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   /{isRTL ? 'شهر' : 'month'}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-2 mb-4 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            <div className="space-y-2 mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <div className="flex justify-between">
                 <span>{isRTL ? 'ردود AI' : 'AI Replies'}:</span>
-                <span style={{ color: '#FFFFFF' }}>{getLimitDisplay(pkg.ai_replies_limit)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.ai_replies_limit)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{isRTL ? 'قنوات' : 'Channels'}:</span>
-                <span style={{ color: '#FFFFFF' }}>{getLimitDisplay(pkg.channels_limit)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.channels_limit)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{isRTL ? 'أدوات' : 'Tools'}:</span>
-                <span style={{ color: '#FFFFFF' }}>{getLimitDisplay(pkg.tools_limit)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.tools_limit)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{isRTL ? 'مقالات' : 'Blog Posts'}:</span>
-                <span style={{ color: '#FFFFFF' }}>{getLimitDisplay(pkg.blog_posts_limit)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.blog_posts_limit)}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               <span
                 className="px-2 py-1 rounded text-xs"
                 style={{
-                  background: pkg.is_active ? 'rgba(199,218,248,0.1)' : 'rgba(199,218,248,0.1)',
-                  color: pkg.is_active ? '#C7DAF8' : '#FF6B6B',
+                  background: pkg.is_active ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
+                  color: pkg.is_active ? 'var(--accent)' : 'var(--error)',
                 }}
               >
                 {pkg.is_active ? (isRTL ? 'نشط' : 'Active') : (isRTL ? 'معطل' : 'Inactive')}
               </span>
               {pkg.subscriptions_count !== undefined && (
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   {pkg.subscriptions_count} {isRTL ? 'مشترك' : 'subscribers'}
                 </span>
               )}
@@ -321,8 +321,8 @@ export default function AdminPackagesPage() {
                 onClick={() => handleEdit(pkg)}
                 className="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
                 style={{
-                  background: 'rgba(199,218,248,0.1)',
-                  color: '#C7DAF8',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--accent)',
                 }}
               >
                 {isRTL ? 'تعديل' : 'Edit'}
@@ -331,8 +331,8 @@ export default function AdminPackagesPage() {
                 onClick={() => handleDelete(pkg.id)}
                 className="flex-1 py-2 rounded-lg text-sm font-bold transition-all"
                 style={{
-                  background: 'rgba(199,218,248,0.1)',
-                  color: '#FF6B6B',
+                  background: 'var(--accent-subtle)',
+                  color: 'var(--error)',
                 }}
               >
                 {isRTL ? 'حذف' : 'Delete'}
@@ -344,16 +344,16 @@ export default function AdminPackagesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.8)' }}>
-          <div className="rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-auto" style={{ background: '#121317' }}>
-            <h2 className="text-2xl font-bold mb-6" style={{ color: '#FFFFFF' }}>
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'color-mix(in srgb, var(--text-primary) 80%, transparent)' }}>
+          <div className="rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-auto" style={{ background: 'var(--surface)' }}>
+            <h2 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
               {editingPackage ? (isRTL ? 'تعديل الباقة' : 'Edit Package') : (isRTL ? 'إضافة باقة جديدة' : 'Add New Package')}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الاسم (إنجليزي)' : 'Name (English)'}
                   </label>
                   <input
@@ -362,11 +362,11 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الاسم (عربي)' : 'Name (Arabic)'}
                   </label>
                   <input
@@ -375,33 +375,33 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الوصف (إنجليزي)' : 'Description (English)'}
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                     rows={2}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الوصف (عربي)' : 'Description (Arabic)'}
                   </label>
                   <textarea
                     value={formData.description_ar}
                     onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                     rows={2}
                   />
                 </div>
@@ -409,7 +409,7 @@ export default function AdminPackagesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'السعر الشهري' : 'Monthly Price'}
                   </label>
                   <input
@@ -418,11 +418,11 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, price_monthly: parseFloat(e.target.value) || 0 })}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'السعر السنوي' : 'Yearly Price'}
                   </label>
                   <input
@@ -431,14 +431,14 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, price_yearly: parseFloat(e.target.value) || 0 })}
                     required
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'حد الردود' : 'AI Replies'}
                   </label>
                   <input
@@ -446,11 +446,11 @@ export default function AdminPackagesPage() {
                     value={formData.ai_replies_limit}
                     onChange={(e) => setFormData({ ...formData, ai_replies_limit: parseInt(e.target.value) || -1 })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'حد القنوات' : 'Channels'}
                   </label>
                   <input
@@ -458,11 +458,11 @@ export default function AdminPackagesPage() {
                     value={formData.channels_limit}
                     onChange={(e) => setFormData({ ...formData, channels_limit: parseInt(e.target.value) || -1 })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'حد الأدوات' : 'Tools'}
                   </label>
                   <input
@@ -470,11 +470,11 @@ export default function AdminPackagesPage() {
                     value={formData.tools_limit}
                     onChange={(e) => setFormData({ ...formData, tools_limit: parseInt(e.target.value) || -1 })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'حد المقالات' : 'Blog Posts'}
                   </label>
                   <input
@@ -482,7 +482,7 @@ export default function AdminPackagesPage() {
                     value={formData.blog_posts_limit}
                     onChange={(e) => setFormData({ ...formData, blog_posts_limit: parseInt(e.target.value) || -1 })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
@@ -495,7 +495,7 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{isRTL ? 'الأكثر طلباً' : 'Popular'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'الأكثر طلباً' : 'Popular'}</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input
@@ -504,10 +504,10 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <span style={{ color: 'rgba(255,255,255,0.6)' }}>{isRTL ? 'نشط' : 'Active'}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'نشط' : 'Active'}</span>
                 </label>
                 <div>
-                  <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الترتيب' : 'Sort Order'}
                   </label>
                   <input
@@ -515,13 +515,13 @@ export default function AdminPackagesPage() {
                     value={formData.sort_order}
                     onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
                     className="w-20 px-4 py-3 rounded-xl bg-transparent"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                   {isRTL ? 'المميزات (إنجليزي)' : 'Features (English)'}
                 </label>
                 {formData.features.map((feature, index) => (
@@ -531,13 +531,13 @@ export default function AdminPackagesPage() {
                       value={feature}
                       onChange={(e) => handleFeatureChange(index, e.target.value)}
                       className="flex-1 px-4 py-3 rounded-xl bg-transparent"
-                      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                      style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                     />
                     <button
                       type="button"
                       onClick={() => removeFeature(index)}
                       className="px-3 py-3 rounded-xl"
-                      style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}
+                      style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}
                     >
                       ×
                     </button>
@@ -546,14 +546,14 @@ export default function AdminPackagesPage() {
                 <button
                   type="button"
                   onClick={() => addFeature()}
-                  className="text-sm" style={{ color: '#C7DAF8' }}
+                  className="text-sm" style={{ color: 'var(--accent)' }}
                 >
                   + {isRTL ? 'إضافة ميزة' : 'Add Feature'}
                 </button>
               </div>
 
               <div>
-                <label className="block text-sm mb-2" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                   {isRTL ? 'المميزات (عربي)' : 'Features (Arabic)'}
                 </label>
                 {formData.features_ar.map((feature, index) => (
@@ -563,13 +563,13 @@ export default function AdminPackagesPage() {
                       value={feature}
                       onChange={(e) => handleFeatureChange(index, e.target.value, true)}
                       className="flex-1 px-4 py-3 rounded-xl bg-transparent"
-                      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF' }}
+                      style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                     />
                     <button
                       type="button"
                       onClick={() => removeFeature(index, true)}
                       className="px-3 py-3 rounded-xl"
-                      style={{ background: 'rgba(199,218,248,0.1)', color: '#FF6B6B' }}
+                      style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}
                     >
                       ×
                     </button>
@@ -578,7 +578,7 @@ export default function AdminPackagesPage() {
                 <button
                   type="button"
                   onClick={() => addFeature(true)}
-                  className="text-sm" style={{ color: '#C7DAF8' }}
+                  className="text-sm" style={{ color: 'var(--accent)' }}
                 >
                   + {isRTL ? 'إضافة ميزة' : 'Add Feature'}
                 </button>
@@ -589,8 +589,8 @@ export default function AdminPackagesPage() {
                   type="submit"
                   className="flex-1 py-3 rounded-xl font-bold transition-all"
                   style={{
-                    background: 'linear-gradient(135deg, #C7DAF8, #C7DAF8)',
-                    color: '#121317',
+                    background: 'linear-gradient(135deg, var(--accent), var(--accent))',
+                    color: 'var(--surface)',
                   }}
                 >
                   {isRTL ? 'حفظ' : 'Save'}
@@ -600,8 +600,8 @@ export default function AdminPackagesPage() {
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-3 rounded-xl font-bold transition-all"
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#FFFFFF',
+                    background: 'var(--border)',
+                    color: 'var(--text-primary)',
                   }}
                 >
                   {isRTL ? 'إلغاء' : 'Cancel'}

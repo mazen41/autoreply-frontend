@@ -210,3 +210,17 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
           </li>
         ))}
       </ul>
+
+      <button
+        className="w-full rounded-xl py-3 text-sm font-bold transition-transform hover:scale-[1.01] active:scale-[0.99]"
+        style={{
+          background: isPopular ? 'var(--on-accent-text)' : 'var(--accent)',
+          color: isPopular ? 'var(--surface)' : 'var(--on-accent-text)',
+          border: `1px solid ${isPopular ? 'color-mix(in srgb, var(--on-accent-text) 30%, transparent)' : 'var(--accent-focus)'}`,
+        }}
+      >
+        {t.pricing.startFree}
+      </button>
+    </div>
+  )
+}
