@@ -30,31 +30,31 @@
   --on-accent-text: #FFFFFF;
 }
 
-/* ─── Dark mode — "MORA" reference ─── */
+/* ─── Dark mode — Premium Dark & White w/ teal accent ─── */
 .dark {
-  --background: #0A0A0C;
-  --background-end: #0A0A0C;
-  --surface: #131316;
-  --surface-elevated: #1A1A1E;
-  --border: rgba(255,255,255,0.08);
-  --divider: rgba(255,255,255,0.04);
-  --accent: #5EEAD4;
-  --accent-end: #5EEAD4;
-  --accent-hover: #7FF4E0;
-  --accent-subtle: rgba(94,234,212,0.1);
-  --accent-focus: rgba(94,234,212,0.5);
-  --text-primary: #F5F5F7;
-  --text-secondary: #9B9BA5;
-  --text-tertiary: #66666F;
+  --background: #050506;
+  --background-end: #050506;
+  --surface: #0C0C0F;
+  --surface-elevated: #121216;
+  --border: rgba(255,255,255,0.07);
+  --divider: rgba(255,255,255,0.045);
+  --accent: #00E6A8;
+  --accent-end: #00E6A8;
+  --accent-hover: #33EDBB;
+  --accent-subtle: rgba(0,230,168,0.10);
+  --accent-focus: rgba(0,230,168,0.45);
+  --text-primary: #FFFFFF;
+  --text-secondary: #9C9CA6;
+  --text-tertiary: #5F5F69;
   --success: #34D399;
   --warning: #FBBF24;
   --error: #F87171;
-  --bg-primary: #0A0A0C;
-  --accent-primary: #5EEAD4;
-  --primary: #5EEAD4;
+  --bg-primary: #050506;
+  --accent-primary: #00E6A8;
+  --primary: #00E6A8;
   --radius-card: 24px;
-  --shadow-premium: 0 24px 90px rgba(0,0,0,0.42);
-  --on-accent-text: #0A0A0C;
+  --shadow-premium: 0 24px 90px rgba(0,0,0,0.55);
+  --on-accent-text: #06110D;
 }
 
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
