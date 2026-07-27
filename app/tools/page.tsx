@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useAuth } from '../components/AuthProvider'
+import { useAuth } from '@/components/AuthProvider'
 
 const tools = [
   {
