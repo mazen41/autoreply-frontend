@@ -57,6 +57,33 @@
   --on-accent-text: #06110D;
 }
 
+/* ─── Landing page only — "Graphite & Amber" override ─── */
+.landing-theme {
+  --background: #0A0908;
+  --background-end: #0A0908;
+  --surface: #141210;
+  --surface-elevated: #1C1916;
+  --border: rgba(255,255,255,0.08);
+  --divider: rgba(255,255,255,0.045);
+  --accent: #E0983D;
+  --accent-end: #E0983D;
+  --accent-hover: #F0AC57;
+  --accent-subtle: rgba(224,152,61,0.10);
+  --accent-focus: rgba(224,152,61,0.45);
+  --text-primary: #F7F5F1;
+  --text-secondary: #A39D92;
+  --text-tertiary: #635D53;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --bg-primary: #0A0908;
+  --accent-primary: #E0983D;
+  --primary: #E0983D;
+  --radius-card: 24px;
+  --shadow-premium: 0 24px 90px rgba(0,0,0,0.55);
+  --on-accent-text: #1A1006;
+}
+
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
 html[dir="ltr"] body { font-family: var(--font-space-grotesk), sans-serif; }
 

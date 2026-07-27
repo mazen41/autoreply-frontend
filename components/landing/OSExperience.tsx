@@ -786,7 +786,7 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
               {isPop && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
                   <span className="text-[11px] font-bold px-3 py-1 rounded-full"
-                    style={{ background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--text-primary)' }}>
+                    style={{ background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--on-accent-text)' }}>
                     {isRTL ? 'الأكثر طلباً' : 'Most Popular'}
                   </span>
                 </div>
@@ -812,7 +812,7 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
               <Link href={href}
                 className="block text-center py-2 rounded-xl text-xs font-bold transition-all duration-200"
                 style={isPop
-                  ? { background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--text-primary)' }
+                  ? { background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--on-accent-text)' }
                   : { border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--surface-elevated)' }
                 }>
                 {isRTL ? 'تفعيل الوحدة' : 'Deploy Module'}

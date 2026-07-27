@@ -4,6 +4,7 @@ import { LangProvider } from '../lib/LangContext'
 import { ThemeProvider } from '../lib/ThemeContext'
 import { Space_Grotesk, Cairo } from 'next/font/google'
 import FooterWrapper from '../components/FooterWrapper'
+import LandingThemeSync from '../components/LandingThemeSync'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -27,7 +28,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Avoids a flash of the wrong theme: applies the landing-only
+            amber palette before hydration if we're on the homepage. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(window.location.pathname==='/'){document.documentElement.classList.add('landing-theme')}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${spaceGrotesk.variable} ${cairo.variable}`}>
+        <LandingThemeSync />
         {/* AI Operating System background — persists across all pages */}
         <div className="os-bg" aria-hidden="true">
           <div className="orb-lime" />
