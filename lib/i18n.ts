@@ -309,7 +309,7 @@ export const translations = {
     },
     // Footer
     footer: {
-      tagline: 'موظفك الذكي الذي لا ينام',
+      tagline: 'ندير مراسلاتك و مبيعاتك بذكاء',
       product: 'المنتج',
       productLinks: ['المميزات', 'التسعير', 'التكامل', 'الأمان'],
       company: 'الشركة',
@@ -638,7 +638,7 @@ export const translations = {
     },
     // Footer
     footer: {
-      tagline: 'Your AI employee that never sleeps',
+      tagline: 'Manage Your Messages And Sales With AI',
       product: 'PRODUCT',
       productLinks: ['Features', 'Pricing', 'Integrations', 'Security'],
       company: 'COMPANY',
