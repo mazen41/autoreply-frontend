@@ -349,6 +349,130 @@ body {
   animation: shimmer 1.5s infinite;
 }
 
+/* ─── Email content styling ─── */
+.email-content {
+  font-family: inherit;
+  color: var(--text-primary);
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.email-content p {
+  margin: 0.5em 0;
+}
+
+.email-content a {
+  color: var(--accent-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-secondary-subtle);
+  text-underline-offset: 2px;
+}
+
+.email-content a:hover {
+  color: var(--accent-secondary-hover);
+  text-decoration-color: var(--accent-secondary-hover);
+}
+
+.email-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.email-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.email-content table td,
+.email-content table th {
+  padding: 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.email-content table th {
+  background: var(--surface-elevated);
+  font-weight: 600;
+}
+
+.email-content ul,
+.email-content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.email-content li {
+  margin: 0.25em 0;
+}
+
+.email-content blockquote {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent-secondary);
+  background: var(--surface-elevated);
+  font-style: italic;
+}
+
+.email-content code {
+  background: var(--surface-elevated);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.email-content pre {
+  background: var(--surface-elevated);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.email-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.email-content h1,
+.email-content h2,
+.email-content h3,
+.email-content h4,
+.email-content h5,
+.email-content h6 {
+  margin: 0.75em 0 0.5em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.email-content h1 { font-size: 1.5em; }
+.email-content h2 { font-size: 1.3em; }
+.email-content h3 { font-size: 1.1em; }
+.email-content h4 { font-size: 1em; }
+.email-content h5 { font-size: 0.9em; }
+.email-content h6 { font-size: 0.8em; }
+
+.email-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+.email-content strong,
+.email-content b {
+  font-weight: 600;
+}
+
+.email-content em,
+.email-content i {
+  font-style: italic;
+}
+
 /* ─── Subtle animated border (removed) ─── */
 /* Animated border removed - using clean borders instead */
 

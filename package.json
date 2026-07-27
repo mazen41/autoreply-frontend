@@ -9,7 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
     "clsx": "^2.1.1",
+    "dompurify": "^3.4.12",
     "framer-motion": "^12.40.0",
     "laravel-echo": "^2.3.7",
     "lucide-react": "^1.17.0",
