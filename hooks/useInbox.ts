@@ -30,6 +30,7 @@ export interface ApiMessage {
   id: number
   conversation_id: number
   content: string
+  content_html?: string | null
   direction: 'inbound' | 'outbound'
   is_ai: boolean
   status: string

@@ -74,11 +74,19 @@ function mediaTypeFromFile(file: File): 'image' | 'audio' | 'video' | 'document'
   return 'document'
 }
 
-// Helper function to safely render HTML content (for Gmail emails)
-function renderHtmlContent(content: string, channelType?: string) {
-  // Only render as HTML for Gmail messages that contain HTML tags
-  if (channelType === 'gmail' && content && content.includes('<')) {
-    const sanitizedContent = DOMPurify.sanitize(content, {
+// Helper function to safely render HTML content (for Gmail emails).
+//
+// `contentHtml` is the real HTML body extracted server-side from the
+// email's text/html MIME part (see GmailController::extractHtmlBody).
+// `content` is always plain text and is only used as a display fallback
+// (e.g. for emails that genuinely have no HTML part, or messages synced
+// before content_html existed).
+function renderHtmlContent(content: string, channelType?: string, contentHtml?: string | null) {
+  const htmlSource = contentHtml && contentHtml.trim() ? contentHtml : null
+
+  // Preferred path: a real HTML body came back from the API.
+  if (channelType === 'gmail' && htmlSource) {
+    const sanitizedContent = DOMPurify.sanitize(htmlSource, {
       ALLOWED_TAGS: [
         'p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -119,7 +127,14 @@ function renderHtmlContent(content: string, channelType?: string) {
     })
     return <EmailIframe content={sanitizedContent} />
   }
-  
+
+  // Fallback for Gmail messages synced before `content_html` existed, where
+  // the plain-text `content` field happens to still contain raw markup.
+  if (channelType === 'gmail' && !htmlSource && content && content.includes('<') && /<\/?[a-z][\s\S]*>/i.test(content)) {
+    const sanitizedContent = DOMPurify.sanitize(content, { ALLOWED_TAGS: ['p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'blockquote'], ALLOWED_ATTR: ['href', 'target', 'rel'] })
+    return <EmailIframe content={sanitizedContent} />
+  }
+
   // For non-Gmail or plain text content, render as-is
   return <div>{content}</div>
 }
@@ -463,7 +478,7 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
               </a>
             )}
 
-            {msg.content && <div style={{ padding: hasMedia ? '8px 8px 4px' : 0 }}>{renderHtmlContent(msg.content, channelType)}</div>}
+            {msg.content && <div style={{ padding: hasMedia ? '8px 8px 4px' : 0 }}>{renderHtmlContent(msg.content, channelType, msg.content_html)}</div>}
 
             {uniqueReactions.length > 0 && (
               <div style={{
