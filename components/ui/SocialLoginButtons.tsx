@@ -55,7 +55,10 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       <button
         onClick={() => handleSocialLogin('google')}
         disabled={loading !== null}
-        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-ghost"
+        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed btn-ghost focus-visible:outline-none focus-visible:ring-2"
+        style={{ boxShadow: 'none', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}
+        onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)' } }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
       >
         {loading === 'google' ? (
           <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -77,7 +80,10 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       <button
         onClick={() => handleSocialLogin('facebook')}
         disabled={loading !== null}
-        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-lime"
+        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed btn-lime focus-visible:outline-none focus-visible:ring-2"
+        style={{ color: 'var(--on-accent-text)', boxShadow: 'none', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}
+        onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)' } }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
       >
         {loading === 'facebook' ? (
           <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
