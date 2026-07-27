@@ -37,7 +37,7 @@ export default function Footer() {
                   key={i}
                   className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all duration-200"
                   style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-tertiary)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-focus)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent-secondary)'; e.currentTarget.style.color = 'var(--accent-secondary)' }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-tertiary)' }}
                 >
                   {s}
@@ -55,7 +55,7 @@ export default function Footer() {
               {(t.footer.productLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>
@@ -72,7 +72,7 @@ export default function Footer() {
               {(t.footer.companyLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>
@@ -89,7 +89,7 @@ export default function Footer() {
               {(t.footer.supportLinks || []).map((link: string, i: number) => (
                 <li key={i}>
                   <a href="#" className="text-sm transition-colors duration-200" style={{ color: 'var(--text-secondary)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--accent-secondary)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
                   >{link}</a>
                 </li>

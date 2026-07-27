@@ -3,32 +3,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Light mode (default) — Graphite & Amber ─── */
+/* ─── Light mode (default) — Modern AI Palette ─── */
 :root {
-  --background: #FAF7F2;
-  --background-end: #FAF7F2;
-  --surface: #FFFFFF;
-  --surface-elevated: #F3EEE6;
-  --border: rgba(28,23,18,0.09);
-  --divider: rgba(28,23,18,0.06);
-  --accent: #C1791D;
-  --accent-end: #C1791D;
-  --accent-hover: #A8670F;
-  --accent-subtle: rgba(193,121,29,0.10);
-  --accent-focus: rgba(193,121,29,0.35);
-  --text-primary: #1C1712;
-  --text-secondary: #5B5347;
-  --text-tertiary: #8C8377;
-  --success: #16A34A;
-  --success-subtle: rgba(22,163,74,0.10);
-  --warning: #D97706;
-  --warning-subtle: rgba(217,119,6,0.10);
-  --error: #DC2626;
-  --error-subtle: rgba(220,38,38,0.10);
-  --bg-primary: #FAF7F2;
-  --accent-primary: #C1791D;
-  --primary: #C1791D;
-  --on-accent-text: #FFFFFF;
+  --background: #0D0D0D;
+  --background-end: #0D0D0D;
+  --surface: #141414;
+  --surface-elevated: #1A1A1A;
+  --border: rgba(255,255,255,0.08);
+  --divider: rgba(255,255,255,0.05);
+  --accent: #00FF85;
+  --accent-end: #00FF85;
+  --accent-hover: #00E675;
+  --accent-subtle: rgba(0,255,133,0.08);
+  --accent-focus: rgba(0,255,133,0.25);
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-tertiary: #606060;
+  --success: #00FF85;
+  --success-subtle: rgba(0,255,133,0.12);
+  --warning: #1E90FF;
+  --warning-subtle: rgba(30,144,255,0.12);
+  --error: #FF0099;
+  --error-subtle: rgba(255,0,153,0.12);
+  --bg-primary: #0D0D0D;
+  --accent-primary: #00FF85;
+  --primary: #00FF85;
+  --on-accent-text: #0D0D0D;
+  /* Secondary accent for links and info */
+  --accent-secondary: #1E90FF;
+  --accent-secondary-subtle: rgba(30,144,255,0.08);
+  --accent-secondary-hover: #3498DB;
+  /* Pink for hover, errors, highlights only */
+  --accent-pink: #FF0099;
+  --accent-pink-subtle: rgba(255,0,153,0.08);
   /* Spacing scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -47,10 +54,10 @@
   --radius-card: 24px;
   --radius-full: 9999px;
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(28,23,18,0.06);
-  --shadow-md: 0 4px 16px rgba(28,23,18,0.08);
-  --shadow-lg: 0 12px 40px rgba(28,23,18,0.10);
-  --shadow-premium: 0 24px 90px rgba(28,23,18,0.12);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  --shadow-premium: 0 24px 90px rgba(0,0,0,0.6);
   /* Motion */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -64,36 +71,43 @@
   --touch-target: 2.75rem;
 }
 
-/* ─── Dark mode — Graphite & Amber ─── */
+/* ─── Dark mode — Modern AI Palette (Same as light for consistency) ─── */
 .dark {
-  --background: #0A0908;
-  --background-end: #0A0908;
-  --surface: #141210;
-  --surface-elevated: #1C1916;
-  --border: rgba(255,255,255,0.07);
-  --divider: rgba(255,255,255,0.045);
-  --accent: #E0983D;
-  --accent-end: #E0983D;
-  --accent-hover: #F0AC57;
-  --accent-subtle: rgba(224,152,61,0.10);
-  --accent-focus: rgba(224,152,61,0.45);
-  --text-primary: #F7F5F1;
-  --text-secondary: #A39D92;
-  --text-tertiary: #635D53;
-  --success: #34D399;
-  --success-subtle: rgba(52,211,153,0.12);
-  --warning: #FBBF24;
-  --warning-subtle: rgba(251,191,36,0.12);
-  --error: #F87171;
-  --error-subtle: rgba(248,113,113,0.12);
-  --bg-primary: #0A0908;
-  --accent-primary: #E0983D;
-  --primary: #E0983D;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.30);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.40);
-  --shadow-premium: 0 24px 90px rgba(0,0,0,0.55);
-  --on-accent-text: #1A1006;
+  --background: #0D0D0D;
+  --background-end: #0D0D0D;
+  --surface: #141414;
+  --surface-elevated: #1A1A1A;
+  --border: rgba(255,255,255,0.08);
+  --divider: rgba(255,255,255,0.05);
+  --accent: #00FF85;
+  --accent-end: #00FF85;
+  --accent-hover: #00E675;
+  --accent-subtle: rgba(0,255,133,0.08);
+  --accent-focus: rgba(0,255,133,0.25);
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-tertiary: #606060;
+  --success: #00FF85;
+  --success-subtle: rgba(0,255,133,0.12);
+  --warning: #1E90FF;
+  --warning-subtle: rgba(30,144,255,0.12);
+  --error: #FF0099;
+  --error-subtle: rgba(255,0,153,0.12);
+  --bg-primary: #0D0D0D;
+  --accent-primary: #00FF85;
+  --primary: #00FF85;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  --shadow-premium: 0 24px 90px rgba(0,0,0,0.6);
+  --on-accent-text: #0D0D0D;
+  /* Secondary accent for links and info */
+  --accent-secondary: #1E90FF;
+  --accent-secondary-subtle: rgba(30,144,255,0.08);
+  --accent-secondary-hover: #3498DB;
+  /* Pink for hover, errors, highlights only */
+  --accent-pink: #FF0099;
+  --accent-pink-subtle: rgba(255,0,153,0.08);
 }
 
 
@@ -143,14 +157,14 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Energy orbs - toned down */
+/* Energy orbs - modern green and blue */
 .orb-lime {
   position: absolute;
   width: 900px;
   height: 900px;
   bottom: -200px;
   left: -200px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 8%, transparent) 0%, transparent 65%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 65%);
   border-radius: 50%;
   filter: blur(80px);
   animation: orbFloat 12s ease-in-out infinite alternate;
@@ -162,7 +176,7 @@ body {
   height: 800px;
   top: -150px;
   right: -150px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent-end) 6%, transparent) 0%, transparent 65%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-secondary) 5%, transparent) 0%, transparent 65%);
   border-radius: 50%;
   filter: blur(100px);
   animation: orbFloat 15s ease-in-out infinite alternate-reverse;
@@ -212,9 +226,127 @@ body {
   transition: border-color 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1);
 }
 .card-os:hover {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
-  box-shadow: 0 8px 30px color-mix(in srgb, var(--text-primary) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--accent) 15%, transparent);
   transform: translateY(-2px);
+}
+
+/* ─── Pink hover effect for CTAs and highlights ─── */
+.hover-pink {
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.hover-pink:hover {
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 20px var(--accent-pink-subtle);
+  color: var(--accent-pink);
+}
+
+/* ─── Modern button styles ─── */
+.btn-primary {
+  background: var(--accent);
+  color: var(--on-accent-text);
+  border: 1px solid var(--accent);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 25px var(--accent-subtle);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.btn-secondary:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+  box-shadow: 0 0 20px var(--accent-secondary-subtle);
+  transform: translateY(-1px);
+}
+
+/* ─── Input field focus glow ─── */
+.input-modern {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.input-modern:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), 0 0 15px var(--accent-subtle);
+  outline: none;
+}
+.input-modern:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), 0 0 15px var(--accent-subtle);
+}
+
+/* ─── Error state with pink ─── */
+.input-error {
+  border-color: var(--accent-pink) !important;
+  box-shadow: 0 0 0 3px var(--accent-pink-subtle), 0 0 15px var(--accent-pink-subtle) !important;
+}
+
+/* ─── Modern glow animations ─── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-subtle), 0 0 10px var(--accent-subtle); }
+  50% { box-shadow: 0 0 15px var(--accent-subtle), 0 0 25px var(--accent-subtle); }
+}
+
+.glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* ─── Subtle text glow ─── */
+.text-glow {
+  text-shadow: 0 0 10px var(--accent-subtle);
+}
+
+/* ─── Border animation on hover ─── */
+@keyframes borderGlow {
+  0% { border-color: var(--border); }
+  50% { border-color: var(--accent); }
+  100% { border-color: var(--border); }
+}
+
+.border-glow-hover:hover {
+  animation: borderGlow 1s ease-in-out;
+}
+
+/* ─── Smooth scale animation ─── */
+@keyframes smoothScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.scale-hover:hover {
+  animation: smoothScale 0.3s ease-in-out;
+}
+
+/* ─── Floating animation ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ─── Shimmer effect for loading states ─── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, var(--surface-elevated) 25%, var(--accent-subtle) 50%, var(--surface-elevated) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 /* ─── Subtle animated border (removed) ─── */

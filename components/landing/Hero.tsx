@@ -72,7 +72,7 @@ export default function Hero() {
                   transform: badgeVisible ? 'translateY(0)' : 'translateY(6px)',
                 }}
               >
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', boxShadow: '0 0 6px var(--accent)', animation: 'tealPulse 2s infinite' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', boxShadow: '0 0 8px var(--accent)', animation: 'statusPulse 2s infinite' }} />
                 {BADGE_PHRASES[badgeIdx]}
               </div>
             </div>
@@ -113,10 +113,8 @@ export default function Hero() {
             <div className={`flex flex-col sm:flex-row gap-4 mb-8 fade-up delay-400 ${isRTL ? 'sm:flex-row-reverse justify-end' : ''}`}>
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200"
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
                 style={{
-                  background: 'var(--accent)',
-                  color: 'var(--text-primary)',
                   letterSpacing: '-0.01em',
                 }}
                 onMouseEnter={e => {
@@ -131,15 +129,11 @@ export default function Hero() {
                 {t.hero.ctaPrimary}
               </Link>
               <button
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200"
-                style={{
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-secondary)',
-                  background: 'var(--surface-elevated)',
-                }}
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 btn-secondary"
+                style={{}}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))'
-                  e.currentTarget.style.color = 'var(--text-primary)'
+                  e.currentTarget.style.borderColor = 'var(--accent-secondary)'
+                  e.currentTarget.style.color = 'var(--accent-secondary)'
                   e.currentTarget.style.background = 'var(--surface)'
                 }}
                 onMouseLeave={e => {
@@ -191,6 +185,7 @@ export default function Hero() {
                 border: '1px solid var(--border)',
                 filter: 'blur(2px)',
                 transform: 'scale(0.97)',
+                opacity: 0.6,
               }}
             />
 
@@ -203,7 +198,7 @@ export default function Hero() {
                 borderRadius: 20,
                 border: '1px solid var(--border)',
                 borderLeft: '2px solid var(--accent)',
-                boxShadow: 'var(--shadow-premium)',
+                boxShadow: '0 0 30px var(--accent-subtle)',
                 overflow: 'hidden',
               }}
             >

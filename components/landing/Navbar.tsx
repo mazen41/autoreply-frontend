@@ -75,13 +75,13 @@ export default function Navbar() {
                 href={href}
                 className="text-sm font-medium relative group"
                 style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
               >
                 {linkLabels[labelKey]}
                 <span
                   className="absolute -bottom-0.5 left-0 w-0 h-px group-hover:w-full transition-all duration-300"
-                  style={{ background: 'var(--accent-primary)' }}
+                  style={{ background: 'var(--accent-secondary)' }}
                 />
               </a>
             ))}
@@ -91,7 +91,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {/* Live indicator */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-              <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+              <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
               <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'مباشر' : 'Live'}</span>
             </div>
 
@@ -100,7 +100,7 @@ export default function Navbar() {
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-secondary)'; e.currentTarget.style.borderColor = 'var(--accent-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
             >
               {theme === 'dark' ? (
@@ -119,7 +119,7 @@ export default function Navbar() {
               onClick={toggleLang}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-secondary)'; e.currentTarget.style.borderColor = 'var(--accent-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
             >
               {lang === 'ar' ? 'EN' : 'ع'}
@@ -129,7 +129,7 @@ export default function Navbar() {
               href="/login"
               className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors duration-200"
               style={{ color: 'var(--text-secondary)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
             >
               {t.nav.login}
@@ -137,7 +137,7 @@ export default function Navbar() {
 
             <Link
               href="/register"
-              className="btn-lime text-sm font-bold px-5 py-2 rounded-xl"
+              className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
               style={{ letterSpacing: '-0.01em' }}
             >
               {t.nav.startFree}

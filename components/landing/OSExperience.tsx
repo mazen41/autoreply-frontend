@@ -129,26 +129,26 @@ function slotOpacity(p: MotionValue<number>, i: number): MotionValue<number> {
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const CHANNELS = [
   { id: 'wa',  label: 'WhatsApp',  Icon: IC.WhatsApp,  color: 'var(--accent)', angle: -130, dist: 155 },
-  { id: 'ig',  label: 'Instagram', Icon: IC.Instagram, color: 'var(--accent)', angle: -60,  dist: 150 },
+  { id: 'ig',  label: 'Instagram', Icon: IC.Instagram, color: 'var(--accent-secondary)', angle: -60,  dist: 150 },
   { id: 'em',  label: 'Gmail',     Icon: IC.Mail,      color: 'var(--accent)', angle:  60,  dist: 150 },
-  { id: 'web', label: 'Website',   Icon: IC.Globe,     color: 'var(--accent)', angle:  130, dist: 155 },
+  { id: 'web', label: 'Website',   Icon: IC.Globe,     color: 'var(--accent-secondary)', angle:  130, dist: 155 },
   { id: 'fb',  label: 'Facebook',  Icon: IC.Facebook,  color: 'var(--accent)', angle:  180, dist: 148 },
 ]
 
 const CAPS = [
-  { id: 'lead',    ar: 'تأهيل العملاء',    en: 'Lead Qualification', Icon: IC.Target,       angle: -115, dist: 210 },
-  { id: 'support', ar: 'دعم العملاء',       en: 'Customer Support',   Icon: IC.MessageSquare,angle:  -45, dist: 220 },
-  { id: 'review',  ar: 'استرداد التقييمات', en: 'Review Recovery',    Icon: IC.Star,         angle:   30, dist: 215 },
-  { id: 'content', ar: 'توليد المحتوى',     en: 'Content Creation',   Icon: IC.PenTool,      angle:  105, dist: 210 },
-  { id: 'sales',   ar: 'أتمتة المبيعات',    en: 'Sales Automation',   Icon: IC.DollarSign,   angle:  170, dist: 218 },
-  { id: 'inbox',   ar: 'الوارد الموحد',      en: 'Unified Inbox',      Icon: IC.Inbox,        angle: -168, dist: 208 },
+  { id: 'lead',    ar: 'تأهيل العملاء',    en: 'Lead Qualification', Icon: IC.Target,       angle: -115, dist: 210, color: 'var(--accent)' },
+  { id: 'support', ar: 'دعم العملاء',       en: 'Customer Support',   Icon: IC.MessageSquare,angle:  -45, dist: 220, color: 'var(--accent-secondary)' },
+  { id: 'review',  ar: 'استرداد التقييمات', en: 'Review Recovery',    Icon: IC.Star,         angle:   30, dist: 215, color: 'var(--accent)' },
+  { id: 'content', ar: 'توليد المحتوى',     en: 'Content Creation',   Icon: IC.PenTool,      angle:  105, dist: 210, color: 'var(--accent-secondary)' },
+  { id: 'sales',   ar: 'أتمتة المبيعات',    en: 'Sales Automation',   Icon: IC.DollarSign,   angle:  170, dist: 218, color: 'var(--accent)' },
+  { id: 'inbox',   ar: 'الوارد الموحد',      en: 'Unified Inbox',      Icon: IC.Inbox,        angle: -168, dist: 208, color: 'var(--accent-secondary)' },
 ]
 
 const MSGS = [
   { from: 'Ahmed K.', Icon: IC.WhatsApp, color: 'var(--accent)', ar: 'هل التوصيل متاح؟',      en: 'Is delivery available?',  status: 'Replied',    sc: 'var(--accent)' },
-  { from: 'سارة م.',  Icon: IC.Instagram,color: 'var(--accent)', ar: 'ما هي ساعات العمل؟',    en: 'What are your hours?',    status: 'Processing', sc: 'var(--accent)' },
+  { from: 'سارة م.',  Icon: IC.Instagram,color: 'var(--accent-secondary)', ar: 'ما هي ساعات العمل؟',    en: 'What are your hours?',    status: 'Processing', sc: 'var(--accent-secondary)' },
   { from: 'Nora H.',  Icon: IC.Mail,     color: 'var(--accent)', ar: 'أريد حجز طاولة لـ 4',   en: 'Table for 4 please',      status: 'Replied',    sc: 'var(--accent)' },
-  { from: 'خالد ع.',  Icon: IC.Globe,    color: 'var(--accent)', ar: 'كم سعر الباقة؟',         en: 'Business plan price?',    status: 'Lead ⚡',   sc: 'var(--accent)' },
+  { from: 'خالد ع.',  Icon: IC.Globe,    color: 'var(--accent-secondary)', ar: 'كم سعر الباقة؟',         en: 'Business plan price?',    status: 'Lead ⚡',   sc: 'var(--accent-secondary)' },
   { from: 'Omar F.',  Icon: IC.WhatsApp, color: 'var(--accent)', ar: 'شكراً على الرد السريع!', en: 'Thanks for quick reply!', status: 'Closed',    sc: 'var(--text-tertiary)' },
 ]
 
