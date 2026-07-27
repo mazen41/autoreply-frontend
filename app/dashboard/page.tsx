@@ -225,8 +225,12 @@ export default function DashboardHome() {
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
+            <div key={i} className="skeleton" style={{ height: '8rem' }} />
           ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="skeleton" style={{ height: '12rem' }} />
+          <div className="skeleton" style={{ height: '12rem' }} />
         </div>
       </div>
     )
@@ -235,11 +239,19 @@ export default function DashboardHome() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        <div className="card-os rounded-2xl p-6 text-center" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+        <div className="empty-state alert-error">
+          <div className="empty-state-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h3 className="empty-state-title">{isRTL ? 'حدث خطأ' : 'Error'}</h3>
+          <p className="empty-state-description">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="btn-lime px-4 py-2 rounded-lg text-sm font-bold"
+            className="btn-lime"
           >
             {t.common.retry}
           </button>

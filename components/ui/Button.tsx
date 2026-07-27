@@ -1,32 +1,62 @@
-import React from 'react'
+'use client'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+import React from 'react'
+import { cn } from '@/lib/utils'
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
+  loading?: boolean
   children: React.ReactNode
 }
 
-export default function Button({ variant = 'primary', size = 'md', className = '', children, ...props }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 cursor-pointer'
+const sizeClasses = {
+  sm: 'btn-sm',
+  md: '',
+  lg: 'btn-lg',
+}
 
-  const variants = {
-    primary: 'bg-accent text-bg-dark hover:shadow-lg hover:shadow-accent/30 hover:scale-105 active:scale-100',
-    secondary: 'bg-surface border border-border-dark text-text-primary hover:border-accent/50 hover:bg-accent/10',
-    outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-bg-dark',
-    ghost: 'text-text-secondary hover:text-text-primary hover:bg-surface',
-  }
+const variantClasses = {
+  primary: 'btn-lime',
+  secondary: 'btn-ghost',
+  outline: 'btn-ghost border-2 border-accent text-accent hover:bg-accent-subtle',
+  ghost: 'btn-ghost',
+  danger: 'btn-danger',
+}
 
-  const sizes = {
-    sm: 'px-4 py-2 text-sm gap-1.5',
-    md: 'px-6 py-3 text-base gap-2',
-    lg: 'px-8 py-4 text-lg gap-2',
-  }
+function Spinner({ className }: { className?: string }) {
+  return (
+    <svg className={cn('animate-spin h-4 w-4', className)} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+    </svg>
+  )
+}
+
+export default function Button({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  className = '',
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
+  const isDisabled = disabled || loading
 
   return (
     <button
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={cn(
+        'btn-base',
+        variantClasses[variant],
+        sizeClasses[size],
+        className,
+      )}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
       {...props}
     >
+      {loading && <Spinner />}
       {children}
     </button>
   )
