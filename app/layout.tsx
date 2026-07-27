@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import './globals.css'
 import { LangProvider } from '../lib/LangContext'
 import { ThemeProvider } from '../lib/ThemeContext'
@@ -25,9 +26,15 @@ export const metadata: Metadata = {
   description: 'Naz is an AI platform that automatically replies to your customers on WhatsApp, Instagram, and Facebook — 24/7. Handle customer support, lead qualification, and content creation with intelligent automation.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Read the saved theme cookie on the server so the very first paint
+  // already matches the visitor's choice — avoids a dark-then-light flash.
+  const cookieStore = await cookies()
+  const savedTheme = cookieStore.get('naz-theme')?.value
+  const isLight = savedTheme === 'light'
+
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={isLight ? '' : 'dark'} suppressHydrationWarning>
       <head>
         {/* Avoids a flash of the wrong theme: applies the landing-only
             amber palette before hydration if we're on the homepage. */}
