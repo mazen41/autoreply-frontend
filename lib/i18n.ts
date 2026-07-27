@@ -20,8 +20,8 @@ export const translations = {
     },
     hero: {
       badge: 'ذكاء اصطناعي · AI Automation',
-      headline1: 'موظفك الذكي',
-      headline2: 'الذي لا ينام',
+      headline1: 'ندير مراسلاتك',
+      headline2: 'و مبيعاتك بذكاء',
       subheadline: 'منصة ذكاء اصطناعي ترد‌ على رسائل عملائك تلقائياً، تنشئ المحتوى، وتحمي سمعتك على Google — على مدار الساعة.',
       ctaPrimary: 'ابدأ مجاناً — 14 يوم مجاني',
       ctaSecondary: 'شاهد كيف يعمل',
@@ -349,8 +349,8 @@ export const translations = {
     },
     hero: {
       badge: 'AI Automation · ذكاء اصطناعي',
-      headline1: 'The AI Employee',
-      headline2: 'That Never Sleeps',
+      headline1: 'Manage Your Messages',
+      headline2: 'And Sales With AI',
       subheadline: 'An AI platform that automatically replies to customer messages, creates content, and protects your Google reputation — 24/7.',
       ctaPrimary: 'Start Free — 14-Day Trial',
       ctaSecondary: 'Watch How It Works',
