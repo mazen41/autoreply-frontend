@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function SEOKeywords() {
+  const { user } = useAuth()
   const [inputText, setInputText] = useState('')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('seo-keywords')
 
@@ -20,7 +21,7 @@ export default function SEOKeywords() {
     setLoading(true)
     setResult(null)
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       'Extract the top 15 Arabic SEO keywords from this product description. Group them into: primary keywords (5), secondary keywords (5), and long-tail keywords (5). Format your response as JSON with these keys: "primary" (array), "secondary" (array), "longtail" (array).',
       inputText,
       'seo-keywords'
@@ -184,9 +185,9 @@ export default function SEOKeywords() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>

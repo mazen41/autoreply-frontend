@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function PolicyGenerator() {
+  const { user } = useAuth()
   const [storeName, setStoreName] = useState('')
   const [policies, setPolicies] = useState({
     return: false,
@@ -16,7 +18,6 @@ export default function PolicyGenerator() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('policy-generator')
 
@@ -32,7 +33,7 @@ export default function PolicyGenerator() {
     setLoading(true)
     setResult('')
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       `Write professional Arabic store policies for an e-commerce store called "${storeName}". Be clear, fair to both customer and merchant. Include these policy types: ${selectedPolicies.join(', ')}. Format each policy with a clear heading and detailed terms in Arabic.`,
       `Store: ${storeName}\nPolicies needed: ${selectedPolicies.join(', ')}`,
       'policy-generator'
@@ -167,9 +168,9 @@ export default function PolicyGenerator() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>

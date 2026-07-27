@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 const transformations = [
@@ -13,12 +14,12 @@ const transformations = [
 ]
 
 export default function ToneTransformer() {
+  const { user } = useAuth()
   const [inputText, setInputText] = useState('')
   const [transformation, setTransformation] = useState('formal-gulf')
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('tone-transformer')
 
@@ -43,7 +44,7 @@ export default function ToneTransformer() {
     setLoading(true)
     setResult('')
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       getSystemPrompt(transformation),
       inputText,
       'tone-transformer'
@@ -175,9 +176,9 @@ export default function ToneTransformer() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>

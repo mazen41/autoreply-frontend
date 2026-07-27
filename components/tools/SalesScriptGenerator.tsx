@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function SalesScriptGenerator() {
+  const { user } = useAuth()
   const [productName, setProductName] = useState('')
   const [targetAudience, setTargetAudience] = useState('')
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('sales-script')
 
@@ -21,7 +22,7 @@ export default function SalesScriptGenerator() {
     setLoading(true)
     setResult('')
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       'You are an expert Arabic sales coach. Write a persuasive phone/WhatsApp sales script in Arabic. Include: opening hook, value proposition, handling objections, and closing call-to-action. Make it natural and conversational.',
       `Product: ${productName}\nTarget Audience: ${targetAudience}\n\nGenerate a sales script for this product targeting this audience.`,
       'sales-script'
@@ -142,9 +143,9 @@ export default function SalesScriptGenerator() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>

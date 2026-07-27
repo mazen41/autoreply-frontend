@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useAuth } from '../components/AuthProvider'
 
 const tools = [
   {
@@ -77,6 +78,7 @@ const tools = [
 ]
 
 export default function ToolsPage() {
+  const { user } = useAuth()
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
@@ -86,10 +88,17 @@ export default function ToolsPage() {
             <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-            Sign Up Free
-          </Link>
+          {user ? (
+            <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Sign Up Free
+            </Link>
+          )}
         </div>
       </div>
 

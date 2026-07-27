@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function ComplaintAnalyzer() {
+  const { user } = useAuth()
   const [inputText, setInputText] = useState('')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('complaint-analyzer')
 
@@ -20,7 +21,7 @@ export default function ComplaintAnalyzer() {
     setLoading(true)
     setResult(null)
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       'Analyze this customer complaint. Identify the core problem, the customer\'s emotion, and suggest 3 specific responses the business can send to resolve it professionally. Format your response as JSON with these keys: "problem", "emotion", "responses" (array of 3 strings).',
       inputText,
       'complaint-analyzer'
@@ -165,9 +166,9 @@ export default function ComplaintAnalyzer() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>

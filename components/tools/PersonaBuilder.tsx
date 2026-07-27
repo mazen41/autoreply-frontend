@@ -2,17 +2,18 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function PersonaBuilder() {
+  const { user } = useAuth()
   const [storeNiche, setStoreNiche] = useState('')
   const [priceRange, setPriceRange] = useState('')
   const [targetCountry, setTargetCountry] = useState('')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('persona-builder')
 
@@ -22,7 +23,7 @@ export default function PersonaBuilder() {
     setLoading(true)
     setResult(null)
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       'Build 2 detailed customer personas for this store. Each persona should include: name, age, job, income, pain points, buying motivations, preferred social platforms, and best time to reach them. Format your response as JSON with a "personas" array, where each item has: "name", "age", "job", "income", "painPoints" (array), "motivations" (array), "platforms" (array), "bestTime".',
       `Store Niche: ${storeNiche}\nPrice Range: ${priceRange}\nTarget Country: ${targetCountry}`,
       'persona-builder'
@@ -215,9 +216,9 @@ export default function PersonaBuilder() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>
