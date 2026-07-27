@@ -151,7 +151,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+      <h1 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)' }}>
         {isRTL ? 'الإعدادات' : 'Settings'}
       </h1>
 
@@ -168,8 +168,8 @@ export default function SettingsPage() {
       )}
 
       {/* Profile Section */}
-      <div className="rounded-2xl p-6" style={{ background: 'var(--surface)' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+      <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+        <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
           {isRTL ? 'الملف الشخصي' : 'Profile'}
         </h2>
 
@@ -183,7 +183,7 @@ export default function SettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-transparent"
+              className="w-full px-4 py-3 rounded-xl input-os"
               style={{
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
@@ -200,7 +200,7 @@ export default function SettingsPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-transparent"
+              className="w-full px-4 py-3 rounded-xl input-os"
               style={{
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
@@ -211,10 +211,10 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 rounded-xl font-bold transition-all"
+            className="px-6 py-3 rounded-xl font-bold transition-all btn-lime"
             style={{
               background: saving ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-              color: 'var(--surface)',
+              color: 'var(--on-accent-text)',
               opacity: saving ? 0.7 : 1,
             }}
           >
@@ -224,8 +224,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Password Section */}
-      <div className="rounded-2xl p-6" style={{ background: 'var(--surface)' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+      <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+        <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
           {isRTL ? 'تغيير كلمة المرور' : 'Change Password'}
         </h2>
 
@@ -239,7 +239,7 @@ export default function SettingsPage() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-transparent"
+              className="w-full px-4 py-3 rounded-xl input-os"
               style={{
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
@@ -257,7 +257,7 @@ export default function SettingsPage() {
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-4 py-3 rounded-xl bg-transparent"
+              className="w-full px-4 py-3 rounded-xl input-os"
               style={{
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
@@ -275,7 +275,7 @@ export default function SettingsPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-4 py-3 rounded-xl bg-transparent"
+              className="w-full px-4 py-3 rounded-xl input-os"
               style={{
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
@@ -286,10 +286,10 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 rounded-xl font-bold transition-all"
+            className="px-6 py-3 rounded-xl font-bold transition-all btn-lime"
             style={{
               background: saving ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-              color: 'var(--surface)',
+              color: 'var(--on-accent-text)',
               opacity: saving ? 0.7 : 1,
             }}
           >

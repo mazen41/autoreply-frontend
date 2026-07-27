@@ -237,7 +237,7 @@ export default function WhatsAppPage() {
       )}
 
       {/* Connection Status Card */}
-      <div className="rounded-2xl p-8" style={{ background: 'var(--surface)' }}>
+      <div className="premium-card p-8" style={{ background: 'var(--surface-elevated)' }}>
         {!instance ? (
           // Not connected - Show connect button
           <div className="text-center space-y-6">
@@ -258,10 +258,10 @@ export default function WhatsAppPage() {
               <button
                 onClick={handleConnect}
                 disabled={connecting}
-                className="px-8 py-4 rounded-xl font-bold transition-all"
+                className="px-8 py-4 rounded-xl font-bold transition-all btn-lime"
                 style={{
                   background: connecting ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-                  color: 'var(--surface)',
+                  color: 'var(--on-accent-text)',
                   opacity: connecting ? 0.7 : 1,
                 }}
               >
@@ -287,7 +287,7 @@ export default function WhatsAppPage() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <h2 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)' }}>
                     {instance.profile_name || isRTL ? 'واتساب' : 'WhatsApp'}
                   </h2>
                   {instance.phone_number && (
@@ -306,7 +306,7 @@ export default function WhatsAppPage() {
             {/* QR Code Display */}
             {(qrCode || instance.status === 'connecting') && (
               <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--accent-subtle)' }}>
-                <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
                   {isRTL ? 'امسح رمز QR' : 'Scan QR Code'}
                 </h3>
                 {qrCode ? (
@@ -342,7 +342,7 @@ export default function WhatsAppPage() {
 
             {/* Connected State */}
             {instance.status === 'connected' && (
-              <div className="rounded-2xl p-6" style={{ background: 'var(--accent-subtle)' }}>
+              <div className="premium-card p-6" style={{ background: 'var(--accent-subtle)' }}>
                 <div className="flex items-center gap-3 mb-4">
                   <svg className="w-6 h-6" style={{ color: 'var(--accent)' }} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -369,7 +369,7 @@ export default function WhatsAppPage() {
               {instance.status === 'connected' ? (
                 <button
                   onClick={handleDisconnect}
-                  className="flex-1 py-4 rounded-xl font-bold transition-all"
+                  className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
                   style={{
                     background: 'var(--accent-subtle)',
                     color: 'var(--error)',
@@ -382,10 +382,10 @@ export default function WhatsAppPage() {
                   <button
                     onClick={handleReconnect}
                     disabled={connecting}
-                    className="flex-1 py-4 rounded-xl font-bold transition-all"
+                    className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
                     style={{
                       background: connecting ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-                      color: 'var(--surface)',
+                      color: 'var(--on-accent-text)',
                       opacity: connecting ? 0.7 : 1,
                     }}
                   >
@@ -395,7 +395,7 @@ export default function WhatsAppPage() {
                   </button>
                   <button
                     onClick={handleDisconnect}
-                    className="flex-1 py-4 rounded-xl font-bold transition-all"
+                    className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
                     style={{
                       background: 'var(--accent-subtle)',
                       color: 'var(--error)',
