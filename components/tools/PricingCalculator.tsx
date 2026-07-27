@@ -2,9 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function PricingCalculator() {
+  const { user } = useAuth()
   const [productCost, setProductCost] = useState('')
   const [shippingCost, setShippingCost] = useState('')
   const [adSpend, setAdSpend] = useState('')
@@ -168,9 +170,9 @@ export default function PricingCalculator() {
           <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
             هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
           </p>
-          <Link href="/register" className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+          <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
             style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-            جرّب مجاناً
+            {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
           </Link>
         </div>
       </motion.div>

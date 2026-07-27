@@ -2,16 +2,17 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { askClaude, getToolUsageInfo } from '@/lib/claude'
+import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
+import { useAuth } from '@/components/AuthProvider'
 import Link from 'next/link'
 
 export default function CampaignIdeator() {
+  const { user } = useAuth()
   const [storeType, setStoreType] = useState('')
   const [occasion, setOccasion] = useState('')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const usage = getToolUsageInfo('campaign-ideator')
 
@@ -21,7 +22,7 @@ export default function CampaignIdeator() {
     setLoading(true)
     setResult(null)
 
-    const response = await askClaude(
+    const response = await callToolsAI(
       'Generate 5 creative ad campaign ideas for this store for the given occasion. Each idea should have: campaign name, main message, suggested visual concept, and a sample caption for Instagram. Format your response as JSON with a "campaigns" array, where each item has: "name", "message", "visual", "caption".',
       `Store Type: ${storeType}\nOccasion: ${occasion}`,
       'campaign-ideator'
@@ -173,9 +174,9 @@ export default function CampaignIdeator() {
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
               هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
             </p>
-            <Link href={isLoggedIn ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
+            <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-              {isLoggedIn ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
+              {user ? 'فعّل الرد الآلي على متجرك الآن' : 'جرّب مجاناً'}
             </Link>
           </div>
         </motion.div>
