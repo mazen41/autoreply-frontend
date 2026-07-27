@@ -332,14 +332,27 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
           borderRadius: 6,
           background: conv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)',
           border: `1px solid ${conv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)'}`,
-          color: conv.ai_enabled ? 'var(--accent)' : 'var(--text-tertiary)',
+          color: conv.ai_enabled ? 'var(--on-accent-text)' : 'var(--text-tertiary)',
           fontSize: 10,
           fontWeight: 600,
           cursor: 'pointer',
           flexShrink: 0,
+          transition: 'all 0.2s ease',
+          boxShadow: conv.ai_enabled ? '0 0 10px var(--accent-subtle)' : 'none',
         }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = conv.ai_enabled ? 'var(--accent-hover)' : 'var(--accent-secondary)';
+          e.currentTarget.style.color = conv.ai_enabled ? 'var(--on-accent-text)' : 'var(--accent-secondary)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = conv.ai_enabled ? 'var(--accent)' : 'var(--border)';
+          e.currentTarget.style.color = conv.ai_enabled ? 'var(--on-accent-text)' : 'var(--text-tertiary)';
+        }}
+        title={conv.ai_enabled ? 'Disable AI for this conversation' : 'Enable AI for this conversation'}
       >
-        {conv.ai_enabled ? 'AI ON' : 'AI OFF'}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {conv.ai_enabled ? '✓' : '○'} AI
+        </span>
       </button>
     </motion.button>
   )
@@ -759,16 +772,29 @@ export default function InboxPage() {
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
-                  background: selectedConv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)',
-                  border: `1px solid ${selectedConv.ai_enabled ? 'var(--accent-focus)' : 'var(--border)'}`,
-                  color: selectedConv.ai_enabled ? 'var(--accent)' : 'var(--text-tertiary)',
+                  background: selectedConv.ai_enabled ? 'var(--accent)' : 'var(--surface-elevated)',
+                  border: `1px solid ${selectedConv.ai_enabled ? 'var(--accent)' : 'var(--border)'}`,
+                  color: selectedConv.ai_enabled ? 'var(--on-accent-text)' : 'var(--text-tertiary)',
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',
                   flexShrink: 0,
+                  transition: 'all 0.2s ease',
+                  boxShadow: selectedConv.ai_enabled ? '0 0 10px var(--accent-subtle)' : 'none',
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = selectedConv.ai_enabled ? 'var(--accent-hover)' : 'var(--accent-secondary)';
+                  e.currentTarget.style.color = selectedConv.ai_enabled ? 'var(--on-accent-text)' : 'var(--accent-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = selectedConv.ai_enabled ? 'var(--accent)' : 'var(--border)';
+                  e.currentTarget.style.color = selectedConv.ai_enabled ? 'var(--on-accent-text)' : 'var(--text-tertiary)';
+                }}
+                title={selectedConv.ai_enabled ? 'Disable AI for this conversation' : 'Enable AI for this conversation'}
               >
-                {selectedConv.ai_enabled ? 'âš¡ AI ON' : 'AI OFF'}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {selectedConv.ai_enabled ? '✓' : '○'} AI
+                </span>
               </button>
             </div>
 
