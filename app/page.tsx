@@ -4,9 +4,11 @@ import Navbar from '../components/landing/Navbar'
 import Footer from '../components/landing/Footer'
 import OSExperience from '../components/landing/OSExperience'
 import { useLang } from '../lib/LangContext'
+import { useAuth } from '../lib/AuthContext'
 
 function Hero() {
   const { t, isRTL } = useLang()
+  const { user } = useAuth()
 
   return (
     <section className="relative z-10 px-6 py-16 md:py-24" style={{ background: 'transparent' }}>
@@ -37,21 +39,39 @@ function Hero() {
           >
             {isRTL ? 'ابدأ مجاناً' : 'Start Free'}
           </a>
-          <a
-            href="/login"
-            className="px-8 py-3 rounded-xl font-bold transition-all btn-secondary"
-            style={{}}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent-secondary)'
-              e.currentTarget.style.color = 'var(--accent-secondary)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border)'
-              e.currentTarget.style.color = 'var(--text-primary)'
-            }}
-          >
-            {isRTL ? 'تسجيل الدخول' : 'Sign In'}
-          </a>
+          {user ? (
+            <a
+              href="/dashboard"
+              className="px-8 py-3 rounded-xl font-bold transition-all btn-secondary"
+              style={{}}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-secondary)'
+                e.currentTarget.style.color = 'var(--accent-secondary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-primary)'
+              }}
+            >
+              {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+            </a>
+          ) : (
+            <a
+              href="/login"
+              className="px-8 py-3 rounded-xl font-bold transition-all btn-secondary"
+              style={{}}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-secondary)'
+                e.currentTarget.style.color = 'var(--accent-secondary)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.color = 'var(--text-primary)'
+              }}
+            >
+              {isRTL ? 'تسجيل الدخول' : 'Sign In'}
+            </a>
+          )}
         </div>
       </div>
     </section>
