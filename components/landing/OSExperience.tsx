@@ -299,9 +299,9 @@ function State0({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
         className="font-black leading-[1.05] text-center mb-4"
         style={{ fontSize: 'clamp(2rem,5vw,4.2rem)', letterSpacing: '-0.04em' }}>
         <span className="block" style={{ color: 'var(--text-primary)' }}>
-          {isRTL ? 'عملك لا ينام.' : 'Your Business Never Sleeps.'}
+          {isRTL ? 'ندير مراسلاتك' : 'Manage Your Messages'}
         </span>
-        <span className="block text-dual">{isRTL ? 'وكذلك ذكاؤك الاصطناعي.' : 'Neither Does Your AI.'}</span>
+        <span className="block text-dual">{isRTL ? 'و مبيعاتك بذكاء.' : 'And Sales With AI.'}</span>
       </motion.h1>
 
       <motion.p custom={4} initial="hidden" animate="visible" variants={variants}
