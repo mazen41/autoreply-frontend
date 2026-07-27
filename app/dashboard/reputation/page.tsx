@@ -87,7 +87,7 @@ export default function ReputationPage() {
           <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
             className="card-os p-4 rounded-2xl"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
             <div className="text-xl mb-2">{s.icon}</div>
             <div className="text-xs font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>{s.label.toUpperCase()}</div>
             <div className="text-2xl font-black" style={{ color: 'var(--text-primary)' }}>{s.value}</div>
@@ -97,9 +97,9 @@ export default function ReputationPage() {
 
       {/* Reviews */}
       <div className="card-os rounded-2xl overflow-hidden"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
-          <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <h2 className="text-2xl font-black tracking-[-0.03em] flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             <StarIcon size={16} style={{ color: 'var(--accent)' }} />
             {isRTL ? 'تقييمات Google' : 'Google Reviews'}
           </h2>
@@ -178,10 +178,10 @@ export default function ReputationPage() {
 
       {/* Follow-up campaigns */}
       <div className="card-os rounded-2xl overflow-hidden"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
         <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--divider)' }}>
           <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-black tracking-[-0.03em] flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               <InboxIcon size={16} style={{ color: 'var(--accent)' }} />
               {isRTL ? 'حملة المتابعة التلقائية' : 'Auto Follow-up Campaign'}
             </h2>

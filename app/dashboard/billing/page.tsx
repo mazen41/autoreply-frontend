@@ -150,7 +150,7 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)' }}>
           {t.nav.billing}
         </h1>
         {!isFree && subscription && (
@@ -180,8 +180,8 @@ export default function BillingPage() {
       )}
 
       {/* Current Plan */}
-      <div className="rounded-2xl p-6" style={{ background: 'var(--surface)' }}>
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+      <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+        <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
           {isRTL ? 'الباقة الحالية' : 'Current Plan'}
         </h2>
 
@@ -189,7 +189,7 @@ export default function BillingPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border)' }}>
               <div>
-                <h3 className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{name}</h3>
+                <h3 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--accent)' }}>{name}</h3>
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{description}</p>
               </div>
               <div className="text-right">
@@ -227,7 +227,7 @@ export default function BillingPage() {
                     <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                       {isRTL ? 'الأيام المتبقية' : 'Days Remaining'}
                     </span>
-                    <span className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>
+                    <span className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--accent)' }}>
                       {getDaysRemaining(subscription.ends_at)}
                     </span>
                   </div>
@@ -251,8 +251,8 @@ export default function BillingPage() {
 
       {/* Usage */}
       {pkg && (
-        <div className="rounded-2xl p-6" style={{ background: 'var(--surface)' }}>
-          <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+        <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+          <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
             {isRTL ? 'الاستخدام' : 'Usage'}
           </h2>
 
@@ -298,7 +298,7 @@ export default function BillingPage() {
 
       {/* Upgrade Options */}
       {isFree && (
-        <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(135deg, var(--accent-subtle), var(--accent-subtle))' }}>
+        <div className="premium-card p-6" style={{ background: 'linear-gradient(135deg, var(--accent-subtle), var(--accent-subtle))' }}>
           <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
             {isRTL ? 'ترقية الباقة' : 'Upgrade Your Plan'}
           </h2>
@@ -312,7 +312,7 @@ export default function BillingPage() {
             className="inline-block px-6 py-3 rounded-xl font-bold transition-all"
             style={{
               background: 'linear-gradient(135deg, var(--accent), var(--accent))',
-              color: 'var(--surface)',
+              color: 'var(--on-accent-text)',
             }}
           >
             {isRTL ? 'عرض الباقات' : 'View Plans'}
@@ -322,8 +322,8 @@ export default function BillingPage() {
 
       {/* Payment History */}
       {subscription && (
-        <div className="rounded-2xl p-6" style={{ background: 'var(--surface)' }}>
-          <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+        <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+          <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
             {isRTL ? 'سجل الدفعات' : 'Payment History'}
           </h2>
 

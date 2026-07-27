@@ -53,7 +53,7 @@ function StatCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
     >
       <div className="shimmer-line absolute inset-0" />
       <div className="flex items-start justify-between mb-4">
@@ -225,7 +225,7 @@ export default function DashboardHome() {
       <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'var(--surface)' }} />
+            <div key={i} className="rounded-2xl p-5 h-32 animate-pulse" style={{ background: 'var(--surface-elevated)' }} />
           ))}
         </div>
       </div>
@@ -235,7 +235,7 @@ export default function DashboardHome() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        <div className="card-os rounded-2xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="card-os rounded-2xl p-6 text-center" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{error}</p>
           <button
             onClick={() => window.location.reload()}
@@ -291,7 +291,7 @@ export default function DashboardHome() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
         >
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
             <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
@@ -324,7 +324,7 @@ export default function DashboardHome() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
         >
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
             <h2 className="text-sm font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
@@ -382,10 +382,10 @@ export default function DashboardHome() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
         >
           <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {isRTL ? 'وقت الاستجابة' : 'Response Time'}
             </h2>
           </div>
@@ -420,10 +420,10 @@ export default function DashboardHome() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
         >
           <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--divider)' }}>
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h2 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {isRTL ? 'أكثر المرسلين' : 'Top Senders'}
             </h2>
           </div>

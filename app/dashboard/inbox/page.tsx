@@ -221,7 +221,7 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
               height: 28,
               borderRadius: 999,
               border: '1px solid var(--border)',
-              background: 'var(--surface)',
+              background: 'var(--surface-elevated)',
               color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
@@ -469,7 +469,7 @@ export default function InboxPage() {
       <div style={{
         width: 300, flexShrink: 0, display: mobilePane === 'chat' ? 'none' : 'flex',
         flexDirection: 'column', borderRight: '1px solid var(--border)',
-        background: 'var(--surface)',
+        background: 'var(--surface-elevated)',
       }} className="md-inbox-list">
         {/* Header */}
         <div style={{ padding: '16px', borderBottom: '1px solid var(--border)' }}>
@@ -554,7 +554,7 @@ export default function InboxPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 12,
-              background: 'var(--surface)',
+              background: 'var(--surface-elevated)',
             }}>
               <button onClick={() => setMobilePane('list')} className="md:hidden" style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: 20 }}>
                 â†

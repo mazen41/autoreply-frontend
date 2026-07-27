@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--surface)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Background effects */}
       <div className="os-bg">
         <div className="orb-lime" />
@@ -162,7 +162,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         variants={sidebarVariants}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full z-50 glass`}
-        style={{ background: 'var(--surface)', borderRight: isRTL ? 'none' : '1px solid var(--border)', borderLeft: isRTL ? '1px solid var(--border)' : 'none' }}
+        style={{ background: 'color-mix(in srgb, var(--surface-elevated) 88%, transparent)', borderRight: isRTL ? 'none' : '1px solid var(--border)', borderLeft: isRTL ? '1px solid var(--border)' : 'none' }}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -207,7 +207,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                  style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
+                  style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}
                 >
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </div>
@@ -232,7 +232,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Topbar */}
         <header
           className="sticky top-0 z-30 glass"
-          style={{ height: 64, background: 'var(--surface)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}
+          style={{ height: 64, background: 'color-mix(in srgb, var(--surface-elevated) 82%, transparent)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}
         >
           <div className="flex items-center justify-between h-full px-4 md:px-6">
             {/* Left side */}
@@ -258,7 +258,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               <div className="hidden md:block">
-                <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                <h1 className="text-lg font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
                   {pageTitle}
                 </h1>
               </div>
@@ -365,7 +365,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
-                  style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
+                  style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}
                 >
                   {user?.name?.[0]?.toUpperCase() || 'U'}
                 </button>
