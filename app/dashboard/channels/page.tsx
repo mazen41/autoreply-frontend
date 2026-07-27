@@ -254,7 +254,7 @@ export default function ChannelsPage() {
               transition={{ delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
               className="card-os rounded-2xl p-5 relative"
               style={{
-                background: 'var(--surface)',
+                background: 'var(--surface-elevated)',
                 border: `1px solid ${ch.connected ? 'var(--accent-focus)' : 'var(--border)'}`,
               }}
             >

@@ -269,8 +269,8 @@ export default function AIKnowledgeContent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
       >
         <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
           {((t as any).onboarding)?.businessDetails || 'Business Details'}
@@ -358,8 +358,8 @@ export default function AIKnowledgeContent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
       >
         <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
           {t.aiKnowledge.knowledgeBase}
@@ -456,8 +456,8 @@ export default function AIKnowledgeContent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
       >
         <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
           {t.aiKnowledge.customInstructions}
@@ -473,7 +473,7 @@ export default function AIKnowledgeContent() {
           rows={8}
           className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 resize-none"
           style={{
-            background: 'var(--surface)',
+            background: 'var(--surface-elevated)',
             border: '1px solid var(--border)',
             color: 'var(--text-primary)',
           }}
@@ -510,8 +510,8 @@ export default function AIKnowledgeContent() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
       >
         <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
           {t.aiKnowledge.testAi}
@@ -533,7 +533,7 @@ export default function AIKnowledgeContent() {
                 placeholder={t.aiKnowledge.testQuestionPlaceholder}
                 className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
                 style={{
-                  background: 'var(--surface)',
+                  background: 'var(--surface-elevated)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-primary)',
                 }}
