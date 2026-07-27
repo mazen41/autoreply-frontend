@@ -1,4 +1,8 @@
+'use client'
+
 import Link from 'next/link'
+import { useAuth } from '../../components/AuthProvider'
+import { useState, useEffect } from 'react'
 
 const categories = [
   { value: 'all', labelAr: 'الكل', labelEn: 'All' },
@@ -23,9 +27,22 @@ async function getPosts(category: string = 'all') {
   }
 }
 
-export default async function BlogPage({ searchParams }: { searchParams: { category?: string } }) {
-  const category = searchParams.category || 'all'
-  const { data: posts, meta } = await getPosts(category)
+export default function BlogPage() {
+  const { user } = useAuth()
+  const [category, setCategory] = useState('all')
+  const [posts, setPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadPosts()
+  }, [category])
+
+  const loadPosts = async () => {
+    setLoading(true)
+    const { data, meta } = await getPosts(category)
+    setPosts(data)
+    setLoading(false)
+  }
 
   const estimateReadTime = (excerpt: string) => {
     const wordsPerMinute = 200
@@ -51,10 +68,17 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
             <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-            Sign Up Free
-          </Link>
+          {user ? (
+            <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Sign Up Free
+            </Link>
+          )}
         </div>
       </div>
 
@@ -74,9 +98,9 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
       <div className="max-w-7xl mx-auto px-6 mb-8">
         <div className="flex flex-wrap gap-3">
           {categories.map((cat) => (
-            <Link
+            <button
               key={cat.value}
-              href={`/blog?category=${cat.value}`}
+              onClick={() => setCategory(cat.value)}
               className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{
                 background: category === cat.value ? 'var(--accent-focus)' : 'var(--surface)',
@@ -85,14 +109,20 @@ export default async function BlogPage({ searchParams }: { searchParams: { categ
               }}
             >
               {cat.labelAr}
-            </Link>
+            </button>
           ))}
         </div>
       </div>
 
       {/* Posts Grid */}
       <div className="max-w-7xl mx-auto px-6 pb-20">
-        {posts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Loading...
+            </p>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
               لا توجد مقالات حالياً / No articles yet

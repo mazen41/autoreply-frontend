@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
-import { Metadata } from 'next'
+import { useAuth } from '../../components/AuthProvider'
+import { useState, useEffect } from 'react'
 
 const tools = [
   { slug: 'sales-script', nameAr: 'مولد نصوص البيع', nameEn: 'Sales Script Generator' },
@@ -36,28 +39,31 @@ async function getPost(slug: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPost(params.slug)
+export default function BlogArticlePage({ params }: { params: { slug: string } }) {
+  const { user } = useAuth()
+  const [post, setPost] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!post) {
-    return {
-      title: 'Article Not Found',
-    }
+  useEffect(() => {
+    loadPost()
+  }, [params.slug])
+
+  const loadPost = async () => {
+    setLoading(true)
+    const postData = await getPost(params.slug)
+    setPost(postData)
+    setLoading(false)
   }
 
-  return {
-    title: post.title,
-    description: post.meta_description || post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.meta_description || post.excerpt,
-      images: post.featured_image_url ? [{ url: post.featured_image_url }] : [],
-    },
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+        <div className="text-center">
+          <h1 className="font-black text-2xl mb-4" style={{ color: 'var(--text-primary)' }}>Loading...</h1>
+        </div>
+      </div>
+    )
   }
-}
-
-export default async function BlogArticlePage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug)
 
   if (!post) {
     return (
@@ -91,10 +97,17 @@ export default async function BlogArticlePage({ params }: { params: { slug: stri
             <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
           </Link>
-          <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-            Sign Up Free
-          </Link>
+          {user ? (
+            <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Dashboard
+            </Link>
+          ) : (
+            <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              Sign Up Free
+            </Link>
+          )}
         </div>
       </div>
 

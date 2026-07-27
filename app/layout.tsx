@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import './globals.css'
 import { LangProvider } from '../lib/LangContext'
 import { ThemeProvider } from '../lib/ThemeContext'
+import { AuthProvider } from '../components/AuthProvider'
 import { Space_Grotesk, Cairo } from 'next/font/google'
 import FooterWrapper from '../components/FooterWrapper'
 
@@ -43,12 +44,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         <ThemeProvider>
           <LangProvider>
-            <div className="relative z-10 flex flex-col min-h-screen">
-              <div className="flex-1">
-                {children}
+            <AuthProvider>
+              <div className="relative z-10 flex flex-col min-h-screen">
+                <div className="flex-1">
+                  {children}
+                </div>
+                <FooterWrapper />
               </div>
-              <FooterWrapper />
-            </div>
+            </AuthProvider>
           </LangProvider>
         </ThemeProvider>
       </body>
