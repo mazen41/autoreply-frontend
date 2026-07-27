@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuth } from '../../components/AuthProvider'
+import { useAuth } from '../../../components/AuthProvider'
 import { useState, useEffect } from 'react'
 
 const tools = [
