@@ -49,9 +49,8 @@ export default function Navbar() {
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{
-                  background: 'var(--accent-subtle)',
+                  background: 'var(--surface-elevated)',
                   border: '1px solid var(--border)',
-                  boxShadow: '0 0 20px var(--accent-subtle)',
                 }}
               >
                 <NazLogoIcon size={18} />
@@ -62,7 +61,7 @@ export default function Navbar() {
             </span>
             <span
               className="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--border)' }}
+              style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
             >
               AI OS
             </span>
@@ -91,9 +90,9 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
             {/* Live indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border)' }}>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
               <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>{isRTL ? 'مباشر' : 'Live'}</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'مباشر' : 'Live'}</span>
             </div>
 
             <button
@@ -101,7 +100,7 @@ export default function Navbar() {
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.borderColor = 'var(--accent-subtle)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
             >
               {theme === 'dark' ? (
@@ -120,7 +119,7 @@ export default function Navbar() {
               onClick={toggleLang}
               className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.borderColor = 'var(--accent-subtle)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))' }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
             >
               {lang === 'ar' ? 'EN' : 'ع'}

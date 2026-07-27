@@ -65,9 +65,9 @@ export default function Hero() {
               <div
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300"
                 style={{
-                  background: 'var(--accent-subtle)',
+                  background: 'var(--surface-elevated)',
                   border: '1px solid var(--border)',
-                  color: 'var(--accent)',
+                  color: 'var(--text-secondary)',
                   opacity: badgeVisible ? 1 : 0,
                   transform: badgeVisible ? 'translateY(0)' : 'translateY(6px)',
                 }}
@@ -138,9 +138,9 @@ export default function Hero() {
                   background: 'var(--surface-elevated)',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent-subtle)'
+                  e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--text-primary) 25%, var(--border))'
                   e.currentTarget.style.color = 'var(--text-primary)'
-                  e.currentTarget.style.background = 'var(--accent-subtle)'
+                  e.currentTarget.style.background = 'var(--surface)'
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = 'var(--border)'
@@ -203,7 +203,7 @@ export default function Hero() {
                 borderRadius: 20,
                 border: '1px solid var(--border)',
                 borderLeft: '2px solid var(--accent)',
-                boxShadow: '0 0 60px var(--accent-subtle), 0 0 120px var(--accent-subtle)',
+                boxShadow: 'var(--shadow-premium)',
                 overflow: 'hidden',
               }}
             >
@@ -216,7 +216,7 @@ export default function Hero() {
                   <span style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+                    style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
                   >
                     Inbox
                   </span>
@@ -246,7 +246,7 @@ export default function Hero() {
                       </div>
                       <p style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 2 }} className="truncate">{item.msg}</p>
                     </div>
-                    <span style={{ color: 'var(--accent)', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
+                    <span style={{ color: 'var(--success)', fontSize: 11, fontWeight: 700 }}>AI ✓</span>
                   </div>
                 ))}
 
@@ -297,7 +297,7 @@ export default function Hero() {
                       <span>✅</span>
                       <div className="flex-1">
                         <p style={{ color: 'var(--text-primary)', fontSize: 13 }}>ساعات العمل: 9 صباحاً – 9 مساءً 🕘</p>
-                        <span style={{ color: 'var(--accent)', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
+                        <span style={{ color: 'var(--success)', fontSize: 11, display: 'block', marginTop: 4 }}>✓ تم الإرسال</span>
                       </div>
                     </div>
                   )}
@@ -312,7 +312,7 @@ export default function Hero() {
                 <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>340 رد اليوم</span>
                 <span
                   className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+                  style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
                 >
                   ⚡ 8 ثوانٍ avg
                 </span>
@@ -339,8 +339,8 @@ export default function Hero() {
               style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
-                color: 'var(--accent)',
-                boxShadow: '0 0 20px var(--accent-subtle)',
+                color: 'var(--text-primary)',
+                boxShadow: 'var(--shadow-md)',
                 animation: 'floatPill 5s ease-in-out infinite 1s',
                 backdropFilter: 'blur(12px)',
               }}
