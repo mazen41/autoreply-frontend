@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import './globals.css'
 import { LangProvider } from '../lib/LangContext'
 import { ThemeProvider } from '../lib/ThemeContext'
-import { AuthProvider } from '../components/AuthProvider'
+import { AuthProvider } from '../lib/AuthContext'
 import { Space_Grotesk, Cairo } from 'next/font/google'
 import FooterWrapper from '../components/FooterWrapper'
 
