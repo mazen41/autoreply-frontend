@@ -534,6 +534,7 @@ const FILTERS = [
   { id: 'gmail', label: 'Gmail' },
   { id: 'facebook', label: 'FB' },
   { id: 'instagram', label: 'IG' },
+  { id: 'whatsapp', label: 'WhatsApp' },
 ]
 
 export default function InboxPage() {
