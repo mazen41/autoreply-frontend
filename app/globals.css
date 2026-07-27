@@ -57,13 +57,13 @@
   --on-accent-text: #06110D;
 }
 
-/* ─── Landing page only — "Graphite & Amber" override ─── */
-.landing-theme {
+/* ─── Landing page only — "Graphite & Amber" (dark) ─── */
+.dark.landing-theme {
   --background: #0A0908;
   --background-end: #0A0908;
   --surface: #141210;
   --surface-elevated: #1C1916;
-  --border: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.07);
   --divider: rgba(255,255,255,0.045);
   --accent: #E0983D;
   --accent-end: #E0983D;
@@ -84,6 +84,33 @@
   --on-accent-text: #1A1006;
 }
 
+/* ─── Landing page only — "Graphite & Amber" (light) ─── */
+.landing-theme:not(.dark) {
+  --background: #FAF7F2;
+  --background-end: #FAF7F2;
+  --surface: #FFFFFF;
+  --surface-elevated: #F3EEE6;
+  --border: rgba(28,23,18,0.09);
+  --divider: rgba(28,23,18,0.06);
+  --accent: #C1791D;
+  --accent-end: #C1791D;
+  --accent-hover: #A8670F;
+  --accent-subtle: rgba(193,121,29,0.10);
+  --accent-focus: rgba(193,121,29,0.35);
+  --text-primary: #1C1712;
+  --text-secondary: #5B5347;
+  --text-tertiary: #8C8377;
+  --success: #16A34A;
+  --warning: #D97706;
+  --error: #DC2626;
+  --bg-primary: #FAF7F2;
+  --accent-primary: #C1791D;
+  --primary: #C1791D;
+  --radius-card: 24px;
+  --shadow-premium: 0 24px 90px rgba(28,23,18,0.12);
+  --on-accent-text: #FFFFFF;
+}
+
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
 html[dir="ltr"] body { font-family: var(--font-space-grotesk), sans-serif; }
 
@@ -96,8 +123,8 @@ body {
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
-* { scrollbar-color: rgba(255,255,255,0.1) var(--bg-primary); scrollbar-width: thin; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+* { scrollbar-color: var(--border) var(--bg-primary); scrollbar-width: thin; }
 
 /* ─── OS Background ─── */
 .os-bg {
@@ -115,8 +142,8 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px);
   background-size: 60px 60px;
   animation: gridDrift 20s linear infinite;
 }
