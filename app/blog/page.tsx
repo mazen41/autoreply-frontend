@@ -1,8 +1,12 @@
 'use client'
 
-import Link from 'next/link'
-import { useAuth } from '../../components/AuthProvider'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { Rss } from 'lucide-react'
+import { useLang } from '../../lib/LangContext'
+import BlogTopBar from '../../components/blog/BlogTopBar'
+import PostCard, { BlogPost } from '../../components/blog/PostCard'
+import { fadeUp, fadeIn, staggerContainer, defaultTransition } from '../../lib/motion'
 
 const categories = [
   { value: 'all', labelAr: 'الكل', labelEn: 'All' },
@@ -13,7 +17,7 @@ const categories = [
 
 async function getPosts(category: string = 'all') {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts${category !== 'all' ? `?category=${category}` : ''}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/posts${category !== 'all' ? `?category=${encodeURIComponent(category)}` : ''}`, {
       next: { revalidate: 60 },
     })
 
@@ -27,158 +31,144 @@ async function getPosts(category: string = 'all') {
   }
 }
 
+function SkeletonCard() {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="skeleton aspect-video" style={{ borderRadius: 0 }} />
+      <div className="p-5 space-y-3">
+        <div className="skeleton skeleton-text-sm w-20" />
+        <div className="skeleton skeleton-text w-full" />
+        <div className="skeleton skeleton-text w-3/4" />
+        <div className="skeleton skeleton-text-sm w-1/2" />
+      </div>
+    </div>
+  )
+}
+
 export default function BlogPage() {
-  const { user } = useAuth()
+  const { isRTL } = useLang()
   const [category, setCategory] = useState('all')
-  const [posts, setPosts] = useState<any[]>([])
+  const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadPosts()
+    let active = true
+    setLoading(true)
+    getPosts(category).then(({ data }) => {
+      if (!active) return
+      setPosts(data || [])
+      setLoading(false)
+    })
+    return () => {
+      active = false
+    }
   }, [category])
 
-  const loadPosts = async () => {
-    setLoading(true)
-    const { data, meta } = await getPosts(category)
-    setPosts(data)
-    setLoading(false)
-  }
-
-  const estimateReadTime = (excerpt: string) => {
-    const wordsPerMinute = 200
-    const wordCount = excerpt.split(/\s+/).length
-    return Math.ceil(wordCount / wordsPerMinute)
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat('ar-SA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date)
-  }
+  const locale = isRTL ? 'ar-SA' : 'en-US'
+  const [featuredPost, ...restPosts] = posts
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Header */}
-      <div className="border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span style={{ color: 'var(--accent)', fontSize: 20 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
-          </Link>
-          {user ? (
-            <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              Dashboard
-            </Link>
-          ) : (
-            <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              Sign Up Free
-            </Link>
-          )}
-        </div>
-      </div>
+    <div className="min-h-screen" style={{ background: 'transparent' }}>
+      <BlogTopBar />
 
       {/* Hero */}
-      <div className="max-w-7xl mx-auto px-6 py-16 text-center">
-        <div>
-          <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-            المدونة
-          </h1>
-          <p className="text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
-            Blog - Tips & insights for e-commerce success
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-10 text-center relative">
+        <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+          <motion.div
+            variants={fadeUp}
+            transition={defaultTransition}
+            className="inline-flex items-center gap-2 mb-5 premium-kicker"
+          >
+            <Rss size={12} />
+            {isRTL ? 'مدونة ناز' : 'Naz Blog'}
+          </motion.div>
+          <motion.h1
+            variants={fadeUp}
+            transition={defaultTransition}
+            className="font-black mb-4"
+            style={{ fontSize: 'clamp(2.2rem,5vw,3.4rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+          >
+            {isRTL ? 'أفكار تنمّي متجرك' : 'Ideas that grow your store'}
+          </motion.h1>
+          <motion.p
+            variants={fadeUp}
+            transition={defaultTransition}
+            className="text-lg max-w-2xl mx-auto"
+            style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}
+          >
+            {isRTL
+              ? 'نصائح عملية واستراتيجيات مثبتة في التجارة الإلكترونية، أتمتة المبيعات، وريادة الأعمال.'
+              : 'Practical tips and proven strategies in e-commerce, sales automation, and entrepreneurship.'}
+          </motion.p>
+        </motion.div>
       </div>
 
-      {/* Category Filter */}
-      <div className="max-w-7xl mx-auto px-6 mb-8">
-        <div className="flex flex-wrap gap-3">
+      {/* Category Filter — sliding pill */}
+      <div className="max-w-7xl mx-auto px-6 mb-10">
+        <div className="flex flex-wrap justify-center gap-2 p-1.5 w-fit mx-auto rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           {categories.map((cat) => (
             <button
               key={cat.value}
               onClick={() => setCategory(cat.value)}
-              className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{
-                background: category === cat.value ? 'var(--accent-focus)' : 'var(--surface)',
-                color: category === cat.value ? 'var(--accent)' : 'var(--text-secondary)',
-                border: category === cat.value ? '1px solid var(--accent-focus)' : '1px solid var(--border)',
-              }}
+              className="relative px-4 py-2 rounded-xl text-sm font-bold transition-colors duration-200"
+              style={{ color: category === cat.value ? 'var(--on-accent-text)' : 'var(--text-secondary)' }}
             >
-              {cat.labelAr}
+              {category === cat.value && (
+                <motion.span
+                  layoutId="categoryPill"
+                  className="absolute inset-0 rounded-xl"
+                  style={{ background: 'var(--accent)' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                />
+              )}
+              <span className="relative z-10">{isRTL ? cat.labelAr : cat.labelEn}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Posts Grid */}
-      <div className="max-w-7xl mx-auto px-6 pb-20">
-        {loading ? (
-          <div className="text-center py-20">
-            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-              Loading...
-            </p>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-              لا توجد مقالات حالياً / No articles yet
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post: any, i: number) => (
-              <div
-                key={post.id}
-              >
-                <Link href={`/blog/${post.slug}`}>
-                  <div className="h-full p-6 rounded-2xl transition-all duration-300 hover:scale-105"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    {/* Featured Image */}
-                    {post.featured_image_url && (
-                      <div className="mb-4 aspect-video rounded-lg overflow-hidden"
-                        style={{ background: 'var(--border)' }}>
-                        <img
-                          src={post.featured_image_url}
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-
-                    {/* Category Badge */}
-                    {post.category && (
-                      <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-3"
-                        style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-                        {post.category}
-                      </div>
-                    )}
-
-                    {/* Title */}
-                    <h3 className="font-bold mb-3 line-clamp-2" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>
-                      {post.title}
-                    </h3>
-
-                    {/* Excerpt */}
-                    <p className="text-sm mb-4 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                      {post.excerpt}
-                    </p>
-
-                    {/* Meta */}
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                      <span>{formatDate(post.published_at)}</span>
-                      <span>•</span>
-                      <span>{estimateReadTime(post.excerpt || '')} min read</span>
-                    </div>
-                  </div>
-                </Link>
+      {/* Posts */}
+      <div className="max-w-7xl mx-auto px-6 pb-24 min-h-[40vh]">
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </motion.div>
+          ) : posts.length === 0 ? (
+            <motion.div key="empty" variants={fadeIn} initial="hidden" animate="visible" className="empty-state">
+              <div className="empty-state-icon">
+                <Rss size={22} />
               </div>
-            ))}
-          </div>
-        )}
+              <div className="empty-state-title">
+                {isRTL ? 'لا توجد مقالات في هذا القسم' : 'No articles in this category yet'}
+              </div>
+              <div className="empty-state-description">
+                {isRTL ? 'جرّب قسماً آخر أو عد لاحقاً لمقالات جديدة.' : 'Try another category, or check back soon for new posts.'}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key={category} initial="hidden" animate="visible" variants={staggerContainer} className="space-y-10">
+              {featuredPost && (
+                <PostCard post={featuredPost} isRTL={isRTL} locale={locale} featured />
+              )}
+              {restPosts.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {restPosts.map((post, i) => (
+                    <PostCard key={post.id} post={post} isRTL={isRTL} locale={locale} index={i} />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
