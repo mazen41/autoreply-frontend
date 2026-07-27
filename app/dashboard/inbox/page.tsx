@@ -83,23 +83,162 @@ function renderHtmlContent(content: string, channelType?: string) {
         'p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li',
-        'table', 'thead', 'tbody', 'tr', 'td', 'th',
+        'table', 'thead', 'tbody', 'tr', 'td', 'th', 'tfoot', 'caption',
         'img', 'blockquote', 'code', 'pre',
-        'hr', 'sub', 'sup', 'small', 'del', 'ins'
+        'hr', 'sub', 'sup', 'small', 'del', 'ins', 's', 'strike',
+        'font', 'center', 'marquee', 'blink', 'iframe', 'embed', 'object',
+        'form', 'input', 'button', 'select', 'option', 'textarea', 'label',
+        'map', 'area', 'figure', 'figcaption', 'picture', 'source',
+        'section', 'article', 'aside', 'header', 'footer', 'nav', 'main',
+        'details', 'summary', 'dialog', 'menu', 'menuitem',
+        'address', 'cite', 'dfn', 'abbr', 'acronym', 'q', 'var', 'samp', 'kbd',
+        'data', 'time', 'mark', 'ruby', 'rt', 'rp', 'bdi', 'bdo', 'wbr'
       ],
       ALLOWED_ATTR: [
         'href', 'src', 'alt', 'title', 'target', 'rel',
         'style', 'class', 'id', 'width', 'height',
         'cellpadding', 'cellspacing', 'border', 'align',
-        'colspan', 'rowspan', 'valign'
+        'colspan', 'rowspan', 'valign', 'bgcolor', 'background',
+        'color', 'face', 'size', 'dir', 'lang',
+        'name', 'value', 'type', 'placeholder', 'disabled', 'readonly',
+        'for', 'maxlength', 'minlength', 'pattern', 'required',
+        'rows', 'cols', 'wrap', 'selected', 'checked',
+        'data-*', 'aria-*', 'role',
+        'frameborder', 'scrolling', 'marginwidth', 'marginheight',
+        'allowfullscreen', 'allow', 'referrerpolicy',
+        'crossorigin', 'integrity', 'loading', 'decoding',
+        'usemap', 'ismap', 'coords', 'shape', 'hreflang',
+        'download', 'media', 'ping', 'referrerpolicy',
+        'start', 'reversed', 'compact', 'type',
+        'open', 'tabindex', 'accesskey', 'contenteditable',
+        'spellcheck', 'draggable', 'hidden', 'translate'
       ],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      ALLOW_DATA_ATTR: true,
+      FORCE_BODY: true,
     })
-    return <div className="email-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+    return <EmailIframe content={sanitizedContent} />
   }
   
   // For non-Gmail or plain text content, render as-is
   return <div>{content}</div>
+}
+
+// Component to render email content in an iframe for authentic appearance
+function EmailIframe({ content }: { content: string }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  
+  useEffect(() => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+    
+    const doc = iframe.contentDocument || iframe.contentWindow?.document
+    if (!doc) return
+    
+    // Create the complete HTML document with email-like styling
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #202124;
+            background: #ffffff;
+            padding: 16px;
+            word-wrap: break-word;
+          }
+          
+          img {
+            max-width: 100%;
+            height: auto;
+            display: inline-block;
+          }
+          
+          a {
+            color: #1a73e8;
+            text-decoration: none;
+          }
+          
+          a:hover {
+            text-decoration: underline;
+          }
+          
+          table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          
+          td, th {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+          }
+          
+          blockquote {
+            border-left: 3px solid #1a73e8;
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            color: #5f6368;
+          }
+          
+          pre {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+          }
+          
+          code {
+            font-family: 'Courier New', monospace;
+            background: #f1f3f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 13px;
+          }
+          
+          hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 16px 0;
+          }
+        </style>
+      </head>
+      <body>${content}</body>
+      </html>
+    `
+    
+    doc.open()
+    doc.write(html)
+    doc.close()
+  }, [content])
+  
+  return (
+    <iframe
+      ref={iframeRef}
+      title="Email Content"
+      style={{
+        width: '100%',
+        minHeight: '100px',
+        border: 'none',
+        background: 'transparent',
+        overflow: 'hidden'
+      }}
+      sandbox="allow-same-origin allow-scripts"
+    />
+  )
 }
 
 function groupMessagesByDate(msgs: ApiMessage[]) {
