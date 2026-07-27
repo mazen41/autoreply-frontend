@@ -8,6 +8,7 @@ import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import ReactionPicker from '../../../components/inbox/ReactionPicker'
 import { Download, FileText, Mic, Paperclip, Pause, Send, SmilePlus, Trash2, Video, X } from 'lucide-react'
+import DOMPurify from 'dompurify'
 
 function channelMeta(type: string) {
   if (type === 'facebook')  return { label: 'FB',  color: 'var(--accent)', glow: 'var(--accent-focus)' }
@@ -71,6 +72,34 @@ function mediaTypeFromFile(file: File): 'image' | 'audio' | 'video' | 'document'
   if (file.type.startsWith('audio/')) return 'audio'
   if (file.type.startsWith('video/')) return 'video'
   return 'document'
+}
+
+// Helper function to safely render HTML content (for Gmail emails)
+function renderHtmlContent(content: string, channelType?: string) {
+  // Only render as HTML for Gmail messages that contain HTML tags
+  if (channelType === 'gmail' && content && content.includes('<')) {
+    const sanitizedContent = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li',
+        'table', 'thead', 'tbody', 'tr', 'td', 'th',
+        'img', 'blockquote', 'code', 'pre',
+        'hr', 'sub', 'sup', 'small', 'del', 'ins'
+      ],
+      ALLOWED_ATTR: [
+        'href', 'src', 'alt', 'title', 'target', 'rel',
+        'style', 'class', 'id', 'width', 'height',
+        'cellpadding', 'cellspacing', 'border', 'align',
+        'colspan', 'rowspan', 'valign'
+      ],
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    })
+    return <div className="email-content" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+  }
+  
+  // For non-Gmail or plain text content, render as-is
+  return <div>{content}</div>
 }
 
 function groupMessagesByDate(msgs: ApiMessage[]) {
@@ -295,7 +324,7 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
               </a>
             )}
 
-            {msg.content && <div style={{ padding: hasMedia ? '8px 8px 4px' : 0 }}>{msg.content}</div>}
+            {msg.content && <div style={{ padding: hasMedia ? '8px 8px 4px' : 0 }}>{renderHtmlContent(msg.content, channelType)}</div>}
 
             {uniqueReactions.length > 0 && (
               <div style={{
