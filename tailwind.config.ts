@@ -27,6 +27,12 @@ const config: Config = {
         success: 'var(--success)',
         warning: 'var(--warning)',
         error: 'var(--error)',
+        // New colors for the modern palette
+        'accent-secondary': 'var(--accent-secondary)',
+        'accent-secondary-subtle': 'var(--accent-secondary-subtle)',
+        'accent-secondary-hover': 'var(--accent-secondary-hover)',
+        'accent-pink': 'var(--accent-pink)',
+        'accent-pink-subtle': 'var(--accent-pink-subtle)',
       },
       fontFamily: {
         sans: ['Space Grotesk', 'Inter', 'sans-serif'],

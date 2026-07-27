@@ -144,7 +144,7 @@ export default function LoginForm() {
 
   return (
     <motion.div className="relative w-full overflow-hidden rounded-2xl p-5 sm:p-7 premium-card" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-premium)' }} initial={{ opacity: 0, y: 18, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>
-      <div className="absolute inset-0 pointer-events-none lg:hidden" style={{ backgroundImage: 'radial-gradient(circle at 15% 12%, var(--accent-subtle) 0%, transparent 35%), radial-gradient(circle at 88% 8%, var(--accent-subtle) 0%, transparent 28%), linear-gradient(var(--accent-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--accent-subtle) 1px, transparent 1px)', backgroundSize: '100% 100%, 100% 100%, 34px 34px, 34px 34px', opacity: 0.55 }} />
+      <div className="absolute inset-0 pointer-events-none lg:hidden" style={{ backgroundImage: 'radial-gradient(circle at 15% 12%, var(--accent-subtle) 0%, transparent 35%), radial-gradient(circle at 88% 8%, var(--accent-secondary-subtle) 0%, transparent 28%), linear-gradient(var(--accent-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--accent-subtle) 1px, transparent 1px)', backgroundSize: '100% 100%, 100% 100%, 34px 34px, 34px 34px', opacity: 0.55 }} />
       <div className="relative z-10">
         <Link href="/" className="flex items-center gap-2.5 justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2" style={{ '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px var(--accent-focus))' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -153,7 +153,7 @@ export default function LoginForm() {
 
         <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>
           <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
-            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
+            <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
             <span className="text-[11px] font-bold tracking-[0.1em]" style={{ color: 'var(--accent)' }}>{t.auth.login.toUpperCase()}</span>
           </div>
           <h1 className="font-black mb-1.5" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>{t.auth.welcomeBack}.</h1>
@@ -164,7 +164,7 @@ export default function LoginForm() {
 
         <AnimatePresence>
           {error && (
-            <motion.div key="login-error" initial={{ opacity: 0, scale: 0.96, x: 0 }} animate={{ opacity: 1, scale: 1, x: [0, -8, 8, -6, 6, 0] }} exit={{ opacity: 0, scale: 0.96, y: -8 }} transition={shakeTransition} className="mb-5 p-3.5 rounded-xl text-sm text-center" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--error)' }}>
+            <motion.div key="login-error" initial={{ opacity: 0, scale: 0.96, x: 0 }} animate={{ opacity: 1, scale: 1, x: [0, -8, 8, -6, 6, 0] }} exit={{ opacity: 0, scale: 0.96, y: -8 }} transition={shakeTransition} className="mb-5 p-3.5 rounded-xl text-sm text-center" style={{ background: 'var(--accent-pink-subtle)', border: '1px solid var(--accent-pink)', color: 'var(--accent-pink)' }}>
               {error}
             </motion.div>
           )}
@@ -180,10 +180,10 @@ export default function LoginForm() {
                 <label htmlFor={`login-${key}`} className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>{label}</label>
                 <div className="relative">
                   <span className="absolute top-1/2 -translate-y-1/2 pointer-events-none" style={{ [isRTL ? 'right' : 'left']: 14, color: 'var(--text-tertiary)' }}><FieldIcon type={icon} /></span>
-                  <input id={`login-${key}`} type={type} required autoComplete={autoComplete} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} onBlur={e => { setTouched({ ...touched, [key]: true }) }} placeholder={ph} aria-invalid={!!message} aria-describedby={describedBy} className="w-full py-3 rounded-xl text-sm outline-none transition-all duration-200 input-os" style={{ paddingInlineStart: 42, paddingInlineEnd: hasTrailingButton ? 44 : 16, background: 'var(--surface-elevated)' }} />
+                  <input id={`login-${key}`} type={type} required autoComplete={autoComplete} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} onBlur={e => { setTouched({ ...touched, [key]: true }) }} placeholder={ph} aria-invalid={!!message} aria-describedby={describedBy} className="w-full py-3 rounded-xl text-sm outline-none transition-all duration-200 input-modern" style={{ paddingInlineStart: 42, paddingInlineEnd: hasTrailingButton ? 44 : 16, background: 'var(--surface-elevated)', border: message ? '1px solid var(--accent-pink)' : '1px solid var(--border)' }} />
                   {key === 'password' && (<button type="button" onClick={() => setShowPass(s => !s)} className="absolute top-1/2 -translate-y-1/2 text-xs transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2" style={{ [isRTL ? 'left' : 'right']: 14, color: 'var(--text-tertiary)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties} aria-label={showPass ? 'Hide password' : 'Show password'}><EyeIcon hidden={showPass} /></button>)}
                 </div>
-                <AnimatePresence>{message && <motion.p id={`${key}-error`} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-1.5 text-xs" style={{ color: 'var(--error)' }}>{message}</motion.p>}</AnimatePresence>
+                <AnimatePresence>{message && <motion.p id={`${key}-error`} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-1.5 text-xs" style={{ color: 'var(--accent-pink)' }}>{message}</motion.p>}</AnimatePresence>
               </motion.div>
             )
           })}
@@ -196,7 +196,7 @@ export default function LoginForm() {
             <Link href="/forgot-password" className="text-xs font-medium hover:underline rounded focus-visible:outline-none focus-visible:ring-2" style={{ color: 'var(--accent)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>{t.auth.forgotPassword}</Link>
           </div>
 
-          <motion.button type="submit" disabled={loading || successPulse} className="group relative overflow-hidden w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 btn-lime disabled:opacity-70 disabled:cursor-not-allowed" style={{ background: loading || successPulse ? 'var(--accent-focus)' : 'var(--accent)', color: 'var(--on-accent-text)' }} whileHover={!loading && !successPulse ? { scale: 1.015 } : {}} whileTap={!loading && !successPulse ? { scale: 0.985 } : {}} initial={{ opacity: 0, y: 18, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.42, duration: 0.45 }}>
+          <motion.button type="submit" disabled={loading || successPulse} className="group relative overflow-hidden w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 btn-primary disabled:opacity-70 disabled:cursor-not-allowed" style={{ background: loading || successPulse ? 'var(--accent-focus)' : 'var(--accent)', color: 'var(--on-accent-text)' }} whileHover={!loading && !successPulse ? { scale: 1.015 } : {}} whileTap={!loading && !successPulse ? { scale: 0.985 } : {}} initial={{ opacity: 0, y: 18, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.42, duration: 0.45 }}>
             <span className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 opacity-0 transition-all duration-700 group-hover:left-[120%] group-hover:opacity-40" style={{ background: 'linear-gradient(90deg, transparent, var(--on-accent-text), transparent)' }} />
             {successPulse ? <CheckIcon /> : loading && <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/></svg>}
             {successPulse ? (isRTL ? 'تم' : 'Success') : loading ? (isRTL ? t.auth.signingIn : t.auth.signingInEn) : t.auth.signIn}

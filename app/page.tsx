@@ -22,14 +22,12 @@ function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
             href="/pricing"
-            className="px-8 py-3 rounded-xl font-bold transition-all"
+            className="px-8 py-3 rounded-xl font-bold transition-all btn-primary"
             style={{
-              background: 'var(--accent)',
-              color: 'var(--surface)',
               boxShadow: '0 4px 20px var(--shadow-premium)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--accent)'
+              e.currentTarget.style.background = 'var(--accent-hover)'
               e.currentTarget.style.transform = 'translateY(-1px)'
             }}
             onMouseLeave={(e) => {
@@ -41,19 +39,15 @@ function Hero() {
           </a>
           <a
             href="/login"
-            className="px-8 py-3 rounded-xl font-bold transition-all"
-            style={{
-              background: 'var(--border)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border)',
-            }}
+            className="px-8 py-3 rounded-xl font-bold transition-all btn-secondary"
+            style={{}}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--border)'
-              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.borderColor = 'var(--accent-secondary)'
+              e.currentTarget.style.color = 'var(--accent-secondary)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--border)'
               e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.color = 'var(--text-primary)'
             }}
           >
             {isRTL ? 'تسجيل الدخول' : 'Sign In'}

@@ -51,7 +51,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
 
   const stats = [
     { v: '500+', l: t.auth.stats.businesses, c: 'var(--accent)' },
-    { v: '3.2M', l: t.auth.stats.autoReplies, c: 'var(--accent)' },
+    { v: '3.2M', l: t.auth.stats.autoReplies, c: 'var(--accent-secondary)' },
     { v: '8s',   l: t.auth.stats.avgReply, c: 'var(--accent)' },
   ]
 
@@ -79,7 +79,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       }} />
       <div className="absolute pointer-events-none" style={{
         top: '-60px', right: '-60px', width: 320, height: 320, borderRadius: '50%',
-        background: 'radial-gradient(circle, var(--accent-subtle) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, var(--accent-secondary-subtle) 0%, transparent 65%)',
         filter: 'blur(40px)',
       }} />
       {/* Grid texture */}
