@@ -191,10 +191,10 @@ export default function CommandCenter() {
             style={{ fontSize: 'clamp(2.4rem, 6vw, 5rem)', letterSpacing: '-0.04em' }}
           >
             <span className="block" style={{ color: 'var(--text-primary)' }}>
-              {isRTL ? 'عملك لا ينام.' : 'Your Business Never Sleeps.'}
+              {isRTL ? 'ندير مراسلاتك' : 'Manage Your Messages'}
             </span>
             <span className="block text-dual" style={{ paddingBottom: '0.05em' }}>
-              {isRTL ? 'وكذلك ذكاؤك الاصطناعي.' : 'Neither Does Your AI.'}
+              {isRTL ? 'و مبيعاتك بذكاء.' : 'And Sales With AI.'}
             </span>
           </h1>
 
