@@ -3,62 +3,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Light mode (default) — "Bork Agent" reference ─── */
+/* ─── Light mode (default) — Graphite & Amber ─── */
 :root {
-  --background: #F3F1FF;
-  --background-end: #E7E4FB;
+  --background: #FAF7F2;
+  --background-end: #FAF7F2;
   --surface: #FFFFFF;
-  --surface-elevated: #FAFAFF;
-  --border: #E7E5F5;
-  --divider: #EFEDFA;
-  --accent: #5B4FE8;
-  --accent-end: #4C7CF0;
-  --accent-hover: #4A3FD1;
-  --accent-subtle: #EDEBFF;
-  --accent-focus: rgba(91,79,232,0.35);
-  --text-primary: #0B0B14;
-  --text-secondary: #5B5B72;
-  --text-tertiary: #9494A8;
+  --surface-elevated: #F3EEE6;
+  --border: rgba(28,23,18,0.09);
+  --divider: rgba(28,23,18,0.06);
+  --accent: #C1791D;
+  --accent-end: #C1791D;
+  --accent-hover: #A8670F;
+  --accent-subtle: rgba(193,121,29,0.10);
+  --accent-focus: rgba(193,121,29,0.35);
+  --text-primary: #1C1712;
+  --text-secondary: #5B5347;
+  --text-tertiary: #8C8377;
   --success: #16A34A;
   --warning: #D97706;
   --error: #DC2626;
-  --bg-primary: #F3F1FF;
-  --accent-primary: #5B4FE8;
-  --primary: #5B4FE8;
+  --bg-primary: #FAF7F2;
+  --accent-primary: #C1791D;
+  --primary: #C1791D;
   --radius-card: 24px;
-  --shadow-premium: 0 24px 90px rgba(91,79,232,0.10);
+  --shadow-premium: 0 24px 90px rgba(28,23,18,0.12);
   --on-accent-text: #FFFFFF;
 }
 
-/* ─── Dark mode — Premium Dark & White w/ teal accent ─── */
+/* ─── Dark mode — Graphite & Amber ─── */
 .dark {
-  --background: #050506;
-  --background-end: #050506;
-  --surface: #0C0C0F;
-  --surface-elevated: #121216;
-  --border: rgba(255,255,255,0.07);
-  --divider: rgba(255,255,255,0.045);
-  --accent: #00E6A8;
-  --accent-end: #00E6A8;
-  --accent-hover: #33EDBB;
-  --accent-subtle: rgba(0,230,168,0.10);
-  --accent-focus: rgba(0,230,168,0.45);
-  --text-primary: #FFFFFF;
-  --text-secondary: #9C9CA6;
-  --text-tertiary: #5F5F69;
-  --success: #34D399;
-  --warning: #FBBF24;
-  --error: #F87171;
-  --bg-primary: #050506;
-  --accent-primary: #00E6A8;
-  --primary: #00E6A8;
-  --radius-card: 24px;
-  --shadow-premium: 0 24px 90px rgba(0,0,0,0.55);
-  --on-accent-text: #06110D;
-}
-
-/* ─── Landing page only — "Graphite & Amber" (dark) ─── */
-.dark.landing-theme {
   --background: #0A0908;
   --background-end: #0A0908;
   --surface: #141210;
@@ -84,32 +57,6 @@
   --on-accent-text: #1A1006;
 }
 
-/* ─── Landing page only — "Graphite & Amber" (light) ─── */
-.landing-theme:not(.dark) {
-  --background: #FAF7F2;
-  --background-end: #FAF7F2;
-  --surface: #FFFFFF;
-  --surface-elevated: #F3EEE6;
-  --border: rgba(28,23,18,0.09);
-  --divider: rgba(28,23,18,0.06);
-  --accent: #C1791D;
-  --accent-end: #C1791D;
-  --accent-hover: #A8670F;
-  --accent-subtle: rgba(193,121,29,0.10);
-  --accent-focus: rgba(193,121,29,0.35);
-  --text-primary: #1C1712;
-  --text-secondary: #5B5347;
-  --text-tertiary: #8C8377;
-  --success: #16A34A;
-  --warning: #D97706;
-  --error: #DC2626;
-  --bg-primary: #FAF7F2;
-  --accent-primary: #C1791D;
-  --primary: #C1791D;
-  --radius-card: 24px;
-  --shadow-premium: 0 24px 90px rgba(28,23,18,0.12);
-  --on-accent-text: #FFFFFF;
-}
 
 html[dir="rtl"] body { font-family: var(--font-cairo), sans-serif; }
 html[dir="ltr"] body { font-family: var(--font-space-grotesk), sans-serif; }
@@ -438,7 +385,7 @@ body {
 
 @layer components {
   .premium-shell { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-premium); backdrop-filter: blur(24px); }
-  .premium-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-premium); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
+  .premium-card { background: var(--surface-elevated); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-premium); transition: transform .25s ease, border-color .25s ease, background .25s ease; }
   .premium-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); background: var(--surface-elevated); }
   .premium-kicker { color: var(--accent); border: 1px solid var(--border); background: var(--accent-subtle); border-radius: 999px; padding: .45rem .75rem; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 }

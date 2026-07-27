@@ -152,9 +152,9 @@ export default function ReportsPage() {
   if (error) {
     return (
       <div className="p-4 md:p-6 max-w-5xl mx-auto">
-        <div className="rounded-2xl p-6 text-center" style={{ background: 'var(--accent)', border: '1px solid var(--border)' }}>
+        <div className="premium-card p-6 text-center" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--border)' }}>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-          <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold" style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}>
+          <button onClick={fetchReports} className="px-4 py-2 rounded-lg text-sm font-bold btn-lime">
             {isRTL ? 'إعادة المحاولة' : 'Retry'}
           </button>
         </div>
@@ -185,9 +185,9 @@ export default function ReportsPage() {
         {/* Line chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="card-os p-5 rounded-2xl"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            <h3 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {isRTL ? 'الرسائل اليومية' : 'Daily Messages'}
             </h3>
             <span className="text-2xl font-black" style={{ color: 'var(--accent)' }}>{dailyData.reduce((a, b) => a + b, 0)}</span>
@@ -198,8 +198,8 @@ export default function ReportsPage() {
         {/* Bar chart */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
           className="card-os p-5 rounded-2xl"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+          <h3 className="text-2xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             {isRTL ? 'توزيع حسب القناة' : 'By Channel'}
           </h3>
           {channelData.length === 0 ? (
@@ -238,8 +238,8 @@ export default function ReportsPage() {
       {/* AI Performance */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
         className="card-os p-5 rounded-2xl"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <h3 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+        <h3 className="text-2xl font-black tracking-[-0.03em] mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
           <LightningIcon size={16} style={{ color: 'var(--accent)' }} />
           {isRTL ? 'أداء الذكاء الاصطناعي' : 'AI Performance'}
         </h3>
@@ -266,8 +266,8 @@ export default function ReportsPage() {
       {/* Top questions */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}
         className="card-os p-5 rounded-2xl"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <h3 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+        <h3 className="text-2xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
           {isRTL ? 'أكثر الأسئلة تكراراً' : 'Top Questions'}
         </h3>
         {topQuestions.length === 0 ? (
@@ -301,7 +301,7 @@ export default function ReportsPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
         className="p-6 rounded-2xl relative overflow-hidden card-os"
         style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
-        <h3 className="text-2xl font-bold mb-4 relative flex items-center gap-2" style={{ color: 'var(--accent)', letterSpacing: '-0.02em' }}>
+        <h3 className="text-2xl font-black tracking-[-0.03em] mb-4 relative flex items-center gap-2" style={{ color: 'var(--accent)', letterSpacing: '-0.02em' }}>
           <TrendUpIcon size={16} />
           {isRTL ? 'الوقت الذي وفّره البوت' : 'Time Saved by the Bot'}
         </h3>

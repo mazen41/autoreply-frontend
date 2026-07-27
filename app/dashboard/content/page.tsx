@@ -127,7 +127,7 @@ export default function ContentPage() {
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
                 className="card-os flex items-center gap-4 p-4 rounded-2xl"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
                 <div className="text-xs font-semibold flex-shrink-0 w-20" style={{ color: 'var(--text-secondary)' }}>
                   {date}
                 </div>
@@ -160,7 +160,7 @@ export default function ContentPage() {
         <div className="space-y-3">
           {autoTypes.map(item => (
             <div key={item.id} className="card-os flex items-center justify-between p-4 rounded-2xl"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
               <div>
                 <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {isRTL ? item.ar : item.en}

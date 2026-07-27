@@ -5,13 +5,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
 
 export default function RegisterForm() {
   const { isRTL, t } = useLang()
-  const { theme } = useTheme()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect')
   const packageId = searchParams.get('package')
@@ -141,7 +139,7 @@ export default function RegisterForm() {
                 placeholder={ph}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
                 style={{
-                  background: 'var(--surface)',
+                  background: 'var(--surface-elevated)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-primary)',
                 }}
@@ -190,10 +188,10 @@ export default function RegisterForm() {
 
         {/* Submit */}
         <motion.button type="submit" disabled={loading}
-          className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 mt-2"
+          className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 btn-lime mt-2"
           style={{
             background: loading ? 'var(--accent-focus)' : 'var(--accent)',
-            color: theme === 'dark' ? 'var(--surface)' : 'var(--text-primary)',
+            color: 'var(--on-accent-text)',
           }}
           whileHover={!loading ? { scale: 1.015 } : {}}
           whileTap={!loading ? { scale: 0.985 } : {}}

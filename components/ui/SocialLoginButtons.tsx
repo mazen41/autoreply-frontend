@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
 
 export default function SocialLoginButtons({ redirectTo, packageId, billingCycle }: {
   redirectTo?: string
@@ -10,7 +9,6 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
   billingCycle?: string
 } = {}) {
   const { isRTL, t } = useLang()
-  const { theme } = useTheme()
   const [loading, setLoading] = useState<'google' | 'facebook' | null>(null)
   const [error, setError] = useState('')
 
@@ -57,12 +55,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       <button
         onClick={() => handleSocialLogin('google')}
         disabled={loading !== null}
-        className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          background: theme === 'dark' ? 'var(--surface)' : 'var(--text-primary)',
-          border: '1px solid var(--border)',
-          color: 'var(--text-primary)',
-        }}
+        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-ghost"
       >
         {loading === 'google' ? (
           <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -84,11 +77,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       <button
         onClick={() => handleSocialLogin('facebook')}
         disabled={loading !== null}
-        className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          background: 'var(--accent)',
-          color: 'var(--text-primary)',
-        }}
+        className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-lime"
       >
         {loading === 'facebook' ? (
           <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
