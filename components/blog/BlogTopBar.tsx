@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Sparkles, Moon, Sun } from 'lucide-react'
-import { useAuth } from '../AuthProvider'
-import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
+import { useAuth } from '@/lib/AuthContext'
+import { useLang } from '@/lib/LangContext'
+import { useTheme } from '@/lib/ThemeContext'
 
 export default function BlogTopBar() {
   const { user } = useAuth()

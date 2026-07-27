@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/lib/AuthContext'
 import Link from 'next/link'
 
 export default function PricingCalculator() {

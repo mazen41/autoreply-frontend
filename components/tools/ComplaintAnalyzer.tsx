@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/lib/AuthContext'
 import Link from 'next/link'
 
 export default function ComplaintAnalyzer() {
