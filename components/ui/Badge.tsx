@@ -3,11 +3,20 @@ import React from 'react'
 interface BadgeProps {
   children: React.ReactNode
   className?: string
+  variant?: 'accent' | 'success' | 'warning' | 'error' | 'neutral'
 }
 
-export default function Badge({ children, className = '' }: BadgeProps) {
+export default function Badge({ children, className = '', variant = 'accent' }: BadgeProps) {
+  const variantClasses = {
+    accent: 'badge-accent',
+    success: 'badge-success',
+    warning: 'badge-warning',
+    error: 'badge-error',
+    neutral: 'badge-neutral',
+  }
+
   return (
-    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border border-accent/30 text-accent bg-accent/10 ${className}`}>
+    <span className={`badge-os ${variantClasses[variant]} ${className}`}>
       {children}
     </span>
   )

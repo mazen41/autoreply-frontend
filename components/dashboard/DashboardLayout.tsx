@@ -98,25 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         key={item.href}
         href={item.href}
         onClick={() => setMobileSidebar(false)}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative group"
-        style={{
-          background: active ? 'var(--accent-subtle)' : 'transparent',
-          borderLeft: active ? '2px solid var(--accent)' : '2px solid transparent',
-          borderRight: isRTL ? (active ? '2px solid var(--accent)' : '2px solid transparent') : '2px solid transparent',
-          color: active ? 'var(--accent)' : 'var(--text-secondary)',
-        }}
-        onMouseEnter={(e) => {
-          if (!active) {
-            e.currentTarget.style.background = 'var(--accent-subtle)'
-            e.currentTarget.style.color = 'var(--text-primary)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!active) {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'var(--text-secondary)'
-          }
-        }}
+        className={`nav-item ${active ? 'nav-item-active' : ''} relative group`}
       >
         <Icon size={20} />
         {(!collapsed || mobileSidebar) && (
@@ -189,12 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Help */}
             {(!collapsed || mobileSidebar) && (
-              <button
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
-              >
+              <button className="nav-item w-full">
                 <HelpIcon size={20} />
                 <span className="text-sm font-semibold">{isRTL ? 'مساعدة' : 'Help'}</span>
               </button>
@@ -239,20 +216,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileSidebar(!mobileSidebar)}
-                className="md:hidden p-2 rounded-lg transition-colors"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                className="md:hidden btn-icon"
+                aria-label={mobileSidebar ? 'Close sidebar' : 'Open sidebar'}
               >
                 {mobileSidebar ? <XIcon size={20} /> : <MenuIcon size={20} />}
               </button>
 
               <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden md:block p-2 rounded-lg transition-colors"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                className="hidden md:block btn-icon"
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
                 <MenuIcon size={20} />
               </button>
@@ -266,13 +239,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Center - Search (desktop) */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <SearchIcon size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-secondary)' }} />
+              <div className="relative w-full input-with-icon">
+                <SearchIcon size={18} className="input-icon left-3" />
                 <input
                   type="text"
                   placeholder={isRTL ? 'بحث...' : 'Search...'}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg text-sm input-os"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                  className="w-full input-os pl-10 pr-4 py-2"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-xs font-mono" style={{ background: 'var(--border)', color: 'var(--text-secondary)' }}>
                   ⌘K
@@ -285,24 +257,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Language toggle */}
               <button
                 onClick={() => setLang(isRTL ? 'en' : 'ar')}
-                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
-                style={{ background: 'var(--divider)', color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--border)'
-                  e.currentTarget.style.color = 'var(--text-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--divider)'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold nav-item"
+                aria-label="Toggle language"
               >
                 {isRTL ? 'AR' : 'EN'}
               </button>
 
               {/* Trial countdown */}
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg badge-accent">
                 <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--accent)' }} />
-                <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>
+                <span className="text-xs font-semibold">
                   {isRTL ? '٧ أيام متبقية' : '7 days left'}
                 </span>
               </div>
@@ -311,10 +275,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="relative">
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}
-                  className="p-2 rounded-lg transition-colors relative"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+                  className="btn-icon relative"
+                  aria-label="Notifications"
                 >
                   <BellIcon size={20} />
                   <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
@@ -326,8 +288,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-2 w-80 glass rounded-xl overflow-hidden z-50"
-                      style={{ border: '1px solid var(--border)' }}
+                      className="absolute right-0 mt-2 w-80 dropdown-panel overflow-hidden z-50"
                     >
                       <div className="p-3" style={{ borderBottom: '1px solid var(--border)' }}>
                         <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -340,7 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             key={i}
                             href={notif.href}
                             onClick={() => setNotifOpen(false)}
-                            className="flex items-start gap-3 p-3 hover:bg-white/5 transition-colors"
+                            className="dropdown-item"
                             style={{ borderBottom: i < NOTIFICATIONS.length - 1 ? '1px solid var(--divider)' : 'none' }}
                           >
                             <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: notif.type === 'alert' ? 'var(--accent)' : notif.type === 'review' ? 'var(--accent)' : 'var(--accent)' }} />
@@ -366,6 +327,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors"
                   style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}
+                  aria-label="User menu"
                 >
                   {user?.name?.[0]?.toUpperCase() || 'U'}
                 </button>
@@ -376,8 +338,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-2 w-56 glass rounded-xl overflow-hidden z-50"
-                      style={{ border: '1px solid var(--border)' }}
+                      className="absolute right-0 mt-2 w-56 dropdown-panel overflow-hidden z-50"
                     >
                       <div className="p-3" style={{ borderBottom: '1px solid var(--border)' }}>
                         <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -391,32 +352,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <Link
                           href="/dashboard/settings"
                           onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-                          style={{ color: 'var(--text-secondary)' }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--border)'
-                            e.currentTarget.style.color = 'var(--text-primary)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent'
-                            e.currentTarget.style.color = 'var(--text-secondary)'
-                          }}
+                          className="dropdown-item"
                         >
                           <UserIcon size={16} />
                           {isRTL ? 'الإعدادات' : 'Settings'}
                         </Link>
                         <button
                           onClick={logout}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors w-full"
-                          style={{ color: 'var(--text-secondary)' }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--accent-subtle)'
-                            e.currentTarget.style.color = 'var(--accent)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent'
-                            e.currentTarget.style.color = 'var(--text-secondary)'
-                          }}
+                          className="dropdown-item w-full"
                         >
                           <LogOutIcon size={16} />
                           {isRTL ? 'تسجيل خروج' : 'Logout'}

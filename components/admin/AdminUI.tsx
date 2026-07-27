@@ -64,5 +64,5 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 export const inputClass = 'w-full rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-white/70 outline-none transition placeholder:text-white/70 focus:border-white/40 focus:ring-4 focus:ring-[var(--accent)]/15 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/70'
 
 export function SkeletonRows({ rows = 5 }: { rows?: number }) {
-  return <div className="space-y-3">{Array.from({ length: rows }).map((_, index) => <div key={index} className="h-14 animate-pulse rounded-xl bg-white/5 dark:bg-white/8" />)}</div>
+  return <div className="space-y-3">{Array.from({ length: rows }).map((_, index) => <div key={index} className="skeleton" style={{ height: '3.5rem' }} />)}</div>
 }
