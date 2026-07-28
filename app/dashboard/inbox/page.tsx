@@ -86,57 +86,39 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
 
   // Preferred path: a real HTML body came back from the API.
   if (channelType === 'gmail' && htmlSource) {
+    // Allow ALL HTML tags and attributes to preserve original email styling
     const sanitizedContent = DOMPurify.sanitize(htmlSource, {
       ALLOWED_TAGS: [
-        'p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'ul', 'ol', 'li',
-        'table', 'thead', 'tbody', 'tr', 'td', 'th', 'tfoot', 'caption',
-        'img', 'blockquote', 'code', 'pre',
-        'hr', 'sub', 'sup', 'small', 'del', 'ins', 's', 'strike',
-        'font', 'center', 'marquee', 'blink', 'iframe', 'embed', 'object',
-        'form', 'input', 'button', 'select', 'option', 'textarea', 'label',
-        'map', 'area', 'figure', 'figcaption', 'picture', 'source',
-        'section', 'article', 'aside', 'header', 'footer', 'nav', 'main',
-        'details', 'summary', 'dialog', 'menu', 'menuitem',
-        'address', 'cite', 'dfn', 'abbr', 'acronym', 'q', 'var', 'samp', 'kbd',
-        'data', 'time', 'mark', 'ruby', 'rt', 'rp', 'bdi', 'bdo', 'wbr'
+        '*', // Allow all tags to preserve email formatting
       ],
       ALLOWED_ATTR: [
-        'href', 'src', 'alt', 'title', 'target', 'rel',
-        'style', 'class', 'id', 'width', 'height',
-        'cellpadding', 'cellspacing', 'border', 'align',
-        'colspan', 'rowspan', 'valign', 'bgcolor', 'background',
-        'color', 'face', 'size', 'dir', 'lang',
-        'name', 'value', 'type', 'placeholder', 'disabled', 'readonly',
-        'for', 'maxlength', 'minlength', 'pattern', 'required',
-        'rows', 'cols', 'wrap', 'selected', 'checked',
-        'data-*', 'aria-*', 'role',
-        'frameborder', 'scrolling', 'marginwidth', 'marginheight',
-        'allowfullscreen', 'allow', 'referrerpolicy',
-        'crossorigin', 'integrity', 'loading', 'decoding',
-        'usemap', 'ismap', 'coords', 'shape', 'hreflang',
-        'download', 'media', 'ping', 'referrerpolicy',
-        'start', 'reversed', 'compact', 'type',
-        'open', 'tabindex', 'accesskey', 'contenteditable',
-        'spellcheck', 'draggable', 'hidden', 'translate'
+        '*', // Allow all attributes to preserve email styling
       ],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
       ALLOW_DATA_ATTR: true,
       FORCE_BODY: true,
+      WHOLE_DOCUMENT: true,
+      RETURN_DOM: true,
+      RETURN_DOM_FRAGMENT: false,
     })
-    return <EmailIframe content={sanitizedContent} />
+    return <EmailIframe content={sanitizedContent.toString()} />
   }
 
   // Fallback for Gmail messages synced before `content_html` existed, where
   // the plain-text `content` field happens to still contain raw markup.
   if (channelType === 'gmail' && !htmlSource && content && content.includes('<') && /<\/?[a-z][\s\S]*>/i.test(content)) {
-    const sanitizedContent = DOMPurify.sanitize(content, { ALLOWED_TAGS: ['p', 'br', 'div', 'span', 'a', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'blockquote'], ALLOWED_ATTR: ['href', 'target', 'rel'] })
-    return <EmailIframe content={sanitizedContent} />
+    const sanitizedContent = DOMPurify.sanitize(content, { 
+      ALLOWED_TAGS: ['*'],
+      ALLOWED_ATTR: ['*'],
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      ALLOW_DATA_ATTR: true,
+      FORCE_BODY: true,
+    })
+    return <EmailIframe content={sanitizedContent.toString()} />
   }
 
   // For non-Gmail or plain text content, render as-is
-  return <div>{content}</div>
+  return <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{content}</div>
 }
 
 // Component to render email HTML in an iframe that auto-sizes to its content
@@ -156,152 +138,8 @@ function EmailIframe({ content }: { content: string }) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #1a1a1a;
-      background: #ffffff;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    body { padding: 16px; }
-    
-    /* Email container styling */
-    .email-container {
-      max-width: 100%;
-      margin: 0 auto;
-    }
-    
-    /* Typography */
-    h1, h2, h3, h4, h5, h6 {
-      margin-top: 1.5em;
-      margin-bottom: 0.5em;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-    h1 { font-size: 24px; }
-    h2 { font-size: 20px; }
-    h3 { font-size: 18px; }
-    h4 { font-size: 16px; }
-    h5 { font-size: 14px; }
-    h6 { font-size: 12px; }
-    
-    p { margin: 0 0 1em 0; }
-    
-    /* Links */
-    a { 
-      color: #1a73e8; 
-      text-decoration: underline;
-      transition: color 0.2s;
-    }
-    a:hover { color: #1557b0; }
-    
-    /* Images */
-    img { 
-      max-width: 100% !important; 
-      height: auto; 
-      display: inline-block;
-      border-radius: 4px;
-    }
-    
-    /* Tables */
-    table { 
-      border-collapse: collapse; 
-      max-width: 100%; 
-      margin: 16px 0;
-      width: 100%;
-    }
-    td, th { 
-      padding: 8px 12px; 
-      border: 1px solid #e0e0e0;
-      text-align: left;
-    }
-    th {
-      background: #f8f9fa;
-      font-weight: 600;
-    }
-    
-    /* Blockquotes */
-    blockquote {
-      border-left: 4px solid #1a73e8;
-      margin: 16px 0;
-      padding: 12px 16px;
-      background: #f8f9fa;
-      color: #5f6368;
-      border-radius: 0 4px 4px 0;
-    }
-    
-    /* Code blocks */
-    pre {
-      background: #f1f3f4; 
-      padding: 16px; 
-      border-radius: 8px;
-      overflow-x: auto; 
-      font-size: 13px; 
-      white-space: pre-wrap;
-      margin: 16px 0;
-    }
-    code {
-      font-family: 'Courier New', monospace; 
-      background: #f1f3f4;
-      padding: 2px 6px; 
-      border-radius: 4px; 
-      font-size: 13px;
-    }
-    
-    /* Horizontal rules */
-    hr { 
-      border: none; 
-      border-top: 1px solid #e0e0e0; 
-      margin: 24px 0; 
-    }
-    
-    /* Lists */
-    ul, ol {
-      margin: 16px 0;
-      padding-left: 24px;
-    }
-    li { margin: 8px 0; }
-    
-    /* Email signatures and quoted text */
-    .gmail_quote, .signature, [class*="quote"] {
-      color: #666;
-      font-size: 13px;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #e0e0e0;
-    }
-    
-    /* Hide collapsed quoted text */
-    .elided-text, .gmail_extra { display: none; }
-    
-    /* Button styles for email CTAs */
-    .button-link {
-      display: inline-block;
-      padding: 12px 24px;
-      background: #1a73e8;
-      color: white;
-      text-decoration: none;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    
-    /* Responsive design */
-    @media (max-width: 600px) {
-      body { padding: 12px; }
-      table { font-size: 13px; }
-      td, th { padding: 6px 8px; }
-    }
-  </style>
 </head>
-<body>
-  <div class="email-container">
-    ${content}
-  </div>
+<body>${content}
 <script>
   function resize() {
     var h = document.documentElement.scrollHeight;
