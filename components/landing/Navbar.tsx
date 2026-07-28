@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
+import { useAuth } from '../../lib/AuthContext'
 import Image from 'next/image'
 
 const NAV_LINKS = [
@@ -15,6 +16,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { toggleLang, lang, isRTL, t } = useLang()
   const { theme, toggleTheme } = useTheme()
+  const { user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -114,23 +116,35 @@ export default function Navbar() {
               {lang === 'ar' ? 'EN' : 'ع'}
             </button>
 
-            <Link
-              href="/login"
-              className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors duration-200"
-              style={{ color: 'var(--text-secondary)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-            >
-              {t.nav.login}
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
+                style={{ letterSpacing: '-0.01em' }}
+              >
+                {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors duration-200"
+                  style={{ color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                >
+                  {t.nav.login}
+                </Link>
 
-            <Link
-              href="/register"
-              className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
-              style={{ letterSpacing: '-0.01em' }}
-            >
-              {t.nav.startFree}
-            </Link>
+                <Link
+                  href="/register"
+                  className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
+                  style={{ letterSpacing: '-0.01em' }}
+                >
+                  {t.nav.startFree}
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -167,12 +181,20 @@ export default function Navbar() {
               <button onClick={toggleLang} className="text-xs px-3 py-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
                 {lang === 'ar' ? 'EN' : 'ع'}
               </button>
-              <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                {t.nav.login}
-              </Link>
-              <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-lime">
-                {t.nav.startFree}
-              </Link>
+              {user ? (
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-primary">
+                  {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                    {t.nav.login}
+                  </Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-lime">
+                    {t.nav.startFree}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

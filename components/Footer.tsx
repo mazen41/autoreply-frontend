@@ -3,11 +3,13 @@
 import React from 'react'
 import { useLang } from '../lib/LangContext'
 import { useTheme } from '../lib/ThemeContext'
+import { useAuth } from '../lib/AuthContext'
 import Link from 'next/link'
 
 export default function Footer() {
   const { isRTL, t } = useLang()
   const { theme } = useTheme()
+  const { user } = useAuth()
 
   return (
     <footer className="border-t" style={{ borderColor: 'var(--border)' }}>
@@ -15,7 +17,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            © 2026 Naz Autoreply — {isRTL ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
+            © 2026 Autoreply — {isRTL ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
           </p>
 
           {/* Legal Links */}
@@ -41,6 +43,15 @@ export default function Footer() {
             >
               support@nazautoreply.com
             </a>
+            {user && (
+              <Link
+                href="/dashboard"
+                className="text-sm px-3 py-1.5 rounded-lg transition-colors hover:opacity-80"
+                style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}
+              >
+                {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+              </Link>
+            )}
           </div>
         </div>
       </div>
