@@ -91,7 +91,7 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
       ALLOWED_ATTR: ['*'],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
       ALLOW_DATA_ATTR: true,
-      FORCE_BODY: true,
+      WHOLE_DOCUMENT: true,
     })
     return <EmailIframe content={sanitizedContent} />
   }
@@ -99,12 +99,12 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
   // Fallback for Gmail messages synced before `content_html` existed, where
   // the plain-text `content` field happens to still contain raw markup.
   if (channelType === 'gmail' && !htmlSource && content && content.includes('<') && /<\/?[a-z][\s\S]*>/i.test(content)) {
-    const sanitizedContent = DOMPurify.sanitize(content, { 
+    const sanitizedContent = DOMPurify.sanitize(content, {
       ALLOWED_TAGS: ['*'],
       ALLOWED_ATTR: ['*'],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
       ALLOW_DATA_ATTR: true,
-      FORCE_BODY: true,
+      WHOLE_DOCUMENT: true,
     })
     return <EmailIframe content={sanitizedContent.toString()} />
   }
@@ -310,7 +310,7 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
           ALLOWED_ATTR: ['*'],
           ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
           ALLOW_DATA_ATTR: true,
-          FORCE_BODY: true,
+          WHOLE_DOCUMENT: true,
         })
       : null
 
