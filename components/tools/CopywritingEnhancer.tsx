@@ -92,11 +92,11 @@ export default function CopywritingEnhancer() {
             You've reached your daily limit
           </p>
           <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Sign up for unlimited access to all AI tools
+            {user ? 'قم بترقية حسابك للوصول غير المحدود لجميع أدوات الذكاء الاصطناعي' : 'Sign up for unlimited access to all AI tools'}
           </p>
-          <Link href="/register" className="inline-block px-6 py-3 rounded-xl font-bold text-sm"
+          <Link href={user ? '/dashboard' : '/register'} className="inline-block px-6 py-3 rounded-xl font-bold text-sm"
             style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
-            Sign Up Free
+            {user ? 'الذهاب إلى لوحة التحكم' : 'Sign Up Free'}
           </Link>
         </div>
       )}
