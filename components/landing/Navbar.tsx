@@ -46,31 +46,14 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden"
-                style={{
-                  background: 'var(--surface-elevated)',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <Image 
-                  src="/icons/Logo (2).png" 
-                  alt="Naz Logo" 
-                  width={18} 
-                  height={18}
-                  className="object-contain"
-                />
-              </div>
+              <Image 
+                src="/icons/Logo (2).png" 
+                alt="Naz Logo" 
+                width={120} 
+                height={40}
+                className="object-contain"
+              />
             </div>
-            <span className="text-[1.4rem] font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-              Naz
-            </span>
-            <span
-              className="hidden sm:inline text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-            >
-              AI OS
-            </span>
           </Link>
 
           {/* Desktop links */}

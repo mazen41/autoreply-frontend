@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Sparkles, Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { useAuth } from '@/lib/AuthContext'
 import { useLang } from '@/lib/LangContext'
 import { useTheme } from '@/lib/ThemeContext'
+import Image from 'next/image'
 
 export default function BlogTopBar() {
   const { user } = useAuth()
@@ -27,15 +28,13 @@ export default function BlogTopBar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <span
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-            style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-          >
-            <Sparkles size={16} style={{ color: 'var(--accent)' }} />
-          </span>
-          <span className="text-lg font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-            Naz
-          </span>
+          <Image 
+            src="/icons/Logo (2).png" 
+            alt="Naz Logo" 
+            width={100} 
+            height={35}
+            className="object-contain"
+          />
         </Link>
 
         <div className="flex items-center gap-2">
