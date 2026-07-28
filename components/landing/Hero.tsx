@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
+import { useAuth } from '../../lib/AuthContext'
 
 const BADGE_PHRASES = [
   'ذكاء اصطناعي · AI Automation',
@@ -20,6 +21,7 @@ const INBOX_SEQUENCE = [
 
 export default function Hero() {
   const { t, isRTL } = useLang()
+  const { user } = useAuth()
   const [badgeIdx, setBadgeIdx] = useState(0)
   const [badgeVisible, setBadgeVisible] = useState(true)
   const [inboxStep, setInboxStep] = useState(0)
@@ -111,40 +113,62 @@ export default function Hero() {
 
             {/* CTAs */}
             <div className={`flex flex-col sm:flex-row gap-4 mb-8 fade-up delay-400 ${isRTL ? 'sm:flex-row-reverse justify-end' : ''}`}>
-              <Link
-                href="/register"
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
-                style={{
-                  letterSpacing: '-0.01em',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'var(--accent-hover)'
-                  e.currentTarget.style.transform = 'scale(1.03)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'var(--accent)'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                {t.hero.ctaPrimary}
-              </Link>
-              <button
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 btn-secondary"
-                style={{}}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--accent-secondary)'
-                  e.currentTarget.style.color = 'var(--accent-secondary)'
-                  e.currentTarget.style.background = 'var(--surface)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                  e.currentTarget.style.background = 'var(--surface-elevated)'
-                }}
-              >
-                <span style={{ fontSize: 13 }}>▶</span>
-                {t.hero.ctaSecondary}
-              </button>
+              {user ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
+                  style={{
+                    letterSpacing: '-0.01em',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'var(--accent-hover)'
+                    e.currentTarget.style.transform = 'scale(1.03)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'var(--accent)'
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
+                >
+                  {isRTL ? 'لوحة التحكم' : 'Dashboard'}
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
+                    style={{
+                      letterSpacing: '-0.01em',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'var(--accent-hover)'
+                      e.currentTarget.style.transform = 'scale(1.03)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'var(--accent)'
+                      e.currentTarget.style.transform = 'scale(1)'
+                    }}
+                  >
+                    {t.hero.ctaPrimary}
+                  </Link>
+                  <button
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 btn-secondary"
+                    style={{}}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'var(--accent-secondary)'
+                      e.currentTarget.style.color = 'var(--accent-secondary)'
+                      e.currentTarget.style.background = 'var(--surface)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'var(--border)'
+                      e.currentTarget.style.color = 'var(--text-secondary)'
+                      e.currentTarget.style.background = 'var(--surface-elevated)'
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>▶</span>
+                    {t.hero.ctaSecondary}
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Social proof */}
@@ -208,7 +232,7 @@ export default function Hero() {
                 style={{ borderBottom: '1px solid var(--divider)' }}
               >
                 <div className="flex items-center gap-2">
-                  <span style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700 }}>✦ Naz</span>
+                  <span style={{ color: 'var(--accent)', fontSize: 13, fontWeight: 700 }}>✦</span>
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}

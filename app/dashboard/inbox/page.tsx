@@ -139,119 +139,209 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
   return <div>{content}</div>
 }
 
-// Component to render email content in an iframe for authentic appearance
+// Component to render email HTML in an iframe that auto-sizes to its content
 function EmailIframe({ content }: { content: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  
+  const [height, setHeight] = useState(200)
+
   useEffect(() => {
     const iframe = iframeRef.current
     if (!iframe) return
-    
+
     const doc = iframe.contentDocument || iframe.contentWindow?.document
     if (!doc) return
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #ffffff;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    body { padding: 16px; }
     
-    // Create the complete HTML document with email-like styling
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          
-          body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
-            color: #202124;
-            background: #ffffff;
-            padding: 16px;
-            word-wrap: break-word;
-          }
-          
-          img {
-            max-width: 100%;
-            height: auto;
-            display: inline-block;
-          }
-          
-          a {
-            color: #1a73e8;
-            text-decoration: none;
-          }
-          
-          a:hover {
-            text-decoration: underline;
-          }
-          
-          table {
-            border-collapse: collapse;
-            width: 100%;
-          }
-          
-          td, th {
-            padding: 8px;
-            border: 1px solid #e0e0e0;
-          }
-          
-          blockquote {
-            border-left: 3px solid #1a73e8;
-            margin: 8px 0;
-            padding: 8px 12px;
-            background: #f8f9fa;
-            color: #5f6368;
-          }
-          
-          pre {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-          }
-          
-          code {
-            font-family: 'Courier New', monospace;
-            background: #f1f3f4;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-size: 13px;
-          }
-          
-          hr {
-            border: none;
-            border-top: 1px solid #e0e0e0;
-            margin: 16px 0;
-          }
-        </style>
-      </head>
-      <body>${content}</body>
-      </html>
-    `
+    /* Email container styling */
+    .email-container {
+      max-width: 100%;
+      margin: 0 auto;
+    }
     
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 18px; }
+    h4 { font-size: 16px; }
+    h5 { font-size: 14px; }
+    h6 { font-size: 12px; }
+    
+    p { margin: 0 0 1em 0; }
+    
+    /* Links */
+    a { 
+      color: #1a73e8; 
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+    a:hover { color: #1557b0; }
+    
+    /* Images */
+    img { 
+      max-width: 100% !important; 
+      height: auto; 
+      display: inline-block;
+      border-radius: 4px;
+    }
+    
+    /* Tables */
+    table { 
+      border-collapse: collapse; 
+      max-width: 100%; 
+      margin: 16px 0;
+      width: 100%;
+    }
+    td, th { 
+      padding: 8px 12px; 
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+    }
+    
+    /* Blockquotes */
+    blockquote {
+      border-left: 4px solid #1a73e8;
+      margin: 16px 0;
+      padding: 12px 16px;
+      background: #f8f9fa;
+      color: #5f6368;
+      border-radius: 0 4px 4px 0;
+    }
+    
+    /* Code blocks */
+    pre {
+      background: #f1f3f4; 
+      padding: 16px; 
+      border-radius: 8px;
+      overflow-x: auto; 
+      font-size: 13px; 
+      white-space: pre-wrap;
+      margin: 16px 0;
+    }
+    code {
+      font-family: 'Courier New', monospace; 
+      background: #f1f3f4;
+      padding: 2px 6px; 
+      border-radius: 4px; 
+      font-size: 13px;
+    }
+    
+    /* Horizontal rules */
+    hr { 
+      border: none; 
+      border-top: 1px solid #e0e0e0; 
+      margin: 24px 0; 
+    }
+    
+    /* Lists */
+    ul, ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+    li { margin: 8px 0; }
+    
+    /* Email signatures and quoted text */
+    .gmail_quote, .signature, [class*="quote"] {
+      color: #666;
+      font-size: 13px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e0e0e0;
+    }
+    
+    /* Hide collapsed quoted text */
+    .elided-text, .gmail_extra { display: none; }
+    
+    /* Button styles for email CTAs */
+    .button-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #1a73e8;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      table { font-size: 13px; }
+      td, th { padding: 6px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    ${content}
+  </div>
+<script>
+  function resize() {
+    var h = document.documentElement.scrollHeight;
+    parent.postMessage({ type: 'iframe-height', height: h }, '*');
+  }
+  document.addEventListener('DOMContentLoaded', resize);
+  window.addEventListener('load', resize);
+  // Re-check after images load
+  document.querySelectorAll('img').forEach(function(img) {
+    img.addEventListener('load', resize);
+    img.addEventListener('error', resize);
+  });
+  // Initial call
+  setTimeout(resize, 50);
+  setTimeout(resize, 300);
+<\/script>
+</body>
+</html>`
+
     doc.open()
     doc.write(html)
     doc.close()
   }, [content])
-  
+
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type === 'iframe-height' && typeof e.data.height === 'number') {
+        setHeight(Math.max(60, e.data.height + 8))
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
+
   return (
     <iframe
       ref={iframeRef}
       title="Email Content"
-      style={{
-        width: '100%',
-        minHeight: '100px',
-        border: 'none',
-        background: 'transparent',
-        overflow: 'hidden'
-      }}
-      sandbox="allow-same-origin allow-scripts"
+      style={{ width: '100%', height, border: 'none', display: 'block', background: '#fff', borderRadius: 4 }}
+      sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
     />
   )
 }
@@ -366,7 +456,96 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
   const reactButtonRef = useRef<HTMLButtonElement>(null)
 
   const isWhatsApp = channelType === 'whatsapp'
+  const isGmail = channelType === 'gmail'
   const canReact = isWhatsApp && !!msg.whatsapp_message_id
+
+  // Gmail emails render as full-width cards, not chat bubbles
+  if (isGmail) {
+    const hasHtml = !!(msg.content_html && msg.content_html.trim())
+    const sanitizedHtml = hasHtml
+      ? DOMPurify.sanitize(msg.content_html!, {
+          ALLOWED_TAGS: [
+            'p','br','div','span','a','strong','b','em','i','u','s','strike','del','ins',
+            'h1','h2','h3','h4','h5','h6','ul','ol','li',
+            'table','thead','tbody','tfoot','tr','td','th','caption','colgroup','col',
+            'img','blockquote','code','pre','hr','sub','sup','small',
+            'font','center','figure','figcaption','picture','source',
+            'section','article','header','footer','address','cite','abbr','q','mark','time','data',
+          ],
+          ALLOWED_ATTR: [
+            'href','src','alt','title','target','rel','style','class','id',
+            'width','height','cellpadding','cellspacing','border','align',
+            'colspan','rowspan','valign','bgcolor','color','face','size',
+            'dir','lang','data-*','aria-*','role',
+            'loading','decoding','crossorigin',
+          ],
+          ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+          ALLOW_DATA_ATTR: true,
+          FORCE_BODY: true,
+        })
+      : null
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.16 }}
+        style={{ marginBottom: 16, width: '100%' }}
+      >
+        <div style={{
+          background: isIn ? 'var(--surface)' : 'var(--surface-elevated)',
+          border: `1px solid ${isIn ? 'var(--border)' : 'var(--accent-focus)'}`,
+          borderRadius: 12,
+          overflow: 'hidden',
+        }}>
+          {/* Email meta header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 16px',
+            borderBottom: '1px solid var(--border)',
+            background: isIn ? 'var(--surface-elevated)' : 'color-mix(in srgb, var(--accent) 8%, var(--surface-elevated))',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 999,
+                background: isIn ? 'var(--border)' : 'var(--accent-focus)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700,
+                color: isIn ? 'var(--text-secondary)' : 'var(--accent)',
+                flexShrink: 0,
+              }}>
+                {isIn ? '✉' : '↑'}
+              </div>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                {isIn ? (isRTL ? 'وارد' : 'Received') : (isRTL ? 'مُرسَل' : 'Sent')}
+              </span>
+              {!isIn && msg.is_ai && (
+                <span style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 700, background: 'var(--accent-subtle)', padding: '1px 6px', borderRadius: 99 }}>AI</span>
+              )}
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+              {formatMsgTime(msg.created_at)}
+            </span>
+          </div>
+
+          {/* Email body */}
+          <div style={{ padding: '12px 16px' }}>
+            {sanitizedHtml ? (
+              <EmailIframe content={sanitizedHtml} />
+            ) : (
+              <div style={{
+                fontSize: 14, lineHeight: 1.6,
+                color: 'var(--text-primary)',
+                whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+              }}>
+                {msg.content}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
 
   const openPicker = () => {
     if (!canReact || !reactButtonRef.current) return
