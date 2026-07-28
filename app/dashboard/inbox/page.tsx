@@ -86,22 +86,14 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
 
   // Preferred path: a real HTML body came back from the API.
   if (channelType === 'gmail' && htmlSource) {
-    // Allow ALL HTML tags and attributes to preserve original email styling
     const sanitizedContent = DOMPurify.sanitize(htmlSource, {
-      ALLOWED_TAGS: [
-        '*', // Allow all tags to preserve email formatting
-      ],
-      ALLOWED_ATTR: [
-        '*', // Allow all attributes to preserve email styling
-      ],
+      ALLOWED_TAGS: ['*'],
+      ALLOWED_ATTR: ['*'],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
       ALLOW_DATA_ATTR: true,
       FORCE_BODY: true,
-      WHOLE_DOCUMENT: true,
-      RETURN_DOM: true,
-      RETURN_DOM_FRAGMENT: false,
     })
-    return <EmailIframe content={sanitizedContent.toString()} />
+    return <EmailIframe content={sanitizedContent} />
   }
 
   // Fallback for Gmail messages synced before `content_html` existed, where
@@ -121,7 +113,8 @@ function renderHtmlContent(content: string, channelType?: string, contentHtml?: 
   return <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{content}</div>
 }
 
-// Component to render email HTML in an iframe that auto-sizes to its content
+// Renders email HTML in a sandboxed auto-sizing iframe — exactly like Gmail does.
+// Handles both full HTML documents (with <html><head>...) and body-only fragments.
 function EmailIframe({ content }: { content: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(200)
@@ -129,35 +122,46 @@ function EmailIframe({ content }: { content: string }) {
   useEffect(() => {
     const iframe = iframeRef.current
     if (!iframe) return
-
     const doc = iframe.contentDocument || iframe.contentWindow?.document
     if (!doc) return
 
-    const html = `<!DOCTYPE html>
+    const resizeScript = `<script>
+  function _sendH() {
+    parent.postMessage({ type: 'iframe-height', height: document.documentElement.scrollHeight }, '*');
+  }
+  document.addEventListener('DOMContentLoaded', _sendH);
+  window.addEventListener('load', _sendH);
+  document.querySelectorAll('img').forEach(function(img) {
+    img.addEventListener('load', _sendH);
+    img.addEventListener('error', _sendH);
+  });
+  setTimeout(_sendH, 100);
+  setTimeout(_sendH, 600);
+<\/script>`
+
+    // If the email is already a full HTML document, inject the resize script
+    // just before </body> rather than double-wrapping it.
+    const isFullDoc = /^\s*(<(!DOCTYPE|html)[^>]*>|<!DOCTYPE)/i.test(content.trim())
+    let html: string
+    if (isFullDoc) {
+      html = content.includes('</body>')
+        ? content.replace(/<\/body>/i, resizeScript + '</body>')
+        : content + resizeScript
+    } else {
+      // Body fragment — wrap in a minimal document with no opinionated styles
+      // so the email's own CSS is 100% in charge of the layout (just like Gmail).
+      html = `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>body{margin:0;padding:0}</style>
 </head>
 <body>${content}
-<script>
-  function resize() {
-    var h = document.documentElement.scrollHeight;
-    parent.postMessage({ type: 'iframe-height', height: h }, '*');
-  }
-  document.addEventListener('DOMContentLoaded', resize);
-  window.addEventListener('load', resize);
-  // Re-check after images load
-  document.querySelectorAll('img').forEach(function(img) {
-    img.addEventListener('load', resize);
-    img.addEventListener('error', resize);
-  });
-  // Initial call
-  setTimeout(resize, 50);
-  setTimeout(resize, 300);
-<\/script>
+${resizeScript}
 </body>
 </html>`
+    }
 
     doc.open()
     doc.write(html)
@@ -307,7 +311,6 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
           ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
           ALLOW_DATA_ATTR: true,
           FORCE_BODY: true,
-          WHOLE_DOCUMENT: true,
         })
       : null
 
