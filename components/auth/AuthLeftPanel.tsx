@@ -94,21 +94,13 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-12">
-          <div className="w-5 h-5 rounded-lg flex items-center justify-center overflow-hidden"
-            style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-            <Image 
-              src="/icons/Logo (2).png" 
-              alt="Naz Logo" 
-              width={20} 
-              height={20}
-              className="object-contain"
-            />
-          </div>
-          <span className="text-2xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
-          <div className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-            AI
-          </div>
+          <Image 
+            src="/icons/Logo (2).png" 
+            alt="Naz Logo" 
+            width={150} 
+            height={50}
+            className="object-contain"
+          />
         </div>
 
         {/* Core + system status */}

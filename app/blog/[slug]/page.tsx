@@ -280,10 +280,10 @@ export default function BlogArticlePage() {
               style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}
             >
               <h3 className="font-bold mb-3" style={{ color: 'var(--accent)' }}>
-                {isRTL ? 'اكتشف كيف يمكن لـ Naz Autoreply أن يضاعف مبيعاتك' : 'See how Naz Autoreply can double your sales'}
+                {isRTL ? 'اكتشف كيف يمكن للرد الآلي أن يضاعف مبيعاتك' : 'See how Autoreply can double your sales'}
               </h3>
               <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                {isRTL ? 'دع الذكاء الاصطناعي يرد على عملائك تلقائياً على جميع المنصات' : 'Let AI reply to your customers automatically, across every channel'}
+                {isRTL ? 'دع الذكاء الاصطناعي يرد على عملائك تلقائياً على جميع المنصات' : 'Let AI automatically reply to your customers across every channel'}
               </p>
               <Link href="/register" className="inline-block px-6 py-3 rounded-lg font-bold text-sm btn-primary">
                 {isRTL ? 'جرّب مجاناً' : 'Try it free'}

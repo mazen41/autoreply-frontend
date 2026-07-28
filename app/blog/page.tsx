@@ -80,7 +80,7 @@ export default function BlogPage() {
             className="inline-flex items-center gap-2 mb-5 premium-kicker"
           >
             <Rss size={12} />
-            {isRTL ? 'مدونة ناز' : 'Naz Blog'}
+            {isRTL ? 'المدونة' : 'Blog'}
           </motion.div>
           <motion.h1
             variants={fadeUp}

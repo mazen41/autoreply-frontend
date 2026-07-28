@@ -166,7 +166,7 @@ export default function PolicyGenerator() {
           {/* Upsell CTA */}
           <div className="mt-6 p-4 rounded-xl text-center" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
             <p className="text-sm mb-3" style={{ color: 'var(--text-secondary)' }}>
-              هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب Naz Autoreply مجاناً
+              هل تريد أن يرد الذكاء الاصطناعي على عملائك تلقائياً؟ جرّب الرد الآلي مجاناً
             </p>
             <Link href={user ? '/dashboard/channels' : '/register'} className="inline-block px-4 py-2 rounded-lg text-sm font-bold"
               style={{ background: 'var(--accent)', color: 'var(--surface)' }}>
