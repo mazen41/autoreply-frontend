@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -302,24 +302,12 @@ function MsgBubble({ msg, channelType, isRTL, onReact }: { msg: ApiMessage; chan
     const hasHtml = !!(msg.content_html && msg.content_html.trim())
     const sanitizedHtml = hasHtml
       ? DOMPurify.sanitize(msg.content_html!, {
-          ALLOWED_TAGS: [
-            'p','br','div','span','a','strong','b','em','i','u','s','strike','del','ins',
-            'h1','h2','h3','h4','h5','h6','ul','ol','li',
-            'table','thead','tbody','tfoot','tr','td','th','caption','colgroup','col',
-            'img','blockquote','code','pre','hr','sub','sup','small',
-            'font','center','figure','figcaption','picture','source',
-            'section','article','header','footer','address','cite','abbr','q','mark','time','data',
-          ],
-          ALLOWED_ATTR: [
-            'href','src','alt','title','target','rel','style','class','id',
-            'width','height','cellpadding','cellspacing','border','align',
-            'colspan','rowspan','valign','bgcolor','color','face','size',
-            'dir','lang','data-*','aria-*','role',
-            'loading','decoding','crossorigin',
-          ],
+          ALLOWED_TAGS: ['*'],
+          ALLOWED_ATTR: ['*'],
           ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|cid|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
           ALLOW_DATA_ATTR: true,
           FORCE_BODY: true,
+          WHOLE_DOCUMENT: true,
         })
       : null
 
