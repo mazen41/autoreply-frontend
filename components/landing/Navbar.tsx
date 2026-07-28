@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
-import { NazLogoIcon } from '../ui/DashboardIcons'
+import Image from 'next/image'
 
 const NAV_LINKS = [
   { labelKey: 'commandCenter', href: '#command-center' },
@@ -47,13 +47,19 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden"
                 style={{
                   background: 'var(--surface-elevated)',
                   border: '1px solid var(--border)',
                 }}
               >
-                <NazLogoIcon size={18} />
+                <Image 
+                  src="/icons/Logo (2).png" 
+                  alt="Naz Logo" 
+                  width={18} 
+                  height={18}
+                  className="object-contain"
+                />
               </div>
             </div>
             <span className="text-[1.4rem] font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>

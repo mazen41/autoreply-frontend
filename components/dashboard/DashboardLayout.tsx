@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import {
   HomeIcon,
   InboxIcon,
@@ -23,8 +24,7 @@ import {
   XIcon,
   UserIcon,
   LogOutIcon,
-  PlusIcon,
-  NazLogoIcon
+  PlusIcon
 } from '../ui/DashboardIcons'
 
 const NAV = [
@@ -149,7 +149,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-2.5 px-5 py-5 mb-2">
-            <NazLogoIcon size={24} />
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center overflow-hidden"
+              style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+              <Image 
+                src="/icons/Logo (2).png" 
+                alt="Naz Logo" 
+                width={24} 
+                height={24}
+                className="object-contain"
+              />
+            </div>
             {(!collapsed || mobileSidebar) && (
               <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em', fontFamily: 'Space Grotesk, sans-serif' }}>
                 Naz

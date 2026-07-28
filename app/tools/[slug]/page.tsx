@@ -1,17 +1,22 @@
+'use client'
+
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import dynamic from 'next/dynamic'
+import { useAuth } from '@/lib/AuthContext'
+import { use } from 'react'
 
-const toolComponents: Record<string, any> = {
-  'sales-script': () => import('@/components/tools/SalesScriptGenerator'),
-  'copy-enhancer': () => import('@/components/tools/CopywritingEnhancer'),
-  'complaint-analyzer': () => import('@/components/tools/ComplaintAnalyzer'),
-  'campaign-ideator': () => import('@/components/tools/CampaignIdeator'),
-  'policy-generator': () => import('@/components/tools/PolicyGenerator'),
-  'tone-transformer': () => import('@/components/tools/ToneTransformer'),
-  'seo-keywords': () => import('@/components/tools/SEOKeywords'),
-  'pricing-calc': () => import('@/components/tools/PricingCalculator'),
-  'title-generator': () => import('@/components/tools/TitleGenerator'),
-  'persona-builder': () => import('@/components/tools/PersonaBuilder'),
+const toolComponents: Record<string, React.ComponentType> = {
+  'sales-script': dynamic(() => import('@/components/tools/SalesScriptGenerator'), { ssr: false }),
+  'copy-enhancer': dynamic(() => import('@/components/tools/CopywritingEnhancer'), { ssr: false }),
+  'complaint-analyzer': dynamic(() => import('@/components/tools/ComplaintAnalyzer'), { ssr: false }),
+  'campaign-ideator': dynamic(() => import('@/components/tools/CampaignIdeator'), { ssr: false }),
+  'policy-generator': dynamic(() => import('@/components/tools/PolicyGenerator'), { ssr: false }),
+  'tone-transformer': dynamic(() => import('@/components/tools/ToneTransformer'), { ssr: false }),
+  'seo-keywords': dynamic(() => import('@/components/tools/SEOKeywords'), { ssr: false }),
+  'pricing-calc': dynamic(() => import('@/components/tools/PricingCalculator'), { ssr: false }),
+  'title-generator': dynamic(() => import('@/components/tools/TitleGenerator'), { ssr: false }),
+  'persona-builder': dynamic(() => import('@/components/tools/PersonaBuilder'), { ssr: false }),
 }
 
 const toolNames: Record<string, { ar: string; en: string }> = {
@@ -27,16 +32,16 @@ const toolNames: Record<string, { ar: string; en: string }> = {
   'persona-builder': { ar: 'مولد شخصيات العملاء', en: 'User Persona Builder' },
 }
 
-export default function ToolPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug
-  const toolComponent = toolComponents[slug]
+export default function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params)
+  const ToolComponent = toolComponents[slug]
   const toolName = toolNames[slug]
 
-  if (!toolComponent || !toolName) {
+  if (!ToolComponent || !toolName) {
     notFound()
   }
 
-  const ToolComponent = toolComponent
+  const { user, loading } = useAuth()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
@@ -51,10 +56,19 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
             <Link href="/tools" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
               All Tools
             </Link>
-            <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              Sign Up Free
-            </Link>
+            {!loading && (
+              user ? (
+                <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+                  Dashboard
+                </Link>
+              ) : (
+                <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+                  Sign Up Free
+                </Link>
+              )
+            )}
           </div>
         </div>
       </div>

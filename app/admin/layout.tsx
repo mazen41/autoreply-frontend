@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { BarChart3, Bell, Box, CreditCard, FileText, Home, LogOut, Menu, Moon, Search, Settings, Shield, Sun, Users, X } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useLang } from '../../lib/LangContext'
+import Image from 'next/image'
 
 const navItems = [
   { path: '/admin', ar: '????????', en: 'Overview', icon: Home },
@@ -88,10 +89,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <aside className="flex h-full w-72 flex-col border-white/10 bg-white/90 p-4 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:border-r lg:shadow-none rtl:lg:border-l rtl:lg:border-r-0">
       <div className="flex items-center justify-between p-2">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/40 via-[var(--accent)] to-white/50 text-white/70 shadow-lg shadow-black/30"><Shield size={22} /></div>
+          <div className="h-11 w-11 rounded-2xl flex items-center justify-center overflow-hidden bg-gradient-to-br from-[var(--accent)]/40 via-[var(--accent)] to-white/50 shadow-lg shadow-black/30">
+            <Image 
+              src="/icons/Logo (2).png" 
+              alt="Naz Logo" 
+              width={22} 
+              height={22}
+              className="object-contain"
+            />
+          </div>
           <div>
             <div className="text-lg font-black text-white/70 dark:text-white">Naz Admin</div>
-            <div className="text-xs font-medium text-white/70 dark:text-white/70">{isRTL ? '???? ??????' : 'Command Center'}</div>
+            <div className="text-xs font-medium text-white/70 dark:text-white/70">{isRTL ? 'مركز التحكم' : 'Command Center'}</div>
           </div>
         </Link>
         <button className="rounded-xl p-2 text-white/70 hover:bg-white/5 dark:hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><X size={20} /></button>
