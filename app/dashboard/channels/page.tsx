@@ -21,6 +21,7 @@ const CHANNELS_DEFS = [
   { id: 'gmail',     name: 'Gmail',          color: 'var(--accent)', plan: 'free' },
   { id: 'whatsapp',  name: 'WhatsApp',       color: 'var(--accent)', plan: 'free' },
   { id: 'reviews',   name: 'Google Reviews', color: 'var(--accent)', plan: 'free' },
+  { id: 'salla',     name: 'Salla',          color: 'var(--accent)', plan: 'free' },
   { id: 'webchat',   name: 'Web Chat',       color: 'var(--accent)', plan: 'starter' },
 ]
 
@@ -71,6 +72,13 @@ function ConnectModal({
       } finally {
         setConnectingLoading(false)
       }
+      return
+    }
+
+    if (ch.id === 'salla') {
+      const token = getToken()
+      // Navigate in the same window — OAuth must NOT open in a popup
+      window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}&redirect=dashboard`
       return
     }
   }
@@ -159,16 +167,16 @@ export default function ChannelsPage() {
     const params = new URLSearchParams(window.location.search)
     const success = params.get('success')
     const error = params.get('error')
-    if (success === 'facebook_connected' || success === 'gmail') {
+    if (success === 'facebook_connected' || success === 'gmail' || success === 'salla_connected') {
       setToast({ message: t.channels.connectedSuccess, type: 'success' })
       fetchChannels()
       window.history.replaceState({}, '', window.location.pathname)
     }
-    if (error === 'gmail_denied' || error === 'facebook_denied') {
+    if (error === 'gmail_denied' || error === 'facebook_denied' || error === 'salla_denied') {
       setToast({ message: t.channels.connectionCancelled, type: 'error' })
       window.history.replaceState({}, '', window.location.pathname)
     }
-    if (error === 'gmail_token' || error === 'gmail_exception' || error === 'token_failed' || error === 'no_pages') {
+    if (error === 'gmail_token' || error === 'gmail_exception' || error === 'token_failed' || error === 'no_pages' || error === 'salla_oauth_failed') {
       setToast({ message: t.channels.connectionFailed, type: 'error' })
       window.history.replaceState({}, '', window.location.pathname)
     }
