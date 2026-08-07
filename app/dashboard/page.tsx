@@ -49,38 +49,34 @@ function StatCard({
 
   return (
     <motion.div
-      className="card-os rounded-2xl p-5 relative overflow-hidden"
+      className="relative overflow-hidden border border-border/60 bg-surface-elevated rounded-2xl p-5 transition-all duration-300 hover:border-accent/25 hover:shadow-lg hover:shadow-black/20 hover:-translate-y-0.5 cursor-default group"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
-      style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
     >
-      <div className="shimmer-line absolute inset-0" />
+      <div className="shimmer-line absolute inset-0 opacity-40 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="flex items-start justify-between mb-4">
-        <div className="p-2 rounded-lg" style={{ background: 'var(--accent-subtle)' }}>
+        <div className="p-2 rounded-xl bg-accent/10 border border-accent/15 text-accent">
           {icon}
         </div>
         {trend && (
-          <div className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" style={{
-            background: trend.isPositive ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
-            color: trend.isPositive ? 'var(--accent)' : 'var(--accent)'
-          }}>
+          <div className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-accent/10 border border-accent/15 text-accent">
             {trend.isPositive ? <TrendUpIcon size={14} /> : <TrendDownIcon size={14} />}
             {Math.abs(trend.value)}%
           </div>
         )}
       </div>
 
-      <div className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+      <div className="text-[10px] font-bold mb-1.5 uppercase tracking-wider text-text-secondary">
         {label}
       </div>
 
-      <div className="text-3xl font-black mb-1" style={{ color: 'var(--accent)' }}>
+      <div className="text-3xl font-black mb-1.5 text-text-primary tracking-tight">
         {isNum ? counted : value}
       </div>
 
       {sub && (
-        <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+        <div className="text-xs text-text-tertiary">
           {sub}
         </div>
       )}

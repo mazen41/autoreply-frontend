@@ -36,6 +36,9 @@
   /* Teal for highlights and success states */
   --accent-teal: #16A085;
   --accent-teal-subtle: rgba(22,160,133,0.08);
+  /* Pink accent */
+  --accent-pink: #FF4757;
+  --accent-pink-subtle: rgba(255,71,87,0.08);
   /* Spacing scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -108,6 +111,9 @@
   /* Teal for highlights and success states */
   --accent-teal: #16A085;
   --accent-teal-subtle: rgba(22,160,133,0.08);
+  /* Pink accent */
+  --accent-pink: #FF4757;
+  --accent-pink-subtle: rgba(255,71,87,0.08);
 }
 
 

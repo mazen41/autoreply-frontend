@@ -24,7 +24,8 @@ import {
   XIcon,
   UserIcon,
   LogOutIcon,
-  PlusIcon
+  PlusIcon,
+  NazLogoIcon
 } from '../ui/DashboardIcons'
 
 const NAV = [
@@ -71,6 +72,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [notifOpen, setNotifOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const allNav = [...NAV, ...NAV_BOTTOM]
   const current = allNav.find(n => n.href === pathname)
@@ -84,8 +93,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const sidebarVariants = {
-    expanded: { width: 240 },
-    collapsed: { width: 64 }
+    expanded: { width: 240, x: 0 },
+    collapsed: { width: 64, x: 0 },
+    hidden: { x: isRTL ? '100%' : '-100%', width: 240 }
   }
 
   const NavItem = ({ item, isBottom = false }: { item: any; isBottom?: boolean }) => {
@@ -101,10 +111,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className={`nav-item ${active ? 'nav-item-active' : ''} relative group`}
       >
         <Icon size={20} />
-        {(!collapsed || mobileSidebar) && (
+        {(!collapsed || isMobile) && (
           <span className="text-sm font-semibold flex-1">{label}</span>
         )}
-        {collapsed && !mobileSidebar && (
+        {collapsed && !isMobile && (
           <div
             className={`absolute ${isRTL ? 'right-full mr-2' : 'left-full ml-2'} px-2 py-1 rounded-lg text-xs font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50`}
             style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
@@ -140,7 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={collapsed ? 'collapsed' : 'expanded'}
+        animate={isMobile ? (mobileSidebar ? 'expanded' : 'hidden') : (collapsed ? 'collapsed' : 'expanded')}
         variants={sidebarVariants}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full z-50 glass`}
@@ -148,14 +158,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2.5 px-5 py-5 mb-2">
-            <Image 
-              src="/icons/Logo (2).png" 
-              alt="Naz Logo" 
-              width={120} 
-              height={40}
-              className="object-contain"
-            />
+          <div className="flex items-center gap-2.5 px-5 py-5 mb-2 h-16">
+            {(!collapsed || isMobile) ? (
+              <Image 
+                src="/icons/Logo (2).png" 
+                alt="Naz Logo" 
+                width={120} 
+                height={40}
+                className="object-contain"
+              />
+            ) : (
+              <div className="mx-auto text-accent flex items-center justify-center">
+                <NazLogoIcon size={24} />
+              </div>
+            )}
           </div>
 
           {/* Main nav */}
@@ -171,7 +187,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {NAV_BOTTOM.map(item => <NavItem key={item.href} item={item} isBottom />)}
 
             {/* Help */}
-            {(!collapsed || mobileSidebar) && (
+            {(!collapsed || isMobile) && (
               <button className="nav-item w-full">
                 <HelpIcon size={20} />
                 <span className="text-sm font-semibold">{isRTL ? 'مساعدة' : 'Help'}</span>
@@ -180,7 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           {/* User card */}
-          {(!collapsed || mobileSidebar) && user && (
+          {(!collapsed || isMobile) && user && (
             <div className="p-4 mt-auto" style={{ borderTop: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3">
                 <div
@@ -203,9 +219,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </motion.aside>
 
-      {/* Main content */}
-      <div
-        className={`transition-all duration-300 ${isRTL ? 'mr-0 md:mr-64' : 'ml-0 md:ml-64'} ${collapsed ? (isRTL ? 'md:mr-16' : 'md:ml-16') : ''}`}
+      {/* Main content wrapper */}
+      <motion.div
+        initial={false}
+        animate={{
+          paddingLeft: isMobile ? 0 : (isRTL ? 0 : (collapsed ? 64 : 240)),
+          paddingRight: isMobile ? 0 : (isRTL ? (collapsed ? 64 : 240) : 0),
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className="w-full min-h-screen flex flex-col"
       >
         {/* Topbar */}
         <header
@@ -378,7 +400,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="relative z-10">
           {children}
         </main>
-      </div>
+      </motion.div>
     </div>
   )
 }
