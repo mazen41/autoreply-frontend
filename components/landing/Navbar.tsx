@@ -6,6 +6,7 @@ import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import { useAuth } from '../../lib/AuthContext'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 
 const NAV_LINKS = [
   { labelKey: 'commandCenter', href: '#command-center' },
@@ -33,14 +34,15 @@ export default function Navbar() {
   }
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-500"
-      style={{
-        background: scrolled ? 'var(--surface)' : 'transparent',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${scrolled ? 'var(--border)' : 'transparent'}`,
-      }}
+    <motion.nav
+      initial={{ y: -64, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+      className={`fixed top-3 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-7xl z-50 transition-all duration-500 rounded-2xl border backdrop-blur-md ${
+        scrolled
+          ? 'bg-surface-elevated/80 border-border shadow-lg shadow-black/20 py-2'
+          : 'bg-background/30 border-border/40 py-3.5'
+      }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[68px]">
@@ -199,6 +201,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-    </nav>
+    </motion.nav>
   )
 }
