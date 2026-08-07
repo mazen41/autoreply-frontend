@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter'
+type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla'
 
 interface ChannelIconProps {
   type: ChannelType
@@ -16,6 +16,7 @@ const channelColors: Record<ChannelType, string> = {
   gmail: 'var(--accent)',
   whatsapp: 'var(--accent)',
   twitter: 'var(--surface)',
+  salla: 'var(--accent)',
 }
 
 const icons: Record<ChannelType, React.ReactNode> = {
@@ -42,6 +43,11 @@ const icons: Record<ChannelType, React.ReactNode> = {
   twitter: (
     <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+  ),
+  salla: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
     </svg>
   ),
 }
