@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useLang } from '../../../lib/LangContext'
+import IntegrationHub from '../../../components/integrations/IntegrationHub'
 
 interface User {
   id: number
@@ -13,6 +14,7 @@ interface User {
 export default function SettingsPage() {
   const { t, isRTL } = useLang()
   const [user, setUser] = useState<User | null>(null)
+  const [businessId, setBusinessId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -50,6 +52,9 @@ export default function SettingsPage() {
       setUser(data)
       setName(data.name)
       setEmail(data.email)
+      if (data.business_id) {
+        setBusinessId(data.business_id)
+      }
     } catch (error) {
       console.error('Failed to fetch user:', error)
       setError('Failed to load user data')
@@ -296,6 +301,18 @@ export default function SettingsPage() {
             {saving ? (isRTL ? 'جاري التغيير...' : 'Changing...') : (isRTL ? 'تغيير كلمة المرور' : 'Change Password')}
           </button>
         </form>
+      </div>
+
+      {/* Integrations Section */}
+      <div className="premium-card p-6" style={{ background: 'var(--surface-elevated)' }}>
+        <h2 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
+          {isRTL ? 'التكاملات' : 'Integrations'}
+        </h2>
+        {businessId ? <IntegrationHub businessId={businessId} /> : (
+          <div className="text-center py-4" style={{ color: 'var(--text-secondary)' }}>
+            {isRTL ? 'لم يتم العثور على معرف العمل' : 'No business ID found'}
+          </div>
+        )}
       </div>
     </div>
   )

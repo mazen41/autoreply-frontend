@@ -25,7 +25,11 @@ import {
   UserIcon,
   LogOutIcon,
   PlusIcon,
-  NazLogoIcon
+  NazLogoIcon,
+  SendIcon,
+  LayersIcon,
+  LinkIcon,
+  BarChartIcon
 } from '../ui/DashboardIcons'
 
 const NAV = [
@@ -37,6 +41,12 @@ const NAV = [
   { icon: ReputationIcon, key: 'reputation', href: '/dashboard/reputation' },
   { icon: ReportsIcon, key: 'reports', href: '/dashboard/reports' },
   { icon: AIKnowledgeIcon, key: 'aiKnowledge', href: '/dashboard/ai-knowledge' },
+  { icon: ReportsIcon, key: 'training', href: '/dashboard/training' },
+  { icon: UserIcon, key: 'team', href: '/dashboard/team' },
+  { icon: SendIcon, key: 'campaigns', href: '/dashboard/campaigns' },
+  { icon: LayersIcon, key: 'sequences', href: '/dashboard/sequences' },
+  { icon: LinkIcon, key: 'integrations', href: '/dashboard/integrations' },
+  { icon: BarChartIcon, key: 'analytics', href: '/dashboard/analytics' },
 ]
 
 const NAV_BOTTOM = [

@@ -48,6 +48,8 @@ export interface ApiMessage {
     actor?: 'business' | 'contact'
     created_at: string
   }>
+  confidence_score?: number
+  detected_dialect?: string
 }
 
 export interface ApiChannel {
@@ -67,6 +69,8 @@ export interface ApiConversation {
   last_message_at: string | null
   channel: ApiChannel
   latest_message?: ApiMessage | null
+  assigned_agent_id?: number | null
+  assigned_at?: string | null
 }
 
 function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] }): ApiConversation {
@@ -84,6 +88,8 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     last_message_at: raw.last_message_at,
     channel: raw.channel,
     latest_message: latest,
+    assigned_agent_id: raw.assigned_agent_id,
+    assigned_at: raw.assigned_at,
   }
 }
 
@@ -100,11 +106,33 @@ export function useInbox() {
   const selectedIdRef = useRef<number | null>(null)
   useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
 
-  const fetchConversations = useCallback(async (silent = false) => {
+  const fetchConversations = useCallback(async (silent = false, filters?: {
+    search?: string
+    channel_type?: string
+    status?: string
+    ai_enabled?: boolean
+    unread?: boolean
+    date_from?: string
+    date_to?: string
+    requires_human?: boolean
+    assigned_to_me?: boolean
+  }) => {
     if (!silent) setLoadingConvs(true)
     setError(null)
     try {
-      const res = await fetch(`${API}/inbox`, { headers: authHeaders() })
+      const params = new URLSearchParams()
+      if (filters?.search) params.append('search', filters.search)
+      if (filters?.channel_type) params.append('channel_type', filters.channel_type)
+      if (filters?.status) params.append('status', filters.status)
+      if (filters?.ai_enabled !== undefined) params.append('ai_enabled', String(filters.ai_enabled))
+      if (filters?.unread) params.append('unread', 'true')
+      if (filters?.date_from) params.append('date_from', filters.date_from)
+      if (filters?.date_to) params.append('date_to', filters.date_to)
+      if (filters?.requires_human) params.append('requires_human', 'true')
+      if (filters?.assigned_to_me) params.append('assigned_to_me', 'true')
+      
+      const url = params.toString() ? `${API}/inbox?${params.toString()}` : `${API}/inbox`
+      const res = await fetch(url, { headers: authHeaders() })
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
       const raw: (ApiConversation & { messages?: ApiMessage[] })[] = data.data ?? data
@@ -219,6 +247,71 @@ export function useInbox() {
     }
   }, [])
 
+  const getConversationTags = useCallback(async (conversationId: number) => {
+    try {
+      const res = await fetch(`${API}/inbox/${conversationId}/tags`, { headers: authHeaders() })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      return await res.json()
+    } catch {
+      return []
+    }
+  }, [])
+
+  const addTag = useCallback(async (conversationId: number, tag: string) => {
+    try {
+      const res = await fetch(`${API}/inbox/${conversationId}/tags`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ tag }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      return await res.json()
+    } catch {
+      return null
+    }
+  }, [])
+
+  const removeTag = useCallback(async (conversationId: number, tagId: number) => {
+    try {
+      const res = await fetch(`${API}/inbox/${conversationId}/tags/${tagId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  const getAllTags = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/tags/all`, { headers: authHeaders() })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      return await res.json()
+    } catch {
+      return []
+    }
+  }, [])
+
+  const submitFeedback = useCallback(async (messageId: number, feedback: 'positive' | 'negative', comment?: string, issueType?: string) => {
+    try {
+      const body: any = { feedback }
+      if (comment) body.comment = comment
+      if (issueType) body.issue_type = issueType
+      
+      const res = await fetch(`${API}/messages/${messageId}/feedback`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      return await res.json()
+    } catch {
+      return null
+    }
+  }, [])
+
   // Gmail: poll silently every 60s, only refresh UI if new messages arrived
   useEffect(() => {
     const pollGmail = async () => {
@@ -236,10 +329,10 @@ export function useInbox() {
     return () => { if (gmailIntervalRef.current) clearInterval(gmailIntervalRef.current) }
   }, [fetchConversations, fetchMessages])
 
-  // Initial load only — no polling loop that causes UI churn
+  // Initial load only - no polling loop that causes UI churn
   useEffect(() => { fetchConversations() }, [fetchConversations])
 
-  // Real-time updates via Pusher — replaces polling entirely.
+  // Real-time updates via Pusher - replaces polling entirely.
   // We fetch the current user's id once, then subscribe to their private
   // inbox channel and merge incoming events straight into state.
   useEffect(() => {
@@ -275,7 +368,7 @@ export function useInbox() {
           }
         })
       } catch {
-        // silent — real-time is a nice-to-have, manual refresh still works
+        // silent - real-time is a nice-to-have, manual refresh still works
       }
     }
 
@@ -294,5 +387,6 @@ export function useInbox() {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
     fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, reactToMessage,
+    getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   }
 }

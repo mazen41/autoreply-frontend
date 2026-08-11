@@ -212,7 +212,15 @@ function ConvSkeleton() {
   )
 }
 
-function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation; active: boolean; onClick: () => void; onToggleAi: (id: number) => void }) {
+function ConvRow({ conv, active, onClick, onToggleAi, tags, isEscalated, isAssigned }: { 
+  conv: ApiConversation; 
+  active: boolean; 
+  onClick: () => void; 
+  onToggleAi: (id: number) => void;
+  tags?: Array<{ id: number; tag: string }>;
+  isEscalated?: boolean;
+  isAssigned?: boolean;
+}) {
   const ch = channelMeta(conv.channel?.type)
   const preview = conv.latest_message?.content ?? conv.subject ?? '—'
   const isAI = conv.latest_message?.is_ai
@@ -227,15 +235,29 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
       className={`w-full flex items-center gap-3 px-4 py-3 border-b border-border/60 text-left transition-all duration-300 relative group cursor-pointer ${
         active
           ? 'bg-accent/10 border-l-2 border-l-accent'
-          : 'bg-transparent border-l-2 border-l-transparent hover:bg-surface-elevated/40'
+          : isEscalated
+            ? 'bg-orange-500/10 border-l-2 border-l-orange-500'
+            : 'bg-transparent border-l-2 border-l-transparent hover:bg-surface-elevated/40'
       }`}
     >
       <div className="relative flex-shrink-0">
         <ChannelIcon type={(conv.channel?.type || 'facebook') as any} size={40} className="rounded-xl border border-border" />
         {/* Live / Status Indicator */}
         <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-surface-elevated flex items-center justify-center border border-background">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 status-live" />
+          <div className={`w-2 h-2 rounded-full ${isEscalated ? 'bg-orange-500 animate-pulse' : 'bg-emerald-500'} status-live`} />
         </div>
+        {/* Escalation indicator */}
+        {isEscalated && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange-500 flex items-center justify-center text-white text-[8px] font-bold">
+            🔥
+          </div>
+        )}
+        {/* Assignment indicator */}
+        {isAssigned && (
+          <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center text-white text-[8px] font-bold">
+            👤
+          </div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-1 mb-1">
@@ -253,6 +275,7 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
         )}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1 min-w-0">
+            {isEscalated && <span className="text-[10px] text-orange-500 font-bold">🔥 Escalated</span>}
             {isAI && <span className="text-[10px] text-accent font-bold">⚡ AI</span>}
             <span className="text-xs text-text-secondary truncate flex-1">
               {preview}
@@ -262,6 +285,19 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
             <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0 shadow-sm shadow-accent/50 animate-pulse" />
           )}
         </div>
+        {/* Tags display */}
+        {tags && tags.length > 0 && (
+          <div className="flex gap-1 mt-1 flex-wrap">
+            {tags.slice(0, 2).map(tag => (
+              <span key={tag.id} className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-accent border border-accent/20">
+                {tag.tag}
+              </span>
+            ))}
+            {tags.length > 2 && (
+              <span className="text-[9px] text-text-tertiary">+{tags.length - 2}</span>
+            )}
+          </div>
+        )}
       </div>
       <button
         onClick={(e) => { e.stopPropagation(); onToggleAi(conv.id) }}
@@ -280,16 +316,41 @@ function ConvRow({ conv, active, onClick, onToggleAi }: { conv: ApiConversation;
   )
 }
 
-function MsgBubble({ msg, channelType, isRTL, onReact, conv }: { msg: ApiMessage; channelType?: string; isRTL: boolean; onReact?: (messageId: number, emoji: string) => void; conv?: ApiConversation }) {
+function MsgBubble({ msg, channelType, isRTL, onReact, conv, onSubmitFeedback }: { 
+  msg: ApiMessage; 
+  channelType?: string; 
+  isRTL: boolean; 
+  onReact?: (messageId: number, emoji: string) => void; 
+  conv?: ApiConversation;
+  onSubmitFeedback?: (messageId: number, feedback: 'positive' | 'negative') => void;
+}) {
   const isIn = msg.direction === 'inbound'
   const [showPicker, setShowPicker] = useState(false)
   const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 })
   const [lightbox, setLightbox] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackGiven, setFeedbackGiven] = useState<'positive' | 'negative' | null>(null)
   const reactButtonRef = useRef<HTMLButtonElement>(null)
 
   const isWhatsApp = channelType === 'whatsapp'
   const isGmail = channelType === 'gmail'
   const canReact = isWhatsApp && !!msg.whatsapp_message_id
+  const isAIMessage = msg.is_ai
+  const confidenceScore = msg.confidence_score
+
+  const handleFeedback = (feedback: 'positive' | 'negative') => {
+    if (onSubmitFeedback) {
+      onSubmitFeedback(msg.id, feedback)
+      setFeedbackGiven(feedback)
+      setShowFeedback(false)
+    }
+  }
+
+  const getConfidenceColor = (score: number) => {
+    if (score >= 0.8) return 'text-green-500'
+    if (score >= 0.6) return 'text-yellow-500'
+    return 'text-red-500'
+  }
 
   // Gmail emails render as full-width cards, not chat bubbles
   if (isGmail) {
@@ -479,10 +540,59 @@ function MsgBubble({ msg, channelType, isRTL, onReact, conv }: { msg: ApiMessage
           </div>
 
           <div className="flex items-center gap-1.5 mt-1.5 px-1 justify-end">
+            {!isIn && isAIMessage && (
+              <>
+                <div className="flex items-center gap-1 mr-2">
+                  {confidenceScore && (
+                    <span className={`text-[9px] font-bold ${getConfidenceColor(confidenceScore)}`}>
+                      {Math.round(confidenceScore * 100)}%
+                    </span>
+                  )}
+                  {msg.detected_dialect && (
+                    <span className="text-[9px] text-text-tertiary bg-surface-elevated px-1.5 py-0.5 rounded">
+                      {msg.detected_dialect === 'egyptian' ? '🇪🇬' : msg.detected_dialect === 'gulf' ? '🇸🇦' : '🔤'}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowFeedback(!showFeedback)}
+                  className="text-[9px] text-text-tertiary hover:text-text-secondary transition-colors"
+                  title="Rate this response"
+                >
+                  👍👎
+                </button>
+              </>
+            )}
             {!isIn && msg.is_ai && <span className="text-[9px] text-accent font-bold uppercase tracking-wider">AI</span>}
             {!isIn && !msg.is_ai && <span className="text-[9px] text-text-secondary font-semibold uppercase tracking-wider">{isRTL ? 'يدوي' : 'manual'}</span>}
             <span className="text-[10px] text-text-tertiary">{formatMsgTime(msg.created_at)}</span>
           </div>
+
+          {/* Feedback Buttons */}
+          {showFeedback && isAIMessage && !isIn && (
+            <div className="flex gap-2 mt-2 px-2">
+              <button
+                onClick={() => handleFeedback('positive')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  feedbackGiven === 'positive'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-surface-elevated text-text-secondary hover:bg-green-100 hover:text-green-700'
+                }`}
+              >
+                👍 Good
+              </button>
+              <button
+                onClick={() => handleFeedback('negative')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  feedbackGiven === 'negative'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-surface-elevated text-text-secondary hover:bg-red-100 hover:text-red-700'
+                }`}
+              >
+                👎 Bad
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -522,6 +632,7 @@ export default function InboxPage() {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
     fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, reactToMessage,
+    getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   } = useInbox()
 
   const [filter, setFilter]         = useState('all')
@@ -533,6 +644,17 @@ export default function InboxPage() {
   const [optimistic, setOptimistic] = useState<ApiMessage[]>([])
   const [mobilePane, setMobilePane] = useState<'list' | 'chat'>('list')
   const [toast, setToast]           = useState<string | null>(null)
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [showEscalationQueue, setShowEscalationQueue] = useState(false)
+  const [showMyAssignments, setShowMyAssignments] = useState(false)
+  const [channelFilter, setChannelFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [aiEnabledFilter, setAiEnabledFilter] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [conversationTags, setConversationTags] = useState<Map<number, Array<{ id: number; tag: string }>>>(new Map())
+  const [showTagInput, setShowTagInput] = useState(false)
+  const [newTag, setNewTag] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
@@ -542,10 +664,42 @@ export default function InboxPage() {
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t) } }, [toast])
   useEffect(() => () => { if (filePreview) URL.revokeObjectURL(filePreview) }, [filePreview])
 
+  // Fetch conversations with filters when advanced filters change
+  useEffect(() => {
+    const filters: any = {}
+    if (search) filters.search = search
+    if (channelFilter) filters.channel_type = channelFilter
+    if (statusFilter) filters.status = statusFilter
+    if (aiEnabledFilter) filters.ai_enabled = true
+    if (dateFrom) filters.date_from = dateFrom
+    if (dateTo) filters.date_to = dateTo
+    if (showEscalationQueue) filters.requires_human = true
+    if (showMyAssignments) filters.assigned_to_me = true
+    
+    // Only use server-side filtering when advanced filters are active
+    if (showAdvancedFilters || showEscalationQueue || showMyAssignments || search) {
+      fetchConversations(true, Object.keys(filters).length > 0 ? filters : undefined)
+    }
+  }, [search, channelFilter, statusFilter, aiEnabledFilter, dateFrom, dateTo, showEscalationQueue, showMyAssignments, showAdvancedFilters, fetchConversations])
+
+  // Load tags for selected conversation
+  useEffect(() => {
+    if (selectedId) {
+      getConversationTags(selectedId).then(tags => {
+        setConversationTags(prev => new Map(prev).set(selectedId, tags))
+      })
+    }
+  }, [selectedId, getConversationTags])
+
   const allMessages = [...messages, ...optimistic]
   const grouped = groupMessagesByDate(allMessages)
+  
+  // Client-side filtering for basic channel filter
   const filtered = conversations.filter(c => {
     const matchType = filter === 'all' || c.channel?.type === filter
+    // When using advanced filters, trust server-side results
+    if (showAdvancedFilters || showEscalationQueue || showMyAssignments) return matchType
+    
     const q = search.toLowerCase()
     return matchType && (!q || senderLabel(c).toLowerCase().includes(q) || (c.subject ?? '').toLowerCase().includes(q) || (c.latest_message?.content ?? '').toLowerCase().includes(q))
   })
@@ -659,7 +813,95 @@ export default function InboxPage() {
                 {f.label}
               </button>
             ))}
+            {/* Escalation Queue Filter */}
+            <button
+              onClick={() => setShowEscalationQueue(!showEscalationQueue)}
+              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer flex-shrink-0 border ${
+                showEscalationQueue
+                  ? 'bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/15 animate-pulse'
+                  : 'bg-surface-elevated/60 text-text-secondary border-border/50 hover:text-text-primary hover:bg-surface-elevated'
+              }`}
+            >
+              {showEscalationQueue ? '🔥 Escalated' : 'Escalated'}
+            </button>
+            {/* My Assignments Filter */}
+            <button
+              onClick={() => setShowMyAssignments(!showMyAssignments)}
+              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-200 cursor-pointer flex-shrink-0 border ${
+                showMyAssignments
+                  ? 'bg-purple-500 border-purple-500 text-white shadow-md shadow-purple-500/15'
+                  : 'bg-surface-elevated/60 text-text-secondary border-border/50 hover:text-text-primary hover:bg-surface-elevated'
+              }`}
+            >
+              {showMyAssignments ? '👤 My Tasks' : 'My Tasks'}
+            </button>
           </div>
+
+          {/* Advanced Filters Toggle */}
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="text-[10px] text-accent hover:text-accent/80 font-bold flex items-center gap-1"
+          >
+            {showAdvancedFilters ? '▼' : '▶'} {isRTL ? 'فلاتر متقدمة' : 'Advanced Filters'}
+          </button>
+
+          {/* Advanced Filters Panel */}
+          {showAdvancedFilters && (
+            <div className="space-y-2 p-3 bg-surface-elevated/40 rounded-lg border border-border/50">
+              {/* Channel Type Filter */}
+              <select
+                value={channelFilter}
+                onChange={e => setChannelFilter(e.target.value)}
+                className="w-full bg-surface border border-border/70 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent/40"
+              >
+                <option value="">{isRTL ? 'جميع القنوات' : 'All Channels'}</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="gmail">Gmail</option>
+                <option value="whatsapp">WhatsApp</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="w-full bg-surface border border-border/70 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent/40"
+              >
+                <option value="">{isRTL ? 'جميع الحالات' : 'All Status'}</option>
+                <option value="open">{isRTL ? 'مفتوح' : 'Open'}</option>
+                <option value="closed">{isRTL ? 'مغلق' : 'Closed'}</option>
+              </select>
+
+              {/* AI Status Filter */}
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] text-text-secondary">
+                  {isRTL ? 'AI مفعّل' : 'AI Enabled'}
+                </label>
+                <input
+                  type="checkbox"
+                  checked={aiEnabledFilter}
+                  onChange={e => setAiEnabledFilter(e.target.checked)}
+                  className="w-3 h-3 accent-accent"
+                />
+              </div>
+
+              {/* Date Range */}
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={e => setDateFrom(e.target.value)}
+                  className="flex-1 bg-surface border border-border/70 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent/40"
+                />
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={e => setDateTo(e.target.value)}
+                  className="flex-1 bg-surface border border-border/70 rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-accent/40"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Search */}
           <div className="relative">
@@ -699,6 +941,9 @@ export default function InboxPage() {
                 active={selectedId === conv.id}
                 onClick={() => handleSelect(conv.id)}
                 onToggleAi={toggleAi}
+                tags={conversationTags.get(conv.id)}
+                isEscalated={showEscalationQueue}
+                isAssigned={showMyAssignments}
               />
             ))
           )}
@@ -767,7 +1012,93 @@ export default function InboxPage() {
                 <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.ai_enabled ? 'bg-accent animate-pulse' : 'bg-text-tertiary'}`} />
                 <span>AI {selectedConv.ai_enabled ? (isRTL ? 'مفعّل' : 'Active') : (isRTL ? 'معطل' : 'Disabled')}</span>
               </button>
+              
+              {/* Tags Management */}
+              <button
+                onClick={() => setShowTagInput(!showTagInput)}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 border cursor-pointer bg-surface-elevated border-border text-text-tertiary hover:border-accent/40"
+                title="Manage tags"
+              >
+                🏷️ Tags
+              </button>
             </div>
+
+            {/* Tag Input Panel */}
+            {showTagInput && selectedId && (
+              <div className="px-6 py-3 border-b border-border/60 bg-surface-elevated/40">
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={e => setNewTag(e.target.value)}
+                    placeholder={isRTL ? 'أضف وسماً...' : 'Add tag...'}
+                    className="flex-1 bg-surface border border-border/70 rounded-lg px-3 py-2 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent/40"
+                    onKeyPress={e => {
+                      if (e.key === 'Enter' && newTag.trim()) {
+                        addTag(selectedId, newTag.trim()).then(tag => {
+                          if (tag) {
+                            setConversationTags(prev => {
+                              const newMap = new Map(prev)
+                              const existing = newMap.get(selectedId) || []
+                              newMap.set(selectedId, [...existing, tag])
+                              return newMap
+                            })
+                            setNewTag('')
+                          }
+                        })
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (newTag.trim()) {
+                        addTag(selectedId, newTag.trim()).then(tag => {
+                          if (tag) {
+                            setConversationTags(prev => {
+                              const newMap = new Map(prev)
+                              const existing = newMap.get(selectedId) || []
+                              newMap.set(selectedId, [...existing, tag])
+                              return newMap
+                            })
+                            setNewTag('')
+                          }
+                        })
+                      }
+                    }}
+                    className="px-3 py-2 rounded-lg bg-accent text-white text-xs font-bold hover:bg-accent/90"
+                  >
+                    {isRTL ? 'إضافة' : 'Add'}
+                  </button>
+                </div>
+                {/* Existing Tags */}
+                {conversationTags.get(selectedId) && conversationTags.get(selectedId)!.length > 0 && (
+                  <div className="flex gap-1 mt-2 flex-wrap">
+                    {conversationTags.get(selectedId)!.map(tag => (
+                      <div key={tag.id} className="flex items-center gap-1 px-2 py-1 rounded bg-accent/10 text-accent border border-accent/20 text-[10px]">
+                        <span>{tag.tag}</span>
+                        <button
+                          onClick={() => {
+                            removeTag(selectedId, tag.id).then(success => {
+                              if (success) {
+                                setConversationTags(prev => {
+                                  const newMap = new Map(prev)
+                                  const existing = newMap.get(selectedId) || []
+                                  newMap.set(selectedId, existing.filter(t => t.id !== tag.id))
+                                  return newMap
+                                })
+                              }
+                            })
+                          }}
+                          className="hover:text-accent/70"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin bg-background/50">
@@ -797,6 +1128,7 @@ export default function InboxPage() {
                         isRTL={isRTL}
                         onReact={reactToMessage}
                         conv={selectedConv}
+                        onSubmitFeedback={submitFeedback}
                       />
                     ))}
                   </div>

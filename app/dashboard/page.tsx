@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import ChannelIcon from '../../components/ui/ChannelIcon'
+import WebChatWidget from '../../components/webchat/WebChatWidget'
 import {
   LightningIcon,
   TrendUpIcon,
@@ -484,6 +485,9 @@ export default function DashboardHome() {
           </div>
         </motion.div>
       </div>
+
+      {/* Web Chat Widget */}
+      <WebChatWidget />
     </div>
   )
 }
