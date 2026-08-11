@@ -29,7 +29,7 @@ export function getEcho(): Echo<any> {
     // Private channels need to be authorized against our Laravel backend.
     // withBroadcasting() registers this route with the auth:sanctum middleware,
     // so we just need to send the Bearer token along with the auth request.
-    authEndpoint: `${apiUrl}/broadcasting/auth`,
+    authEndpoint: `${apiUrl}/api/broadcasting/auth`,
     auth: {
       headers: {
         Authorization: `Bearer ${getToken()}`,
