@@ -116,7 +116,23 @@ export default function LoginForm() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || t.auth.loginError)
-      document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
+      
+      // Set cookie with proper options
+      const cookieOptions = [
+        `naz_token=${data.token}`,
+        'path=/',
+        'max-age=604800', // 7 days
+        'SameSite=Lax'
+      ]
+      
+      // Add Secure flag in production
+      if (window.location.protocol === 'https:') {
+        cookieOptions.push('Secure')
+      }
+      
+      document.cookie = cookieOptions.join('; ')
+      
+      console.log('Login successful, token set')
       toast.success(t.auth.loginSuccess)
       setSuccessPulse(true)
       await new Promise(resolve => setTimeout(resolve, 400))

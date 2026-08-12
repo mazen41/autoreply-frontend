@@ -153,7 +153,13 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
+        const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+        
+        if (!token) {
+          console.error('No token found in cookies')
+          window.location.href = '/login'
+          return
+        }
 
         const [statsRes, inboxRes, channelsRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stats`, {
@@ -167,12 +173,18 @@ export default function DashboardHome() {
           }),
         ])
 
-        if (statsRes.ok) {
+        if (!statsRes.ok) {
+          console.error('Stats API failed:', statsRes.status)
+          setStats({ total_messages: 0, ai_replies: 0, hours_saved: 0, messages_trend: null, response_rate: 0 })
+        } else {
           const statsData = await statsRes.json()
           setStats(statsData)
         }
 
-        if (inboxRes.ok) {
+        if (!inboxRes.ok) {
+          console.error('Inbox API failed:', inboxRes.status)
+          setActivity([])
+        } else {
           const inboxData = await inboxRes.json()
           const allConversations = inboxData.data || []
           setActivity(allConversations.slice(0, 5) || [])
@@ -203,11 +215,15 @@ export default function DashboardHome() {
           setTopSenders(sortedSenders)
         }
 
-        if (channelsRes.ok) {
+        if (!channelsRes.ok) {
+          console.error('Channels API failed:', channelsRes.status)
+          setChannels([])
+        } else {
           const channelsData = await channelsRes.json()
           setChannels(channelsData.data || [])
         }
       } catch (err) {
+        console.error('Dashboard fetch error:', err)
         setError('Failed to load dashboard data')
       } finally {
         setLoading(false)
