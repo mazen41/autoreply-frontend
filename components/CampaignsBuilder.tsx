@@ -18,7 +18,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
 
   const fetchCampaigns = async () => {
     try {
-      const response = await fetch(`/api/businesses/${businessId}/campaigns`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns`);
       const data = await response.json();
       setCampaigns(data);
     } catch (error) {
@@ -29,7 +29,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
   const createCampaign = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/businesses/${businessId}/campaigns`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCampaign),
@@ -52,7 +52,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
 
   const launchCampaign = async (campaignId: number) => {
     try {
-      await fetch(`/api/businesses/${businessId}/campaigns/${campaignId}/launch`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns/${campaignId}/launch`, {
         method: 'POST',
       });
       await fetchCampaigns();
@@ -65,7 +65,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
     if (!confirm('Are you sure you want to delete this campaign?')) return;
     
     try {
-      await fetch(`/api/businesses/${businessId}/campaigns/${campaignId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns/${campaignId}`, {
         method: 'DELETE',
       });
       await fetchCampaigns();

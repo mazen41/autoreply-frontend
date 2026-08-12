@@ -20,7 +20,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
 
   const fetchSequences = async () => {
     try {
-      const response = await fetch(`/api/businesses/${businessId}/sequences`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences`);
       const data = await response.json();
       setSequences(data);
     } catch (error) {
@@ -31,7 +31,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
   const createSequence = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/businesses/${businessId}/sequences`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newSequence),
@@ -58,7 +58,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
     if (!confirm('Are you sure you want to delete this sequence?')) return;
     
     try {
-      await fetch(`/api/businesses/${businessId}/sequences/${sequenceId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences/${sequenceId}`, {
         method: 'DELETE',
       });
       await fetchSequences();

@@ -13,9 +13,9 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
   const fetchAnalytics = async () => {
     try {
       const [csatRes, dailyRes, aiRes] = await Promise.all([
-        fetch(`/api/businesses/${businessId}/analytics/csat`),
-        fetch(`/api/businesses/${businessId}/analytics/daily`),
-        fetch(`/api/businesses/${businessId}/analytics/ai-metrics`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/csat`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/daily`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/ai-metrics`),
       ]);
 
       setCsatData(await csatRes.json());
