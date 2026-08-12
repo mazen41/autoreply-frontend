@@ -16,7 +16,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
 
   const fetchWebhooks = async () => {
     try {
-      const response = await fetch(`/api/businesses/${businessId}/webhooks`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks`);
       const data = await response.json();
       setWebhooks(data);
     } catch (error) {
@@ -27,7 +27,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
   const createWebhook = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/businesses/${businessId}/webhooks`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newWebhook),
@@ -48,7 +48,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
 
   const testWebhook = async (webhookId: number) => {
     try {
-      await fetch(`/api/businesses/${businessId}/webhooks/${webhookId}/test`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks/${webhookId}/test`, {
         method: 'POST',
       });
       alert('Test webhook sent!');
@@ -62,7 +62,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
     if (!confirm('Are you sure you want to delete this webhook?')) return;
     
     try {
-      await fetch(`/api/businesses/${businessId}/webhooks/${webhookId}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks/${webhookId}`, {
         method: 'DELETE',
       });
       await fetchWebhooks();

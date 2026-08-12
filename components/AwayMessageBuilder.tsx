@@ -24,8 +24,8 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
   const fetchSettings = async () => {
     try {
       const [hoursRes, messageRes] = await Promise.all([
-        fetch(`/api/businesses/${businessId}/hours`),
-        fetch(`/api/businesses/${businessId}/auto-messages`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/hours`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/auto-messages`),
       ]);
 
       const hoursData = await hoursRes.json();
@@ -52,12 +52,12 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
     setLoading(true);
     try {
       await Promise.all([
-        fetch(`/api/businesses/${businessId}/hours`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/hours`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ hours }),
         }),
-        fetch(`/api/businesses/${businessId}/auto-messages`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/auto-messages`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -22,6 +22,10 @@ const CHANNELS_DEFS = [
   { id: 'whatsapp',  name: 'WhatsApp',       color: 'var(--accent)', plan: 'free' },
   { id: 'reviews',   name: 'Google Reviews', color: 'var(--accent)', plan: 'free' },
   { id: 'salla',     name: 'Salla',          color: 'var(--accent)', plan: 'free' },
+  { id: 'telegram',  name: 'Telegram',       color: 'var(--accent)', plan: 'free' },
+  { id: 'tiktok',    name: 'TikTok',         color: 'var(--accent)', plan: 'free' },
+  { id: 'shopify',   name: 'Shopify',        color: 'var(--accent)', plan: 'free' },
+  { id: 'woocommerce', name: 'WooCommerce',  color: 'var(--accent)', plan: 'free' },
   { id: 'webchat',   name: 'Web Chat',       color: 'var(--accent)', plan: 'starter' },
 ]
 
@@ -79,6 +83,105 @@ function ConnectModal({
       const token = getToken()
       // Navigate in the same window — OAuth must NOT open in a popup
       window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}&redirect=dashboard`
+      return
+    }
+
+    if (ch.id === 'tiktok') {
+      const token = getToken()
+      window.location.href = `${API}/api/channels/connect/tiktok?token=${encodeURIComponent(token)}&redirect=dashboard`
+      return
+    }
+
+    if (ch.id === 'shopify') {
+      const shopDomain = prompt('Enter your Shopify store domain (e.g. mystore.myshopify.com):')
+      if (!shopDomain) return
+      
+      const token = getToken()
+      window.location.href = `${API}/api/channels/connect/shopify?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(token)}&redirect=dashboard`
+      return
+    }
+
+    if (ch.id === 'woocommerce') {
+      const storeUrl = prompt('Enter your WooCommerce store URL (e.g. https://mystore.com):')
+      if (!storeUrl) return
+      
+      const consumerKey = prompt('Enter your WooCommerce Consumer Key:')
+      if (!consumerKey) return
+      
+      const consumerSecret = prompt('Enter your WooCommerce Consumer Secret:')
+      if (!consumerSecret) return
+      
+      setConnectingLoading(true)
+      try {
+        const res = await fetch(`${API}/api/channels/woocommerce/connect`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            store_url: storeUrl,
+            consumer_key: consumerKey,
+            consumer_secret: consumerSecret,
+          }),
+        })
+        
+        if (!res.ok) {
+          const errBody = await res.text()
+          console.error('WooCommerce connect HTTP error', res.status, errBody)
+          throw new Error(`Backend error ${res.status}: ${errBody}`)
+        }
+        
+        const data = await res.json()
+        if (data.success) {
+          onConnected()
+        } else {
+          alert(data.error || 'Failed to connect WooCommerce store')
+        }
+      } catch (e) {
+        console.error('WooCommerce connect error:', e)
+        alert(`WooCommerce connection failed: ${e instanceof Error ? e.message : String(e)}`)
+      } finally {
+        setConnectingLoading(false)
+      }
+      return
+    }
+
+    if (ch.id === 'telegram') {
+      const botToken = prompt('Enter your Telegram Bot Token (from @BotFather):')
+      if (!botToken) return
+      
+      setConnectingLoading(true)
+      try {
+        const res = await fetch(`${API}/api/channels/telegram/connect`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bot_token: botToken,
+          }),
+        })
+        
+        if (!res.ok) {
+          const errBody = await res.text()
+          console.error('Telegram connect HTTP error', res.status, errBody)
+          throw new Error(`Backend error ${res.status}: ${errBody}`)
+        }
+        
+        const data = await res.json()
+        if (data.success) {
+          onConnected()
+        } else {
+          alert(data.error || 'Failed to connect Telegram bot')
+        }
+      } catch (e) {
+        console.error('Telegram connect error:', e)
+        alert(`Telegram connection failed: ${e instanceof Error ? e.message : String(e)}`)
+      } finally {
+        setConnectingLoading(false)
+      }
       return
     }
   }

@@ -36,7 +36,7 @@ export default function NotificationCenter() {
 
   const markAsRead = async (notificationId: number) => {
     try {
-      await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, { method: 'POST' });
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
@@ -58,7 +58,7 @@ export default function NotificationCenter() {
 
   const deleteNotification = async (notificationId: number) => {
     try {
-      await fetch(`/api/notifications/${notificationId}`, { method: 'DELETE' });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}`, { method: 'DELETE' });
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error('Failed to delete notification:', error);
