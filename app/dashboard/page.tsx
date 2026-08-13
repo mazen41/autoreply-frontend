@@ -15,6 +15,12 @@ import {
   ChannelsIcon
 } from '../../components/ui/DashboardIcons'
 
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
 function useCountUp(target: number, duration = 1400) {
   const [val, setVal] = useState(0)
   useEffect(() => {
@@ -153,23 +159,20 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-        
-        if (!token) {
-          console.error('No token found in cookies')
-          window.location.href = '/login'
-          return
+        const authHeaders = {
+          Authorization: `Bearer ${getToken()}`,
+          Accept: 'application/json',
         }
-
+        
         const [statsRes, inboxRes, channelsRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stats`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: authHeaders,
           }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inbox`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: authHeaders,
           }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: authHeaders,
           }),
         ])
 
@@ -220,7 +223,7 @@ export default function DashboardHome() {
           setChannels([])
         } else {
           const channelsData = await channelsRes.json()
-          setChannels(channelsData.data || [])
+          setChannels(Array.isArray(channelsData) ? channelsData : channelsData.data || [])
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err)

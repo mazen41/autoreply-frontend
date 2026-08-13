@@ -255,7 +255,10 @@ export default function ChannelsPage() {
           'Accept': 'application/json',
         },
       })
-      if (res.ok) setApiChannels(await res.json())
+      if (res.ok) {
+        const channels = await res.json()
+        setApiChannels(Array.isArray(channels) ? channels : channels.data || [])
+      }
     } catch (e) {
       console.error('Failed to fetch channels', e)
     } finally {

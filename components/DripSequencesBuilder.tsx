@@ -3,6 +3,15 @@
 import { useState, useEffect } from 'react';
 import { Layers, Plus, Trash2, Clock, Play } from 'lucide-react';
 
+function authHeaders(json = false) {
+  const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    Accept: 'application/json',
+    Authorization: `Bearer ${decodeURIComponent(token)}`,
+  };
+}
+
 export default function DripSequencesBuilder({ businessId }: { businessId: number }) {
   const [sequences, setSequences] = useState<any[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
@@ -20,7 +29,9 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
 
   const fetchSequences = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences`, {
+        headers: authHeaders(),
+      });
       const data = await response.json();
       setSequences(data);
     } catch (error) {
@@ -33,7 +44,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(true),
         body: JSON.stringify(newSequence),
       });
       setShowBuilder(false);
@@ -60,6 +71,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/sequences/${sequenceId}`, {
         method: 'DELETE',
+        headers: authHeaders(),
       });
       await fetchSequences();
     } catch (error) {

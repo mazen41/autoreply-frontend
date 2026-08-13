@@ -3,6 +3,15 @@
 import { useState, useEffect } from 'react';
 import { Send, Calendar, Filter, Plus, Trash2, Play } from 'lucide-react';
 
+function authHeaders(json = false) {
+  const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    Accept: 'application/json',
+    Authorization: `Bearer ${decodeURIComponent(token)}`,
+  };
+}
+
 export default function CampaignsBuilder({ businessId }: { businessId: number }) {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
@@ -18,7 +27,9 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
 
   const fetchCampaigns = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns`, {
+        headers: authHeaders(),
+      });
       const data = await response.json();
       setCampaigns(data);
     } catch (error) {
@@ -31,7 +42,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(true),
         body: JSON.stringify(newCampaign),
       });
       setShowBuilder(false);
@@ -54,6 +65,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns/${campaignId}/launch`, {
         method: 'POST',
+        headers: authHeaders(),
       });
       await fetchCampaigns();
     } catch (error) {
@@ -67,6 +79,7 @@ export default function CampaignsBuilder({ businessId }: { businessId: number })
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/campaigns/${campaignId}`, {
         method: 'DELETE',
+        headers: authHeaders(),
       });
       await fetchCampaigns();
     } catch (error) {
