@@ -116,10 +116,13 @@ export default function LoginForm() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || t.auth.loginError)
-      
-      // For Sanctum SPA authentication, we need to handle session cookies
-      // The backend should set the session cookie automatically
-      console.log('Login successful, session should be set by backend')
+
+      if (!data.token) throw new Error(t.auth.loginError)
+
+      const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24
+      const secure = window.location.protocol === 'https:' ? '; secure' : ''
+      document.cookie = `naz_token=${data.token}; path=/; max-age=${maxAge}; samesite=lax${secure}`
+
       toast.success(t.auth.loginSuccess)
       setSuccessPulse(true)
       await new Promise(resolve => setTimeout(resolve, 400))
