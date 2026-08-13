@@ -3,6 +3,15 @@
 import { useState, useEffect } from 'react';
 import { Link, Plus, Trash2, TestTube, Globe } from 'lucide-react';
 
+function authHeaders(json = false) {
+  const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    Accept: 'application/json',
+    Authorization: `Bearer ${decodeURIComponent(token)}`,
+  };
+}
+
 export default function IntegrationManagement({ businessId }: { businessId: number }) {
   const [webhooks, setWebhooks] = useState<any[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
@@ -16,7 +25,9 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
 
   const fetchWebhooks = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks`, {
+        headers: authHeaders(),
+      });
       const data = await response.json();
       setWebhooks(data);
     } catch (error) {
@@ -29,7 +40,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(true),
         body: JSON.stringify(newWebhook),
       });
       setShowBuilder(false);
@@ -50,6 +61,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks/${webhookId}/test`, {
         method: 'POST',
+        headers: authHeaders(),
       });
       alert('Test webhook sent!');
     } catch (error) {
@@ -64,6 +76,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/webhooks/${webhookId}`, {
         method: 'DELETE',
+        headers: authHeaders(),
       });
       await fetchWebhooks();
     } catch (error) {

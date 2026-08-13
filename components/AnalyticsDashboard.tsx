@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { TrendingUp, MessageSquare, Clock, ThumbsUp, ThumbsDown } from 'lucide-react';
 
+function authHeaders() {
+  const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
+  return {
+    Accept: 'application/json',
+    Authorization: `Bearer ${decodeURIComponent(token)}`,
+  };
+}
+
 export default function AnalyticsDashboard({ businessId }: { businessId: number }) {
   const [csatData, setCsatData] = useState<any>(null);
   const [dailyAnalytics, setDailyAnalytics] = useState<any[]>([]);
@@ -13,9 +21,9 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
   const fetchAnalytics = async () => {
     try {
       const [csatRes, dailyRes, aiRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/csat`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/daily`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/ai-metrics`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/csat`, { headers: authHeaders() }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/daily`, { headers: authHeaders() }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/ai-metrics`, { headers: authHeaders() }),
       ]);
 
       setCsatData(await csatRes.json());

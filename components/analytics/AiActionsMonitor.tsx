@@ -30,6 +30,8 @@ export default function AiActionsMonitor({ businessId }: { businessId: number })
       setActions(data.data || [])
     } catch (error) {
       console.error('Failed to fetch actions:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
