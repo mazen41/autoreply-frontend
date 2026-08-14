@@ -30,8 +30,8 @@ interface Subscription {
   status: string
   billing_cycle: string
   amount_paid: number
-  moyasar_payment_id: string
-  moyasar_invoice_id: string
+  paymob_transaction_id: string | null
+  paymob_order_id: string | null
   starts_at: string
   ends_at: string
   cancelled_at: string | null
@@ -128,7 +128,7 @@ export default function BillingPage() {
   }
 
   const formatPrice = (price: number) => {
-    return price === 0 ? 'Free' : `${price} SAR`
+    return price === 0 ? 'Free' : `${price} EGP`
   }
 
   const getLimitDisplay = (limit: number) => {

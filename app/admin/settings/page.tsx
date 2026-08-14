@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useState } from 'react'
@@ -33,8 +33,9 @@ type Settings = {
   pusher_app_key: string | null
   pusher_cluster: string | null
   pusher_host: string | null
-  moyasar_publishable_key: string
-  moyasar_secret_key: string | null
+  paymob_secret_key: string | null
+  paymob_public_key: string | null
+  paymob_hmac_key: string | null
 }
 
 const defaults = {
@@ -59,8 +60,9 @@ const defaults = {
   pusher_secret: '',
   pusher_cluster: '',
   pusher_host: '',
-  moyasar_publishable_key: '',
-  moyasar_secret_key: '',
+  paymob_secret_key: '',
+  paymob_public_key: '',
+  paymob_hmac_key: '',
 }
 
 export default function AdminSettingsPage() {
@@ -99,7 +101,7 @@ export default function AdminSettingsPage() {
         pusher_app_key: data.pusher_app_key || '',
         pusher_cluster: data.pusher_cluster || '',
         pusher_host: data.pusher_host || '',
-        moyasar_publishable_key: data.moyasar_publishable_key || '',
+        paymob_public_key: data.paymob_public_key || '',
       })
     } catch (error: any) {
       setError(error.message || 'Failed to load settings')
@@ -185,7 +187,7 @@ export default function AdminSettingsPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Panel><SectionTitle icon={<Settings2 />} title={isRTL ? '????????? ?????? ??????????' : 'General and Integrations'} /><div className="grid gap-4 md:grid-cols-2"><Field label={isRTL ? '??? ???????' : 'App name'}><input className={inputClass} value={formData.app_name} onChange={(e) => update('app_name', e.target.value)} /></Field><Field label={isRTL ? '???? ???????' : 'App URL'}><input className={inputClass} value={settings?.app_url || ''} disabled /></Field><Field label="Meta App ID"><input className={inputClass} value={formData.meta_app_id} onChange={(e) => update('meta_app_id', e.target.value)} /></Field><Field label="Meta App Secret"><input type="password" className={inputClass} value={formData.meta_app_secret} onChange={(e) => update('meta_app_secret', e.target.value)} /></Field><Field label="Google Client ID"><input className={inputClass} value={formData.google_client_id} onChange={(e) => update('google_client_id', e.target.value)} /></Field><Field label="Google Client Secret"><input type="password" className={inputClass} value={formData.google_client_secret} onChange={(e) => update('google_client_secret', e.target.value)} /></Field></div></Panel>
-        <Panel><SectionTitle icon={<ShieldCheck />} title={isRTL ? '????? ????? ???????' : 'Payments and Realtime'} /><div className="grid gap-4 md:grid-cols-2"><Field label="Pusher App ID"><input className={inputClass} value={formData.pusher_app_id} onChange={(e) => update('pusher_app_id', e.target.value)} /></Field><Field label="Pusher Key"><input className={inputClass} value={formData.pusher_app_key} onChange={(e) => update('pusher_app_key', e.target.value)} /></Field><Field label="Pusher Secret"><input type="password" className={inputClass} value={formData.pusher_secret} onChange={(e) => update('pusher_secret', e.target.value)} /></Field><Field label="Pusher Cluster"><input className={inputClass} value={formData.pusher_cluster} onChange={(e) => update('pusher_cluster', e.target.value)} /></Field><Field label="Moyasar Publishable Key"><input className={inputClass} value={formData.moyasar_publishable_key} onChange={(e) => update('moyasar_publishable_key', e.target.value)} /></Field><Field label="Moyasar Secret Key"><input type="password" className={inputClass} value={formData.moyasar_secret_key} onChange={(e) => update('moyasar_secret_key', e.target.value)} /></Field></div></Panel>
+        <Panel><SectionTitle icon={<ShieldCheck />} title={isRTL ? '????? ????? ???????' : 'Payments and Realtime'} /><div className="grid gap-4 md:grid-cols-2"><Field label="Pusher App ID"><input className={inputClass} value={formData.pusher_app_id} onChange={(e) => update('pusher_app_id', e.target.value)} /></Field><Field label="Pusher Key"><input className={inputClass} value={formData.pusher_app_key} onChange={(e) => update('pusher_app_key', e.target.value)} /></Field><Field label="Pusher Secret"><input type="password" className={inputClass} value={formData.pusher_secret} onChange={(e) => update('pusher_secret', e.target.value)} /></Field><Field label="Pusher Cluster"><input className={inputClass} value={formData.pusher_cluster} onChange={(e) => update('pusher_cluster', e.target.value)} /></Field><Field label="Paymob Secret Key"><input type="password" className={inputClass} value={formData.paymob_secret_key} onChange={(e) => update('paymob_secret_key', e.target.value)} placeholder="egy_sk_test_..." /></Field><Field label="Paymob Public Key"><input className={inputClass} value={formData.paymob_public_key} onChange={(e) => update('paymob_public_key', e.target.value)} placeholder="egy_pk_test_..." /></Field><Field label="Paymob HMAC Key"><input type="password" className={inputClass} value={formData.paymob_hmac_key} onChange={(e) => update('paymob_hmac_key', e.target.value)} placeholder="FA0D..." /></Field></div></Panel>
       </div>
     </AdminShell>
   )
