@@ -679,6 +679,7 @@ export default function OnboardingWizard() {
   const router = useRouter()
   const [step, setStep] = useState(1) // 1–4 + 5 = celebration
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
 
@@ -697,24 +698,72 @@ export default function OnboardingWizard() {
     connectedChannel: null,
   })
 
+  const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io'
+
+  const getToken = () => {
+    return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
+  }
+
+  // Load saved progress on mount
+  useEffect(() => {
+    const loadProgress = async () => {
+      const token = getToken()
+      if (!token) { setLoading(false); return }
+      try {
+        const res = await fetch(`${API}/api/onboarding`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
+        if (res.ok) {
+          const json = await res.json()
+          // If already completed, redirect to dashboard
+          if (json.completed) {
+            router.replace('/dashboard')
+            return
+          }
+          // Restore business data into form
+          if (json.business) {
+            const b = json.business
+            setData(prev => ({
+              ...prev,
+              businessType:     b.business_type     || prev.businessType,
+              businessName:     b.business_name     || prev.businessName,
+              phone:            b.phone             || prev.phone,
+              city:             b.city              || prev.city,
+              country:          b.country           || prev.country,
+              workingDays:      b.working_days       || prev.workingDays,
+              workingFrom:      b.working_from       || prev.workingFrom,
+              workingTo:        b.working_to         || prev.workingTo,
+              services:         b.services           || prev.services,
+              faqs:             b.faqs?.length       ? b.faqs : prev.faqs,
+              replyStyle:       b.reply_style        || prev.replyStyle,
+            }))
+          }
+          // Restore step from completed steps
+          const completedSteps: string[] = json.completed_steps || []
+          if (completedSteps.includes('step3') || completedSteps.includes('enable_ai')) setStep(4)
+          else if (completedSteps.includes('step2') || completedSteps.includes('business_info')) setStep(3)
+          else if (completedSteps.includes('step1')) setStep(2)
+        }
+      } catch { /* silent — start from step 1 */ }
+      setLoading(false)
+    }
+    loadProgress()
+  }, [])
+
   const canProceed = () => {
     if (step === 1) return data.businessType !== ''
     if (step === 2) return data.businessName.trim() !== ''
     return true
   }
 
-  const getToken = () => {
-    return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
-  }
-
   const saveStep = async (stepNum: number) => {
     const token = getToken()
     if (!token) return
     const endpoints: Record<number, string> = {
-      1: '/api/onboarding/step1',
-      2: '/api/onboarding/step2',
-      3: '/api/onboarding/step3',
-      4: '/api/onboarding/step4',
+      1: `${API}/api/onboarding/step1`,
+      2: `${API}/api/onboarding/step2`,
+      3: `${API}/api/onboarding/step3`,
+      4: `${API}/api/onboarding/step4`,
     }
     const payloads: Record<number, object> = {
       1: { business_type: data.businessType },
@@ -723,13 +772,17 @@ export default function OnboardingWizard() {
       4: { connected_channel: data.connectedChannel },
     }
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${endpoints[stepNum]}`, {
+      const res = await fetch(endpoints[stepNum], {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payloads[stepNum]),
       })
-    } catch {
-      // silent — continue anyway
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error(`Step ${stepNum} save failed:`, err)
+      }
+    } catch (e) {
+      console.error(`Step ${stepNum} network error:`, e)
     }
   }
 
@@ -751,23 +804,20 @@ export default function OnboardingWizard() {
   const finish = async () => {
     setSaving(true)
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/onboarding/complete`, {
+      await fetch(`${API}/api/onboarding/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${getToken()}` },
       })
     } catch { /* silent */ }
     setSaving(false)
 
-    // Check if package/billing params were passed through registration
     const packageId = searchParams.get('package')
     const billingCycle = searchParams.get('billing')
 
     if (packageId) {
-      // User pre-selected a plan, go to checkout
       window.location.href = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
     } else {
-      // No plan pre-selected, go to pricing
-      window.location.href = '/pricing'
+      window.location.href = '/dashboard'
     }
   }
 
@@ -776,6 +826,12 @@ export default function OnboardingWizard() {
     center: { opacity: 1, x: 0 },
     exit:   (d: number) => ({ opacity: 0, x: d > 0 ? -40 : 40 }),
   }
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
+      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }} />
+    </div>
+  )
 
   return (
     <div className="min-h-screen flex items-start justify-center py-8 px-4"

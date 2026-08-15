@@ -224,6 +224,8 @@ function ConvRow({ conv, active, onClick, onToggleAi, tags, isEscalated, isAssig
   const ch = channelMeta(conv.channel?.type)
   const preview = conv.latest_message?.content ?? conv.subject ?? '—'
   const isAI = conv.latest_message?.is_ai
+  const isHighPriority = conv.priority === 'high'
+  const isClassified = !!conv.category
 
   return (
     <motion.button
@@ -258,6 +260,18 @@ function ConvRow({ conv, active, onClick, onToggleAi, tags, isEscalated, isAssig
             👤
           </div>
         )}
+        {/* High priority indicator */}
+        {isHighPriority && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[8px] font-bold">
+            🔴
+          </div>
+        )}
+        {/* Classified indicator */}
+        {isClassified && (
+          <div className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white text-[8px] font-bold">
+            🤖
+          </div>
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-1 mb-1">
@@ -277,6 +291,9 @@ function ConvRow({ conv, active, onClick, onToggleAi, tags, isEscalated, isAssig
           <div className="flex items-center gap-1 min-w-0">
             {isEscalated && <span className="text-[10px] text-orange-500 font-bold">🔥 Escalated</span>}
             {isAI && <span className="text-[10px] text-accent font-bold">⚡ AI</span>}
+            {conv.category && <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-500">{conv.category}</span>}
+            {conv.priority === 'high' && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-500 font-bold">HIGH</span>}
+            {conv.intent && <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/20 text-gray-500">{conv.intent}</span>}
             <span className="text-xs text-text-secondary truncate flex-1">
               {preview}
             </span>
@@ -1012,6 +1029,23 @@ export default function InboxPage() {
                 <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.ai_enabled ? 'bg-accent animate-pulse' : 'bg-text-tertiary'}`} />
                 <span>AI {selectedConv.ai_enabled ? (isRTL ? 'مفعّل' : 'Active') : (isRTL ? 'معطل' : 'Disabled')}</span>
               </button>
+
+              {/* Classification Info */}
+              {selectedConv.category && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border bg-surface-elevated border-border text-text-tertiary">
+                  <span className="text-blue-500">{selectedConv.category}</span>
+                  {selectedConv.priority && <span className={`px-1.5 py-0.5 rounded ${selectedConv.priority === 'high' ? 'bg-red-500/20 text-red-500' : 'bg-gray-500/20 text-gray-500'}`}>{selectedConv.priority}</span>}
+                  {selectedConv.confidence && <span className="text-[9px] text-text-tertiary">{Math.round(selectedConv.confidence * 100)}%</span>}
+                </div>
+              )}
+
+              {/* Routing Info */}
+              {selectedConv.assigned_agent_id && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border bg-surface-elevated border-border text-text-tertiary">
+                  <span className="text-purple-500">👤 Assigned</span>
+                  <span className="text-[9px] text-text-tertiary">{new Date(selectedConv.assigned_at || '').toLocaleTimeString()}</span>
+                </div>
+              )}
               
               {/* Tags Management */}
               <button

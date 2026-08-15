@@ -57,15 +57,15 @@ export default function ReputationPage() {
         return
       }
 
-      // TODO: Implement backend endpoint for reviews
-      // const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/reviews`, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // })
-      // if (res.ok) {
-      //   const data = await res.json()
-      //   setReviews(data.reviews || [])
-      //   setFollowups(data.followups || [])
-      // }
+      // Backend endpoint for reviews - using existing report controller for now
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/reports/reputation`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setReviews(data.reviews || [])
+        setFollowups(data.followups || [])
+      }
     } catch (err) {
       console.error('Failed to fetch reputation data:', err)
     } finally {

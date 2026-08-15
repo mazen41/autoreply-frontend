@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { TrendingUp, MessageSquare, Clock, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 function authHeaders() {
@@ -13,141 +12,262 @@ function authHeaders() {
 }
 
 export default function AnalyticsDashboard({ businessId }: { businessId: number }) {
-  const [csatData, setCsatData] = useState<any>(null);
-  const [dailyAnalytics, setDailyAnalytics] = useState<any[]>([]);
-  const [aiMetrics, setAiMetrics] = useState<any[]>([]);
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState('last_30_days');
 
-  const fetchAnalytics = async () => {
+  const fetchDashboard = async () => {
     try {
-      const [csatRes, dailyRes, aiRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/csat`, { headers: authHeaders() }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/daily`, { headers: authHeaders() }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/ai-metrics`, { headers: authHeaders() }),
-      ]);
-
-      setCsatData(await csatRes.json());
-      setDailyAnalytics((await dailyRes.json()) || []);
-      setAiMetrics((await aiRes.json()) || []);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/businesses/${businessId}/analytics/dashboard?preset=${dateRange}`, { headers: authHeaders() });
+      const data = await res.json();
+      setDashboardData(data);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      console.error('Failed to fetch dashboard:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [businessId]);
+    fetchDashboard();
+  }, [businessId, dateRange]);
 
   if (loading) {
     return <div className="p-6 text-center">Loading analytics...</div>;
   }
 
-  const recentDailyData = dailyAnalytics.slice(-7).map(d => ({
-    date: new Date(d.date).toLocaleDateString(),
-    conversations: d.total_conversations,
-    messages: d.total_messages,
-    ai_messages: d.ai_messages,
-  }));
-
-  const recentAiData = aiMetrics.slice(-7).map(d => ({
-    date: new Date(d.date).toLocaleDateString(),
-    success_rate: d.success_rate,
-    confidence: d.avg_confidence_score,
-  }));
-
   return (
     <div className="space-y-6">
-      {/* CSAT Score */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <ThumbsUp className="w-6 h-6 text-green-600" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Customer Satisfaction
-          </h2>
-        </div>
-        <div className="grid grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">{csatData?.csat_score || 0}%</div>
-            <div className="text-sm text-gray-500">CSAT Score</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900 dark:text-white">
-              {csatData?.total_ratings || 0}
-            </div>
-            <div className="text-sm text-gray-500">Total Ratings</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
-              {csatData?.positive_ratings || 0}
-            </div>
-            <div className="text-sm text-gray-500">Positive</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-red-600">
-              {csatData?.negative_ratings || 0}
-            </div>
-            <div className="text-sm text-gray-500">Negative</div>
-          </div>
-        </div>
+      {/* Date Range Selector */}
+      <div className="flex items-center gap-4">
+        <select
+          value={dateRange}
+          onChange={(e) => setDateRange(e.target.value)}
+          className="px-4 py-2 rounded-lg border"
+        >
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="last_7_days">Last 7 Days</option>
+          <option value="last_30_days">Last 30 Days</option>
+          <option value="this_month">This Month</option>
+        </select>
       </div>
 
-      {/* Conversation Analytics */}
+      {/* Conversation Statistics */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <MessageSquare className="w-6 h-6 text-blue-600" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Conversations (Last 7 Days)
+            Conversations
           </h2>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={recentDailyData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="conversations" fill="#3b82f6" name="Conversations" />
-            <Bar dataKey="messages" fill="#8b5cf6" name="Messages" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="grid grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              {dashboardData?.conversations?.total || 0}
+            </div>
+            <div className="text-sm text-gray-500">Total</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">
+              {dashboardData?.conversations?.new || 0}
+            </div>
+            <div className="text-sm text-gray-500">New</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">
+              {dashboardData?.conversations?.open || 0}
+            </div>
+            <div className="text-sm text-gray-500">Open</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-600">
+              {dashboardData?.conversations?.closed || 0}
+            </div>
+            <div className="text-sm text-gray-500">Closed</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {Math.round(dashboardData?.conversations?.avg_response_time_minutes || 0)}m
+            </div>
+            <div className="text-sm text-gray-500">Avg Response Time</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {Math.round(dashboardData?.conversations?.avg_resolution_time_minutes || 0)}m
+            </div>
+            <div className="text-sm text-gray-500">Avg Resolution Time</div>
+          </div>
+        </div>
       </div>
 
-      {/* AI Performance */}
+      {/* AI Statistics */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="w-6 h-6 text-purple-600" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            AI Performance (Last 7 Days)
+            AI Performance
           </h2>
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={recentAiData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="success_rate" stroke="#22c55e" name="Success Rate %" />
-            <Line type="monotone" dataKey="confidence" stroke="#3b82f6" name="Confidence Score" />
-          </LineChart>
-        </ResponsiveContainer>
+        <div className="grid grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              {dashboardData?.ai?.ai_conversations || 0}
+            </div>
+            <div className="text-sm text-gray-500">AI Conversations</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-600">
+              {dashboardData?.ai?.ai_responses || 0}
+            </div>
+            <div className="text-sm text-gray-500">AI Responses</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600">
+              {dashboardData?.ai?.escalated_conversations || 0}
+            </div>
+            <div className="text-sm text-gray-500">Escalated</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-green-600">
+              {Math.round(dashboardData?.ai?.ai_success_rate || 0)}%
+            </div>
+            <div className="text-sm text-gray-500">Success Rate</div>
+          </div>
+        </div>
       </div>
 
-      {/* Response Time */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-6 h-6 text-orange-600" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Average Response Time
-          </h2>
+      {/* Agents Performance */}
+      {dashboardData?.agents && dashboardData.agents.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="w-6 h-6 text-orange-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Agent Performance
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {dashboardData.agents.map((agent: any) => (
+              <div key={agent.agent_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white">{agent.name}</div>
+                  <div className="text-sm text-gray-500">Role: {agent.role}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-900 dark:text-white">
+                    {agent.resolved_conversations} resolved
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {agent.assigned_conversations} assigned
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="text-4xl font-bold text-gray-900 dark:text-white">
-          {dailyAnalytics.length > 0 
-            ? Math.round(dailyAnalytics.reduce((acc, d) => acc + d.avg_response_time_seconds, 0) / dailyAnalytics.length / 60)
-            : 0} min
+      )}
+
+      {/* Channels Breakdown */}
+      {dashboardData?.channels && dashboardData.channels.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-6 h-6 text-green-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Channels
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {dashboardData.channels.map((channel: any) => (
+              <div key={channel.channel_type} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white capitalize">{channel.channel_type}</div>
+                  <div className="text-sm text-gray-500">{channel.channel_name}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-900 dark:text-white">
+                    {channel.conversations} conversations
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {channel.messages} messages
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="text-sm text-gray-500 mt-2">Average across all conversations</div>
-      </div>
+      )}
+
+      {/* E-commerce Stats */}
+      {dashboardData?.ecommerce && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-6 h-6 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              E-commerce
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {dashboardData.ecommerce.total_products || 0}
+              </div>
+              <div className="text-sm text-gray-500">Products</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {dashboardData.ecommerce.active_products || 0}
+              </div>
+              <div className="text-sm text-gray-500">Active</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">
+                {dashboardData.ecommerce.recovered_carts || 0}
+              </div>
+              <div className="text-sm text-gray-500">Recovered Carts</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Workflow Stats */}
+      {dashboardData?.workflows && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-6 h-6 text-purple-600" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Workflows
+            </h2>
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                {dashboardData.workflows.total_workflows || 0}
+              </div>
+              <div className="text-sm text-gray-500">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {dashboardData.workflows.active_workflows || 0}
+              </div>
+              <div className="text-sm text-gray-500">Active</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600">
+                {dashboardData.workflows.total_executions || 0}
+              </div>
+              <div className="text-sm text-gray-500">Executions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600">
+                {Math.round(dashboardData.workflows.success_rate || 0)}%
+              </div>
+              <div className="text-sm text-gray-500">Success Rate</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

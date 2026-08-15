@@ -10,6 +10,8 @@ interface KnowledgeFile {
   filename: string
   file_type: string
   uploaded_at: string
+  status?: string
+  chunks_count?: number
 }
 
 export default function AIKnowledgeContent() {
@@ -22,6 +24,10 @@ export default function AIKnowledgeContent() {
   const [testing, setTesting] = useState(false)
   const [testQuestion, setTestQuestion] = useState('')
   const [testResponse, setTestResponse] = useState('')
+  const [reindexing, setReindexing] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searching, setSearching] = useState(false)
 
   const [profile, setProfile] = useState({
     business_name: '',
@@ -111,6 +117,10 @@ export default function AIKnowledgeContent() {
 
       if (res.ok) {
         toast.success(t.aiKnowledge.uploadSuccess)
+        // Check if file was processed with RAG
+        if (data.chunks_count !== undefined) {
+          toast.success(`Document processed into ${data.chunks_count} chunks`)
+        }
         fetchKnowledge()
       } else {
         toast.error(data.error || t.aiKnowledge.uploadError)
@@ -237,6 +247,67 @@ export default function AIKnowledgeContent() {
       toast.error(t.aiKnowledge.testError)
     } finally {
       setTesting(false)
+    }
+  }
+
+  const handleReindex = async () => {
+    setReindexing(true)
+    try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/reindex`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        toast.success('Knowledge base reindexed successfully')
+        fetchKnowledge()
+      } else {
+        toast.error(data.error || 'Failed to reindex knowledge base')
+      }
+    } catch (error) {
+      toast.error('Failed to reindex knowledge base')
+    } finally {
+      setReindexing(false)
+    }
+  }
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search query')
+      return
+    }
+
+    setSearching(true)
+    setSearchResults([])
+
+    try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/search`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ query: searchQuery, limit: 5 }),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        setSearchResults(data.results || [])
+      } else {
+        toast.error(data.error || 'Search failed')
+      }
+    } catch (error) {
+      toast.error('Search failed')
+    } finally {
+      setSearching(false)
     }
   }
 
@@ -369,7 +440,7 @@ export default function AIKnowledgeContent() {
         </p>
 
         {/* Upload Button */}
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <label className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-80"
             style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--accent)' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -389,12 +460,35 @@ export default function AIKnowledgeContent() {
               <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
             )}
           </label>
-          <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>
-            {t.aiKnowledge.supportedFormats} • {t.aiKnowledge.maxSize}
-          </p>
+          <button
+            onClick={handleReindex}
+            disabled={reindexing}
+            className="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
+            style={{
+              background: reindexing ? 'var(--accent-focus)' : 'var(--surface)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            {reindexing && (
+              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
+            )}
+            Reindex Knowledge
+          </button>
         </div>
+        <p className="text-xs mb-6" style={{ color: 'var(--text-tertiary)' }}>
+          {t.aiKnowledge.supportedFormats} • {t.aiKnowledge.maxSize}
+        </p>
+      </motion.div>
 
-        {/* Files List */}
+      {/* Files List */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
+      >
         {files.length === 0 ? (
           <div className="text-center py-8 rounded-xl" style={{ background: 'var(--surface-elevated)' }}>
             <p style={{ color: 'var(--text-tertiary)' }}>{t.aiKnowledge.noFiles}</p>
@@ -430,9 +524,24 @@ export default function AIKnowledgeContent() {
                   </div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{file.filename}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                      {t.aiKnowledge.uploadedAt}: {new Date(file.uploaded_at).toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                        {t.aiKnowledge.uploadedAt}: {new Date(file.uploaded_at).toLocaleDateString()}
+                      </p>
+                      {file.status && (
+                        <span className="text-xs px-2 py-0.5 rounded" style={{
+                          background: file.status === 'processed' ? 'var(--accent-subtle)' : 'var(--surface)',
+                          color: file.status === 'processed' ? 'var(--accent)' : 'var(--text-tertiary)'
+                        }}>
+                          {file.status}
+                        </span>
+                      )}
+                      {file.chunks_count !== undefined && (
+                        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                          {file.chunks_count} chunks
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <button
@@ -502,6 +611,89 @@ export default function AIKnowledgeContent() {
             )}
             {t.aiKnowledge.saveInstructions}
           </button>
+        </div>
+      </motion.div>
+
+      {/* RAG Search Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.25 }}
+        className="premium-card p-6"
+        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
+      >
+        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
+          RAG Search
+        </h2>
+        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+          Search your knowledge base using semantic search to find relevant information.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+              Search Query
+            </label>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Enter search query..."
+                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
+                style={{
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--accent-focus)'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              />
+              <button
+                onClick={handleSearch}
+                disabled={searching}
+                className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
+                style={{
+                  background: searching ? 'var(--accent-focus)' : 'var(--accent)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {searching && (
+                  <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
+                )}
+                Search
+              </button>
+            </div>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="space-y-3">
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                Search Results ({searchResults.length})
+              </label>
+              {searchResults.map((result, index) => (
+                <div key={index} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                      {result.source}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      Score: {(result.score * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                    {result.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
 

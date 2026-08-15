@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Set turbopack root to fix lockfile warning
-  turbopack: {
-    root: process.cwd(),
-  },
+  // Use standard webpack instead of turbopack to avoid font issues
+  // turbopack: {
+  //   root: process.cwd(),
+  // },
   
   // Disable source maps in development for faster builds
   productionBrowserSourceMaps: false,
