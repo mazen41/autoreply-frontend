@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import NotificationCenter from '../NotificationCenter'
 import {
   HomeIcon,
   InboxIcon,
@@ -47,6 +48,17 @@ const NAV = [
   { icon: LayersIcon, key: 'sequences', href: '/dashboard/sequences' },
   { icon: LinkIcon, key: 'integrations', href: '/dashboard/integrations' },
   { icon: BarChartIcon, key: 'analytics', href: '/dashboard/analytics' },
+  { icon: BarChartIcon, key: 'workflows', href: '/dashboard/workflows' },
+  { icon: UserIcon, key: 'routing', href: '/dashboard/routing' },
+  { icon: LinkIcon, key: 'products', href: '/dashboard/products' },
+  { icon: LinkIcon, key: 'bookings', href: '/dashboard/bookings' },
+  { icon: SendIcon, key: 'socialPosts', href: '/dashboard/social-posts' },
+  { icon: LinkIcon, key: 'apiKeys', href: '/dashboard/api-keys' },
+  { icon: SendIcon, key: 'emailCampaigns', href: '/dashboard/email-campaigns' },
+  { icon: ReportsIcon, key: 'classification', href: '/dashboard/classification' },
+  { icon: LinkIcon, key: 'orderNotifications', href: '/dashboard/order-notifications' },
+  { icon: LinkIcon, key: 'cartRecovery', href: '/dashboard/cart-recovery' },
+  { icon: ContentIcon, key: 'multimodal', href: '/dashboard/multimodal' },
 ]
 
 const NAV_BOTTOM = [
@@ -61,22 +73,39 @@ const NOTIFICATIONS = [
 ]
 
 function useUser() {
-  const [user, setUser] = useState<{ name: string; email: string; onboarding_completed: boolean } | null>(null)
+  const router = useRouter()
+  const [user, setUser] = useState<{ name: string; email: string; onboarding_completed: boolean; email_verified?: boolean } | null>(null)
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-    if (!token) return
+    if (!token) {
+      router.replace('/login')
+      setLoading(false)
+      return
+    }
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    }).then(r => r.json()).then(setUser).catch(() => {})
-  }, [])
-  return user
+    }).then(async r => {
+      const data = await r.json().catch(() => null)
+      if (!r.ok || data?.requires_verification || data?.email_verified === false) {
+        document.cookie = 'naz_token=; max-age=0; path=/'
+        router.replace(data?.requires_verification ? `/verify-email?email=${encodeURIComponent(data?.email || '')}` : '/login')
+        return
+      }
+      setUser(data)
+    }).catch(() => {
+      document.cookie = 'naz_token=; max-age=0; path=/'
+      router.replace('/login')
+    }).finally(() => setLoading(false))
+  }, [router])
+  return { user, loading }
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isRTL, t, setLang } = useLang()
   const pathname = usePathname()
   const router = useRouter()
-  const user = useUser()
+  const { user, loading: authLoading } = useUser()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileSidebar, setMobileSidebar] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -106,6 +135,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     expanded: { width: 240, x: 0 },
     collapsed: { width: 64, x: 0 },
     hidden: { x: isRTL ? '100%' : '-100%', width: 240 }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
+        <svg className="animate-spin w-10 h-10" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="var(--accent-focus)" strokeWidth="3"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"/>
+        </svg>
+      </div>
+    )
   }
 
   const NavItem = ({ item, isBottom = false }: { item: any; isBottom?: boolean }) => {
@@ -305,54 +345,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               {/* Notifications */}
-              <div className="relative">
-                <button
-                  onClick={() => setNotifOpen(!notifOpen)}
-                  className="btn-icon relative"
-                  aria-label="Notifications"
-                >
-                  <BellIcon size={20} />
-                  <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: 'var(--accent)' }} />
-                </button>
-
-                <AnimatePresence>
-                  {notifOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 mt-2 w-80 dropdown-panel overflow-hidden z-50"
-                    >
-                      <div className="p-3" style={{ borderBottom: '1px solid var(--border)' }}>
-                        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                          {isRTL ? 'الإشعارات' : 'Notifications'}
-                        </h3>
-                      </div>
-                      <div className="max-h-80 overflow-y-auto">
-                        {NOTIFICATIONS.map((notif, i) => (
-                          <Link
-                            key={i}
-                            href={notif.href}
-                            onClick={() => setNotifOpen(false)}
-                            className="dropdown-item"
-                            style={{ borderBottom: i < NOTIFICATIONS.length - 1 ? '1px solid var(--divider)' : 'none' }}
-                          >
-                            <div className="w-2 h-2 rounded-full mt-1.5" style={{ background: notif.type === 'alert' ? 'var(--accent)' : notif.type === 'review' ? 'var(--accent)' : 'var(--accent)' }} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
-                                {isRTL ? notif.ar : notif.en}
-                              </p>
-                              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                                {notif.time}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <NotificationCenter />
 
               {/* User menu */}
               <div className="relative">

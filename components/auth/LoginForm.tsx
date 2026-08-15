@@ -115,6 +115,10 @@ export default function LoginForm() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
+      if (res.status === 403 && data.requires_verification) {
+        window.location.href = `/verify-email?email=${encodeURIComponent(data.email || form.email)}`
+        return
+      }
       if (!res.ok) throw new Error(data.message || t.auth.loginError)
 
       if (!data.token) throw new Error(t.auth.loginError)

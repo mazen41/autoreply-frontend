@@ -155,24 +155,26 @@ export default function DashboardHome() {
   const [activity, setActivity] = useState<any[]>([])
   const [channels, setChannels] = useState<any[]>([])
   const [topSenders, setTopSenders] = useState<any[]>([])
+  const [chartData, setChartData] = useState<number[]>([40, 35, 45, 30, 38, 42, 35])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const authHeaders = {
-          Authorization: `Bearer ${getToken()}`,
-          Accept: 'application/json',
-        }
-        
-        const [statsRes, inboxRes, channelsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stats`, {
-            headers: authHeaders,
+        const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+        if (!token) return
+
+        const [statsRes, inboxRes, channelsRes, reportsRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/stats`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
           }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/inbox`, {
-            headers: authHeaders,
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/inbox`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
           }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
-            headers: authHeaders,
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/channels`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/reports/ai-performance`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
           }),
         ])
 
@@ -224,6 +226,18 @@ export default function DashboardHome() {
         } else {
           const channelsData = await channelsRes.json()
           setChannels(Array.isArray(channelsData) ? channelsData : channelsData.data || [])
+        }
+
+        if (!reportsRes.ok) {
+          console.error('Reports API failed:', reportsRes.status)
+          setChartData([40, 35, 45, 30, 38, 42, 35]) // fallback to fake data
+        } else {
+          const reportsData = await reportsRes.json()
+          // Extract response time data from reports
+          const responseTimes = reportsData.data?.map((item: any) => 
+            parseInt(item.avg_response_time_seconds) || 0
+          ) || [40, 35, 45, 30, 38, 42, 35]
+          setChartData(responseTimes)
         }
       } catch (err) {
         console.error('Dashboard fetch error:', err)
@@ -420,7 +434,7 @@ export default function DashboardHome() {
 
           <div className="p-4">
             <div className="h-40 flex items-end gap-2">
-              {[40, 35, 45, 30, 38, 42, 35].map((height, i) => (
+              {chartData.map((height, i) => (
                 <motion.div
                   key={i}
                   className="flex-1 rounded-t"

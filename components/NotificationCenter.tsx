@@ -23,9 +23,14 @@ export default function NotificationCenter() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('/api/notifications');
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
       const data = await response.json();
-      setNotifications(data.notifications.data || []);
+      setNotifications(data.data || data);
       setUnreadCount(data.unread_count || 0);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -36,7 +41,13 @@ export default function NotificationCenter() {
 
   const markAsRead = async (notificationId: number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, { method: 'POST' });
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications/${notificationId}/read`, { 
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, is_read: true } : n))
       );
@@ -48,7 +59,13 @@ export default function NotificationCenter() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('/api/notifications/mark-all-read', { method: 'POST' });
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications/read-all`, { 
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch (error) {
@@ -58,7 +75,13 @@ export default function NotificationCenter() {
 
   const deleteNotification = async (notificationId: number) => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}`, { method: 'DELETE' });
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications/${notificationId}`, { 
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      });
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error('Failed to delete notification:', error);
@@ -92,7 +115,30 @@ export default function NotificationCenter() {
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-    return () => clearInterval(interval);
+
+    // Setup Pusher for realtime updates
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY || 'dummy_app_key'
+    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1'
+    
+    if (pusherKey && pusherKey !== 'dummy_app_key') {
+      const pusher = new (require('pusher-js'))(pusherKey, {
+        cluster: pusherCluster,
+      })
+
+      const channel = pusher.subscribe('notifications')
+      channel.bind('new-notification', (data: Notification) => {
+        setNotifications(prev => [data, ...prev])
+        setUnreadCount(prev => prev + 1)
+      })
+
+      return () => {
+        clearInterval(interval)
+        channel.unbind_all()
+        pusher.disconnect()
+      }
+    }
+
+    return () => clearInterval(interval)
   }, []);
 
   return (

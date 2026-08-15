@@ -8,6 +8,9 @@ interface User {
   email: string
   is_admin: boolean
   onboarding_completed: boolean
+  email_verified?: boolean
+  email_verified_at?: string | null
+  business_id?: number | null
 }
 
 interface AuthContextType {
@@ -46,7 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         const userData = await response.json()
-        setUser(userData)
+        if (userData.requires_verification || userData.email_verified === false) {
+          document.cookie = 'naz_token=; path=/; max-age=0'
+          setUser(null)
+        } else {
+          setUser(userData)
+        }
       } else {
         setUser(null)
       }

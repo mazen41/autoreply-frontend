@@ -71,6 +71,11 @@ export interface ApiConversation {
   latest_message?: ApiMessage | null
   assigned_agent_id?: number | null
   assigned_at?: string | null
+  category?: string | null
+  intent?: string | null
+  priority?: string | null
+  confidence?: number | null
+  classified_at?: string | null
 }
 
 function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] }): ApiConversation {
@@ -90,6 +95,11 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     latest_message: latest,
     assigned_agent_id: raw.assigned_agent_id,
     assigned_at: raw.assigned_at,
+    category: raw.category ?? null,
+    intent: raw.intent ?? null,
+    priority: raw.priority ?? null,
+    confidence: raw.confidence ?? null,
+    classified_at: raw.classified_at ?? null,
   }
 }
 

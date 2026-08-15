@@ -53,11 +53,11 @@ function ConnectModal({
     if (ch.id === 'gmail') {
       setConnectingLoading(true)
       try {
+        const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+        if (!token) return
+
         const res = await fetch(`${API}/api/channels/connect/gmail`, {
-          headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Accept': 'application/json',
-          },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
         if (!res.ok) {
           const errBody = await res.text()
@@ -113,11 +113,15 @@ function ConnectModal({
       
       setConnectingLoading(true)
       try {
+        const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+        if (!token) return
+
         const res = await fetch(`${API}/api/channels/woocommerce/connect`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
           },
           body: JSON.stringify({
             store_url: storeUrl,
@@ -249,11 +253,11 @@ export default function ChannelsPage() {
 
   const fetchChannels = useCallback(async () => {
     try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
       const res = await fetch(`${API}/api/channels`, {
-        headers: {
-          'Authorization': `Bearer ${getToken()}`,
-          'Accept': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       if (res.ok) {
         const channels = await res.json()
@@ -273,27 +277,33 @@ export default function ChannelsPage() {
     const params = new URLSearchParams(window.location.search)
     const success = params.get('success')
     const error = params.get('error')
-    if (success === 'facebook_connected' || success === 'gmail' || success === 'salla_connected') {
+    if (success === 'facebook_connected' || success === 'instagram_connected' || success === 'gmail' || success === 'salla_connected' || success === 'tiktok_connected' || success === 'shopify_connected') {
       setToast({ message: t.channels.connectedSuccess, type: 'success' })
       fetchChannels()
       window.history.replaceState({}, '', window.location.pathname)
+    } else if (error) {
+      setToast({ message: 'Connection error', type: 'error' })
+      window.history.replaceState({}, '', window.location.pathname)
     }
-    if (error === 'gmail_denied' || error === 'facebook_denied' || error === 'salla_denied') {
+    if (error === 'gmail_denied' || error === 'facebook_denied' || error === 'salla_denied' || error === 'tiktok_denied' || error === 'shopify_denied') {
       setToast({ message: t.channels.connectionCancelled, type: 'error' })
       window.history.replaceState({}, '', window.location.pathname)
     }
-    if (error === 'gmail_token' || error === 'gmail_exception' || error === 'token_failed' || error === 'no_pages' || error === 'salla_oauth_failed') {
+    if (error === 'gmail_token' || error === 'gmail_exception' || error === 'token_failed' || error === 'no_pages' || error === 'salla_oauth_failed' || error === 'tiktok_token_failed' || error === 'shopify_token_failed') {
       setToast({ message: t.channels.connectionFailed, type: 'error' })
       window.history.replaceState({}, '', window.location.pathname)
     }
-  }, [fetchChannels, isRTL])
+  }, [fetchChannels, t.channels.connectedSuccess])
 
   const handleDisconnect = async (id: number) => {
     if (!confirm(t.channels.confirmDisconnect)) return
     try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
       await fetch(`${API}/api/channels/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${getToken()}`, 'Accept': 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       setToast({ message: t.channels.disconnected2, type: 'success' })
       fetchChannels()
@@ -305,12 +315,15 @@ export default function ChannelsPage() {
 
   const handleToggleAI = async (id: number, currentStatus: boolean) => {
     try {
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+      if (!token) return
+
       const res = await fetch(`${API}/api/channels/${id}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${getToken()}`,
-          'Accept': 'application/json',
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
         },
         body: JSON.stringify({ ai_enabled: !currentStatus }),
       })

@@ -100,20 +100,16 @@ export default function RegisterForm() {
       clearTimeout(timeout)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || t.auth.registerError)
-      document.cookie = `naz_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
       toast.success(t.auth.registerSuccess)
       setSuccessPulse(true)
       await new Promise(resolve => setTimeout(resolve, 400))
 
-      let redirectUrl = redirectTo
-      if (!redirectUrl) {
-        const params = new URLSearchParams()
-        if (packageId) params.set('package', packageId)
-        if (billingCycle) params.set('billing', billingCycle)
-        const queryString = params.toString()
-        redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
-      }
-      window.location.href = redirectUrl
+      const params = new URLSearchParams()
+      params.set('email', form.email)
+      if (redirectTo) params.set('redirect', redirectTo)
+      if (packageId) params.set('package', packageId)
+      if (billingCycle) params.set('billing', billingCycle)
+      window.location.href = `/verify-email?${params.toString()}`
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t.auth.registerError
       setError(msg.includes('abort') || msg.includes('fetch') ? (isRTL ? 'تعذر الاتصال بالخادم. تأكد أن الـ backend يعمل.' : 'Cannot connect to server. Make sure the backend is running.') : msg)
