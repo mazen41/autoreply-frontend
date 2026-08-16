@@ -6,6 +6,8 @@ import { useLang } from '../../../lib/LangContext'
 import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import { PlusIcon, XIcon, LightningIcon } from '../../../components/ui/DashboardIcons'
+import TelegramConnect from '../../../components/channels/TelegramConnect'
+import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -151,72 +153,61 @@ function ConnectModal({
       return
     }
 
-    if (ch.id === 'telegram') {
-      setConnectingLoading(true)
-      try {
-        const res = await fetch(`${API}/api/channels/telegram/connect`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${getToken()}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        })
-        
-        if (!res.ok) {
-          const errBody = await res.text()
-          console.error('Telegram connect HTTP error', res.status, errBody)
-          
-          // If server doesn't have token configured, prompt user
-          if (res.status === 400 && errBody.includes('Bot token is required')) {
-            const botToken = prompt('Enter your Telegram Bot Token (from @BotFather):')
-            if (!botToken) {
-              setConnectingLoading(false)
-              return
-            }
-            
-            const retryRes = await fetch(`${API}/api/channels/telegram/connect`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${getToken()}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ bot_token: botToken }),
-            })
-            
-            if (!retryRes.ok) {
-              const retryErrBody = await retryRes.text()
-              console.error('Telegram connect retry error', retryRes.status, retryErrBody)
-              throw new Error(`Backend error ${retryRes.status}: ${retryErrBody}`)
-            }
-            
-            const retryData = await retryRes.json()
-            if (retryData.success) {
-              onConnected()
-            } else {
-              alert(retryData.error || 'Failed to connect Telegram bot')
-            }
-            setConnectingLoading(false)
-            return
+  if (ch.id === 'telegram') {
+    return (
+      <TelegramConnect
+        isConnected={false}
+        onConnect={async (data) => {
+          const res = await fetch(`${API}/api/channels/telegram/connect`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+          if (!res.ok) {
+            const errBody = await res.text()
+            throw new Error(`Backend error ${res.status}: ${errBody}`)
           }
-          
-          throw new Error(`Backend error ${res.status}: ${errBody}`)
-        }
-        
-        const data = await res.json()
-        if (data.success) {
+          const result = await res.json()
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to connect')
+          }
           onConnected()
-        } else {
-          alert(data.error || 'Failed to connect Telegram bot')
-        }
-      } catch (e) {
-        console.error('Telegram connect error:', e)
-        alert(`Telegram connection failed: ${e instanceof Error ? e.message : String(e)}`)
-      } finally {
-        setConnectingLoading(false)
-      }
-      return
-    }
+        }}
+        onDisconnect={async () => {}}
+      />
+    )
+  }
+
+  if (ch.id === 'woocommerce') {
+    return (
+      <WooCommerceConnect
+        isConnected={false}
+        onConnect={async (data) => {
+          const res = await fetch(`${API}/api/channels/woocommerce/connect`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${getToken()}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          })
+          if (!res.ok) {
+            const errBody = await res.text()
+            throw new Error(`Backend error ${res.status}: ${errBody}`)
+          }
+          const result = await res.json()
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to connect')
+          }
+          onConnected()
+        }}
+        onDisconnect={async () => {}}
+      />
+    )
+  }
   }
 
   return (
