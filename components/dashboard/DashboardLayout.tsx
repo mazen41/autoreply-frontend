@@ -10,7 +10,8 @@ import {
   HomeIcon, InboxIcon, ChannelsIcon, WhatsAppIcon, ContentIcon, ReputationIcon,
   ReportsIcon, AIKnowledgeIcon, SettingsIcon, BillingIcon, HelpIcon,
   SearchIcon, MenuIcon, XIcon, UserIcon, LogOutIcon, NazLogoIcon,
-  SendIcon, LayersIcon, LinkIcon, BarChartIcon, LightningIcon, StarIcon
+  SendIcon, LayersIcon, LinkIcon, BarChartIcon, LightningIcon, StarIcon,
+  NotificationIcon, TrendUpIcon, TrendDownIcon, ShieldIcon
 } from '../ui/DashboardIcons'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -45,9 +46,9 @@ const NAV_GROUPS = [
     labelAr: 'التسويق',
     items: [
       { icon: SendIcon,        href: '/dashboard/campaigns',         labelEn: 'Campaigns',       labelAr: 'الحملات' },
-      { icon: ContentIcon,     href: '/dashboard/email-campaigns',   labelEn: 'Email Campaigns', labelAr: 'حملات البريد' },
+      { icon: BellIcon,        href: '/dashboard/email-campaigns',   labelEn: 'Email Campaigns', labelAr: 'حملات البريد' },
       { icon: LayersIcon,      href: '/dashboard/sequences',         labelEn: 'Sequences',       labelAr: 'التسلسلات' },
-      { icon: ContentIcon,     href: '/dashboard/social-posts',      labelEn: 'Social Posts',    labelAr: 'المنشورات' },
+      { icon: StarIcon,        href: '/dashboard/social-posts',      labelEn: 'Social Posts',    labelAr: 'المنشورات' },
       { icon: ContentIcon,     href: '/dashboard/content',           labelEn: 'Content',         labelAr: 'المحتوى' },
     ]
   },
@@ -57,9 +58,9 @@ const NAV_GROUPS = [
     labelAr: 'التجارة',
     items: [
       { icon: LinkIcon,        href: '/dashboard/products',            labelEn: 'Products',          labelAr: 'المنتجات' },
-      { icon: LayersIcon,      href: '/dashboard/bookings',            labelEn: 'Bookings',          labelAr: 'الحجوزات' },
-      { icon: SendIcon,        href: '/dashboard/order-notifications', labelEn: 'Order Alerts',      labelAr: 'إشعارات الطلبات' },
-      { icon: ReputationIcon,  href: '/dashboard/cart-recovery',       labelEn: 'Cart Recovery',     labelAr: 'استرداد السلة' },
+      { icon: TrendUpIcon,     href: '/dashboard/bookings',            labelEn: 'Bookings',          labelAr: 'الحجوزات' },
+      { icon: NotificationIcon, href: '/dashboard/order-notifications', labelEn: 'Order Alerts',      labelAr: 'إشعارات الطلبات' },
+      { icon: TrendDownIcon,   href: '/dashboard/cart-recovery',       labelEn: 'Cart Recovery',     labelAr: 'استرداد السلة' },
     ]
   },
   {
@@ -68,12 +69,12 @@ const NAV_GROUPS = [
     labelAr: 'العمليات',
     items: [
       { icon: UserIcon,        href: '/dashboard/team',            labelEn: 'Team',             labelAr: 'الفريق' },
-      { icon: BarChartIcon,    href: '/dashboard/routing',         labelEn: 'Routing',          labelAr: 'التوجيه' },
-      { icon: AIKnowledgeIcon, href: '/dashboard/workflows',       labelEn: 'Workflows',        labelAr: 'سير العمل' },
+      { icon: ShieldIcon,      href: '/dashboard/routing',         labelEn: 'Routing',          labelAr: 'التوجيه' },
+      { icon: LightningIcon,   href: '/dashboard/workflows',       labelEn: 'Workflows',        labelAr: 'سير العمل' },
       { icon: StarIcon,        href: '/dashboard/reputation',      labelEn: 'Reputation',       labelAr: 'السمعة' },
       { icon: ReportsIcon,     href: '/dashboard/reports',         labelEn: 'Reports',          labelAr: 'التقارير' },
-      { icon: AIKnowledgeIcon, href: '/dashboard/classification',  labelEn: 'Classification',   labelAr: 'التصنيف' },
-      { icon: ContentIcon,     href: '/dashboard/multimodal',      labelEn: 'Multimodal',       labelAr: 'متعدد الوسائط' },
+      { icon: BellIcon,        href: '/dashboard/classification',  labelEn: 'Classification',   labelAr: 'التصنيف' },
+      { icon: LayersIcon,      href: '/dashboard/multimodal',      labelEn: 'Multimodal',       labelAr: 'متعدد الوسائط' },
     ]
   },
   {
@@ -81,8 +82,8 @@ const NAV_GROUPS = [
     labelEn: 'Developer',
     labelAr: 'المطورين',
     items: [
-      { icon: LinkIcon,        href: '/dashboard/integrations', labelEn: 'Integrations', labelAr: 'التكاملات' },
-      { icon: ReportsIcon,     href: '/dashboard/api-keys',     labelEn: 'API Keys',     labelAr: 'مفاتيح API' },
+      { icon: ShieldIcon,      href: '/dashboard/integrations', labelEn: 'Integrations', labelAr: 'التكاملات' },
+      { icon: SearchIcon,      href: '/dashboard/api-keys',     labelEn: 'API Keys',     labelAr: 'مفاتيح API' },
     ]
   },
 ]

@@ -130,7 +130,7 @@ export default function AIKnowledgeContent() {
   }
 
   const handleDeleteFile = async (id: number) => {
-    if (!confirm(t.aiKnowledge.confirmDelete || 'Delete this file?')) return
+    if (!confirm('Delete this file?')) return
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
     if (!token) return
 
