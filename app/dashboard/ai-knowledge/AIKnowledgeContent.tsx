@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
 import toast from 'react-hot-toast'
+import { PlusIcon, XIcon, LightningIcon } from '../../../components/ui/DashboardIcons'
 
 interface KnowledgeFile {
   id: number
@@ -87,72 +88,65 @@ export default function AIKnowledgeContent() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']
     if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|xlsx|xls)$/i)) {
       toast.error(t.aiKnowledge.extractError)
       return
     }
 
-    // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error(t.aiKnowledge.maxSize)
       return
     }
 
     setUploading(true)
+    const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+    if (!token) {
+      setUploading(false)
+      return
+    }
+
     const formData = new FormData()
     formData.append('file', file)
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/upload`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         body: formData,
       })
       const data = await res.json()
-
       if (res.ok) {
         toast.success(t.aiKnowledge.uploadSuccess)
-        // Check if file was processed with RAG
-        if (data.chunks_count !== undefined) {
-          toast.success(`Document processed into ${data.chunks_count} chunks`)
-        }
         fetchKnowledge()
       } else {
-        toast.error(data.error || t.aiKnowledge.uploadError)
+        toast.error(data.error || 'Upload failed')
       }
     } catch (error) {
-      toast.error(t.aiKnowledge.uploadError)
+      toast.error('Upload failed')
     } finally {
       setUploading(false)
-      if (e.target) e.target.value = ''
     }
   }
 
   const handleDeleteFile = async (id: number) => {
-    if (!confirm(t.aiKnowledge.deleteConfirm)) return
+    if (!confirm(t.aiKnowledge.confirmDelete || 'Delete this file?')) return
+    const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
+    if (!token) return
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/files/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
-
       if (res.ok) {
-        toast.success(t.aiKnowledge.fileDeleted)
+        toast.success(t.aiKnowledge.deleteSuccess)
         fetchKnowledge()
       } else {
-        toast.error(t.aiKnowledge.uploadError)
+        toast.error('Delete failed')
       }
     } catch (error) {
-      toast.error(t.aiKnowledge.uploadError)
+      toast.error('Delete failed')
     }
   }
 
@@ -176,10 +170,10 @@ export default function AIKnowledgeContent() {
       if (res.ok) {
         toast.success(t.aiKnowledge.instructionsSaved)
       } else {
-        toast.error(data.error || t.aiKnowledge.instructionsError)
+        toast.error(data.error || 'Failed to save instructions')
       }
     } catch (error) {
-      toast.error(t.aiKnowledge.instructionsError)
+      toast.error('Failed to save instructions')
     } finally {
       setSavingInstructions(false)
     }
@@ -191,7 +185,7 @@ export default function AIKnowledgeContent() {
       const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
       if (!token) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/knowledge/profile`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/business/profile`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -203,7 +197,7 @@ export default function AIKnowledgeContent() {
       const data = await res.json()
 
       if (res.ok) {
-        toast.success(((t as any).aiKnowledge)?.profileSaved || 'Business profile saved successfully')
+        toast.success('Business profile saved successfully')
       } else {
         toast.error(data.error || 'Failed to save profile')
       }
@@ -215,11 +209,7 @@ export default function AIKnowledgeContent() {
   }
 
   const handleTestResponse = async () => {
-    if (!testQuestion.trim()) {
-      toast.error(t.aiKnowledge.testQuestion)
-      return
-    }
-
+    if (!testQuestion.trim()) return
     setTesting(true)
     setTestResponse('')
 
@@ -241,10 +231,10 @@ export default function AIKnowledgeContent() {
       if (res.ok) {
         setTestResponse(data.test_response)
       } else {
-        toast.error(data.error || t.aiKnowledge.testError)
+        toast.error(data.error || 'AI simulation failed')
       }
     } catch (error) {
-      toast.error(t.aiKnowledge.testError)
+      toast.error('Simulation failed')
     } finally {
       setTesting(false)
     }
@@ -260,27 +250,21 @@ export default function AIKnowledgeContent() {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
-      const data = await res.json()
-
       if (res.ok) {
         toast.success('Knowledge base reindexed successfully')
         fetchKnowledge()
       } else {
-        toast.error(data.error || 'Failed to reindex knowledge base')
+        toast.error('Reindexing failed')
       }
     } catch (error) {
-      toast.error('Failed to reindex knowledge base')
+      toast.error('Reindexing failed')
     } finally {
       setReindexing(false)
     }
   }
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      toast.error('Please enter a search query')
-      return
-    }
-
+    if (!searchQuery.trim()) return
     setSearching(true)
     setSearchResults([])
 
@@ -302,7 +286,7 @@ export default function AIKnowledgeContent() {
       if (res.ok) {
         setSearchResults(data.results || [])
       } else {
-        toast.error(data.error || 'Search failed')
+        toast.error('Search failed')
       }
     } catch (error) {
       toast.error('Search failed')
@@ -313,460 +297,308 @@ export default function AIKnowledgeContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 rounded-full border-2 border-white/10 border-t-transparent"></div>
+      <div className="flex items-center justify-center py-20">
+        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* Page Header */}
+      <div className="space-y-1">
+        <h2 className="text-xl font-black text-white tracking-tight">
           {t.aiKnowledge.title}
-        </h1>
-        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
+        </h2>
+        <p className="text-sm text-text-secondary">
           {t.aiKnowledge.subtitle}
         </p>
-      </motion.div>
+      </div>
 
-      {/* Business Profile Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.05 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          {((t as any).onboarding)?.businessDetails || 'Business Details'}
-        </h2>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          {((t as any).aiKnowledge)?.profileDesc || 'Update your core business information that the AI uses to answer customer questions.'}
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Name</label>
-            <input type="text" value={profile.business_name} onChange={e => setProfile({...profile, business_name: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Business Type</label>
-            <input type="text" value={profile.business_type} onChange={e => setProfile({...profile, business_type: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Phone</label>
-            <input type="text" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>City & Country</label>
-            <div className="flex gap-2">
-              <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({...profile, country: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Working Hours</label>
-            <div className="flex gap-2">
-              <input type="text" placeholder="From (e.g. 09:00)" value={profile.working_from} onChange={e => setProfile({...profile, working_from: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              <input type="text" placeholder="To (e.g. 18:00)" value={profile.working_to} onChange={e => setProfile({...profile, working_to: e.target.value})} className="w-1/2 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Reply Style</label>
-            <input type="text" value={profile.reply_style} onChange={e => setProfile({...profile, reply_style: e.target.value})} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Services & Products</label>
-          <textarea value={profile.services} onChange={e => setProfile({...profile, services: e.target.value})} rows={3} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200 resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Frequently Asked Questions</label>
-          <div className="space-y-3">
-            {faqs.map((faq, index) => (
-              <div key={index} className="flex gap-2 relative">
-                <input type="text" placeholder="Question" value={faq.question} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].question = e.target.value; setFaqs(newFaqs) }} className="w-1/3 px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-                <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].answer = e.target.value; setFaqs(newFaqs) }} className="w-full px-3 py-2 rounded-lg text-sm outline-none transition-all duration-200" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-                <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-lg hover:bg-white/50" style={{ color: 'var(--error)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-              </div>
-            ))}
-            <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-xs font-medium mt-2 px-3 py-1.5 rounded-lg transition-colors" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-              + Add FAQ
-            </button>
-          </div>
-        </div>
-
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={handleSaveProfile}
-            disabled={savingProfile}
-            className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
-            style={{
-              background: savingProfile ? 'var(--accent-focus)' : 'var(--accent)',
-              color: 'var(--text-primary)',
-            }}
+      {/* Main Form Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column: Business Profile Form */}
+        <div className="lg:col-span-2 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-5"
           >
-            {savingProfile && (
-              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-            )}
-            {((t as any).aiKnowledge)?.saveProfile || 'Save Profile'}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Knowledge Base Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          {t.aiKnowledge.knowledgeBase}
-        </h2>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          {t.aiKnowledge.knowledgeBaseDesc}
-        </p>
-
-        {/* Upload Button */}
-        <div className="mb-6 flex items-center justify-between">
-          <label className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all hover:opacity-80"
-            style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--accent)' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="17 8 12 3 7 8"></polyline>
-              <line x1="12" y1="3" x2="12" y2="15"></line>
-            </svg>
-            <span className="font-semibold">{t.aiKnowledge.uploadFile}</span>
-            <input
-              type="file"
-              accept=".pdf,.xlsx,.xls"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="hidden"
-            />
-            {uploading && (
-              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-            )}
-          </label>
-          <button
-            onClick={handleReindex}
-            disabled={reindexing}
-            className="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
-            style={{
-              background: reindexing ? 'var(--accent-focus)' : 'var(--surface)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            {reindexing && (
-              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-            )}
-            Reindex Knowledge
-          </button>
-        </div>
-        <p className="text-xs mb-6" style={{ color: 'var(--text-tertiary)' }}>
-          {t.aiKnowledge.supportedFormats} • {t.aiKnowledge.maxSize}
-        </p>
-      </motion.div>
-
-      {/* Files List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        {files.length === 0 ? (
-          <div className="text-center py-8 rounded-xl" style={{ background: 'var(--surface-elevated)' }}>
-            <p style={{ color: 'var(--text-tertiary)' }}>{t.aiKnowledge.noFiles}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {files.map((file) => (
-              <div
-                key={file.id}
-                className="flex items-center justify-between p-4 rounded-xl"
-                style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                    {file.file_type === 'pdf' ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="8" y1="13" x2="16" y2="13"></line>
-                        <line x1="8" y1="17" x2="16" y2="17"></line>
-                        <line x1="8" y1="9" x2="8" y2="9"></line>
-                      </svg>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{file.filename}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                        {t.aiKnowledge.uploadedAt}: {new Date(file.uploaded_at).toLocaleDateString()}
-                      </p>
-                      {file.status && (
-                        <span className="text-xs px-2 py-0.5 rounded" style={{
-                          background: file.status === 'processed' ? 'var(--accent-subtle)' : 'var(--surface)',
-                          color: file.status === 'processed' ? 'var(--accent)' : 'var(--text-tertiary)'
-                        }}>
-                          {file.status}
-                        </span>
-                      )}
-                      {file.chunks_count !== undefined && (
-                        <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                          {file.chunks_count} chunks
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDeleteFile(file.id)}
-                  className="p-2 rounded-lg transition-colors hover:bg-white/50"
-                  style={{ color: 'var(--error)' }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
-      {/* Custom Instructions Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          {t.aiKnowledge.customInstructions}
-        </h2>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          {t.aiKnowledge.customInstructionsDesc}
-        </p>
-
-        <textarea
-          value={aiInstructions}
-          onChange={(e) => setAiInstructions(e.target.value)}
-          placeholder={t.aiKnowledge.instructionsPlaceholder}
-          rows={8}
-          className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 resize-none"
-          style={{
-            background: 'var(--surface-elevated)',
-            border: '1px solid var(--border)',
-            color: 'var(--text-primary)',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent-focus)'
-            e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.boxShadow = 'none'
-          }}
-        />
-
-        <div className="flex justify-end mt-4">
-          <button
-            onClick={handleSaveInstructions}
-            disabled={savingInstructions}
-            className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
-            style={{
-              background: savingInstructions ? 'var(--accent-focus)' : 'var(--accent)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            {savingInstructions && (
-              <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-            )}
-            {t.aiKnowledge.saveInstructions}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* RAG Search Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.25 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          RAG Search
-        </h2>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          Search your knowledge base using semantic search to find relevant information.
-        </p>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Search Query
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter search query..."
-                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-                style={{
-                  background: 'var(--surface-elevated)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-focus)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              />
-              <button
-                onClick={handleSearch}
-                disabled={searching}
-                className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
-                style={{
-                  background: searching ? 'var(--accent-focus)' : 'var(--accent)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {searching && (
-                  <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-                )}
-                Search
-              </button>
-            </div>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="space-y-3">
-              <label className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                Search Results ({searchResults.length})
-              </label>
-              {searchResults.map((result, index) => (
-                <div key={index} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
-                      {result.source}
-                    </span>
-                    <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                      Score: {(result.score * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-                    {result.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Test AI Response Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="premium-card p-6"
-        style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-      >
-        <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>
-          {t.aiKnowledge.testAi}
-        </h2>
-        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-          {t.aiKnowledge.testAiDesc}
-        </p>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              {t.aiKnowledge.testQuestion}
-            </label>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={testQuestion}
-                onChange={(e) => setTestQuestion(e.target.value)}
-                placeholder={t.aiKnowledge.testQuestionPlaceholder}
-                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-                style={{
-                  background: 'var(--surface-elevated)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-primary)',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--accent-focus)'
-                  e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              />
-              <button
-                onClick={handleTestResponse}
-                disabled={testing}
-                className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2"
-                style={{
-                  background: testing ? 'var(--accent-focus)' : 'var(--accent)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {testing && (
-                  <div className="animate-spin w-4 h-4 rounded-full border-2 border-current border-t-transparent"></div>
-                )}
-                {t.aiKnowledge.testButton}
-              </button>
-            </div>
-          </div>
-
-          {testResponse && (
-            <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
-              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--accent)' }}>
-                {t.aiKnowledge.testResponse}
-              </label>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-                {testResponse}
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white tracking-tight">
+                {t.onboarding?.businessDetails || 'Business Details'}
+              </h3>
+              <p className="text-[11px] text-text-secondary">
+                {t.aiKnowledge?.profileDesc || 'Configure business facts used by the AI brain.'}
               </p>
             </div>
-          )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Business Name</label>
+                <input type="text" value={profile.business_name} onChange={e => setProfile({...profile, business_name: e.target.value})} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Business Type</label>
+                <input type="text" value={profile.business_type} onChange={e => setProfile({...profile, business_type: e.target.value})} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Phone Number</label>
+                <input type="text" value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">City & Country</label>
+                <div className="flex gap-2">
+                  <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({...profile, city: e.target.value})} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                  <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({...profile, country: e.target.value})} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Working Hours</label>
+                <div className="flex gap-2">
+                  <input type="text" placeholder="From (09:00)" value={profile.working_from} onChange={e => setProfile({...profile, working_from: e.target.value})} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                  <input type="text" placeholder="To (18:00)" value={profile.working_to} onChange={e => setProfile({...profile, working_to: e.target.value})} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Reply Tone / Style</label>
+                <input type="text" value={profile.reply_style} onChange={e => setProfile({...profile, reply_style: e.target.value})} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" placeholder="Friendly, formal..." />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5">Services & Products Overview</label>
+              <textarea value={profile.services} onChange={e => setProfile({...profile, services: e.target.value})} rows={3} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40 resize-none" />
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Custom Q&A / FAQs</label>
+              <div className="space-y-2">
+                {faqs.map((faq, index) => (
+                  <div key={index} className="flex gap-2 relative">
+                    <input type="text" placeholder="Question" value={faq.question} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].question = e.target.value; setFaqs(newFaqs) }} className="w-1/3 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                    <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const newFaqs = [...faqs]; newFaqs[index].answer = e.target.value; setFaqs(newFaqs) }} className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                    <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-xl bg-white/[0.02] text-red-400 hover:bg-red-500/10">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.05] text-text-secondary hover:text-white transition-all">
+                  + Add FAQ Item
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-white/[0.04]">
+              <button
+                onClick={handleSaveProfile}
+                disabled={savingProfile}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 disabled:opacity-50 flex items-center gap-2"
+              >
+                {savingProfile ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Custom Instructions */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white tracking-tight">
+                {t.aiKnowledge.customInstructions}
+              </h3>
+              <p className="text-[11px] text-text-secondary">
+                {t.aiKnowledge.customInstructionsDesc}
+              </p>
+            </div>
+
+            <textarea
+              value={aiInstructions}
+              onChange={(e) => setAiInstructions(e.target.value)}
+              placeholder={t.aiKnowledge.instructionsPlaceholder}
+              rows={5}
+              className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-3.5 text-xs text-white placeholder-text-tertiary focus:outline-none focus:border-accent/40 resize-none font-mono"
+            />
+
+            <div className="flex justify-end pt-2 border-t border-white/[0.04]">
+              <button
+                onClick={handleSaveInstructions}
+                disabled={savingInstructions}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 disabled:opacity-50 flex items-center gap-2"
+              >
+                {savingInstructions ? 'Saving...' : t.aiKnowledge.saveInstructions}
+              </button>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* Right Column: Files / Upload & Testing Sandbox */}
+        <div className="space-y-6">
+          
+          {/* File Upload Box */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white tracking-tight">
+                {t.aiKnowledge.knowledgeBase}
+              </h3>
+              <p className="text-[11px] text-text-secondary">
+                Upload business PDF, sheets, or manuals.
+              </p>
+            </div>
+
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/[0.08] hover:border-accent/30 rounded-2xl p-6 cursor-pointer bg-white/[0.01] hover:bg-accent/5 transition-all text-center group">
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-text-secondary group-hover:text-accent transition-all mb-3">
+                ☁️
+              </div>
+              <span className="text-xs font-bold text-white">{t.aiKnowledge.uploadFile}</span>
+              <span className="text-[9px] text-text-tertiary mt-1">PDF or Excel (Max 10MB)</span>
+              <input type="file" accept=".pdf,.xlsx,.xls" onChange={handleFileUpload} disabled={uploading} className="hidden" />
+              {uploading && (
+                <div className="mt-3 w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+              )}
+            </label>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleReindex}
+                disabled={reindexing}
+                className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.15] text-white transition-all flex items-center justify-center gap-1.5"
+              >
+                {reindexing ? 'Reindexing...' : 'Reindex Files'}
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Files List Display */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-3"
+          >
+            <div className="text-xs font-bold text-white">Files list</div>
+            
+            {files.length === 0 ? (
+              <div className="text-center py-6 text-[10px] text-text-tertiary">
+                {t.aiKnowledge.noFiles}
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-none">
+                {files.map(file => (
+                  <div key={file.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.01] border border-white/[0.04]">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-base">{file.file_type === 'pdf' ? '📄' : '📊'}</span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-white truncate max-w-[140px]">{file.filename}</p>
+                        <p className="text-[9px] text-text-tertiary">{file.chunks_count || 0} chunks</p>
+                      </div>
+                    </div>
+                    <button onClick={() => handleDeleteFile(file.id)} className="p-1 rounded-lg text-text-secondary hover:text-red-400">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Interactive AI Playground Simulator */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white tracking-tight">
+                {t.aiKnowledge.testAi || 'Simulate Chatbot'}
+              </h3>
+              <p className="text-[11px] text-text-secondary">
+                Simulate a chat query to test the response logic.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={testQuestion}
+                  onChange={e => setTestQuestion(e.target.value)}
+                  placeholder={t.aiKnowledge.testQuestionPlaceholder || 'Ask a simulated query...'}
+                  className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40"
+                  onKeyPress={e => { if (e.key === 'Enter') handleTestResponse() }}
+                />
+                <button
+                  onClick={handleTestResponse}
+                  disabled={testing}
+                  className="px-4 rounded-xl bg-accent text-white text-xs font-bold hover:brightness-110 disabled:opacity-50 flex items-center justify-center"
+                >
+                  {testing ? '...' : 'Send'}
+                </button>
+              </div>
+
+              {testResponse && (
+                <div className="p-3.5 rounded-xl bg-accent/10 border border-accent/15 space-y-1 animate-slide-up">
+                  <div className="text-[9px] font-black uppercase tracking-wider text-accent">Simulation Response:</div>
+                  <p className="text-[11px] leading-relaxed text-white/95">{testResponse}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Semantic Search RAG Panel */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4"
+          >
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-white tracking-tight">RAG Search</h3>
+              <p className="text-[11px] text-text-secondary">Search knowledge snippets semantically.</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Query semantic search..."
+                  className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40"
+                  onKeyPress={e => { if (e.key === 'Enter') handleSearch() }}
+                />
+                <button
+                  onClick={handleSearch}
+                  disabled={searching}
+                  className="px-4 rounded-xl bg-accent text-white text-xs font-bold hover:brightness-110 disabled:opacity-50 flex items-center justify-center"
+                >
+                  {searching ? '...' : 'Find'}
+                </button>
+              </div>
+
+              {searchResults.length > 0 && (
+                <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-none animate-slide-up">
+                  {searchResults.map((result, index) => (
+                    <div key={index} className="p-2.5 rounded-lg bg-white/[0.01] border border-white/[0.04] space-y-1 text-[11px]">
+                      <div className="flex justify-between text-[9px] text-accent">
+                        <span>Source: {result.source}</span>
+                        <span>Score: {Math.round(result.score * 100)}%</span>
+                      </div>
+                      <p className="text-text-secondary leading-normal">{result.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </div>
   )
 }

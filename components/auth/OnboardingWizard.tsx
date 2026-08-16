@@ -62,32 +62,37 @@ const COUNTRIES = ['السعودية','الإمارات','مصر','الكويت'
 // ─── PROGRESS BAR ─────────────────────────────────────────────────────────────
 function ProgressBar({ step, total }: { step: number; total: number }) {
   const pct = ((step) / total) * 100
+  const STEP_LABELS = ['Business Type', 'Business Info', 'AI Tuning', 'Connect Channel']
   return (
     <div className="w-full mb-8">
-      <div className="flex items-center justify-between text-[11px] mb-2">
-        <span style={{ color: 'var(--text-tertiary)' }}>
-          {`Step ${step} of ${total}`}
-        </span>
-        <span style={{ color: 'var(--accent)' }}>{Math.round(pct)}%</span>
+      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider mb-3">
+        <span className="text-text-tertiary">{STEP_LABELS[step - 1] || `Step ${step}`}</span>
+        <span className="text-accent">{Math.round(pct)}%</span>
       </div>
-      <div className="h-1.5 rounded-full w-full" style={{ background: 'var(--border)' }}>
-        <motion.div className="h-full rounded-full"
-          style={{ background: 'var(--accent)' }}
+      <div className="h-1 rounded-full w-full bg-white/[0.05] overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{ background: 'linear-gradient(90deg, #0E7AFE, #8B3FFB)' }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as any }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as any }}
         />
       </div>
-      {/* Step dots */}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between mt-2.5">
         {Array.from({ length: total }, (_, i) => (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <div className="rounded-full transition-all duration-300"
+          <div key={i} className="flex items-center justify-center">
+            <div
+              className="rounded-full transition-all duration-400"
               style={{
-                width: i + 1 <= step ? 8 : 6,
-                height: i + 1 <= step ? 8 : 6,
-                background: i + 1 < step ? 'var(--accent)' : i + 1 === step ? 'var(--accent)' : 'var(--border)',
-                boxShadow: 'none',
-              }} />
+                width: i + 1 <= step ? 8 : 5,
+                height: i + 1 <= step ? 8 : 5,
+                background: i + 1 < step
+                  ? '#8B3FFB'
+                  : i + 1 === step
+                    ? '#0E7AFE'
+                    : 'rgba(255,255,255,0.08)',
+                boxShadow: i + 1 === step ? '0 0 8px rgba(14,122,254,0.5)' : 'none',
+              }}
+            />
           </div>
         ))}
       </div>
@@ -828,106 +833,116 @@ export default function OnboardingWizard() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
-      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }} />
+    <div className="min-h-screen flex items-center justify-center bg-[#04061A]">
+      <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   return (
-    <div className="min-h-screen flex items-start justify-center py-8 px-4"
-      style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-[#04061A] relative overflow-hidden">
+      {/* Deep background glows */}
+      <div className="fixed -top-24 -right-24 w-72 h-72 rounded-full bg-accent/[0.06] blur-3xl pointer-events-none" />
+      <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[#8B3FFB]/[0.06] blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-2xl relative z-10">
+      <div className="w-full max-w-xl relative z-10">
 
-        {/* Header */}
+        {/* Top bar: logo + step badge */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2.5">
-            <span style={{ color: 'var(--accent)', fontSize: 18 }}>✦</span>
-            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center">
+              <span className="text-white text-xs font-black">N</span>
+            </div>
+            <span className="text-sm font-black text-white tracking-tight">NazBiz</span>
           </div>
           {step <= 4 && (
-            <div className="px-3 py-1.5 rounded-full text-[11px] font-bold"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              {isRTL ? `الخطوة ${step} من 4` : `Step ${step} of 4`}
+            <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-accent/10 border border-accent/20 text-accent">
+              {isRTL ? `${step} / 4` : `Step ${step} of 4`}
             </div>
           )}
         </div>
 
-        {/* Card */}
-        <div className="glass rounded-3xl p-8 relative overflow-hidden"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
+        {/* Main card */}
+        <div className="rounded-3xl p-7 bg-[#0C0E1E] border border-white/[0.06] shadow-2xl shadow-black/40 relative overflow-hidden">
+          {/* inner subtle gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-[#8B3FFB]/[0.02] pointer-events-none" />
 
-          {step <= 4 && <ProgressBar step={step} total={4} />}
+          <div className="relative">
+            {step <= 4 && <ProgressBar step={step} total={4} />}
 
-          {/* Animated step content */}
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div key={step}
-              custom={direction}
-              variants={variants}
-              initial="enter" animate="center" exit="exit"
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}>
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                variants={variants}
+                initial="enter" animate="center" exit="exit"
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}
+              >
+                {step === 1 && <Step1 data={data} setData={setData} isRTL={isRTL} />}
+                {step === 2 && <Step2 data={data} setData={setData} isRTL={isRTL} />}
+                {step === 3 && <Step3 data={data} setData={setData} isRTL={isRTL} />}
+                {step === 4 && <Step4 data={data} setData={setData} isRTL={isRTL} />}
+                {step === 5 && <Celebration data={data} isRTL={isRTL} onGo={finish} />}
+              </motion.div>
+            </AnimatePresence>
 
-              {step === 1 && <Step1 data={data} setData={setData} isRTL={isRTL} />}
-              {step === 2 && <Step2 data={data} setData={setData} isRTL={isRTL} />}
-              {step === 3 && <Step3 data={data} setData={setData} isRTL={isRTL} />}
-              {step === 4 && <Step4 data={data} setData={setData} isRTL={isRTL} />}
-              {step === 5 && <Celebration data={data} isRTL={isRTL} onGo={finish} />}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation buttons */}
-          {step <= 4 && (
-            <div className="flex items-center gap-3 mt-8 pt-6" style={{ borderTop: '1px solid var(--border)' }}>
-              {step > 1 && (
-                <button type="button" onClick={back}
-                  className="px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200"
-                  style={{ background: 'var(--divider)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                  {isRTL ? '← رجوع' : '← Back'}
-                </button>
-              )}
-
-              {/* Skip for step 4 */}
-              {step === 4 && (
-                <button type="button" onClick={next}
-                  className="text-sm font-medium transition-colors px-3 py-3"
-                  style={{ color: 'var(--text-tertiary)' }}>
-                  {isRTL ? 'تخطي الآن' : 'Skip for now'}
-                </button>
-              )}
-
-              <motion.button type="button" onClick={next}
-                disabled={!canProceed() || saving}
-                className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200"
-                style={{
-                  background: canProceed() ? 'var(--accent)' : 'var(--accent-focus)',
-                  color: canProceed() ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                  cursor: canProceed() ? 'pointer' : 'not-allowed',
-                }}
-                whileHover={canProceed() ? { scale: 1.015 } : {}}
-                whileTap={canProceed() ? { scale: 0.985 } : {}}>
-                {saving && (
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
-                    <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-                  </svg>
+            {step <= 4 && (
+              <div className="flex items-center gap-3 mt-8 pt-6 border-t border-white/[0.04]">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={back}
+                    className="px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider bg-white/[0.03] border border-white/[0.06] text-text-secondary hover:text-white transition-all"
+                  >
+                    {isRTL ? '← رجوع' : '← Back'}
+                  </button>
                 )}
-                {saving
-                  ? (isRTL ? 'جاري الحفظ...' : 'Saving...')
-                  : step === 4
-                    ? (isRTL ? 'إنهاء الإعداد ✓' : 'Complete Setup ✓')
-                    : (isRTL ? 'التالي ←' : 'Next →')
-                }
-              </motion.button>
-            </div>
-          )}
+
+                {step === 4 && (
+                  <button
+                    type="button"
+                    onClick={next}
+                    className="px-3 py-3 text-xs text-text-tertiary hover:text-text-secondary transition-colors"
+                  >
+                    {isRTL ? 'تخطي' : 'Skip'}
+                  </button>
+                )}
+
+                <motion.button
+                  type="button"
+                  onClick={next}
+                  disabled={!canProceed() || saving}
+                  className="flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                  style={{
+                    background: canProceed()
+                      ? 'linear-gradient(135deg, #0E7AFE, #8B3FFB)'
+                      : 'rgba(255,255,255,0.04)',
+                    color: canProceed() ? '#fff' : 'rgba(255,255,255,0.2)',
+                    cursor: canProceed() ? 'pointer' : 'not-allowed',
+                    boxShadow: canProceed() ? '0 6px 20px -6px rgba(14,122,254,0.4)' : 'none',
+                  }}
+                  whileHover={canProceed() ? { scale: 1.015 } : {}}
+                  whileTap={canProceed() ? { scale: 0.985 } : {}}
+                >
+                  {saving && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {saving
+                    ? (isRTL ? 'جاري الحفظ...' : 'Saving...')
+                    : step === 4
+                      ? (isRTL ? 'إنهاء الإعداد ✓' : 'Complete Setup ✓')
+                      : (isRTL ? 'التالي ←' : 'Next →')
+                  }
+                </motion.button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Bottom note */}
         {step <= 4 && (
-          <p className="text-center text-[11px] mt-5" style={{ color: 'var(--border)' }}>
+          <p className="text-center text-[10px] text-text-tertiary mt-5">
             {isRTL
               ? 'يمكنك تعديل هذه الإعدادات في أي وقت من لوحة التحكم'
-              : 'You can edit these settings anytime from the dashboard'}
+              : 'You can update these settings anytime from your dashboard'}
           </p>
         )}
       </div>
