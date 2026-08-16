@@ -152,9 +152,6 @@ function ConnectModal({
     }
 
     if (ch.id === 'telegram') {
-      const botToken = prompt('Enter your Telegram Bot Token (from @BotFather):')
-      if (!botToken) return
-      
       setConnectingLoading(true)
       try {
         const res = await fetch(`${API}/api/channels/telegram/connect`, {
@@ -163,14 +160,46 @@ function ConnectModal({
             'Authorization': `Bearer ${getToken()}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            bot_token: botToken,
-          }),
+          body: JSON.stringify({}),
         })
         
         if (!res.ok) {
           const errBody = await res.text()
           console.error('Telegram connect HTTP error', res.status, errBody)
+          
+          // If server doesn't have token configured, prompt user
+          if (res.status === 400 && errBody.includes('Bot token is required')) {
+            const botToken = prompt('Enter your Telegram Bot Token (from @BotFather):')
+            if (!botToken) {
+              setConnectingLoading(false)
+              return
+            }
+            
+            const retryRes = await fetch(`${API}/api/channels/telegram/connect`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ bot_token: botToken }),
+            })
+            
+            if (!retryRes.ok) {
+              const retryErrBody = await retryRes.text()
+              console.error('Telegram connect retry error', retryRes.status, retryErrBody)
+              throw new Error(`Backend error ${retryRes.status}: ${retryErrBody}`)
+            }
+            
+            const retryData = await retryRes.json()
+            if (retryData.success) {
+              onConnected()
+            } else {
+              alert(retryData.error || 'Failed to connect Telegram bot')
+            }
+            setConnectingLoading(false)
+            return
+          }
+          
           throw new Error(`Backend error ${res.status}: ${errBody}`)
         }
         
