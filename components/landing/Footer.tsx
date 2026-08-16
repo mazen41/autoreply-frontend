@@ -22,8 +22,8 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2.5 mb-4">
               <Image 
-                src="/icons/Logo (2).png" 
-                alt="Logo" 
+                src="/icons/logo.png" 
+                alt="NazBiz Logo" 
                 width={32} 
                 height={32}
                 className="object-contain"
