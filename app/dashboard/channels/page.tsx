@@ -18,17 +18,17 @@ function getToken(): string {
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 const CHANNELS_DEFS = [
-  { id: 'instagram', name: 'Instagram',      color: 'var(--accent)', plan: 'free' },
-  { id: 'facebook',  name: 'Facebook',       color: 'var(--accent)', plan: 'free' },
-  { id: 'gmail',     name: 'Gmail',          color: 'var(--accent)', plan: 'free' },
-  { id: 'whatsapp',  name: 'WhatsApp',       color: 'var(--accent)', plan: 'free' },
-  { id: 'reviews',   name: 'Google Reviews', color: 'var(--accent)', plan: 'free' },
-  { id: 'salla',     name: 'Salla',          color: 'var(--accent)', plan: 'free' },
-  { id: 'telegram',  name: 'Telegram',       color: 'var(--accent)', plan: 'free' },
-  { id: 'tiktok',    name: 'TikTok',         color: 'var(--accent)', plan: 'free' },
-  { id: 'shopify',   name: 'Shopify',        color: 'var(--accent)', plan: 'free' },
-  { id: 'woocommerce', name: 'WooCommerce',  color: 'var(--accent)', plan: 'free' },
-  { id: 'webchat',   name: 'Web Chat',       color: 'var(--accent)', plan: 'starter' },
+  { id: 'instagram', name: 'Instagram',      brandColor: '#D62976', plan: 'free' },
+  { id: 'facebook',  name: 'Facebook',       brandColor: '#0E7AFE', plan: 'free' },
+  { id: 'gmail',     name: 'Gmail',          brandColor: '#EA4335', plan: 'free' },
+  { id: 'whatsapp',  name: 'WhatsApp',       brandColor: '#25D366', plan: 'free' },
+  { id: 'reviews',   name: 'Google Reviews', brandColor: '#4285F4', plan: 'free' },
+  { id: 'salla',     name: 'Salla',          brandColor: '#00B4D8', plan: 'free' },
+  { id: 'telegram',  name: 'Telegram',       brandColor: '#0088cc', plan: 'free' },
+  { id: 'tiktok',    name: 'TikTok',         brandColor: '#ff0050', plan: 'free' },
+  { id: 'shopify',   name: 'Shopify',        brandColor: '#96bf48', plan: 'free' },
+  { id: 'woocommerce', name: 'WooCommerce',  brandColor: '#96588a', plan: 'free' },
+  { id: 'webchat',   name: 'Web Chat',       brandColor: '#8B3FFB', plan: 'starter' },
 ]
 
 function ConnectModal({
@@ -41,13 +41,11 @@ function ConnectModal({
   onConnected: () => void
 }) {
   const { isRTL, t } = useLang()
-  const { theme } = useTheme()
   const [connecting_loading, setConnectingLoading] = React.useState(false)
 
   const handleConnect = async () => {
     if (ch.id === 'facebook' || ch.id === 'instagram') {
       const token = getToken()
-      // Navigate in the same window — OAuth must NOT open in a popup
       window.location.href = `${API}/api/channels/connect/facebook?token=${encodeURIComponent(token)}&redirect=dashboard`
       return
     }
@@ -61,11 +59,7 @@ function ConnectModal({
         const res = await fetch(`${API}/api/channels/connect/gmail`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
-        if (!res.ok) {
-          const errBody = await res.text()
-          console.error('Gmail connect HTTP error', res.status, errBody)
-          throw new Error(`Backend error ${res.status}: ${errBody}`)
-        }
+        if (!res.ok) throw new Error(`Backend error ${res.status}`)
         const data = await res.json()
         if (data.url) {
           window.location.href = data.url
@@ -74,7 +68,7 @@ function ConnectModal({
         }
       } catch (e) {
         console.error('Gmail connect error:', e)
-        alert(`Gmail connection failed: ${e instanceof Error ? e.message : String(e)}`)
+        alert('Gmail connection failed.')
       } finally {
         setConnectingLoading(false)
       }
@@ -83,7 +77,6 @@ function ConnectModal({
 
     if (ch.id === 'salla') {
       const token = getToken()
-      // Navigate in the same window — OAuth must NOT open in a popup
       window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}&redirect=dashboard`
       return
     }
@@ -97,7 +90,6 @@ function ConnectModal({
     if (ch.id === 'shopify') {
       const shopDomain = prompt('Enter your Shopify store domain (e.g. mystore.myshopify.com):')
       if (!shopDomain) return
-      
       const token = getToken()
       window.location.href = `${API}/api/channels/connect/shopify?shop=${encodeURIComponent(shopDomain)}&token=${encodeURIComponent(token)}&redirect=dashboard`
       return
@@ -132,12 +124,6 @@ function ConnectModal({
           }),
         })
         
-        if (!res.ok) {
-          const errBody = await res.text()
-          console.error('WooCommerce connect HTTP error', res.status, errBody)
-          throw new Error(`Backend error ${res.status}: ${errBody}`)
-        }
-        
         const data = await res.json()
         if (data.success) {
           onConnected()
@@ -145,13 +131,14 @@ function ConnectModal({
           alert(data.error || 'Failed to connect WooCommerce store')
         }
       } catch (e) {
-        console.error('WooCommerce connect error:', e)
-        alert(`WooCommerce connection failed: ${e instanceof Error ? e.message : String(e)}`)
+        console.error(e)
+        alert('WooCommerce connection failed.')
       } finally {
         setConnectingLoading(false)
       }
       return
     }
+  }
 
   if (ch.id === 'telegram') {
     return (
@@ -166,14 +153,8 @@ function ConnectModal({
             },
             body: JSON.stringify(data),
           })
-          if (!res.ok) {
-            const errBody = await res.text()
-            throw new Error(`Backend error ${res.status}: ${errBody}`)
-          }
           const result = await res.json()
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to connect')
-          }
+          if (!result.success) throw new Error(result.error || 'Failed to connect')
           onConnected()
         }}
         onDisconnect={async () => {}}
@@ -194,70 +175,60 @@ function ConnectModal({
             },
             body: JSON.stringify(data),
           })
-          if (!res.ok) {
-            const errBody = await res.text()
-            throw new Error(`Backend error ${res.status}: ${errBody}`)
-          }
           const result = await res.json()
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to connect')
-          }
+          if (!result.success) throw new Error(result.error || 'Failed to connect')
           onConnected()
         }}
         onDisconnect={async () => {}}
       />
     )
   }
-  }
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0" style={{ background: 'color-mix(in srgb, var(--text-primary) 75%, transparent)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
+      <div className="absolute inset-0" onClick={onClose} />
       <motion.div
-        className="relative w-full max-w-sm rounded-2xl p-6 glass"
+        className="relative w-full max-w-md rounded-3xl p-6 bg-[#14151D] border border-white/[0.06] shadow-2xl overflow-hidden"
         initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }}
-        style={{ border: '1px solid var(--border)' }}
       >
-        <>
-          <div className="flex items-center gap-3 mb-5">
-            <ChannelIcon type={ch.id as any} size={48} />
-            <div>
-              <h3 className="font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-                {t.channels.connect} {ch.name}
-              </h3>
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                {t.channels.willNeedSignIn}
-              </p>
-            </div>
+        <div className="flex items-center gap-3.5 mb-5">
+          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+            <ChannelIcon type={ch.id as any} size={40} />
           </div>
-
-          <div className="p-3 rounded-xl mb-5"
-            style={{ background: 'var(--surface-elevated)', border: '1px solid var(--divider)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {t.channels.permissionText.replace('{channel}', ch.name)}
+          <div>
+            <h3 className="text-base font-bold text-white tracking-tight">
+              {t.channels.connect} {ch.name}
+            </h3>
+            <p className="text-xs text-text-secondary mt-0.5">
+              {t.channels.willNeedSignIn}
             </p>
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 rounded-xl text-sm font-bold btn-ghost"
-            >
-              {t.common.cancel}
-            </button>
-            <button
-              onClick={handleConnect}
-              disabled={connecting_loading}
-              className="flex-1 py-3 rounded-xl text-sm font-bold btn-lime"
-              style={{ opacity: connecting_loading ? 0.7 : 1 }}
-            >
-              {connecting_loading ? '...' : t.common.continue}
-            </button>
-          </div>
-        </>
+        <div className="p-4 rounded-2xl mb-6 bg-white/[0.01] border border-white/[0.04]">
+          <p className="text-xs text-text-secondary leading-relaxed">
+            {t.channels.permissionText.replace('{channel}', ch.name)}
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl text-xs font-bold bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] text-white transition-all"
+          >
+            {t.common.cancel}
+          </button>
+          <button
+            onClick={handleConnect}
+            disabled={connecting_loading}
+            className="flex-1 py-3 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 transition-all disabled:opacity-30 flex items-center justify-center"
+          >
+            {connecting_loading ? '...' : t.common.continue}
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   )
@@ -265,7 +236,6 @@ function ConnectModal({
 
 export default function ChannelsPage() {
   const { isRTL, t } = useLang()
-  const { theme } = useTheme()
   const [connecting, setConnecting] = useState<typeof CHANNELS_DEFS[0] | null>(null)
   const [apiChannels, setApiChannels] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -292,25 +262,16 @@ export default function ChannelsPage() {
 
   useEffect(() => { fetchChannels() }, [fetchChannels])
 
-  // Also handle success param when returning from non-popup flow
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const success = params.get('success')
     const error = params.get('error')
-    if (success === 'facebook_connected' || success === 'instagram_connected' || success === 'gmail' || success === 'salla_connected' || success === 'tiktok_connected' || success === 'shopify_connected') {
+    if (success) {
       setToast({ message: t.channels.connectedSuccess, type: 'success' })
       fetchChannels()
       window.history.replaceState({}, '', window.location.pathname)
     } else if (error) {
-      setToast({ message: 'Connection error', type: 'error' })
-      window.history.replaceState({}, '', window.location.pathname)
-    }
-    if (error === 'gmail_denied' || error === 'facebook_denied' || error === 'salla_denied' || error === 'tiktok_denied' || error === 'shopify_denied') {
-      setToast({ message: t.channels.connectionCancelled, type: 'error' })
-      window.history.replaceState({}, '', window.location.pathname)
-    }
-    if (error === 'gmail_token' || error === 'gmail_exception' || error === 'token_failed' || error === 'no_pages' || error === 'salla_oauth_failed' || error === 'tiktok_token_failed' || error === 'shopify_token_failed') {
-      setToast({ message: t.channels.connectionFailed, type: 'error' })
+      setToast({ message: 'Connection failed', type: 'error' })
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [fetchChannels, t.channels.connectedSuccess])
@@ -328,7 +289,7 @@ export default function ChannelsPage() {
       setToast({ message: t.channels.disconnected2, type: 'success' })
       fetchChannels()
     } catch (e) {
-      console.error('Failed to disconnect channel', e)
+      console.error(e)
       setToast({ message: t.channels.disconnectFailed, type: 'error' })
     }
   }
@@ -349,15 +310,13 @@ export default function ChannelsPage() {
       })
       if (res.ok) {
         setToast({
-          message: !currentStatus
-            ? t.channels.aiEnabled
-            : t.channels.aiDisabled,
+          message: !currentStatus ? t.channels.aiEnabled : t.channels.aiDisabled,
           type: 'success'
         })
         fetchChannels()
       }
     } catch (e) {
-      console.error('Failed to toggle AI', e)
+      console.error(e)
       setToast({ message: t.channels.updateFailed, type: 'error' })
     }
   }
@@ -375,91 +334,96 @@ export default function ChannelsPage() {
   })
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+    <div className="max-w-5xl mx-auto space-y-6">
+      
+      {/* Page header */}
+      <div className="space-y-1">
+        <h2 className="text-xl font-black text-white tracking-tight">
           {t.channels.title}
         </h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+        <p className="text-sm text-text-secondary">
           {t.channels.subtitle}
         </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-6 h-6" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--accent)' }}>
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
-            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
-          </svg>
+          <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {CHANNELS.map((ch, i) => (
             <motion.div
               key={ch.id}
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07, duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
-              className="card-os rounded-2xl p-5 relative"
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.4 }}
+              className="rounded-2xl p-5 bg-[#14151D] border border-white/[0.04] flex flex-col justify-between h-48 relative overflow-hidden group hover:border-white/[0.08]"
               style={{
-                background: 'var(--surface-elevated)',
-                border: `1px solid ${ch.connected ? 'var(--accent-focus)' : 'var(--border)'}`,
+                boxShadow: ch.connected ? `0 10px 30px -15px ${ch.brandColor}30` : 'none',
               }}
             >
+              {/* Subtle brand color glow inside connected cards */}
+              {ch.connected && (
+                <div 
+                  className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-300 pointer-events-none" 
+                  style={{ background: ch.brandColor }}
+                />
+              )}
 
-              <div className="flex items-center gap-3 mb-4">
-                <ChannelIcon type={ch.id as any} size={48} />
-                <div>
-                  <div className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{ch.name}</div>
-                  {ch.pageName && (
-                    <div className="text-[10px] truncate max-w-[120px]" style={{ color: 'var(--text-secondary)' }}>
-                      {ch.pageName}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    {ch.connected ? (
-                      <>
-                        <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
-                        <span className="text-[11px] font-semibold" style={{ color: 'var(--accent)' }}>
-                          {t.channels.connected}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                        {t.channels.notConnected}
-                      </span>
+              <div className="flex items-start justify-between gap-3 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                    <ChannelIcon type={ch.id as any} size={28} />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-white">{ch.name}</div>
+                    {ch.pageName && (
+                      <div className="text-[10px] text-text-secondary truncate max-w-[140px] mt-0.5">
+                        {ch.pageName}
+                      </div>
                     )}
                   </div>
                 </div>
+
+                {/* Connection Status Badge */}
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${
+                  ch.connected 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-white/[0.03] border-white/[0.06] text-text-tertiary'
+                }`}>
+                  {ch.connected ? t.channels.connected : t.channels.notConnected}
+                </span>
               </div>
 
-              <div className="flex gap-2">
+              {/* Action Buttons */}
+              <div className="flex gap-2 relative z-10 mt-auto">
                 {ch.connected ? (
                   <>
                     <button
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
-                      className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost"
-                      style={{
-                        background: ch.aiEnabled ? 'var(--accent-subtle)' : 'var(--divider)',
-                        border: ch.aiEnabled ? '1px solid var(--accent-focus)' : '1px solid var(--border)',
-                        color: ch.aiEnabled ? 'var(--accent)' : 'var(--text-secondary)'
-                      }}
+                      className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border flex items-center justify-center gap-1.5 ${
+                        ch.aiEnabled 
+                          ? 'bg-accent/15 border-accent/20 text-accent' 
+                          : 'bg-white/[0.02] border-white/[0.05] text-text-secondary'
+                      }`}
                     >
-                      <div className="flex items-center justify-center gap-1.5">
-                        <LightningIcon size={12} />
-                        {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
-                      </div>
+                      <LightningIcon size={10} />
+                      {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
                     </button>
-                    <button onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
-                      className="py-2.5 px-3 rounded-xl text-xs font-bold"
-                      style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)', color: 'var(--accent)' }}>
+                    <button 
+                      onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
+                      className="py-2.5 px-3.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.03] border border-white/[0.05] text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all"
+                    >
                       {t.channels.disconnect}
                     </button>
                   </>
                 ) : (
-                  <button onClick={() => setConnecting(ch)}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-bold btn-ghost flex items-center justify-center gap-1.5"
-                    style={{ color: 'var(--text-secondary)' }}>
-                    <PlusIcon size={14} />
+                  <button 
+                    onClick={() => setConnecting(ch)}
+                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] text-white transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <PlusIcon size={10} />
                     {t.channels.connect}
                   </button>
                 )}
@@ -485,13 +449,9 @@ export default function ChannelsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-sm font-bold"
-            style={{
-              background: toast.type === 'success' ? 'var(--accent-subtle)' : 'var(--accent-subtle)',
-              border: toast.type === 'success' ? '1px solid var(--accent-focus)' : '1px solid var(--accent-focus)',
-              color: toast.type === 'success' ? 'var(--accent)' : 'var(--accent)',
-            }}
+            className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest bg-accent/15 border border-accent/25 text-accent shadow-2xl backdrop-blur-md flex items-center gap-2"
           >
+            <div className="w-1.5 h-1.5 rounded-full bg-accent animate-ping" />
             {toast.message}
           </motion.div>
         )}
@@ -499,9 +459,3 @@ export default function ChannelsPage() {
     </div>
   )
 }
-
-
-
-
-
-
