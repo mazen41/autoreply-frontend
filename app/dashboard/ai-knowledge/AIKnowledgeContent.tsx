@@ -140,7 +140,7 @@ export default function AIKnowledgeContent() {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       if (res.ok) {
-        toast.success(t.aiKnowledge.deleteSuccess)
+        toast.success(t.aiKnowledge.fileDeleted)
         fetchKnowledge()
       } else {
         toast.error('Delete failed')
