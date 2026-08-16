@@ -327,10 +327,10 @@ export default function AIKnowledgeContent() {
           >
             <div className="space-y-1">
               <h3 className="text-sm font-bold text-white tracking-tight">
-                {t.onboarding?.businessDetails || 'Business Details'}
+                Business Details
               </h3>
               <p className="text-[11px] text-text-secondary">
-                {t.aiKnowledge?.profileDesc || 'Configure business facts used by the AI brain.'}
+                Configure business facts used by the AI brain.
               </p>
             </div>
 
