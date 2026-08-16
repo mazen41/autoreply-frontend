@@ -211,8 +211,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-2.5 px-5 py-5 mb-2 h-16">
             {(!collapsed || isMobile) ? (
               <Image 
-                src="/icons/Logo (2).png" 
-                alt="Naz Logo" 
+                src="/icons/logo.png" 
+                alt="NazBiz Logo" 
                 width={120} 
                 height={40}
                 className="object-contain"

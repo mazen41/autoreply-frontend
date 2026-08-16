@@ -95,8 +95,8 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-12">
           <Image 
-            src="/icons/Logo (2).png" 
-            alt="Naz Logo" 
+            src="/icons/logo.png" 
+            alt="NazBiz Logo" 
             width={150} 
             height={50}
             className="object-contain"

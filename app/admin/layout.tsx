@@ -90,8 +90,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex items-center justify-between p-2">
         <Link href="/admin" className="flex items-center gap-3">
           <Image 
-            src="/icons/Logo (2).png" 
-            alt="Naz Logo" 
+            src="/icons/logo.png" 
+            alt="NazBiz Logo" 
             width={120} 
             height={40}
             className="object-contain"
