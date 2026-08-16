@@ -51,8 +51,8 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
               <Image 
-                src="/icons/Logo (2).png" 
-                alt="Naz Logo" 
+                src="/icons/logo.png" 
+                alt="NazBiz Logo" 
                 width={120} 
                 height={40}
                 className="object-contain"
