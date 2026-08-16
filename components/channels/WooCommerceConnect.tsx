@@ -50,8 +50,7 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
             <img
               src="/icons/woocommerce-icon.png"
               alt="WooCommerce"
-              className="w-12 h-12 rounded-lg"
-              style={{ background: '#96588a', padding: '8px' }}
+              className="w-12 h-12"
             />
             <div>
               <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -104,8 +103,7 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
         <img
           src="/icons/woocommerce-icon.png"
           alt="WooCommerce"
-          className="w-12 h-12 rounded-lg"
-          style={{ background: '#96588a', padding: '8px' }}
+          className="w-12 h-12"
         />
         <div>
           <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
