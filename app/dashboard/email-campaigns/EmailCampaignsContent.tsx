@@ -1,16 +1,34 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import {
+  Mail, Plus, Send, Calendar, BarChart2, Trash2, Edit2,
+  X, ChevronDown, Users, RefreshCw, Clock, CheckCircle,
+  AlertCircle, Filter, Eye, Zap, Globe, MessageSquare,
+} from 'lucide-react'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type AudienceMode = 'manual' | 'gmail' | 'contacts'
+
+interface AudienceCriteria {
+  mode: AudienceMode
+  recipients?: string[]
+  channel_ids?: number[]
+  channel_types?: string[]
+  last_active_days?: number | null
+}
+
+interface ChannelOption { id: number; type: string; name: string }
 
 interface EmailCampaign {
   id: number
-  business_id: number
   name: string
   subject: string
   content: string
-  audience_criteria: { mode?: 'manual' | 'gmail'; recipients?: string[] } | null
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+  audience_criteria: AudienceCriteria | null
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'partially_failed'
   scheduled_at: string | null
   sent_at: string | null
   total_recipients: number | null
@@ -19,53 +37,44 @@ interface EmailCampaign {
   clicked_count: number | null
   failed_count: number | null
   error_message?: string | null
+  recipients_count?: number
   created_at: string
 }
 
-interface CampaignStats {
-  campaign: EmailCampaign
-  recipients: Record<string, number>
-}
-
-type FormState = {
+interface FormState {
   name: string
   subject: string
   content: string
-  audienceMode: 'manual' | 'gmail'
+  audienceMode: AudienceMode
   recipientsText: string
+  channelIds: number[]
+  channelTypes: string[]
+  lastActiveDays: number | ''
   scheduled_at: string
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const emptyForm: FormState = {
-  name: '',
-  subject: '',
-  content: '',
-  audienceMode: 'manual',
-  recipientsText: '',
-  scheduled_at: '',
-}
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 function token() {
   return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
 }
 
-// Detects the real timezone the user is actually in right now, straight
-// from the browser/device (not a manually-picked setting, not IP-based
-// geolocation which breaks on VPNs/mobile networks). This is exact — Cairo
-// gives "Africa/Cairo", Riyadh gives "Asia/Riyadh", etc. — and it's sent
-// with every schedule request so the backend always interprets times
-// correctly no matter which country the user is logged in from.
-function detectTimezone(): string {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-  } catch {
-    return 'UTC'
-  }
+function detectTimezone() {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' } catch { return 'UTC' }
 }
 
-async function parseJson(res: Response) {
+async function apiFetch(path: string, init: RequestInit = {}) {
+  const res = await fetch(`${API}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token()}`,
+      Accept: 'application/json',
+      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(init.headers as Record<string, string> || {}),
+    },
+  })
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
     const firstError = data.errors ? Object.values(data.errors).flat()[0] : null
@@ -74,412 +83,512 @@ async function parseJson(res: Response) {
   return data
 }
 
-// Converts a UTC timestamp from the API into the value a
-// <input type="datetime-local"> needs, as if displayed in the business's
-// own timezone (not the browser's local timezone — those can differ).
-function toZonedInputValue(value: string | null, timeZone: string) {
+function toZonedInputValue(value: string | null, tz: string) {
   if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(date)
-
-  const get = (type: string) => parts.find(p => p.type === type)?.value || '00'
-  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return ''
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d)
+  const g = (t: string) => parts.find(p => p.type === t)?.value || '00'
+  return `${g('year')}-${g('month')}-${g('day')}T${g('hour')}:${g('minute')}`
 }
 
-// Formats a UTC timestamp for display in the business's own timezone, with
-// the zone name shown so it's unambiguous.
-function formatInZone(value: string | null, timeZone: string) {
+function formatInZone(value: string | null, tz: string) {
   if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-
-  const formatted = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-
-  return `${formatted} (${timeZone})`
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return ''
+  return new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d) + ` (${tz})`
 }
 
-function splitRecipients(value: string) {
-  return value
-    .split(/[\n,;]/)
-    .map(email => email.trim().toLowerCase())
-    .filter(Boolean)
+const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode; label: string }> = {
+  draft:            { color: '#64748b', bg: 'rgba(100,116,139,0.12)', icon: <Edit2 size={11} />, label: 'Draft' },
+  scheduled:        { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: <Clock size={11} />, label: 'Scheduled' },
+  sending:          { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: <RefreshCw size={11} className="animate-spin" />, label: 'Sending' },
+  sent:             { color: '#10b981', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircle size={11} />, label: 'Sent' },
+  failed:           { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   icon: <AlertCircle size={11} />, label: 'Failed' },
+  partially_failed: { color: '#f97316', bg: 'rgba(249,115,22,0.12)',  icon: <AlertCircle size={11} />, label: 'Partial' },
 }
+
+const CHANNEL_TYPE_ICONS: Record<string, string> = {
+  whatsapp: '💬', instagram: '📸', facebook: '👍', telegram: '✈️', gmail: '📧', tiktok: '🎵',
+}
+
+const ACTIVE_DAYS_OPTIONS = [
+  { value: 7,   label: 'Last 7 days' },
+  { value: 14,  label: 'Last 14 days' },
+  { value: 30,  label: 'Last 30 days' },
+  { value: 60,  label: 'Last 60 days' },
+  { value: 90,  label: 'Last 90 days' },
+  { value: 180, label: 'Last 6 months' },
+  { value: 365, label: 'Last year' },
+]
+
+const emptyForm: FormState = {
+  name: '', subject: '', content: '',
+  audienceMode: 'manual', recipientsText: '',
+  channelIds: [], channelTypes: [], lastActiveDays: 30,
+  scheduled_at: '',
+}
+
+// ─── Stat pill ────────────────────────────────────────────────────────────────
+
+function StatPill({ label, value, color }: { label: string; value: number | null; color?: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <span style={{ fontSize: 18, fontWeight: 700, color: color || 'var(--text-primary)', lineHeight: 1 }}>{value ?? 0}</span>
+      <span style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+    </div>
+  )
+}
+
+// ─── Audience badge ───────────────────────────────────────────────────────────
+
+function AudienceBadge({ criteria }: { criteria: AudienceCriteria | null }) {
+  const mode = criteria?.mode || 'manual'
+  const map: Record<AudienceMode, { icon: React.ReactNode; label: string }> = {
+    manual:   { icon: <Edit2 size={10} />,         label: `${criteria?.recipients?.length || 0} emails` },
+    gmail:    { icon: <Mail size={10} />,           label: 'Gmail contacts' },
+    contacts: { icon: <MessageSquare size={10} />,  label: 'Conversation contacts' },
+  }
+  const { icon, label } = map[mode as AudienceMode] || map.manual
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+      {icon}{label}
+    </span>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function EmailCampaignsContent() {
-  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [filterStatus, setFilterStatus] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editing, setEditing] = useState<EmailCampaign | null>(null)
-  const [form, setForm] = useState<FormState>(emptyForm)
-  const [saving, setSaving] = useState(false)
-  const [actionId, setActionId] = useState<number | null>(null)
-  const [stats, setStats] = useState<CampaignStats | null>(null)
-  // Defaults to 'UTC' for the initial server-render, then gets set to the
-  // real browser timezone right after mount (avoids SSR hydration mismatch).
-  const [businessTimezone, setBusinessTimezone] = useState('UTC')
+  const [campaigns, setCampaigns]           = useState<EmailCampaign[]>([])
+  const [loading, setLoading]               = useState(true)
+  const [filterStatus, setFilterStatus]     = useState('')
+  const [modalOpen, setModalOpen]           = useState(false)
+  const [editing, setEditing]               = useState<EmailCampaign | null>(null)
+  const [form, setForm]                     = useState<FormState>(emptyForm)
+  const [saving, setSaving]                 = useState(false)
+  const [actionId, setActionId]             = useState<number | null>(null)
+  const [statsId, setStatsId]               = useState<number | null>(null)
+  const [channels, setChannels]             = useState<ChannelOption[]>([])
+  const [previewCount, setPreviewCount]     = useState<number | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [tz, setTz]                         = useState('UTC')
+  const previewTimer                        = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  useEffect(() => { setTz(detectTimezone()) }, [])
+
+  // Load channels for the audience contacts picker
   useEffect(() => {
-    setBusinessTimezone(detectTimezone())
+    apiFetch('/api/email-campaigns/audience/channels')
+      .then(d => setChannels(d.channels || []))
+      .catch(() => {})
   }, [])
 
-  const authHeaders = useMemo(() => ({
-    Authorization: `Bearer ${token()}`,
-    Accept: 'application/json',
-  }), [])
+  const authH = useMemo(() => ({ Authorization: `Bearer ${token()}`, Accept: 'application/json' }), [])
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     setLoading(true)
-    setError('')
-
     try {
-      const params = new URLSearchParams()
-      if (filterStatus) params.set('status', filterStatus)
-
-      const res = await fetch(`${API}/api/email-campaigns?${params.toString()}`, {
-        headers: authHeaders,
-      })
-      const data = await parseJson(res)
-      setCampaigns(data.data || [])
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load campaigns'
-      setError(msg)
-      toast.error(msg)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchCampaigns()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      const params = filterStatus ? `?status=${filterStatus}` : ''
+      const d = await apiFetch(`/api/email-campaigns${params}`)
+      setCampaigns(d.data || [])
+    } catch (e: any) { toast.error(e.message) }
+    finally { setLoading(false) }
   }, [filterStatus])
 
-  const openCreate = () => {
-    setEditing(null)
-    setForm(emptyForm)
-    setModalOpen(true)
-  }
+  useEffect(() => { fetchCampaigns() }, [fetchCampaigns])
 
-  const openEdit = (campaign: EmailCampaign) => {
-    setEditing(campaign)
-    setForm({
-      name: campaign.name,
-      subject: campaign.subject,
-      content: campaign.content,
-      audienceMode: campaign.audience_criteria?.mode || 'manual',
-      recipientsText: (campaign.audience_criteria?.recipients || []).join('\n'),
-      scheduled_at: toZonedInputValue(campaign.scheduled_at, businessTimezone),
-    })
-    setModalOpen(true)
-  }
+  // Live audience preview — debounced 600ms after form changes
+  useEffect(() => {
+    if (!modalOpen) return
+    if (previewTimer.current) clearTimeout(previewTimer.current)
+    previewTimer.current = setTimeout(async () => {
+      setPreviewLoading(true)
+      try {
+        const criteria = buildAudienceCriteria(form)
+        const d = await apiFetch('/api/email-campaigns/audience/preview', {
+          method: 'POST',
+          body: JSON.stringify({ audience_criteria: criteria }),
+        })
+        setPreviewCount(d.count ?? null)
+      } catch { setPreviewCount(null) }
+      finally { setPreviewLoading(false) }
+    }, 600)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.audienceMode, form.recipientsText, form.channelIds, form.channelTypes, form.lastActiveDays, modalOpen])
 
-  const payload = () => {
-    const recipients = splitRecipients(form.recipientsText)
-
-    if (!form.name.trim() || !form.subject.trim() || !form.content.trim()) {
-      throw new Error('Name, subject, and content are required.')
+  function buildAudienceCriteria(f: FormState): AudienceCriteria {
+    if (f.audienceMode === 'gmail') return { mode: 'gmail' }
+    if (f.audienceMode === 'contacts') return {
+      mode: 'contacts',
+      channel_ids: f.channelIds,
+      channel_types: f.channelTypes,
+      last_active_days: f.lastActiveDays !== '' ? Number(f.lastActiveDays) : null,
     }
-
-    if (form.audienceMode === 'manual' && recipients.length === 0) {
-      throw new Error('Add at least one recipient email address.')
-    }
-
     return {
-      name: form.name.trim(),
-      subject: form.subject.trim(),
-      content: form.content,
-      audience_criteria: {
-        mode: form.audienceMode,
-        recipients: form.audienceMode === 'manual' ? recipients : [],
-      },
+      mode: 'manual',
+      recipients: f.recipientsText.split(/[\n,;]/).map(e => e.trim().toLowerCase()).filter(Boolean),
     }
   }
 
-  const scheduleCampaign = async (campaignId: number, scheduledAt: string, showToast = true) => {
-    setActionId(campaignId)
-    try {
-      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/schedule`, {
-        method: 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduled_at: scheduledAt, timezone: businessTimezone }),
-      })
-      await parseJson(res)
-      if (showToast) toast.success('Campaign scheduled')
-      await fetchCampaigns()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to schedule campaign'
-      toast.error(msg)
-      throw err
-    } finally {
-      setActionId(null)
-    }
+  const openCreate = () => {
+    setEditing(null); setForm(emptyForm); setPreviewCount(null); setModalOpen(true)
   }
 
-  const saveCampaign = async (scheduleAfterSave = false) => {
+  const openEdit = (c: EmailCampaign) => {
+    const crit = c.audience_criteria
+    setEditing(c)
+    setForm({
+      name: c.name, subject: c.subject, content: c.content,
+      audienceMode: (crit?.mode || 'manual') as AudienceMode,
+      recipientsText: (crit?.recipients || []).join('\n'),
+      channelIds: crit?.channel_ids || [],
+      channelTypes: crit?.channel_types || [],
+      lastActiveDays: crit?.last_active_days ?? 30,
+      scheduled_at: toZonedInputValue(c.scheduled_at, tz),
+    })
+    setPreviewCount(null); setModalOpen(true)
+  }
+
+  const saveCampaign = async (scheduleAfterSave: boolean) => {
     setSaving(true)
-
     try {
-      if (scheduleAfterSave && !form.scheduled_at) {
-        throw new Error('Choose a schedule date and time.')
+      if (scheduleAfterSave && !form.scheduled_at) throw new Error('Choose a schedule date/time first.')
+      const body = {
+        name: form.name.trim(), subject: form.subject.trim(), content: form.content,
+        audience_criteria: buildAudienceCriteria(form),
+        ...(form.scheduled_at ? { scheduled_at: form.scheduled_at, timezone: tz } : {}),
       }
-
-      const body = payload()
-      const url = editing ? `${API}/api/email-campaigns/${editing.id}` : `${API}/api/email-campaigns`
-      const res = await fetch(url, {
-        method: editing ? 'PUT' : 'POST',
-        headers: { ...authHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const data = await parseJson(res)
-      const campaign = data.campaign as EmailCampaign
-
+      const url = editing ? `/api/email-campaigns/${editing.id}` : '/api/email-campaigns'
+      const d = await apiFetch(url, { method: editing ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      const camp = d.campaign as EmailCampaign
       if (scheduleAfterSave) {
-        await scheduleCampaign(campaign.id, form.scheduled_at, false)
-        toast.success('Campaign scheduled')
-      } else {
-        toast.success('Draft saved')
-      }
-
-      setModalOpen(false)
-      await fetchCampaigns()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save campaign'
-      toast.error(msg)
-    } finally {
-      setSaving(false)
-    }
+        await apiFetch(`/api/email-campaigns/${camp.id}/schedule`, {
+          method: 'POST', body: JSON.stringify({ scheduled_at: form.scheduled_at, timezone: tz }),
+        })
+        toast.success('Campaign scheduled ✓')
+      } else { toast.success('Draft saved ✓') }
+      setModalOpen(false); fetchCampaigns()
+    } catch (e: any) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
-  const sendCampaign = async (campaignId: number) => {
-    if (!confirm('Send this email campaign now?')) return
-    setActionId(campaignId)
+  const sendNow = async (id: number) => {
+    if (!confirm('Send this campaign now?')) return
+    setActionId(id)
+    try { await apiFetch(`/api/email-campaigns/${id}/send`, { method: 'POST' }); toast.success('Campaign sent ✓'); fetchCampaigns() }
+    catch (e: any) { toast.error(e.message) }
+    finally { setActionId(null) }
+  }
 
+  const cancelSchedule = async (id: number) => {
+    setActionId(id)
+    try { await apiFetch(`/api/email-campaigns/${id}/cancel-schedule`, { method: 'POST' }); toast.success('Schedule cancelled'); fetchCampaigns() }
+    catch (e: any) { toast.error(e.message) }
+    finally { setActionId(null) }
+  }
+
+  const retryCampaign = async (c: EmailCampaign) => {
+    setActionId(c.id)
     try {
-      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/send`, {
-        method: 'POST',
-        headers: authHeaders,
+      await apiFetch(`/api/email-campaigns/${c.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'draft' }),
       })
-      await parseJson(res)
-      toast.success('Campaign queued for delivery')
-      await fetchCampaigns()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to send campaign'
-      toast.error(msg)
-    } finally {
-      setActionId(null)
-    }
+      await apiFetch(`/api/email-campaigns/${c.id}/send`, { method: 'POST' })
+      toast.success('Campaign retried ✓'); fetchCampaigns()
+    } catch (e: any) { toast.error(e.message) }
+    finally { setActionId(null) }
   }
 
-  const cancelSchedule = async (campaignId: number) => {
-    setActionId(campaignId)
-
-    try {
-      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/cancel-schedule`, {
-        method: 'POST',
-        headers: authHeaders,
-      })
-      await parseJson(res)
-      toast.success('Schedule cancelled')
-      await fetchCampaigns()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to cancel schedule'
-      toast.error(msg)
-    } finally {
-      setActionId(null)
-    }
+  const deleteCampaign = async (id: number) => {
+    if (!confirm('Delete this campaign permanently?')) return
+    setActionId(id)
+    try { await apiFetch(`/api/email-campaigns/${id}`, { method: 'DELETE' }); toast.success('Deleted'); fetchCampaigns() }
+    catch (e: any) { toast.error(e.message) }
+    finally { setActionId(null) }
   }
 
-  const deleteCampaign = async (campaignId: number) => {
-    if (!confirm('Delete this campaign?')) return
-    setActionId(campaignId)
+  const toggleChannelId = (id: number) =>
+    setForm(f => ({ ...f, channelIds: f.channelIds.includes(id) ? f.channelIds.filter(x => x !== id) : [...f.channelIds, id] }))
 
-    try {
-      const res = await fetch(`${API}/api/email-campaigns/${campaignId}`, {
-        method: 'DELETE',
-        headers: authHeaders,
-      })
-      await parseJson(res)
-      toast.success('Campaign deleted')
-      await fetchCampaigns()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to delete campaign'
-      toast.error(msg)
-    } finally {
-      setActionId(null)
-    }
-  }
+  const statsMap = useMemo(() => {
+    const m: Record<number, EmailCampaign> = {}
+    campaigns.forEach(c => { m[c.id] = c })
+    return m
+  }, [campaigns])
 
-  const loadStats = async (campaign: EmailCampaign) => {
-    setActionId(campaign.id)
+  const viewingStats = statsId ? statsMap[statsId] : null
 
-    try {
-      const res = await fetch(`${API}/api/email-campaigns/${campaign.id}/stats`, {
-        headers: authHeaders,
-      })
-      const data = await parseJson(res)
-      setStats(data)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load stats'
-      toast.error(msg)
-    } finally {
-      setActionId(null)
-    }
-  }
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--text-primary)' }}>
-          Email Campaigns
-        </h1>
-        <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
-          Create, schedule, send, and track email campaigns.
-        </p>
+    <div style={{ padding: '24px 0', maxWidth: 900, margin: '0 auto' }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,var(--accent),var(--accent-hover,#6366f1))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Mail size={18} color="#fff" />
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Email Campaigns</h1>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>Create, schedule and track email campaigns to your contacts</p>
+        </div>
+        <button onClick={openCreate} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 12, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>
+          <Plus size={15} /> New Campaign
+        </button>
       </div>
 
-      {stats && (
-        <section className="premium-card p-6" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <h2 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{stats.campaign.name}</h2>
-            <button onClick={() => setStats(null)} className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>Back</button>
+      {/* ── Stats panel for a specific campaign ── */}
+      {viewingStats && (
+        <div style={{ marginBottom: 24, padding: 24, borderRadius: 16, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{viewingStats.name}</h2>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>Subject: {viewingStats.subject}</p>
+            </div>
+            <button onClick={() => setStatsId(null)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>← Back</button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
             {[
-              ['Recipients', stats.campaign.total_recipients || 0],
-              ['Delivered', stats.campaign.delivered_count || 0],
-              ['Opened', stats.campaign.opened_count || 0],
-              ['Clicked', stats.campaign.clicked_count || 0],
-              ['Failed', stats.campaign.failed_count || 0],
-            ].map(([label, value]) => (
-              <div key={label} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
-                <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
+              { label: 'Recipients', value: viewingStats.total_recipients },
+              { label: 'Delivered',  value: viewingStats.delivered_count,  color: '#10b981' },
+              { label: 'Opened',     value: viewingStats.opened_count,     color: '#3b82f6' },
+              { label: 'Clicked',    value: viewingStats.clicked_count,    color: '#f59e0b' },
+              { label: 'Failed',     value: viewingStats.failed_count,     color: '#ef4444' },
+            ].map(s => (
+              <div key={s.label} style={{ textAlign: 'center', padding: '16px 8px', borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <StatPill label={s.label} value={s.value} color={s.color} />
               </div>
             ))}
           </div>
-          <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Recipient states: {Object.entries(stats.recipients || {}).map(([key, value]) => `${key}: ${value}`).join(', ') || 'none'}
-          </p>
-        </section>
+          {viewingStats.error_message && (
+            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 12, color: '#ef4444' }}>
+              ⚠ {viewingStats.error_message}
+            </div>
+          )}
+          {(viewingStats.status === 'failed' || viewingStats.status === 'partially_failed') && (
+            <div style={{ marginTop: 14, display: 'flex', gap: 10 }}>
+              <button disabled={actionId === viewingStats.id} onClick={() => retryCampaign(viewingStats)} style={{ padding: '8px 16px', borderRadius: 10, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                🔄 Retry Failed Recipients
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
-      {!stats && (
+      {/* ── Filters ── */}
+      {!viewingStats && (
         <>
-          <div className="flex flex-wrap items-center gap-3">
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
-              <option value="">All statuses</option>
-              <option value="draft">Draft</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="sending">Sending</option>
-              <option value="sent">Sent</option>
-              <option value="failed">Failed</option>
-            </select>
-            <button onClick={fetchCampaigns} className="px-4 py-3 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Refresh</button>
-            <button onClick={openCreate} className="px-4 py-3 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>Create Campaign</button>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['', 'draft', 'scheduled', 'sending', 'sent', 'failed'].map(s => (
+                <button key={s} onClick={() => setFilterStatus(s)} style={{ padding: '7px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: '1px solid var(--border)', cursor: 'pointer', background: filterStatus === s ? 'var(--accent)' : 'var(--surface)', color: filterStatus === s ? '#fff' : 'var(--text-secondary)', transition: 'all .15s' }}>
+                  {s || 'All'}
+                </button>
+              ))}
+            </div>
+            <button onClick={fetchCampaigns} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 12, color: 'var(--text-secondary)' }}>
+              <RefreshCw size={13} /> Refresh
+            </button>
           </div>
 
-          <section className="premium-card p-6" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+          {/* ── Campaign list ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {loading ? (
-              <div className="py-16 text-center" style={{ color: 'var(--text-secondary)' }}>Loading campaigns...</div>
-            ) : error ? (
-              <div className="py-16 text-center">
-                <p className="mb-4" style={{ color: 'var(--error)' }}>{error}</p>
-                <button onClick={fetchCampaigns} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Try again</button>
-              </div>
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} style={{ height: 88, borderRadius: 14, background: 'var(--surface)', border: '1px solid var(--border)', opacity: 0.5, animation: 'pulse 1.5s infinite' }} />
+              ))
             ) : campaigns.length === 0 ? (
-              <div className="py-16 text-center">
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>No email campaigns yet.</p>
-                <button onClick={openCreate} className="px-5 py-2.5 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>Create your first campaign</button>
+              <div style={{ textAlign: 'center', padding: '64px 24px', borderRadius: 16, background: 'var(--surface)', border: '1px dashed var(--border)' }}>
+                <Mail size={40} style={{ color: 'var(--text-tertiary)', marginBottom: 12 }} />
+                <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', margin: '0 0 6px' }}>No campaigns yet</p>
+                <p style={{ fontSize: 13, color: 'var(--text-tertiary)', margin: '0 0 18px' }}>Create your first email campaign to reach your contacts</p>
+                <button onClick={openCreate} style={{ padding: '10px 20px', borderRadius: 12, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>Create Campaign</button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {campaigns.map(campaign => (
-                  <article key={campaign.id} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{campaign.name}</h3>
-                          <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>{campaign.status}</span>
-                        </div>
-                        <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Subject: {campaign.subject}</p>
-                        <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                          <span>Recipients: {campaign.total_recipients || 0}</span>
-                          <span>Delivered: {campaign.delivered_count || 0}</span>
-                          <span>Opened: {campaign.opened_count || 0}</span>
-                          <span>Clicked: {campaign.clicked_count || 0}</span>
-                          <span>Failed: {campaign.failed_count || 0}</span>
-                        </div>
-                        {campaign.scheduled_at && <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>Scheduled: {formatInZone(campaign.scheduled_at, businessTimezone)}</p>}
-                        {campaign.error_message && <p className="text-xs mt-2" style={{ color: 'var(--error)' }}>{campaign.error_message}</p>}
+            ) : campaigns.map(c => {
+              const sc = STATUS_CONFIG[c.status] || STATUS_CONFIG.draft
+              const busy = actionId === c.id
+              return (
+                <div key={c.id} style={{ padding: '16px 20px', borderRadius: 14, background: 'var(--surface-elevated)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{c.name}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: sc.bg, color: sc.color }}>
+                          {sc.icon} {sc.label}
+                        </span>
+                        <AudienceBadge criteria={c.audience_criteria} />
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {(campaign.status === 'draft' || campaign.status === 'scheduled') && <button disabled={actionId === campaign.id} onClick={() => openEdit(campaign)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Edit</button>}
-                        {campaign.status === 'draft' && <button disabled={actionId === campaign.id} onClick={() => sendCampaign(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>{actionId === campaign.id ? 'Working...' : 'Send Now'}</button>}
-                        {campaign.status === 'scheduled' && <button disabled={actionId === campaign.id} onClick={() => cancelSchedule(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Cancel Schedule</button>}
-                        <button disabled={actionId === campaign.id} onClick={() => loadStats(campaign)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Stats</button>
-                        {(campaign.status === 'draft' || campaign.status === 'scheduled' || campaign.status === 'failed') && <button disabled={actionId === campaign.id} onClick={() => deleteCampaign(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--error-subtle)', color: 'var(--error)' }}>Delete</button>}
-                      </div>
+                      <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0 }}>Subject: {c.subject}</p>
+                      {c.scheduled_at && <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '4px 0 0' }}>📅 {formatInZone(c.scheduled_at, tz)}</p>}
                     </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                      <StatPill label="Sent"    value={c.delivered_count} color="#10b981" />
+                      <StatPill label="Opened"  value={c.opened_count}    color="#3b82f6" />
+                      <StatPill label="Clicked" value={c.clicked_count}   color="#f59e0b" />
+                      {(c.failed_count || 0) > 0 && <StatPill label="Failed" value={c.failed_count} color="#ef4444" />}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button onClick={() => setStatsId(c.id)} disabled={busy} style={{ ...btnStyle('ghost') }}><BarChart2 size={12} /> Stats</button>
+                    {['draft','scheduled'].includes(c.status) && <button onClick={() => openEdit(c)} disabled={busy} style={{ ...btnStyle('ghost') }}><Edit2 size={12} /> Edit</button>}
+                    {c.status === 'draft' && <button onClick={() => sendNow(c.id)} disabled={busy} style={{ ...btnStyle('primary') }}><Send size={12} /> {busy ? 'Working…' : 'Send Now'}</button>}
+                    {c.status === 'scheduled' && <button onClick={() => cancelSchedule(c.id)} disabled={busy} style={{ ...btnStyle('ghost') }}>Cancel Schedule</button>}
+                    {['failed','partially_failed'].includes(c.status) && <button onClick={() => retryCampaign(c)} disabled={busy} style={{ ...btnStyle('warn') }}><RefreshCw size={12} /> Retry</button>}
+                    {['draft','scheduled','failed','partially_failed'].includes(c.status) && <button onClick={() => deleteCampaign(c.id)} disabled={busy} style={{ ...btnStyle('danger') }}><Trash2 size={12} /></button>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </>
       )}
 
+      {/* ── Create/Edit Modal ── */}
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: 'rgba(0,0,0,0.55)' }}>
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-            <h3 className="font-bold text-lg mb-5" style={{ color: 'var(--text-primary)' }}>{editing ? 'Edit Email Campaign' : 'Create Email Campaign'}</h3>
-            <div className="space-y-4">
-              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Campaign name" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              <input value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Subject" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Email HTML/content" rows={8} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Audience
-                  <select value={form.audienceMode} onChange={e => setForm({ ...form, audienceMode: e.target.value as 'manual' | 'gmail' })} className="mt-2 w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
-                    <option value="manual">Manual recipients</option>
-                    <option value="gmail">Gmail conversation senders</option>
-                  </select>
-                </label>
-                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Schedule time ({businessTimezone})
-                  <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm({ ...form, scheduled_at: e.target.value })} className="mt-2 w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-                </label>
-              </div>
-              {form.audienceMode === 'manual' && (
-                <textarea value={form.recipientsText} onChange={e => setForm({ ...form, recipientsText: e.target.value })} placeholder="recipient@example.com, second@example.com" rows={4} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
-              )}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
+          <div style={{ width: '100%', maxWidth: 640, maxHeight: '92vh', overflowY: 'auto', background: 'var(--surface-elevated)', borderRadius: 20, border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' }}>
+            {/* Modal header */}
+            <div style={{ padding: '20px 24px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--surface-elevated)', zIndex: 1, borderBottom: '1px solid var(--border)', paddingBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)' }}>{editing ? 'Edit Campaign' : 'New Email Campaign'}</h2>
+              <button onClick={() => setModalOpen(false)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 7, cursor: 'pointer', display: 'flex', color: 'var(--text-secondary)' }}><X size={15} /></button>
             </div>
-            <div className="flex flex-wrap justify-end gap-3 mt-6">
-              <button disabled={saving} onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Cancel</button>
-              <button disabled={saving} onClick={() => saveCampaign(false)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>{saving ? 'Saving...' : 'Save Draft'}</button>
-              <button disabled={saving} onClick={() => saveCampaign(true)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>{saving ? 'Saving...' : 'Save and Schedule'}</button>
+
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {/* Name & Subject */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="Campaign Name" required>
+                  <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Black Friday Sale" style={inputStyle} />
+                </Field>
+                <Field label="Email Subject" required>
+                  <input value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} placeholder="🎉 Special offer inside" style={inputStyle} />
+                </Field>
+              </div>
+
+              {/* Content */}
+              <Field label="Email Content (HTML or plain text)" required>
+                <textarea value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} placeholder="Write your email content here..." rows={7} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 12 }} />
+              </Field>
+
+              {/* Audience mode tabs */}
+              <Field label="Audience">
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                  {([
+                    { mode: 'manual',   icon: <Edit2 size={13} />,        label: 'Manual Emails' },
+                    { mode: 'gmail',    icon: <Mail size={13} />,          label: 'Gmail Contacts' },
+                    { mode: 'contacts', icon: <MessageSquare size={13} />, label: 'Conversation Contacts' },
+                  ] as const).map(opt => (
+                    <button key={opt.mode} onClick={() => setForm(f => ({ ...f, audienceMode: opt.mode }))} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1.5px solid ${form.audienceMode === opt.mode ? 'var(--accent)' : 'var(--border)'}`, background: form.audienceMode === opt.mode ? 'rgba(var(--accent-rgb,99,102,241),0.1)' : 'var(--surface)', color: form.audienceMode === opt.mode ? 'var(--accent)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 13, transition: 'all .15s' }}>
+                      {opt.icon} {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Manual */}
+                {form.audienceMode === 'manual' && (
+                  <div>
+                    <textarea value={form.recipientsText} onChange={e => setForm(f => ({ ...f, recipientsText: e.target.value }))} placeholder={"email1@example.com\nemail2@example.com\nor comma/semicolon separated"} rows={4} style={{ ...inputStyle, resize: 'vertical', fontSize: 12 }} />
+                    <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '6px 0 0' }}>Separate with new lines, commas, or semicolons.</p>
+                  </div>
+                )}
+
+                {/* Gmail */}
+                {form.audienceMode === 'gmail' && (
+                  <div style={{ padding: '14px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>📧 Sends to all email addresses extracted from your connected Gmail conversations.</p>
+                  </div>
+                )}
+
+                {/* Contacts */}
+                {form.audienceMode === 'contacts' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div style={{ padding: '12px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                      💬 Sends to contacts from your WhatsApp, Instagram, Facebook, and Telegram conversations who have a known email address.
+                    </div>
+
+                    {/* Channel filter */}
+                    {channels.length > 0 && (
+                      <Field label="Filter by channel (leave empty = all)">
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {channels.map(ch => (
+                            <button key={ch.id} onClick={() => toggleChannelId(ch.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${form.channelIds.includes(ch.id) ? 'var(--accent)' : 'var(--border)'}`, background: form.channelIds.includes(ch.id) ? 'rgba(var(--accent-rgb,99,102,241),0.1)' : 'var(--surface)', color: form.channelIds.includes(ch.id) ? 'var(--accent)' : 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all .15s' }}>
+                              {CHANNEL_TYPE_ICONS[ch.type] || '📱'} {ch.name}
+                            </button>
+                          ))}
+                        </div>
+                      </Field>
+                    )}
+
+                    {/* Activity window */}
+                    <Field label="Contact activity window">
+                      <select value={form.lastActiveDays} onChange={e => setForm(f => ({ ...f, lastActiveDays: e.target.value === '' ? '' : Number(e.target.value) }))} style={{ ...inputStyle }}>
+                        <option value="">All time</option>
+                        {ACTIVE_DAYS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      </select>
+                    </Field>
+                  </div>
+                )}
+
+                {/* Audience preview pill */}
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 12 }}>
+                    <Users size={12} style={{ color: 'var(--accent)' }} />
+                    {previewLoading ? <span style={{ color: 'var(--text-tertiary)' }}>Estimating…</span>
+                      : previewCount === null ? <span style={{ color: 'var(--text-tertiary)' }}>—</span>
+                      : <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{previewCount} estimated {previewCount === 1 ? 'recipient' : 'recipients'}</span>}
+                  </div>
+                </div>
+              </Field>
+
+              {/* Schedule */}
+              <Field label={`Schedule time (${tz})`}>
+                <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} style={inputStyle} />
+                <p style={{ fontSize: 11, color: 'var(--text-tertiary)', margin: '6px 0 0' }}>Leave empty to save as draft and send manually.</p>
+              </Field>
+            </div>
+
+            {/* Modal footer */}
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 10, position: 'sticky', bottom: 0, background: 'var(--surface-elevated)' }}>
+              <button disabled={saving} onClick={() => setModalOpen(false)} style={{ ...btnStyle('ghost'), padding: '10px 18px' }}>Cancel</button>
+              <button disabled={saving} onClick={() => saveCampaign(false)} style={{ ...btnStyle('ghost'), padding: '10px 18px' }}>{saving ? 'Saving…' : 'Save Draft'}</button>
+              <button disabled={saving} onClick={() => saveCampaign(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 12, background: 'var(--accent)', color: '#fff', border: 'none', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 14, opacity: saving ? 0.7 : 1 }}>
+                <Calendar size={14} /> {saving ? 'Saving…' : 'Save & Schedule'}
+              </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Mini helpers ─────────────────────────────────────────────────────────────
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '11px 14px', borderRadius: 10,
+  background: 'var(--surface)', border: '1px solid var(--border)',
+  color: 'var(--text-primary)', fontSize: 14, outline: 'none',
+  boxSizing: 'border-box',
+}
+
+function btnStyle(variant: 'primary' | 'ghost' | 'danger' | 'warn'): React.CSSProperties {
+  const base: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1.5px solid transparent', transition: 'opacity .15s' }
+  if (variant === 'primary') return { ...base, background: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }
+  if (variant === 'danger')  return { ...base, background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderColor: 'rgba(239,68,68,0.25)' }
+  if (variant === 'warn')    return { ...base, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.25)' }
+  return { ...base, background: 'var(--surface)', color: 'var(--text-primary)', borderColor: 'var(--border)' }
+}
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        {label}{required && <span style={{ color: '#ef4444', marginLeft: 3 }}>*</span>}
+      </span>
+      {children}
+    </label>
   )
 }
