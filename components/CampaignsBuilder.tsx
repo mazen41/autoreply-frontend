@@ -188,7 +188,10 @@ export default function CampaignsContent({ businessId }: { businessId: number })
   // Load channels once
   useEffect(() => {
     apiFetch('/api/channels')
-      .then(d => setChannels((d.channels || d).filter((c: Channel) => c.status === 'connected')))
+      .then(d => {
+        const list = Array.isArray(d) ? d : (d.data || d.channels || [])
+        setChannels(list.filter((c: Channel) => c.status === 'connected'))
+      })
       .catch(() => {})
   }, [])
 
