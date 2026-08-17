@@ -51,6 +51,20 @@ function token() {
   return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
 }
 
+// Detects the real timezone the user is actually in right now, straight
+// from the browser/device (not a manually-picked setting, not IP-based
+// geolocation which breaks on VPNs/mobile networks). This is exact — Cairo
+// gives "Africa/Cairo", Riyadh gives "Asia/Riyadh", etc. — and it's sent
+// with every schedule request so the backend always interprets times
+// correctly no matter which country the user is logged in from.
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+  } catch {
+    return 'UTC'
+  }
+}
+
 async function parseJson(res: Response) {
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
@@ -119,7 +133,13 @@ export default function EmailCampaignsContent() {
   const [saving, setSaving] = useState(false)
   const [actionId, setActionId] = useState<number | null>(null)
   const [stats, setStats] = useState<CampaignStats | null>(null)
+  // Defaults to 'UTC' for the initial server-render, then gets set to the
+  // real browser timezone right after mount (avoids SSR hydration mismatch).
   const [businessTimezone, setBusinessTimezone] = useState('UTC')
+
+  useEffect(() => {
+    setBusinessTimezone(detectTimezone())
+  }, [])
 
   const authHeaders = useMemo(() => ({
     Authorization: `Bearer ${token()}`,
@@ -139,7 +159,6 @@ export default function EmailCampaignsContent() {
       })
       const data = await parseJson(res)
       setCampaigns(data.data || [])
-      if (data.business_timezone) setBusinessTimezone(data.business_timezone)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load campaigns'
       setError(msg)
@@ -201,7 +220,7 @@ export default function EmailCampaignsContent() {
       const res = await fetch(`${API}/api/email-campaigns/${campaignId}/schedule`, {
         method: 'POST',
         headers: { ...authHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scheduled_at: scheduledAt }),
+        body: JSON.stringify({ scheduled_at: scheduledAt, timezone: businessTimezone }),
       })
       await parseJson(res)
       if (showToast) toast.success('Campaign scheduled')
