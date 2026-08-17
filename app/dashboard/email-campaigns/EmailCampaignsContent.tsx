@@ -1,8 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useLang } from '../../../lib/LangContext'
+import React, { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 interface EmailCampaign {
@@ -11,8 +9,8 @@ interface EmailCampaign {
   name: string
   subject: string
   content: string
-  audience_criteria: any
-  status: string
+  audience_criteria: { mode?: 'manual' | 'gmail'; recipients?: string[] } | null
+  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
   scheduled_at: string | null
   sent_at: string | null
   total_recipients: number | null
@@ -20,447 +18,410 @@ interface EmailCampaign {
   opened_count: number | null
   clicked_count: number | null
   failed_count: number | null
+  error_message?: string | null
   created_at: string
 }
 
+interface CampaignStats {
+  campaign: EmailCampaign
+  recipients: Record<string, number>
+}
+
+type FormState = {
+  name: string
+  subject: string
+  content: string
+  audienceMode: 'manual' | 'gmail'
+  recipientsText: string
+  scheduled_at: string
+}
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+const emptyForm: FormState = {
+  name: '',
+  subject: '',
+  content: '',
+  audienceMode: 'manual',
+  recipientsText: '',
+  scheduled_at: '',
+}
+
+function token() {
+  return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
+}
+
+async function parseJson(res: Response) {
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    const firstError = data.errors ? Object.values(data.errors).flat()[0] : null
+    throw new Error(String(firstError || data.error || data.message || 'Request failed'))
+  }
+  return data
+}
+
+function toLocalInputValue(value: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
+
+function splitRecipients(value: string) {
+  return value
+    .split(/[\n,;]/)
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
 export default function EmailCampaignsContent() {
-  const { isRTL, t } = useLang()
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
+  const [error, setError] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
-  const [selectedCampaign, setSelectedCampaign] = useState<EmailCampaign | null>(null)
-  const [showStats, setShowStats] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState<EmailCampaign | null>(null)
+  const [form, setForm] = useState<FormState>(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [actionId, setActionId] = useState<number | null>(null)
+  const [stats, setStats] = useState<CampaignStats | null>(null)
 
-  // Form state
-  const [form, setForm] = useState({
-    name: '',
-    subject: '',
-    content: '',
-    audience_criteria: {},
-    scheduled_at: '',
-  })
-
-  useEffect(() => {
-    fetchCampaigns()
-  }, [])
+  const authHeaders = useMemo(() => ({
+    Authorization: `Bearer ${token()}`,
+    Accept: 'application/json',
+  }), [])
 
   const fetchCampaigns = async () => {
+    setLoading(true)
+    setError('')
+
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
       const params = new URLSearchParams()
-      if (filterStatus) params.append('status', filterStatus)
+      if (filterStatus) params.set('status', filterStatus)
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/email-campaigns?${params}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      const res = await fetch(`${API}/api/email-campaigns?${params.toString()}`, {
+        headers: authHeaders,
       })
-      const data = await res.json()
-      if (res.ok) {
-        setCampaigns(data.data || data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch campaigns:', error)
+      const data = await parseJson(res)
+      setCampaigns(data.data || [])
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to load campaigns'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCreate = async () => {
-    if (!form.name || !form.subject || !form.content) {
-      toast.error('Please fill in all required fields')
-      return
+  useEffect(() => {
+    fetchCampaigns()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus])
+
+  const openCreate = () => {
+    setEditing(null)
+    setForm(emptyForm)
+    setModalOpen(true)
+  }
+
+  const openEdit = (campaign: EmailCampaign) => {
+    setEditing(campaign)
+    setForm({
+      name: campaign.name,
+      subject: campaign.subject,
+      content: campaign.content,
+      audienceMode: campaign.audience_criteria?.mode || 'manual',
+      recipientsText: (campaign.audience_criteria?.recipients || []).join('\n'),
+      scheduled_at: toLocalInputValue(campaign.scheduled_at),
+    })
+    setModalOpen(true)
+  }
+
+  const payload = () => {
+    const recipients = splitRecipients(form.recipientsText)
+
+    if (!form.name.trim() || !form.subject.trim() || !form.content.trim()) {
+      throw new Error('Name, subject, and content are required.')
     }
 
-    try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
+    if (form.audienceMode === 'manual' && recipients.length === 0) {
+      throw new Error('Add at least one recipient email address.')
+    }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/email-campaigns`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(form),
-      })
-      const data = await res.json()
-
-      if (res.ok) {
-        toast.success('Campaign created successfully')
-        setShowModal(false)
-        setForm({
-          name: '',
-          subject: '',
-          content: '',
-          audience_criteria: {},
-          scheduled_at: '',
-        })
-        fetchCampaigns()
-      } else {
-        toast.error(data.error || 'Failed to create campaign')
-      }
-    } catch (error) {
-      toast.error('Failed to create campaign')
+    return {
+      name: form.name.trim(),
+      subject: form.subject.trim(),
+      content: form.content,
+      audience_criteria: {
+        mode: form.audienceMode,
+        recipients: form.audienceMode === 'manual' ? recipients : [],
+      },
     }
   }
 
-  const handleSend = async (campaignId: number) => {
-    if (!confirm('Are you sure you want to send this campaign now?')) return
-
+  const scheduleCampaign = async (campaignId: number, scheduledAt: string, showToast = true) => {
+    setActionId(campaignId)
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/email-campaigns/${campaignId}/send`, {
+      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/schedule`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      })
-
-      if (res.ok) {
-        toast.success('Campaign sent successfully')
-        fetchCampaigns()
-      } else {
-        const data = await res.json()
-        toast.error(data.error || 'Failed to send campaign')
-      }
-    } catch (error) {
-      toast.error('Failed to send campaign')
-    }
-  }
-
-  const handleSchedule = async (campaignId: number) => {
-    const scheduledAt = prompt('Enter scheduled date and time (YYYY-MM-DD HH:MM:SS):')
-    if (!scheduledAt) return
-
-    try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/email-campaigns/${campaignId}/schedule`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ scheduled_at: scheduledAt }),
       })
-
-      if (res.ok) {
-        toast.success('Campaign scheduled successfully')
-        fetchCampaigns()
-      } else {
-        const data = await res.json()
-        toast.error(data.error || 'Failed to schedule campaign')
-      }
-    } catch (error) {
-      toast.error('Failed to schedule campaign')
+      await parseJson(res)
+      if (showToast) toast.success('Campaign scheduled')
+      await fetchCampaigns()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to schedule campaign'
+      toast.error(msg)
+      throw err
+    } finally {
+      setActionId(null)
     }
   }
 
-  const handleDelete = async (campaignId: number) => {
-    if (!confirm('Are you sure you want to delete this campaign?')) return
+  const saveCampaign = async (scheduleAfterSave = false) => {
+    setSaving(true)
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) return
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/email-campaigns/${campaignId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      })
-
-      if (res.ok) {
-        toast.success('Campaign deleted')
-        fetchCampaigns()
-      } else {
-        toast.error('Failed to delete campaign')
+      if (scheduleAfterSave && !form.scheduled_at) {
+        throw new Error('Choose a schedule date and time.')
       }
-    } catch (error) {
-      toast.error('Failed to delete campaign')
+
+      const body = payload()
+      const url = editing ? `${API}/api/email-campaigns/${editing.id}` : `${API}/api/email-campaigns`
+      const res = await fetch(url, {
+        method: editing ? 'PUT' : 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await parseJson(res)
+      const campaign = data.campaign as EmailCampaign
+
+      if (scheduleAfterSave) {
+        await scheduleCampaign(campaign.id, form.scheduled_at, false)
+        toast.success('Campaign scheduled')
+      } else {
+        toast.success('Draft saved')
+      }
+
+      setModalOpen(false)
+      await fetchCampaigns()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to save campaign'
+      toast.error(msg)
+    } finally {
+      setSaving(false)
     }
   }
 
-  const viewStats = (campaign: EmailCampaign) => {
-    setSelectedCampaign(campaign)
-    setShowStats(true)
+  const sendCampaign = async (campaignId: number) => {
+    if (!confirm('Send this email campaign now?')) return
+    setActionId(campaignId)
+
+    try {
+      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/send`, {
+        method: 'POST',
+        headers: authHeaders,
+      })
+      await parseJson(res)
+      toast.success('Campaign queued for delivery')
+      await fetchCampaigns()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to send campaign'
+      toast.error(msg)
+    } finally {
+      setActionId(null)
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 rounded-full border-2 border-white/10 border-t-transparent"></div>
-      </div>
-    )
+  const cancelSchedule = async (campaignId: number) => {
+    setActionId(campaignId)
+
+    try {
+      const res = await fetch(`${API}/api/email-campaigns/${campaignId}/cancel-schedule`, {
+        method: 'POST',
+        headers: authHeaders,
+      })
+      await parseJson(res)
+      toast.success('Schedule cancelled')
+      await fetchCampaigns()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to cancel schedule'
+      toast.error(msg)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const deleteCampaign = async (campaignId: number) => {
+    if (!confirm('Delete this campaign?')) return
+    setActionId(campaignId)
+
+    try {
+      const res = await fetch(`${API}/api/email-campaigns/${campaignId}`, {
+        method: 'DELETE',
+        headers: authHeaders,
+      })
+      await parseJson(res)
+      toast.success('Campaign deleted')
+      await fetchCampaigns()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete campaign'
+      toast.error(msg)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const loadStats = async (campaign: EmailCampaign) => {
+    setActionId(campaign.id)
+
+    try {
+      const res = await fetch(`${API}/api/email-campaigns/${campaign.id}/stats`, {
+        headers: authHeaders,
+      })
+      const data = await parseJson(res)
+      setStats(data)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to load stats'
+      toast.error(msg)
+    } finally {
+      setActionId(null)
+    }
   }
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+      <div>
+        <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--text-primary)' }}>
           Email Campaigns
         </h1>
         <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
-          Create and manage email marketing campaigns
+          Create, schedule, send, and track email campaigns.
         </p>
-      </motion.div>
+      </div>
 
-      {/* Stats View */}
-      {showStats && selectedCampaign && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="premium-card p-6"
-          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
-              Campaign Stats: {selectedCampaign.name}
-            </h2>
-            <button
-              onClick={() => setShowStats(false)}
-              className="text-sm font-medium"
-              style={{ color: 'var(--accent)' }}
-            >
-              ← Back to Campaigns
-            </button>
+      {stats && (
+        <section className="premium-card p-6" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <h2 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{stats.campaign.name}</h2>
+            <button onClick={() => setStats(null)} className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>Back</button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Total Recipients</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{selectedCampaign.total_recipients || 0}</p>
-            </div>
-            <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Delivered</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{selectedCampaign.delivered_count || 0}</p>
-            </div>
-            <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Opened</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{selectedCampaign.opened_count || 0}</p>
-            </div>
-            <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Clicked</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{selectedCampaign.clicked_count || 0}</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+            {[
+              ['Recipients', stats.campaign.total_recipients || 0],
+              ['Delivered', stats.campaign.delivered_count || 0],
+              ['Opened', stats.campaign.opened_count || 0],
+              ['Clicked', stats.campaign.clicked_count || 0],
+              ['Failed', stats.campaign.failed_count || 0],
+            ].map(([label, value]) => (
+              <div key={label} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>{label}</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</p>
+              </div>
+            ))}
           </div>
-          {(selectedCampaign.failed_count || 0) > 0 && (
-            <div className="mt-4 p-4 rounded-xl" style={{ background: 'var(--error-subtle)', border: '1px solid var(--error)' }}>
-              <p className="text-sm" style={{ color: 'var(--error)' }}>
-                Failed: {selectedCampaign.failed_count}
-              </p>
-            </div>
-          )}
-        </motion.div>
+          <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Recipient states: {Object.entries(stats.recipients || {}).map(([key, value]) => `${key}: ${value}`).join(', ') || 'none'}
+          </p>
+        </section>
       )}
 
-      {/* Filters and Actions */}
-      {!showStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex items-center gap-4"
-        >
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-          >
-            <option value="">All Status</option>
-            <option value="draft">Draft</option>
-            <option value="scheduled">Scheduled</option>
-            <option value="sent">Sent</option>
-            <option value="sending">Sending</option>
-          </select>
-          <button
-            onClick={() => fetchCampaigns()}
-            className="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-          >
-            Apply Filter
-          </button>
-          <button
-            onClick={() => setShowModal(true)}
-            className="px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200"
-            style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
-          >
-            + Create Campaign
-          </button>
-        </motion.div>
-      )}
+      {!stats && (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+              <option value="">All statuses</option>
+              <option value="draft">Draft</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="sending">Sending</option>
+              <option value="sent">Sent</option>
+              <option value="failed">Failed</option>
+            </select>
+            <button onClick={fetchCampaigns} className="px-4 py-3 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Refresh</button>
+            <button onClick={openCreate} className="px-4 py-3 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>Create Campaign</button>
+          </div>
 
-      {/* Campaigns List */}
-      {!showStats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="premium-card p-6"
-          style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-        >
-          {campaigns.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-lg mb-4" style={{ color: 'var(--text-tertiary)' }}>No campaigns created yet</p>
-              <button
-                onClick={() => setShowModal(true)}
-                className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200"
-                style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
-              >
-                Create Your First Campaign
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {campaigns.map((campaign) => (
-                <div
-                  key={campaign.id}
-                  className="p-4 rounded-xl"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{campaign.name}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded ${
-                          campaign.status === 'sent' ? 'bg-green-500/20 text-green-500' :
-                          campaign.status === 'scheduled' ? 'bg-blue-500/20 text-blue-500' :
-                          campaign.status === 'sending' ? 'bg-yellow-500/20 text-yellow-500' :
-                          'bg-gray-500/20 text-gray-500'
-                        }`}>
-                          {campaign.status}
-                        </span>
+          <section className="premium-card p-6" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+            {loading ? (
+              <div className="py-16 text-center" style={{ color: 'var(--text-secondary)' }}>Loading campaigns...</div>
+            ) : error ? (
+              <div className="py-16 text-center">
+                <p className="mb-4" style={{ color: 'var(--error)' }}>{error}</p>
+                <button onClick={fetchCampaigns} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Try again</button>
+              </div>
+            ) : campaigns.length === 0 ? (
+              <div className="py-16 text-center">
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>No email campaigns yet.</p>
+                <button onClick={openCreate} className="px-5 py-2.5 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>Create your first campaign</button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {campaigns.map(campaign => (
+                  <article key={campaign.id} className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{campaign.name}</h3>
+                          <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>{campaign.status}</span>
+                        </div>
+                        <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Subject: {campaign.subject}</p>
+                        <div className="flex flex-wrap gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                          <span>Recipients: {campaign.total_recipients || 0}</span>
+                          <span>Delivered: {campaign.delivered_count || 0}</span>
+                          <span>Opened: {campaign.opened_count || 0}</span>
+                          <span>Clicked: {campaign.clicked_count || 0}</span>
+                          <span>Failed: {campaign.failed_count || 0}</span>
+                        </div>
+                        {campaign.scheduled_at && <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>Scheduled: {new Date(campaign.scheduled_at).toLocaleString()}</p>}
+                        {campaign.error_message && <p className="text-xs mt-2" style={{ color: 'var(--error)' }}>{campaign.error_message}</p>}
                       </div>
-                      <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-                        Subject: {campaign.subject}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                        <span>Created: {new Date(campaign.created_at).toLocaleDateString()}</span>
-                        {campaign.scheduled_at && <span>Scheduled: {new Date(campaign.scheduled_at).toLocaleString()}</span>}
-                        {campaign.sent_at && <span>Sent: {new Date(campaign.sent_at).toLocaleString()}</span>}
+                      <div className="flex flex-wrap gap-2">
+                        {(campaign.status === 'draft' || campaign.status === 'scheduled') && <button disabled={actionId === campaign.id} onClick={() => openEdit(campaign)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Edit</button>}
+                        {campaign.status === 'draft' && <button disabled={actionId === campaign.id} onClick={() => sendCampaign(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>{actionId === campaign.id ? 'Working...' : 'Send Now'}</button>}
+                        {campaign.status === 'scheduled' && <button disabled={actionId === campaign.id} onClick={() => cancelSchedule(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Cancel Schedule</button>}
+                        <button disabled={actionId === campaign.id} onClick={() => loadStats(campaign)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)' }}>Stats</button>
+                        {(campaign.status === 'draft' || campaign.status === 'scheduled' || campaign.status === 'failed') && <button disabled={actionId === campaign.id} onClick={() => deleteCampaign(campaign.id)} className="text-xs px-3 py-1.5 rounded-lg" style={{ background: 'var(--error-subtle)', color: 'var(--error)' }}>Delete</button>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {campaign.status === 'draft' && (
-                        <>
-                          <button
-                            onClick={() => handleSend(campaign.id)}
-                            className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                            style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
-                          >
-                            Send Now
-                          </button>
-                          <button
-                            onClick={() => handleSchedule(campaign.id)}
-                            className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                            style={{ background: 'var(--surface-elevated)', color: 'var(--text-secondary)' }}
-                          >
-                            Schedule
-                          </button>
-                        </>
-                      )}
-                      {campaign.status === 'sent' && (
-                        <button
-                          onClick={() => viewStats(campaign)}
-                          className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                          style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
-                        >
-                          View Stats
-                        </button>
-                      )}
-                      {(campaign.status === 'draft' || campaign.status === 'scheduled') && (
-                        <button
-                          onClick={() => handleDelete(campaign.id)}
-                          className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                          style={{ background: 'var(--error-subtle)', color: 'var(--error)' }}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
 
-      {/* Create Campaign Modal */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="w-full max-w-md p-6 rounded-2xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-            <h3 className="font-bold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
-              Create Email Campaign
-            </h3>
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: 'rgba(0,0,0,0.55)' }}>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-2xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+            <h3 className="font-bold text-lg mb-5" style={{ color: 'var(--text-primary)' }}>{editing ? 'Edit Email Campaign' : 'Create Email Campaign'}</h3>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Campaign Name *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g., Monthly Newsletter"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                />
+              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Campaign name" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              <input value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} placeholder="Subject" className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              <textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} placeholder="Email HTML/content" rows={8} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Audience
+                  <select value={form.audienceMode} onChange={e => setForm({ ...form, audienceMode: e.target.value as 'manual' | 'gmail' })} className="mt-2 w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>
+                    <option value="manual">Manual recipients</option>
+                    <option value="gmail">Gmail conversation senders</option>
+                  </select>
+                </label>
+                <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  Schedule time
+                  <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm({ ...form, scheduled_at: e.target.value })} className="mt-2 w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+                </label>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Subject *</label>
-                <input
-                  type="text"
-                  value={form.subject}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  placeholder="Email subject line"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Content *</label>
-                <textarea
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  placeholder="Email content (HTML supported)"
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 resize-none"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Schedule (optional)</label>
-                <input
-                  type="datetime-local"
-                  value={form.scheduled_at}
-                  onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                />
-              </div>
+              {form.audienceMode === 'manual' && (
+                <textarea value={form.recipientsText} onChange={e => setForm({ ...form, recipientsText: e.target.value })} placeholder="recipient@example.com, second@example.com" rows={4} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
+              )}
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                className="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200"
-                style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
-              >
-                Create Campaign
-              </button>
+            <div className="flex flex-wrap justify-end gap-3 mt-6">
+              <button disabled={saving} onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>Cancel</button>
+              <button disabled={saving} onClick={() => saveCampaign(false)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}>{saving ? 'Saving...' : 'Save Draft'}</button>
+              <button disabled={saving} onClick={() => saveCampaign(true)} className="px-4 py-2 rounded-xl font-semibold text-sm" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>{saving ? 'Saving...' : 'Save and Schedule'}</button>
             </div>
           </div>
         </div>
