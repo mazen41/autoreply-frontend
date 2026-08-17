@@ -60,12 +60,45 @@ async function parseJson(res: Response) {
   return data
 }
 
-function toLocalInputValue(value: string | null) {
+// Converts a UTC timestamp from the API into the value a
+// <input type="datetime-local"> needs, as if displayed in the business's
+// own timezone (not the browser's local timezone — those can differ).
+function toZonedInputValue(value: string | null, timeZone: string) {
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
-  const offset = date.getTimezoneOffset() * 60000
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date)
+
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '00'
+  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`
+}
+
+// Formats a UTC timestamp for display in the business's own timezone, with
+// the zone name shown so it's unambiguous.
+function formatInZone(value: string | null, timeZone: string) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  const formatted = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+
+  return `${formatted} (${timeZone})`
 }
 
 function splitRecipients(value: string) {
@@ -86,6 +119,7 @@ export default function EmailCampaignsContent() {
   const [saving, setSaving] = useState(false)
   const [actionId, setActionId] = useState<number | null>(null)
   const [stats, setStats] = useState<CampaignStats | null>(null)
+  const [businessTimezone, setBusinessTimezone] = useState('UTC')
 
   const authHeaders = useMemo(() => ({
     Authorization: `Bearer ${token()}`,
@@ -105,6 +139,7 @@ export default function EmailCampaignsContent() {
       })
       const data = await parseJson(res)
       setCampaigns(data.data || [])
+      if (data.business_timezone) setBusinessTimezone(data.business_timezone)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load campaigns'
       setError(msg)
@@ -133,7 +168,7 @@ export default function EmailCampaignsContent() {
       content: campaign.content,
       audienceMode: campaign.audience_criteria?.mode || 'manual',
       recipientsText: (campaign.audience_criteria?.recipients || []).join('\n'),
-      scheduled_at: toLocalInputValue(campaign.scheduled_at),
+      scheduled_at: toZonedInputValue(campaign.scheduled_at, businessTimezone),
     })
     setModalOpen(true)
   }
@@ -374,7 +409,7 @@ export default function EmailCampaignsContent() {
                           <span>Clicked: {campaign.clicked_count || 0}</span>
                           <span>Failed: {campaign.failed_count || 0}</span>
                         </div>
-                        {campaign.scheduled_at && <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>Scheduled: {new Date(campaign.scheduled_at).toLocaleString()}</p>}
+                        {campaign.scheduled_at && <p className="text-xs mt-2" style={{ color: 'var(--text-tertiary)' }}>Scheduled: {formatInZone(campaign.scheduled_at, businessTimezone)}</p>}
                         {campaign.error_message && <p className="text-xs mt-2" style={{ color: 'var(--error)' }}>{campaign.error_message}</p>}
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -410,7 +445,7 @@ export default function EmailCampaignsContent() {
                   </select>
                 </label>
                 <label className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Schedule time
+                  Schedule time ({businessTimezone})
                   <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm({ ...form, scheduled_at: e.target.value })} className="mt-2 w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }} />
                 </label>
               </div>
