@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
 import Link from 'next/link'
+import { ShieldCheck, Lock, Eye, ArrowLeft, ArrowRight, Sparkles, CheckCircle2, Globe } from 'lucide-react'
 
 export default function PrivacyPage() {
-  const { isRTL, t, setLang } = useLang()
-  const { theme } = useTheme()
-  const [lang, setLangState] = useState(isRTL ? 'ar' : 'en')
+  const { isRTL, setLang } = useLang()
+  const [lang, setLangState] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en')
 
   const toggleLang = () => {
     const newLang = lang === 'ar' ? 'en' : 'ar'
@@ -19,241 +18,264 @@ export default function PrivacyPage() {
   const content = {
     en: {
       title: 'Privacy Policy',
-      subtitle: 'Naz Autoreply is committed to protecting your privacy',
+      badge: 'Security & Data Protection',
+      subtitle: 'At Naz Biz (Naz Autoreply), we prioritize your privacy. We secure your channel credentials, business profile data, and customer communications with military-grade encryption.',
+      lastUpdated: 'Last updated: August 2026',
+      backHome: 'Back to Platform',
+      contactUs: 'Questions? Reach out to privacy@nazbiz.io',
       sections: [
         {
+          id: 'intro',
+          icon: <ShieldCheck className="w-5 h-5 text-indigo-400" />,
           title: '1. Introduction',
-          content: `Naz Autoreply ("we", "our", "the platform") is committed to protecting the privacy of its users. This policy explains what data we collect, how we use it, and your rights regarding your personal information. By using Naz Autoreply you agree to this policy.`
+          content: `Naz Biz ("Naz Autoreply", "we", "our", "the platform") is an enterprise AI automation platform designed to manage and automate multi-channel customer communications. This privacy policy explains what data we collect, how it is encrypted and processed, and your rights regarding your information.`
         },
         {
-          title: '2. What Data We Collect',
+          id: 'data-collection',
+          icon: <Lock className="w-5 h-5 text-purple-400" />,
+          title: '2. Data Collection & Account Isolation',
+          intro: 'To deliver automated replies, cross-channel inbox aggregation, and contextual AI memory, we collect the following data:',
           items: [
-            'Account data: name, email address, password (hashed and never stored in plain text)',
-            'Business profile data: business name, description, product information you provide during onboarding',
-            'Channel connection data: access tokens for connected Facebook Pages, Instagram accounts, Gmail accounts, and WhatsApp numbers — stored encrypted and never shared',
-            'Message data: incoming and outgoing messages processed through connected channels for the purpose of providing automated replies',
-            'Usage data: pages visited, features used, timestamps, IP address, browser type',
-            'Payment data: handled entirely by Stripe — we do not store credit card numbers'
+            'Account Credentials: Name, email address, password hashes, and business configuration metadata.',
+            'Business Knowledge Base: Product catalogs, FAQs, operating policies, and guidelines provided during training.',
+            'Channel Access Tokens: Secure access tokens for Meta (Facebook/Instagram), WhatsApp, Telegram, Gmail, Salla, Shopify, and TikTok. All tokens are encrypted at rest using AES-256.',
+            'Message Data: Transcripts of incoming and outgoing customer messages processed to generate AI replies and populate your unified inbox.',
+            'Telemetry: IP address, browser metadata, session timestamps, and operational health metrics.'
           ]
         },
         {
-          title: '3. How We Use Your Data',
+          id: 'data-use',
+          icon: <Sparkles className="w-5 h-5 text-blue-400" />,
+          title: '3. Data Processing & Usage Rules',
+          intro: 'Your data is strictly processed to fulfill service requirements:',
           items: [
-            'To provide the automated reply service',
-            'To generate AI responses on your behalf using your business profile context',
-            'To display your inbox and conversation history in the dashboard',
-            'To improve and maintain the platform',
-            'To send service notifications (never marketing without consent)',
-            'We never sell your data to third parties',
-            'We never use your customers\' messages for AI training'
+            'Generating and delivering automated AI customer support responses on your connected channels.',
+            'Displaying real-time conversations and message logs in your unified dashboard.',
+            'Personalizing customer responses using verified business details.',
+            'Maintaining system security, preventing spam, and auditing platform performance.',
+            'We NEVER sell your personal or customer data to third parties.',
+            'We NEVER use your private customer messages to train public AI models.'
           ]
         },
         {
-          title: '4. Third Party Services We Use',
+          id: 'providers',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '4. Third-Party Integrations & Infrastructure',
+          intro: 'Naz Biz connects directly with official channel providers and infrastructure services:',
           items: [
-            'Meta (Facebook/Instagram) API — to send and receive messages on your connected pages',
-            'Google API — to send and receive Gmail messages',
-            '360dialog — to send and receive WhatsApp messages',
-            'Anthropic (Claude AI) — to generate automated replies. Messages are sent to Anthropic\'s API for processing and are subject to Anthropic\'s data policies',
-            'Stripe — for payment processing',
-            'All third party services have their own privacy policies which we encourage you to review'
+            'Meta Platforms (Facebook & Instagram Graph API) — Authorized messaging and page management.',
+            'Official Messaging Gateways (WhatsApp Business Suite & Telegram API) — Instant message delivery and receipt status.',
+            'Google Cloud & Gmail API — Authorized email ingestion and reply dispatching.',
+            'E-Commerce Platforms (Salla, Shopify, WooCommerce, TikTok) — Order sync, webhooks, and catalog management.',
+            'AI Providers (Google Gemini & Anthropic Claude) — Contextual AI response processing under strict privacy agreements.',
+            'Payment Processors (Paymob & Stripe) — Financial transactions handled via PCI-DSS compliant gateways (we never store raw credit card numbers).'
           ]
         },
         {
-          title: '5. Data Storage & Security',
+          id: 'security',
+          icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
+          title: '5. Security & Encryption Standards',
           items: [
-            'All data is stored on secured servers',
-            'All channel access tokens are encrypted at rest using AES-256 encryption',
-            'All data transmission uses HTTPS/TLS',
-            'We conduct regular security reviews',
-            'We retain your data for as long as your account is active. You may request deletion at any time.'
+            'All channel credentials and access tokens are encrypted at rest using AES-256 encryption.',
+            'All data in transit is protected using TLS 1.3 / HTTPS encryption protocols.',
+            'Strict multi-tenant database isolation ensures your business data is never accessible by other organizations.',
+            'Data is retained while your account remains active. You may request permanent deletion at any time.'
           ]
         },
         {
-          title: '6. Your Rights',
+          id: 'rights',
+          icon: <Eye className="w-5 h-5 text-amber-400" />,
+          title: '6. Your Rights & Data Control',
           items: [
-            'Right to access your data',
-            'Right to correct inaccurate data',
-            'Right to delete your account and all associated data',
-            'Right to export your data',
-            'To exercise any of these rights contact us at privacy@nazautoreply.com'
+            'Right to Access & Export: Download and inspect your communication history and business data.',
+            'Right to Rectify: Update your business information and training context at any time.',
+            'Right to Erasure: Request full account and data deletion by contacting privacy@nazbiz.io.'
           ]
-        },
-        {
-          title: '7. Cookies',
-          content: `We use cookies for authentication (keeping you logged in) and language/theme preferences. We do not use advertising cookies or tracking pixels on the dashboard. The public website may use analytics cookies (Google Analytics).`
-        },
-        {
-          title: '8. Children\'s Privacy',
-          content: `Naz Autoreply is not intended for users under the age of 18. We do not knowingly collect data from minors.`
-        },
-        {
-          title: '9. Changes to This Policy',
-          content: `We may update this policy from time to time. We will notify registered users by email of any significant changes. Continued use of the platform after changes constitutes acceptance.`
-        },
-        {
-          title: '10. Contact Us',
-          content: `For any privacy-related questions: privacy@nazautoreply.com`
         }
-      ],
-      lastUpdated: 'Last updated: July 2026',
-      backHome: '← Back to Homepage'
+      ]
     },
     ar: {
       title: 'سياسة الخصوصية',
-      subtitle: 'ناز أوتو ريبلي ملتزمة بحماية خصوصيتك',
+      badge: 'حماية البيانات والأمان',
+      subtitle: 'في ناز بيز (Naz Autoreply)، نضع خصوصيتك وأمان بياناتك في المقدمة. نقوم بتشفير رموز اتصال القنوات ومعلومات النشاط التجاري بأعلى معايير التشفير.',
+      lastUpdated: 'آخر تحديث: أغسطس 2026',
+      backHome: 'العودة إلى المنصة',
+      contactUs: 'أسئلة؟ تواصل معنا عبر privacy@nazbiz.io',
       sections: [
         {
+          id: 'intro',
+          icon: <ShieldCheck className="w-5 h-5 text-indigo-400" />,
           title: '1. مقدمة',
-          content: `ناز أوتو ريبلي ("نحن"، "خدمتنا"، "المنصة") ملتزمة بحماية خصوصية مستخدميها. توضح هذه السياسة البيانات التي نجمعها، وكيف نستخدمها، وحقوقك المتعلقة بمعلوماتك الشخصية. باستخدام ناز أوتو ريبلي فإنك توافق على هذه السياسة.`
+          content: `تعتبر منصة ناز بيز ("Naz Autoreply"، "نحن"، "المنصة") منظومة متكاملة لأتمتة خدمة العملاء وإدارة المراسلات عبر القنوات المتعددة بالذكاء الاصطناعي. توضح هذه السياسة البيانات التي نجمعها، وكيفية معالجتها وتشفيرها، وحقوقك المتعلقة بمعلوماتك.`
         },
         {
-          title: '2. البيانات التي نجمعها',
+          id: 'data-collection',
+          icon: <Lock className="w-5 h-5 text-purple-400" />,
+          title: '2. جمع البيانات والعزل الأمني',
+          intro: 'لتقديم خدمة الرد الآلي الفوري وتأمين الذاكرة السياقية وصندوق الوارد الموحد، نجمع البيانات التالية بشكل آمن:',
           items: [
-            'بيانات الحساب: الاسم، عنوان البريد الإلكتروني، كلمة المرور (مشفرة ولا يتم تخزينها كنص عادي)',
-            'بيانات الملف التجاري: اسم النشاط التجاري، الوصف، معلومات المنتج التي تقدمها أثناء التسجيل',
-            'بيانات اتصال القنوات: رموز الوصول لصفحات فيسبوك المتصلة، حسابات إنستغرام، حسابات جيميل، وأرقام واتساب — يتم تخزينها مشفرة ولا يتم مشاركتها',
-            'بيانات الرسائل: الرسائل الواردة والصادرة التي تتم معالجتها عبر القنوات المتصلة لغرض تقديم الردود الآلية',
-            'بيانات الاستخدام: الصفحات التي تمت زيارتها، الميزات المستخدمة، الطوابع الزمنية، عنوان IP، نوع المتصفح',
-            'بيانات الدفع: تتم معالجتها بالكامل بواسطة Stripe — لا نقوم بتخزين أرقام بطاقات الائتمان'
+            'بيانات الحساب: الاسم، البريد الإلكتروني للعمل، كلمات المرور المشفرة، وإعدادات النشاط التجاري.',
+            'قاعدة معارف النشاط التجاري: كتالوجات المنتجات، الأسئلة الشائعة، وسياق العمل الموفر أثناء التدريب.',
+            'بيانات اتصال القنوات: رموز التوثيق المعتمدة لقنوات ميتا (فيسبوك/إنستغرام)، واتساب، تليجرام، جيميل، سلة، شوبيفاي، وتيك توك. تُشفر جميع المفاتيح باستخدام AES-256.',
+            'سجلات الرسائل: محتوى الرسائل الواردة والصادرة اللازمة لتوليد ردود الذكاء الاصطناعي وعرض صندوق الوارد.',
+            'البيانات التقنية: عنوان IP، معلومات المتصفح، الطوابع الزمنية، ومؤشرات الأداء.'
           ]
         },
         {
-          title: '3. كيف نستخدم بياناتك',
+          id: 'data-use',
+          icon: <Sparkles className="w-5 h-5 text-blue-400" />,
+          title: '3. قواعد معالجة البيانات واستخدامها',
+          intro: 'تُعالج بياناتك حصرياً لتشغيل وخدمة نشاطك التجاري:',
           items: [
-            'لتقديم خدمة الرد الآلي',
-            'لتوليد ردود الذكاء الاصطناعي نيابة عنك باستخدام سياق ملفك التجاري',
-            'لعرض صندوق الوارد وسجل المحادثات في لوحة التحكم',
-            'لتحسين وصيانة المنصة',
-            'لإرسال إشعارات الخدمة (أبداً تسويق بدون موافقة)',
-            'نحن لا نبيع بياناتك لأطراف ثالثة',
-            'نحن لا نستخدم رسائل عملائك لتدريب الذكاء الاصطناعي'
+            'توليد وإرسال الردود الآلية بالذكاء الاصطناعي على القنوات المتصلة.',
+            'عرض المحادثات الموحدة وسجلات المراسلات في لوحة التحكم.',
+            'تخصيص التفاعلات بناءً على ملف النشاط التجاري المعتمد.',
+            'الحفاظ على أمان النظام ومنع الرسائل غير المرغوب فيها.',
+            'نحن لا نبيع بياناتك الشخصية أو بيانات عملائك لأي أطراف ثالثة نهائياً.',
+            'نحن لا نستخدم رسائل عملائك الخاصة لتدريب نماذج الذكاء الاصطناعي العامة.'
           ]
         },
         {
-          title: '4. خدمات الطرف الثالث التي نستخدمها',
+          id: 'providers',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '4. البنية التحتية والمنصات المتصلة',
+          intro: 'تتصل ناز بيز مباشرة مع المنصات الرسمية وبوابات التوثيق لتشغيل المراسلات:',
           items: [
-            'واجهة برمجة تطبيقات ميتا (فيسبوك/إنستغرام) — لإرسال واستقبال الرسائل على صفحاتك المتصلة',
-            'واجهة برمجة تطبيقات جوجل — لإرسال واستقبال رسائل جيميل',
-            '360dialog — لإرسال واستقبال رسائل واتساب',
-            'Anthropic (Claude AI) — لتوليد الردود الآلية. يتم إرسال الرسائل إلى واجهة برمجة تطبيقات Anthropic للمعالجة وهي تخضع لسياسات بيانات Anthropic',
-            'Stripe — لمعالجة المدفوعات',
-            'جميع خدمات الطرف الثالث لديها سياسات خصوصية خاصة بها ونشجعك على مراجعتها'
+            'ميتا (واجهة فيسبوك وإنستغرام الرسمية Graph API) — لإدارة الصفحات والمراسلات.',
+            'بوابات المراسلة (منظومة واتساب وتليجرام الرسمية) — لإرسال الرسائل وتأكيد الوصول.',
+            'جوجل (Google Cloud & Gmail API) — لقراءة بريد الخدمة وإرسال الردود.',
+            'منصات التجارة الإلكترونية (سلة، شوبيفاي، ووكومرس، تيك توك) — لمزامنة الطلبات والمنتجات.',
+            'محركات الذكاء الاصطناعي (Google Gemini & Anthropic Claude) — لتوليد الردود السياقية وفق معايير أمان عالية.',
+            'بوابات الدفع (Paymob & Stripe) — لمعالجة المعاملات المالية بشكل آمن دون تخزين بيانات البطاقات.'
           ]
         },
         {
-          title: '5. تخزين البيانات والأمان',
+          id: 'security',
+          icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
+          title: '5. معايير الأمان والتشفير',
           items: [
-            'جميع البيانات مخزنة على خوادم آمنة',
-            'جميع رموز الوصول للقنوات مشفرة عند التخزين باستخدام تشفير AES-256',
-            'جميع نقل البيانات يستخدم HTTPS/TLS',
-            'نحن نجري مراجعات أمنية منتظمة',
-            'نحتفظ ببياناتك طالما أن حسابك نشط. يمكنك طلب الحذف في أي وقت.'
+            'جميع مفاتيح الاتصال ورموز القنوات مشفرة باستخدام تشفير AES-256.',
+            'جميع البيانات أثناء النقل محمية ببروتوكولات TLS 1.3 / HTTPS.',
+            'عزل كامل لقواعد البيانات يضمن عدم تداخل بيانات المنشآت.',
+            'تُحفظ البيانات طوال فترة تفعيل الحساب، ويمكن طلب حذفها نهائياً في أي وقت.'
           ]
         },
         {
-          title: '6. حقوقك',
+          id: 'rights',
+          icon: <Eye className="w-5 h-5 text-amber-400" />,
+          title: '6. حقوقك والتحكم بالبيانات',
           items: [
-            'الحق في الوصول إلى بياناتك',
-            'الحق في تصحيح البيانات غير الدقيقة',
-            'الحق في حذف حسابك وجميع البيانات المرتبطة به',
-            'الحق في تصدير بياناتك',
-            'لممارسة أي من هذه الحقوق اتصل بنا على privacy@nazautoreply.com'
+            'حق الوصول والتصدير: مراجعة كافة المحادثات وإعدادات الحساب.',
+            'حق التعديل: تحديث معلومات وسياق عملك فورياً.',
+            'حق الحذف: طلب مسح الحساب والسجلات نهائياً عبر privacy@nazbiz.io.'
           ]
-        },
-        {
-          title: '7. ملفات تعريف الارتباط (Cookies)',
-          content: `نحن نستخدم ملفات تعريف الارتباط للمصادقة (لإبقائك مسجلاً للدخول) وتفضيلات اللغة/المظهر. لا نستخدم ملفات تعريف الارتباط للإعلانات أو بكسل التتبع في لوحة التحكم. قد يستخدم الموقع العام ملفات تعريف الارتباط للتحليلات (Google Analytics).`
-        },
-        {
-          title: '8. خصوصية الأطفال',
-          content: `ناز أوتو ريبلي ليست مخصصة للمستخدمين دون سن 18 عاماً. لا نقوم بجمع بيانات من القاصرين عن علم.`
-        },
-        {
-          title: '9. التغييرات على هذه السياسة',
-          content: `قد نقوم بتحديث هذه السياسة من وقت لآخر. سنقوم بإخطار المستخدمين المسجلين بالبريد الإلكتروني بأي تغييرات هامة. الاستمرار في استخدام المنصة بعد التغييرات يشكل قبولاً لها.`
-        },
-        {
-          title: '10. اتصل بنا',
-          content: `لأي أسئلة متعلقة بالخصوصية: privacy@nazautoreply.com`
         }
-      ],
-      lastUpdated: 'آخر تحديث: يوليو 2026',
-      backHome: '→ العودة إلى الصفحة الرئيسية'
+      ]
     }
   }
 
-  const c = content[lang as keyof typeof content]
+  const c = content[lang]
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Header */}
-      <header className="border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent))' }}>✦</span>
-            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
+    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: '#090d16', color: '#f8fafc' }}>
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-slate-950/80">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tight text-white">
+              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Biz</span>
+            </span>
           </Link>
-          <button
-            onClick={toggleLang}
-            className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{
-              background: 'var(--divider)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-secondary)'
-            }}
-          >
-            {lang === 'ar' ? '🇬🇧 English' : '🇸🇦 العربية'}
-          </button>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleLang}
+              className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold transition-all text-slate-200 flex items-center gap-2"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {lang === 'ar' ? 'English' : 'العربية'}
+            </button>
+            <Link
+              href="/"
+              className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white border border-white/10 hover:border-white/20 bg-white/5 transition-all"
+            >
+              {lang === 'ar' ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowLeft className="w-3.5 h-3.5" />}
+              {c.backHome}
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Header */}
+      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-indigo-950/30 via-slate-950 to-slate-950 text-center">
+        <div className="max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-semibold mb-6">
+            <ShieldCheck className="w-4 h-4 text-indigo-400" />
+            {c.badge}
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 text-white">
             {c.title}
           </h1>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-4 max-w-2xl mx-auto">
             {c.subtitle}
           </p>
+          <div className="text-xs font-medium text-slate-500">
+            {c.lastUpdated}
+          </div>
         </div>
+      </section>
 
-        <div className="space-y-10">
-          {c.sections.map((section, index) => (
-            <section key={index}>
-              <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                {section.title}
-              </h2>
-              {section.content ? (
-                <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {section.content}
+      {/* Main Sections */}
+      <main className="max-w-4xl mx-auto px-6 py-16">
+        <div className="space-y-8">
+          {c.sections.map((sec, idx) => (
+            <div
+              key={sec.id || idx}
+              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-indigo-500/30 transition-all shadow-xl shadow-black/20"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  {sec.icon}
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                  {sec.title}
+                </h2>
+              </div>
+
+              {sec.content && (
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+                  {sec.content}
                 </p>
-              ) : (
-                <ul className="space-y-3" style={{ color: 'var(--text-secondary)' }}>
-                  {section.items?.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start gap-3">
-                      <span style={{ color: 'var(--accent)', marginTop: '2px' }}>•</span>
+              )}
+
+              {sec.intro && (
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-4">
+                  {sec.intro}
+                </p>
+              )}
+
+              {sec.items && (
+                <ul className="space-y-3 mt-3">
+                  {sec.items.map((item, itemIdx) => (
+                    <li key={itemIdx} className="flex items-start gap-3 text-sm sm:text-base text-slate-300">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
               )}
-            </section>
+            </div>
           ))}
         </div>
 
-        <div className="mt-16 pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            {c.lastUpdated}
+        {/* Footer Contact */}
+        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-indigo-950/20 via-purple-950/20 to-slate-900/50">
+          <p className="text-sm font-medium text-slate-300">
+            {c.contactUs}
           </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
-            style={{ color: 'var(--accent)' }}
-          >
-            {c.backHome}
-          </Link>
         </div>
       </main>
     </div>
