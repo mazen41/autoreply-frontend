@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
 import Link from 'next/link'
+import { Scale, ShieldCheck, AlertCircle, FileText, ArrowLeft, ArrowRight, Sparkles, Globe } from 'lucide-react'
 
 export default function TermsPage() {
-  const { isRTL, t, setLang } = useLang()
-  const { theme } = useTheme()
-  const [lang, setLangState] = useState(isRTL ? 'ar' : 'en')
+  const { isRTL, setLang } = useLang()
+  const [lang, setLangState] = useState<'ar' | 'en'>(isRTL ? 'ar' : 'en')
 
   const toggleLang = () => {
     const newLang = lang === 'ar' ? 'en' : 'ar'
@@ -19,309 +18,259 @@ export default function TermsPage() {
   const content = {
     en: {
       title: 'Terms of Service',
-      subtitle: 'By using Naz Autoreply you agree to these terms',
+      badge: 'Legal Agreement & Operational Rules',
+      subtitle: 'Please review the terms and conditions governing the use of Naz Biz (Naz Autoreply) AI communication tools, platform integrations, and subscription services.',
+      lastUpdated: 'Last updated: August 2026',
+      backHome: 'Back to Platform',
+      privacyPolicy: 'Privacy Policy',
+      contactUs: 'Questions regarding legal terms? Email legal@nazbiz.io',
       sections: [
         {
+          id: 'acceptance',
+          icon: <Scale className="w-5 h-5 text-indigo-400" />,
           title: '1. Acceptance of Terms',
-          content: `By creating an account and using Naz Autoreply you agree to be bound by these terms. If you do not agree, do not use the platform. These terms constitute a legally binding agreement between you and Naz Autoreply.`
+          content: `By registering an account, connecting channels, or using Naz Biz ("Naz Autoreply", "we", "our", "the platform"), you enter into a legally binding agreement to comply with these terms. If you do not agree to these conditions, you must not access or use our services.`
         },
         {
-          title: '2. Description of Service',
-          content: `Naz Autoreply provides an AI-powered automated messaging platform that connects to your social media and email channels and responds to your customers automatically on your behalf using artificial intelligence. The platform is intended for business use by e-commerce merchants, entrepreneurs, and business owners.`
+          id: 'service-desc',
+          icon: <Sparkles className="w-5 h-5 text-purple-400" />,
+          title: '2. Description of Platform Services',
+          content: `Naz Biz provides an enterprise multi-channel AI customer support platform. The service aggregates customer conversations across messaging channels (Meta Pages, Instagram, WhatsApp, Telegram, Gmail, Salla, Shopify, TikTok) and generates automated contextual replies using artificial intelligence.`
         },
         {
-          title: '3. Account Registration',
+          id: 'acceptable-use',
+          icon: <AlertCircle className="w-5 h-5 text-pink-400" />,
+          title: '3. Acceptable Use & Prohibited Conduct',
+          intro: 'When using Naz Biz, you agree strictly NOT to:',
           items: [
-            'You must provide accurate and complete information when creating your account',
-            'You are responsible for maintaining the security of your account credentials',
-            'You must be at least 18 years old to use the platform',
-            'One person or business entity may not maintain more than one free account',
-            'You are responsible for all activity that occurs under your account'
+            'Send unsolicited commercial bulk spam or engage in mass messaging that violates WhatsApp, Meta, or Google policies.',
+            'Use the platform for fraudulent, illegal, defamatory, or harmful activities.',
+            'Attempt to reverse engineer, disrupt, or bypass platform security controls.',
+            'Resell, license, or redistribute platform access without prior written consent.',
+            'Violate the terms of service of any connected channel (Meta, Google, WhatsApp, Telegram, Salla, Shopify).'
           ]
         },
         {
-          title: '4. Acceptable Use',
+          id: 'ai-responsibility',
+          icon: <FileText className="w-5 h-5 text-blue-400" />,
+          title: '4. AI-Generated Content & Merchant Oversight',
           items: [
-            'Use the platform to send spam, unsolicited messages, or bulk promotional messages in violation of WhatsApp, Meta, or Google policies',
-            'Use the platform for any illegal activity or to violate any applicable laws',
-            'Use the platform to harass, abuse, or harm any individual',
-            'Attempt to reverse engineer, hack, or disrupt the platform',
-            'Resell or sublicense access to the platform without written permission',
-            'Use the AI to generate misleading, false, or harmful content',
-            'Violate Meta\'s, Google\'s, or WhatsApp\'s terms of service through your use of connected channels'
-          ],
-          intro: 'By using Naz Autoreply you agree NOT to:'
-        },
-        {
-          title: '5. AI-Generated Content',
-          items: [
-            'The automated replies generated by Naz Autoreply are produced by artificial intelligence',
-            'You are fully responsible for all messages sent through your connected channels, including AI-generated replies',
-            'You should review your AI reply settings and business profile regularly to ensure responses are accurate',
-            'Naz Autoreply is not liable for any AI-generated response that causes misunderstanding, loss, or damage',
-            'You must comply with any local laws requiring disclosure that a message was generated by AI'
+            'Automated customer replies are generated by AI models using your business knowledge base.',
+            'You maintain full responsibility and ownership for all automated messages sent through your connected accounts.',
+            'You are expected to review business profiles, knowledge bases, and AI parameters regularly to ensure accuracy.',
+            'Naz Biz is not liable for misunderstandings or damages arising from AI-generated responses.',
+            'Merchants must comply with local laws regarding disclosures for AI-assisted customer communication.'
           ]
         },
         {
-          title: '6. Channel Connections & Third Party Platforms',
+          id: 'channels',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '5. Channel Connections & Third-Party Platforms',
           items: [
-            'Connecting your Facebook, Instagram, Gmail, or WhatsApp accounts is done voluntarily',
-            'You grant Naz Autoreply permission to send and receive messages on your behalf through connected channels',
-            'Your continued access depends on the policies of Meta, Google, and WhatsApp — we cannot guarantee access if those platforms change their policies',
-            'You may disconnect any channel at any time from your dashboard'
+            'Channel connections (WhatsApp, Meta, Gmail, Telegram, Salla, Shopify) are configured voluntarily by the merchant.',
+            'You grant Naz Biz authorization to ingest customer messages and dispatch automated responses on your behalf.',
+            'Platform uptime and channel availability depend on third-party provider APIs (Meta, Google, WhatsApp, Telegram).',
+            'You may disconnect any channel at any time directly from your dashboard settings.'
           ]
         },
         {
-          title: '7. Subscription & Billing',
+          id: 'billing',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '6. Subscriptions, Payments & Cancellations',
           items: [
-            'Naz Autoreply offers Free, Starter, and Pro subscription plans',
-            'Paid subscriptions are billed monthly in advance',
-            'All payments are processed securely by Stripe',
-            'Subscriptions automatically renew unless cancelled before the renewal date',
-            'Refunds are not provided for partial months',
-            'We reserve the right to change pricing with 30 days notice to existing subscribers',
-            'Failure to pay will result in downgrade to the Free plan'
+            'Subscriptions (Free, Starter, Pro, Enterprise) are billed on a recurring monthly or annual basis.',
+            'All billing transactions are processed via secure PCI-compliant gateways (Paymob & Stripe).',
+            'Subscriptions renew automatically unless cancelled before the renewal date via dashboard settings.',
+            'Failed subscription renewals may result in automatic feature degradation or channel pause.'
           ]
         },
         {
-          title: '8. Intellectual Property',
-          items: [
-            'Naz Autoreply and all its components, designs, code, and content are owned by Naz Autoreply and protected by intellectual property laws',
-            'You retain ownership of your business data, messages, and content',
-            'You grant Naz Autoreply a limited license to process your data solely for the purpose of providing the service'
-          ]
-        },
-        {
-          title: '9. Limitation of Liability',
-          items: [
-            'Naz Autoreply is provided "as is" without warranties of any kind',
-            'We do not guarantee 100% uptime or uninterrupted service',
-            'We are not liable for any indirect, incidental, or consequential damages arising from your use of the platform',
-            'Our total liability to you shall not exceed the amount you paid in the last 3 months'
-          ]
-        },
-        {
-          title: '10. Termination',
-          items: [
-            'You may cancel your account at any time from dashboard settings',
-            'We reserve the right to suspend or terminate accounts that violate these terms without notice',
-            'Upon termination, your data will be retained for 30 days then permanently deleted',
-            'You may request immediate deletion by emailing support@nazautoreply.com'
-          ]
-        },
-        {
-          title: '11. Governing Law',
-          content: `These terms are governed by the laws of the Kingdom of Saudi Arabia. Any disputes shall be resolved in the competent courts of Saudi Arabia.`
-        },
-        {
-          title: '12. Changes to Terms',
-          content: `We may update these terms at any time. We will notify users by email 14 days before significant changes take effect. Continued use after changes constitutes acceptance of the new terms.`
-        },
-        {
-          title: '13. Contact',
-          content: `For any questions about these terms: legal@nazautoreply.com — or write to us at Naz Autoreply, Kingdom of Saudi Arabia.`
+          id: 'termination',
+          icon: <Scale className="w-5 h-5 text-red-400" />,
+          title: '7. Termination & Account Deletion',
+          content: `You can terminate your subscription at any time. Naz Biz reserves the right to suspend or terminate accounts that violate platform policies or terms of service without prior notice.`
         }
-      ],
-      lastUpdated: 'Last updated: July 2026',
-      backHome: '← Back to Homepage',
-      privacyPolicy: 'Privacy Policy'
+      ]
     },
     ar: {
       title: 'شروط الخدمة',
-      subtitle: 'باستخدام ناز أوتو ريبلي فإنك توافق على هذه الشروط',
+      badge: 'الاتفاقية القانونية وقواعد التشغيل',
+      subtitle: 'يرجى مراجعة الشروط والأحكام التي تحكم استخدام منصة ناز بيز (Naz Autoreply) وأدوات الذكاء الاصطناعي وتكاملات القنوات والاشتراكات.',
+      lastUpdated: 'آخر تحديث: أغسطس 2026',
+      backHome: 'العودة إلى المنصة',
+      privacyPolicy: 'سياسة الخصوصية',
+      contactUs: 'أسئلة حول الشروط القانونية؟ تواصل معنا عبر legal@nazbiz.io',
       sections: [
         {
+          id: 'acceptance',
+          icon: <Scale className="w-5 h-5 text-indigo-400" />,
           title: '1. قبول الشروط',
-          content: `بإنشاء حساب واستخدام ناز أوتو ريبلي فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق، لا تستخدم المنصة. تشكل هذه الشروط اتفاقية ملزمة قانونياً بينك وبين ناز أوتو ريبلي.`
+          content: `بإنشاء حساب أو ربط القنوات أو استخدام منصة ناز بيز ("Naz Autoreply"، "نحن"، "المنصة")، فإنك تدخل في اتفاقية ملزمة قانونياً للالتزام بهذه الشروط. إذا كنت لا توافق على هذه الأركان، فيجب عليك الامتناع عن استخدام المنصة.`
         },
         {
-          title: '2. وصف الخدمة',
-          content: `توفر ناز أوتو ريبلي منصة مراسلة آلية مدعومة بالذكاء الاصطناعي تتصل بقنوات التواصل الاجتماعي والبريد الإلكتروني الخاصة بك وترد على عملائك تلقائياً نيابة عنك باستخدام الذكاء الاصطناعي. المنصة مخصصة للاستخدام التجاري من قبل تجار التجارة الإلكترونية ورواد الأعمال وأصحاب الأعمال.`
+          id: 'service-desc',
+          icon: <Sparkles className="w-5 h-5 text-purple-400" />,
+          title: '2. وصف خدمات المنصة',
+          content: `توفر ناز بيز منصة متكاملة لأتمتة خدمة العملاء بالذكاء الاصطناعي. تجمع المنصة المحادثات عبر قنوات المراسلة (فيسبوك، إنستغرام، واتساب، تليجرام، جيميل، سلة، شوبيفاي، تيك توك) وتولد ردوداً سياقية فورية باستخدام الذكاء الاصطناعي.`
         },
         {
-          title: '3. تسجيل الحساب',
+          id: 'acceptable-use',
+          icon: <AlertCircle className="w-5 h-5 text-pink-400" />,
+          title: '3. الاستخدام المقبول والأنشطة المحظورة',
+          intro: 'عند استخدام ناز بيز، تتعهد بشكل قاطع بعدم القيام بما يلي:',
           items: [
-            'يجب عليك تقديم معلومات دقيقة وكاملة عند إنشاء حسابك',
-            'أنت مسؤول عن الحفاظ على أمان بيانات اعتماد حسابك',
-            'يجب أن تكون عمره 18 عاماً على الأقل لاستخدام المنصة',
-            'لا يجوز لشخص واحد أو كيان تجاري الحفاظ على أكثر من حساب مجاني واحد',
-            'أنت مسؤول عن جميع الأنشطة التي تحدث تحت حسابك'
+            'إرسال الرسائل غير المرغوب فيها (Spam) أو تنفيذ الحملات الجماعية المخالفة لسياسات واتساب أو ميتا أو جوجل.',
+            'استخدام المنصة لأغراض احتيالية، غير قانونية، أو ضارة.',
+            'محاولة التفكيك العكسي أو اختراق ضوابط أمان المنصة.',
+            'إعادة بيع أو ترخيص الوصول إلى المنصة دون موافقة كتابية مسبقة.',
+            'مخالفة شروط خدمة المنصات المتصلة (ميتا، جوجل، واتساب، تليجرام، سلة، شوبيفاي).'
           ]
         },
         {
-          title: '4. الاستخدام المقبول',
-          intro: 'باستخدام ناز أوتو ريبلي فإنك توافق على عدم:',
+          id: 'ai-responsibility',
+          icon: <FileText className="w-5 h-5 text-blue-400" />,
+          title: '4. الردود الآلية وتأطير مسؤولية المتاجر',
           items: [
-            'استخدام المنصة لإرسال الرسائل غير المرغوب فيها أو الرسائل الترويجية الجماعية انتهاكاً لسياسات واتساب أو ميتا أو جوجل',
-            'استخدام المنصة لأي نشاط غير قانوني أو انتهاك أي قوانين معمول بها',
-            'استخدام المنصة لمضايقة أو إيذاء أو إلحاق الضرر بأي فرد',
-            'المحاولة لهندسة عكسية أو اختراق أو تعطيل المنصة',
-            'إعادة بيع أو ترخيص الوصول إلى المنصة دون إذن كتابي',
-            'استخدام الذكاء الاصطناعي لتوليد محتوى مضلل أو كاذب أو ضار',
-            'انتهاك شروط خدمة ميتا أو جوجل أو واتساب من خلال استخدامك للقنوات المتصلة'
+            'تُولد الردود الآلية بواسطة الذكاء الاصطناعي بناءً على قاعدة معارف نشاطك التجاري.',
+            'تتحمل المنشأة والتاجر المسؤولية الكاملة عن كافة الرسائل المرسلة عبر الحسابات المتصلة.',
+            'يتوجب على التاجر مراجعة بيانات ومعارف المنشأة بانتظام لضمان دقة الردود.',
+            'ناز بيز غير مسؤولة عن أي سوء فهم أو أضرار ناتجة عن الردود الآلية للذكاء الاصطناعي.',
+            'يجب الالتزام بالأنظمة المحلية التي تتطلب الإفصاح عن المراسلات الآلية.'
           ]
         },
         {
-          title: '5. المحتوى المولد بالذكاء الاصطناعي',
+          id: 'channels',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '5. اتصال القنوات والمنصات الخارجية',
           items: [
-            'الردود الآلية التي تولدها ناز أوتو ريبلي تنتجها الذكاء الاصطناعي',
-            'أنت مسؤول بالكامل عن جميع الرسائل المرسلة عبر قنواتك المتصلة، بما في ذلك الردود المولدة بالذكاء الاصطناعي',
-            'يجب عليك مراجعة إعدادات الرد بالذكاء الاصطناعي والملف التجاري الخاص بك بانتظام لضمان دقة الردود',
-            'ناز أوتو ريبلي غير مسؤولة عن أي رد مولد بالذكاء الاصطناعي يسبب سوء فهم أو خسارة أو ضرر',
-            'يجب عليك الامتثال لأي قوانين محلية تتطلب الإفصاح بأن الرسالة تم توليدها بالذكاء الاصطناعي'
+            'يتم ربط القنوات (واتساب، ميتا، جيميل، تليجرام، سلة، شوبيفاي) طوعياً من قبل المستخدم.',
+            'تمنح ناز بيز تفويضاً لإداراة الرسائل وإرسال الردود الآلية نيابة عنك.',
+            'استمرارية الخدمة تعتمد على استقرار واجهات المنصات الخارجية (ميتا، جوجل، واتساب).',
+            'يمكنك فصل أي قناة في أي وقت مباشرة من إعدادات لوحة التحكم.'
           ]
         },
         {
-          title: '6. اتصالات القنوات ومنصات الطرف الثالث',
+          id: 'billing',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '6. الاشتراكات والدفع والإلغاء',
           items: [
-            'ربط حسابات فيسبوك أو إنستغرام أو جيميل أو واتساب يتم طوعياً',
-            'تمنح ناز أوتو ريبلي إذناً لإرسال واستقبال الرسائل نيابة عنك عبر القنوات المتصلة',
-            'استمرار وصولك يعتمد على سياسات ميتا وجوجل وواتساب — لا يمكننا ضمان الوصول إذا قامت تلك المنصات بتغيير سياساتها',
-            'يمكنك فصل أي قناة في أي وقت من لوحة التحكم'
+            'تتم فوترة الاشتراكات (المجانية، المبتدئة، الاحترافية) على أساس دوري شهري أو سنوي.',
+            'تتم معالجة كافة المدفوعات عبر بوابات مشفرة متوافقة مع معايير PCI (Paymob & Stripe).',
+            'تتجدد الاشتراكات تلقائياً ما لم يتم إلغاؤها قبل تاريخ التجديد من لوحة التحكم.',
+            'قد يؤدي تعثر الفوترة إلى إيقاف مؤقت لأتمتة القنوات.'
           ]
         },
         {
-          title: '7. الاشتراك والفوترة',
-          items: [
-            'تقدم ناز أوتو ريبلي خطط اشتراك مجانية ومبتدئة واحترافية',
-            'يتم فوترة الاشتراكات المدفوعة شهرياً مقدماً',
-            'تتم معالجة جميع المدفوعات بشكل آمن بواسطة Stripe',
-            'تجدد الاشتراكات تلقائياً ما لم يتم إلغاؤها قبل تاريخ التجديد',
-            'لا يتم تقديم المبالغ المستردة للأشهر الجزئية',
-            'نحتفظ بالحق في تغيير التسعير مع إشعار 30 يوماً للمشتركين الحاليين',
-            'عدم الدفع سيؤدي إلى تخفيض إلى الخطة المجانية'
-          ]
-        },
-        {
-          title: '8. الملكية الفكرية',
-          items: [
-            'ناز أوتو ريبلي وجميع مكوناتها وتصاميمها ورموزها ومحتواها مملوكة لناز أوتو ريبلي ومحمية بموجب قوانين الملكية الفكرية',
-            'أنت تحتفظ بملكية بيانات عملك ورسائلك ومحتواك',
-            'تمنح ناز أوتو ريبلي ترخيصاً محدوداً لمعالجة بياناتك فقط لغرض تقديم الخدمة'
-          ]
-        },
-        {
-          title: '9. تحديد المسؤولية',
-          items: [
-            'ناز أوتو ريبلي تقدم "كما هي" دون أي ضمانات من أي نوع',
-            'نحن لا نضمن وقت تشغيل 100% أو خدمة غير متقطعة',
-            'نحن غير مسؤولين عن أي أضرار غير مباشرة أو عرضية أو تبعية تنشأ عن استخدامك للمنصة',
-            'لا تتجاوز مسؤوليتنا الإجمالية تجاهك المبلغ الذي دفعته في آخر 3 أشهر'
-          ]
-        },
-        {
-          title: '10. الإنهاء',
-          items: [
-            'يمكنك إلغاء حسابك في أي وقت من إعدادات لوحة التحكم',
-            'نحتفظ بالحق في تعليق أو إنهاء الحسابات التي تنتهك هذه الشروط دون إشعار',
-            'عند الإنهاء، سيتم الاحتفاظ ببياناتك لمدة 30 يوماً ثم حذفها نهائياً',
-            'يمكنك طلب الحذف الفوري عن طريق البريد الإلكتروني support@nazautoreply.com'
-          ]
-        },
-        {
-          title: '11. القانون الحاكم',
-          content: `تحكم هذه الشروط قوانين المملكة العربية السعودية. يتم حل أي نزاعات في المحاكم المختصة في المملكة العربية السعودية.`
-        },
-        {
-          title: '12. التغييرات على الشروط',
-          content: `قد نقوم بتحديث هذه الشروط في أي وقت. سنقوم بإخطار المستخدمين بالبريد الإلكتروني قبل 14 يوماً من دخول التغييرات الهامة حيز التنفيذ. الاستمرار في الاستخدام بعد التغييرات يشكل قبولاً للشروط الجديدة.`
-        },
-        {
-          title: '13. اتصل بنا',
-          content: `لأي أسئلة حول هذه الشروط: legal@nazautoreply.com — أو اكتب إلينا على ناز أوتو ريبلي، المملكة العربية السعودية.`
+          id: 'termination',
+          icon: <Scale className="w-5 h-5 text-red-400" />,
+          title: '7. الإنهاء وحظر الحسابات',
+          content: `يحق لك إلغاء حسابك في أي وقت. تحافظ ناز بيز على حقها في إيقاف أو إنهاء الحسابات المخالفة للشروط وقواعد الاستخدام دون إشعار مسبق.`
         }
-      ],
-      lastUpdated: 'آخر تحديث: يوليو 2026',
-      backHome: '→ العودة إلى الصفحة الرئيسية',
-      privacyPolicy: 'سياسة الخصوصية'
+      ]
     }
   }
 
-  const c = content[lang as keyof typeof content]
+  const c = content[lang]
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Header */}
-      <header className="border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent))' }}>✦</span>
-            <span className="text-xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
+    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: '#090d16', color: '#f8fafc' }}>
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-slate-950/80">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tight text-white">
+              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Biz</span>
+            </span>
           </Link>
-          <button
-            onClick={toggleLang}
-            className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-            style={{
-              background: 'var(--divider)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-secondary)'
-            }}
-          >
-            {lang === 'ar' ? '🇬🇧 English' : '🇸🇦 العربية'}
-          </button>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleLang}
+              className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold transition-all text-slate-200 flex items-center gap-2"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {lang === 'ar' ? 'English' : 'العربية'}
+            </button>
+            <Link
+              href="/privacy"
+              className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold text-indigo-300 hover:text-white border border-indigo-500/20 bg-indigo-500/10 transition-all"
+            >
+              {c.privacyPolicy}
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Header */}
+      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-indigo-950/30 via-slate-950 to-slate-950 text-center">
+        <div className="max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-semibold mb-6">
+            <Scale className="w-4 h-4 text-purple-400" />
+            {c.badge}
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 text-white">
             {c.title}
           </h1>
-          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-4 max-w-2xl mx-auto">
             {c.subtitle}
           </p>
+          <div className="text-xs font-medium text-slate-500">
+            {c.lastUpdated}
+          </div>
         </div>
+      </section>
 
-        <div className="space-y-10">
-          {c.sections.map((section, index) => (
-            <section key={index}>
-              <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-                {section.title}
-              </h2>
-              {section.intro && (
-                <p className="mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {section.intro}
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-6 py-16">
+        <div className="space-y-8">
+          {c.sections.map((sec, idx) => (
+            <div
+              key={sec.id || idx}
+              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-purple-500/30 transition-all shadow-xl shadow-black/20"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
+                  {sec.icon}
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                  {sec.title}
+                </h2>
+              </div>
+
+              {sec.content && (
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+                  {sec.content}
                 </p>
               )}
-              {section.content ? (
-                <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {section.content}
+
+              {sec.intro && (
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-4">
+                  {sec.intro}
                 </p>
-              ) : (
-                <ul className="space-y-3" style={{ color: 'var(--text-secondary)' }}>
-                  {section.items?.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-start gap-3">
-                      <span style={{ color: 'var(--accent)', marginTop: '2px' }}>•</span>
+              )}
+
+              {sec.items && (
+                <ul className="space-y-3 mt-3">
+                  {sec.items.map((item, itemIdx) => (
+                    <li key={itemIdx} className="flex items-start gap-3 text-sm sm:text-base text-slate-300">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>
               )}
-            </section>
+            </div>
           ))}
         </div>
 
-        <div className="mt-16 pt-8 border-t" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            {c.lastUpdated}
+        {/* Footer Contact */}
+        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-purple-950/20 via-indigo-950/20 to-slate-900/50">
+          <p className="text-sm font-medium text-slate-300">
+            {c.contactUs}
           </p>
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
-              style={{ color: 'var(--accent)' }}
-            >
-              {c.backHome}
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-sm font-bold transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              {c.privacyPolicy}
-            </Link>
-          </div>
         </div>
       </main>
     </div>
