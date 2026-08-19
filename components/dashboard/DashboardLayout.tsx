@@ -12,7 +12,8 @@ import {
   SearchIcon, MenuIcon, XIcon, UserIcon, LogOutIcon, NazLogoIcon,
   SendIcon, LayersIcon, LinkIcon, BarChartIcon, LightningIcon, StarIcon,
   NotificationIcon, TrendUpIcon, TrendDownIcon, ShieldIcon, MailIcon,
-  WorkflowIcon, TagIcon, FileTextIcon, PlugIcon, CalendarIcon
+  WorkflowIcon, TagIcon, FileTextIcon, PlugIcon, CalendarIcon,
+  CommentIcon
 } from '../ui/DashboardIcons'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
       { icon: LayersIcon,      href: '/dashboard/sequences',         labelEn: 'Sequences',       labelAr: 'التسلسلات' },
       { icon: StarIcon,        href: '/dashboard/social-posts',      labelEn: 'Social Posts',    labelAr: 'المنشورات' },
       { icon: FileTextIcon,    href: '/dashboard/content',           labelEn: 'Content',         labelAr: 'المحتوى' },
+      { icon: CommentIcon,     href: '/dashboard/comment-automation',labelEn: 'Comment Automation',labelAr: 'أتمتة التعليقات' },
     ]
   },
   {
