@@ -12,13 +12,14 @@ function getToken() {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-function InputField({ label, type = 'text', value, onChange, placeholder, required }: {
+function InputField({ label, type = 'text', value, onChange, placeholder, required, description }: {
   label: string
   type?: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
   required?: boolean
+  description?: string
 }) {
   return (
     <div className="space-y-1.5">
@@ -31,25 +32,30 @@ function InputField({ label, type = 'text', value, onChange, placeholder, requir
         required={required}
         className="w-full bg-white/[0.02] border border-white/[0.06] focus:border-accent/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-text-tertiary focus:outline-none transition-all"
       />
+      {description && (
+        <span className="text-xs text-text-secondary">{description}</span>
+      )}
     </div>
   )
 }
 
-function ToggleField({ label, value, onChange, description }: {
+function ToggleField({ label, value, onChange, description, disabled }: {
   label: string
   value: boolean
   onChange: (checked: boolean) => void
   description?: string
+  disabled?: boolean
 }) {
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${disabled ? 'opacity-50' : ''}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
             checked={value}
+            disabled={disabled}
             onChange={e => onChange(e.target.checked)}
-            className="w-4 h-4 text-accent focus:ring-accent border-white/[0.2] rounded"
+            className="w-4 h-4 text-accent focus:ring-accent border-white/[0.2] rounded disabled:cursor-not-allowed"
           />
           <span className="text-xs font-black text-white">{label}</span>
         </div>
@@ -81,7 +87,7 @@ function SelectField({ label, value, onChange, options }: {
         {options.map(option => (
           <option key={option.value} value={option.value} className="bg-[#14151D]">
             {option.label}
-          )
+          </option>
         ))}
       </select>
     </div>
@@ -236,7 +242,7 @@ export default function CommentAutomationPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ToggleField
-                label={isRTl ? 'تعليقات إنستغرام' : 'Instagram Comments'}
+                label={isRTL ? 'تعليقات إنستغرام' : 'Instagram Comments'}
                 value={form.instagram_comments_enabled}
                 onChange={v => setForm({...form, instagram_comments_enabled: v})}
                 disabled={!form.comment_automation_enabled}
@@ -280,11 +286,11 @@ export default function CommentAutomationPage() {
                 onChange={v => setForm({...form, confidence_threshold: parseInt(v) || 0})}
                 placeholder="70"
               />
-              <InputField
+              <SelectField
                 label={isRTL ? 'لغة الرد' : 'Reply Language'}
                 value={form.reply_language}
                 onChange={v => setForm({...form, reply_language: v})}
-                list = {[
+                options={[
                   { label: isRTL ? 'تلقائي' : 'Automatic', value: 'automatic' },
                   { label: isRTL ? 'العربية' : 'Arabic', value: 'arabic' },
                   { label: isRTL ? 'الإنجليزية' : 'English', value: 'english' },
