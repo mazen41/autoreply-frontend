@@ -247,6 +247,13 @@ export const WooCommerceIcon = ({ size = 20, className = '', strokeWidth = 1.5, 
   </svg>
 )
 
+export const CommentIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <path d="M20 2H4a2 2 0 0 0-2 2v1l2-1h14a2 2 0 0 1 2 2v7.17l2.76-1.38a1 1 0 0 0 .76-1.24V4a2 2 0 0 0-2-2z" />
+    <path d="M4 8.5v.01" />
+  </svg>
+)
+
 export const NotificationIcon = ({ size = 20, className = '', strokeWidth = 1.5, style }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
