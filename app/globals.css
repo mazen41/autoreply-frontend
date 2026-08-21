@@ -5,27 +5,27 @@
 
 /* ─── Light mode (default) — Blue-Purple Gradient Palette ─── */
 :root {
-  --background: #04061A;
-  --background-end: #04061A;
-  --surface: #14151D;
-  --surface-elevated: #1A1B26;
-  --border: rgba(255,255,255,0.08);
-  --divider: rgba(255,255,255,0.05);
+  --background: #FFFFFF;
+  --background-end: #FFFFFF;
+  --surface: #F8F9FA;
+  --surface-elevated: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --divider: rgba(0,0,0,0.05);
   --accent: #0E7AFE;
   --accent-end: #8B3FFB;
   --accent-hover: #8B3FFB;
   --accent-subtle: rgba(14,122,254,0.08);
   --accent-focus: rgba(14,122,254,0.25);
-  --text-primary: #FFFFFF;
-  --text-secondary: #A9AAB8;
-  --text-tertiary: #6A6A78;
+  --text-primary: #04061A;
+  --text-secondary: #6A6A78;
+  --text-tertiary: #A9AAB8;
   --success: #16A085;
   --success-subtle: rgba(22,160,133,0.12);
   --warning: #22B8FD;
   --warning-subtle: rgba(34,184,253,0.12);
   --error: #FF4757;
   --error-subtle: rgba(255,71,87,0.12);
-  --bg-primary: #04061A;
+  --bg-primary: #FFFFFF;
   --accent-primary: #0E7AFE;
   --primary: #0E7AFE;
   --on-accent-text: #FFFFFF;
@@ -58,7 +58,7 @@
   --radius-full: 9999px;
   /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
   --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
   --shadow-premium: 0 24px 90px rgba(0,0,0,0.6);
   /* Motion */
@@ -249,20 +249,24 @@ body {
 
 /* ─── Modern button styles ─── */
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-end));
+  background: var(--accent);
   color: var(--on-accent-text);
   border: 1px solid var(--accent);
+  box-shadow: 0 4px 20px var(--shadow-premium);
   transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--accent-hover), var(--accent-end));
+  background: var(--accent-hover);
   border-color: var(--accent-end);
-  box-shadow: 0 0 25px var(--accent-subtle);
+  box-shadow: 0 0 20px var(--accent-subtle);
   transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-secondary {
-  background: var(--surface-elevated);
+  background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border);
   transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
@@ -270,8 +274,10 @@ body {
 .btn-secondary:hover {
   border-color: var(--accent-secondary);
   color: var(--accent-secondary);
-  box-shadow: 0 0 20px var(--accent-secondary-subtle);
   transform: translateY(-1px);
+}
+.btn-secondary:active {
+  transform: translateY(0);
 }
 
 /* ─── Input field focus glow ─── */
@@ -581,6 +587,17 @@ body {
   animation: shimmer 3s linear infinite;
 }
 
+/* Translate-based bar animations (avoid layout thrashing) */
+.bar-scale {
+  transition: transform var(--duration-normal) var(--ease-premium);
+}
+.bar-scale-active {
+  transform: scaleX(1);
+}
+.bar-scale-inactive {
+  transform: scaleX(0);
+}
+
 /* ─── Float pill ─── */
 @keyframes floatPill {
   0%, 100% { transform: translateY(0px); }
@@ -599,6 +616,62 @@ body {
 .text-dual {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-end) 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* ─── Utility classes for accents ─── */
+.accent-bg {
+  background: var(--accent);
+}
+.accent-shadow-lg {
+  box-shadow: 0 0 8px var(--accent);
+}
+.accent-subtle-bg {
+  background: var(--accent-subtle);
+}
+.accent-text {
+  color: var(--accent);
+}
+.border-border {
+  border-color: var(--border);
+}
+.text-tertiary-color {
+  color: var(--text-tertiary);
+}
+.text-secondary-color {
+  color: var(--text-secondary);
+}
+.text-primary-color {
+  color: var(--text-primary);
+}
+.text-on-accent {
+  color: var(--on-accent-text);
+}
+.surface-elevated-bg {
+  background: var(--surface-elevated);
+}
+.surface-bg {
+  background: var(--surface);
+}
+.hover\:border-accent-secondary:hover {
+  border-color: var(--accent-secondary);
+}
+.hover\:text-accent-secondary:hover {
+  color: var(--accent-secondary);
+}
+
+/* ─── Component classes ─── */
+.mouse-hover-hover {
+  transition: transform var(--duration-fast) var(--ease-premium), box-shadow var(--duration-fast) var(--ease-premium);
+}
+.mouse-hover-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px var(--shadow-md);
+}
+.Card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px var(--shadow-sm);
+  border-radius: var(--radius-card);
 }
 
 /* ─── Focus ring (shared) ─── */

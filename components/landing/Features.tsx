@@ -48,10 +48,6 @@ function FeatureCard({
   idx: number
 }) {
   const isTeal = layout.glow === 'teal'
-  const glowColor = 'var(--accent-subtle)'
-  const borderHover = 'var(--accent-subtle)'
-  const iconBg = 'var(--accent-subtle)'
-  const iconColor = 'var(--accent)'
 
   return (
     <div
@@ -59,35 +55,31 @@ function FeatureCard({
       style={{
         gridColumn: `span ${layout.cols}`,
         gridRow: `span ${layout.rows}`,
-        background: 'var(--surface)',
-        animationDelay: `${idx * 0.08}s`,
         minHeight: layout.cols === 2 ? 180 : 160,
       }}
       onMouseEnter={e => {
-        const el = e.currentTarget
-        el.style.borderColor = borderHover
-        el.style.boxShadow = `0 0 40px ${glowColor}`
-        el.style.transform = 'translateY(-2px)'
+        e.currentTarget.style.borderColor = 'var(--accent-subtle)'
+        e.currentTarget.style.boxShadow = '0 0 40px var(--accent-subtle)'
+        e.currentTarget.style.transform = 'translateY(-2px)'
       }}
       onMouseLeave={e => {
-        const el = e.currentTarget
-        el.style.borderColor = 'var(--border)'
-        el.style.boxShadow = 'none'
-        el.style.transform = 'translateY(0)'
+        e.currentTarget.style.borderColor = 'var(--border)'
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.transform = 'translateY(0)'
       }}
     >
       {/* Icon glow blob */}
       <div
         className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`, filter: 'blur(12px)' }}
+        style={{ background: 'var(--accent-subtle)', filter: 'blur(12px)' }}
       />
 
       <div>
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4 transition-all duration-300 group-hover:scale-110"
-          style={{ background: iconBg, fontSize: 22 }}
+          style={{ background: 'var(--accent-subtle)', fontSize: 22 }}
         >
-          <span style={{ filter: `drop-shadow(0 0 6px var(--accent))` }}>{item.icon}</span>
+          <span style={{ filter: 'drop-shadow(0 0 6px var(--accent))' }}>{item.icon}</span>
         </div>
         <h3
           className="font-bold text-base mb-2 leading-tight"
@@ -103,7 +95,7 @@ function FeatureCard({
       {/* Bottom accent line */}
       <div
         className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-500"
-        style={{ background: `linear-gradient(to right, var(--accent), transparent)` }}
+        style={{ background: 'linear-gradient(to right, var(--accent), transparent)' }}
       />
     </div>
   )
@@ -150,39 +142,37 @@ export default function Features() {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Arrow divider */}
-        <div className="flex items-center gap-4 mb-16">
-          <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
-          <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent-subtle))' }}>↓</span>
-          <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
-        </div>
+      {/* Arrow divider */}
+      <div className="flex items-center gap-4 mb-16">
+        <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
+        <span style={{ color: 'var(--accent)', fontSize: 24, filter: 'drop-shadow(0 0 8px var(--accent-subtle))' }}>↓</span>
+        <div className="flex-1 h-px" style={{ background: 'var(--divider)' }} />
+      </div>
 
-        {/* Features bento grid */}
-        <div ref={titleRef} className="reveal text-center mb-12">
-          <h2
-            className={`text-3xl sm:text-4xl font-black mb-3 ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
-          >
-            {t.features.title}
-          </h2>
-        </div>
-
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: 'repeat(3, 1fr)',
-          }}
+      {/* Features bento grid */}
+      <div ref={titleRef} className="reveal text-center mb-12">
+        <h2
+          className={`text-3xl sm:text-4xl font-black mb-3 ${isRTL ? 'font-arabic' : ''}`}
+          style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
         >
-          {t.features.items.map((item, i) => (
-            <FeatureCard
-              key={i}
-              item={item}
-              layout={BENTO_LAYOUT[i] || { cols: 1, rows: 1, glow: 'teal' }}
-              idx={i}
-            />
-          ))}
-        </div>
+          {t.features.title}
+        </h2>
+      </div>
+
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}
+      >
+        {t.features.items.map((item, i) => (
+          <FeatureCard
+            key={i}
+            item={item}
+            layout={BENTO_LAYOUT[i] || { cols: 1, rows: 1, glow: 'teal' }}
+            idx={i}
+          />
+        ))}
       </div>
     </section>
   )
