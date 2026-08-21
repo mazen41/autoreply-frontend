@@ -10,7 +10,10 @@ export default function DarkModeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+      className="p-2 rounded-xl transition-colors"
+      style={{ color: 'var(--text-secondary)', background: 'transparent' }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? (
