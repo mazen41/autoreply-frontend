@@ -116,18 +116,8 @@ export default function Hero() {
               {user ? (
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
-                  style={{
-                    letterSpacing: '-0.01em',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = 'var(--accent-hover)'
-                    e.currentTarget.style.transform = 'scale(1.03)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'var(--accent)'
-                    e.currentTarget.style.transform = 'scale(1)'
-                  }}
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-primary"
+                  style={{ letterSpacing: '-0.01em' }}
                 >
                   {isRTL ? 'لوحة التحكم' : 'Dashboard'}
                 </Link>
@@ -135,34 +125,13 @@ export default function Hero() {
                 <>
                   <Link
                     href="/register"
-                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-pulse transition-all duration-200 btn-primary"
-                    style={{
-                      letterSpacing: '-0.01em',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'var(--accent-hover)'
-                      e.currentTarget.style.transform = 'scale(1.03)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'var(--accent)'
-                      e.currentTarget.style.transform = 'scale(1)'
-                    }}
+                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-base font-bold btn-primary"
+                    style={{ letterSpacing: '-0.01em' }}
                   >
                     {t.hero.ctaPrimary}
                   </Link>
                   <button
-                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 btn-secondary"
-                    style={{}}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'var(--accent-secondary)'
-                      e.currentTarget.style.color = 'var(--accent-secondary)'
-                      e.currentTarget.style.background = 'var(--surface)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'var(--border)'
-                      e.currentTarget.style.color = 'var(--text-secondary)'
-                      e.currentTarget.style.background = 'var(--surface-elevated)'
-                    }}
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-base font-semibold btn-secondary"
                   >
                     <span style={{ fontSize: 13 }}>▶</span>
                     {t.hero.ctaSecondary}

@@ -50,10 +50,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
-              <Image 
-                src="/icons/logo.png" 
-                alt="NazBiz Logo" 
-                width={120} 
+              <Image
+                src="/icons/logo.png"
+                alt="NazBiz Logo"
+                width={120}
                 height={40}
                 className="object-contain"
               />
@@ -66,16 +66,9 @@ export default function Navbar() {
               <a
                 key={href}
                 href={href}
-                className="text-sm font-medium relative group"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                className="text-sm font-medium relative group text-text-secondary hover:text-accent-secondary after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-accent-secondary after:group-hover:w-full after:transition-all after:duration-300"
               >
                 {linkLabels[labelKey]}
-                <span
-                  className="absolute -bottom-0.5 left-0 w-0 h-px group-hover:w-full transition-all duration-300"
-                  style={{ background: 'var(--accent-secondary)' }}
-                />
               </a>
             ))}
           </div>
@@ -83,18 +76,15 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
             {/* Live indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-              <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
-              <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'مباشر' : 'Live'}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full surface-elevated border">
+              <div className="w-1.5 h-1.5 rounded-full status-live accent-bg accent-shadow-lg" aria-hidden="true"></div>
+              <span className="text-xs font-medium text-text-secondary">{isRTL ? 'مباشر' : 'Live'}</span>
             </div>
 
             <button
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200"
-              style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-secondary)'; e.currentTarget.style.borderColor = 'var(--accent-secondary)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
             >
               {theme === 'dark' ? (
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,10 +100,7 @@ export default function Navbar() {
 
             <button
               onClick={toggleLang}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
-              style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent-secondary)'; e.currentTarget.style.borderColor = 'var(--accent-secondary)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
             >
               {lang === 'ar' ? 'EN' : 'ع'}
             </button>
@@ -121,8 +108,7 @@ export default function Navbar() {
             {user ? (
               <Link
                 href="/dashboard"
-                className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
-                style={{ letterSpacing: '-0.01em' }}
+                className="btn-primary"
               >
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}
               </Link>
@@ -130,18 +116,14 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors duration-200"
-                  style={{ color: 'var(--text-secondary)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent-secondary)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  className="text-text-secondary hover:text-accent-secondary"
                 >
                   {t.nav.login}
                 </Link>
 
                 <Link
                   href="/register"
-                  className="text-sm font-bold px-5 py-2 rounded-xl btn-primary"
-                  style={{ letterSpacing: '-0.01em' }}
+                  className="btn-primary"
                 >
                   {t.nav.startFree}
                 </Link>
@@ -151,8 +133,7 @@ export default function Navbar() {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-            style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? '✕' : '☰'}
@@ -162,25 +143,23 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div
-            className="md:hidden py-4 space-y-2 border-t"
-            style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+            className="md:hidden py-4 space-y-2 border-t border-border bg-surface"
           >
             {NAV_LINKS.map(({ labelKey, href }) => (
               <a
                 key={href}
                 href={href}
-                className="block py-2.5 px-3 text-sm font-medium rounded-lg"
-                style={{ color: 'var(--text-secondary)' }}
+                className="block py-2.5 px-3 text-sm font-medium rounded-lg text-text-secondary hover:text-accent-secondary"
                 onClick={() => setMobileOpen(false)}
               >
                 {linkLabels[labelKey]}
               </a>
             ))}
             <div className="flex gap-2 px-3 pt-3">
-              <button onClick={toggleTheme} className="text-xs px-3 py-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+              <button onClick={toggleTheme} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
                 {theme === 'dark' ? '☀️' : '🌙'}
               </button>
-              <button onClick={toggleLang} className="text-xs px-3 py-2 rounded-lg" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+              <button onClick={toggleLang} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
                 {lang === 'ar' ? 'EN' : 'ع'}
               </button>
               {user ? (
@@ -189,7 +168,7 @@ export default function Navbar() {
                 </Link>
               ) : (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-accent-secondary">
                     {t.nav.login}
                   </Link>
                   <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-lime">

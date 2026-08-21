@@ -460,7 +460,7 @@ function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
                   <span style={{ color: b.c }}>{b.p}%</span>
                 </div>
                 <div className="h-[3px] rounded-full" style={{ background: 'var(--surface-elevated)' }}>
-                  <div className="h-full rounded-full" style={{ width: `${b.p}%`, background: b.c, boxShadow: `0 0 6px ${b.c}50`, animation: `barGrow 1.2s ease ${i*0.15}s both` }} />
+                  <div className="h-full rounded-full bar-scale" style={{ transform: b.p > 0 ? 'scaleX(' + (b.p / 100) + ')' : 'scaleX(0)', background: b.c, boxShadow: `0 0 6px ${b.c}50` }} />
                 </div>
               </div>
             ))}
@@ -719,12 +719,8 @@ function State5({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
               <span style={{ color: 'var(--text-secondary)' }}>{b.l}</span>
               <span style={{ color: b.c }}>{b.p}%</span>
             </div>
-            <div className="h-[3px] rounded-full" style={{ background: 'var(--surface-elevated)' }}>
-              <div className="h-full rounded-full" style={{
-                width: run ? `${b.p}%` : '0%',
-                background: b.c, boxShadow: `0 0 8px ${b.c}50`,
-                transition: `width 1.4s cubic-bezier(0.22,1,0.36,1) ${i*0.2}s`,
-              }} />
+            <div className="h-[3px] rounded-full surface-bg border border-border">
+              <div className="h-full rounded-full bar-scale" style={{ transform: run ? 'scaleX(1)' : 'scaleX(0)', background: b.c, boxShadow: `0 0 8px ${b.c}50` }} />
             </div>
           </div>
         ))}
@@ -873,7 +869,7 @@ export default function OSExperience() {
 
   const coreOpacity = useTransform(smooth, [0, 0.04, 0.82, 0.90], [0, 1, 1, 0])
   const coreScale   = useTransform(smooth, [0, 0.04, 3/7, 4/7, 5/7], [0.5, 1, 1.15, 1.25, 0.85])
-  const barWidth    = useTransform(scrollYProgress, [0,1], ['0%','100%'])
+  const barWidth    = useTransform(scrollYProgress, [0,1], [0,1])
   const labelOpacity = useTransform(smooth, [0.03, 0.10], [0, 1])
 
   return (
@@ -902,7 +898,7 @@ export default function OSExperience() {
             <div key={i} className="flex items-center gap-2"
               style={{ opacity: stateIdx === i ? 1 : 0.18, transition: 'opacity 0.3s' }}>
               <div className="rounded-full flex-shrink-0 transition-all duration-300"
-                style={{ width: stateIdx === i ? 20 : 4, height: 4, background: stateIdx === i ? 'var(--accent)' : 'var(--text-tertiary)' }} />
+                style={{ width: 4, height: 4, transform: stateIdx === i ? 'scaleX(5)' : 'scaleX(1)', transformOrigin: 'left', background: stateIdx === i ? 'var(--accent)' : 'var(--text-tertiary)', transition: 'transform 0.3s ease' }} />
               {stateIdx === i && (
                 <span className="text-[10px] font-bold whitespace-nowrap"
                   style={{ color: 'var(--accent)', letterSpacing: '0.08em' }}>
@@ -915,7 +911,7 @@ export default function OSExperience() {
 
         {/* Progress bar */}
         <motion.div className="absolute bottom-0 left-0 h-[2px] z-50"
-          style={{ width: barWidth, background: 'linear-gradient(to right, var(--accent), var(--accent))', boxShadow: '0 0 8px var(--accent-subtle)' }} />
+          style={{ width: '100%', background: 'linear-gradient(to right, var(--accent), var(--accent))', boxShadow: '0 0 8px var(--accent-subtle)', transform: `scaleX(${barWidth})`, transformOrigin: 'left center' }} />
       </div>
     </div>
   )

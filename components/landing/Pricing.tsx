@@ -70,7 +70,7 @@ export default function Pricing() {
       <section id="pricing" className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--accent)' }}></div>
+            <div className="spinner-lg" style={{ color: 'var(--accent)' }}></div>
           </div>
         </div>
       </section>
@@ -91,23 +91,23 @@ export default function Pricing() {
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-4 mb-12">
-          <span className="text-sm font-medium" style={{ color: !annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+          <span className="text-sm font-medium text-tertiary-color">
             {t.pricing.monthly}
           </span>
           <button
             onClick={() => setAnnual(!annual)}
-            className="relative w-12 h-6 rounded-full transition-colors duration-300"
-            style={{ background: annual ? 'var(--accent)' : 'var(--surface-elevated)' }}
+            className="relative w-12 h-6 rounded-full transition-all duration-300 bg-surface-elevated border-border hover:bg-accent hover:text-accent"
           >
             <span
-              className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300"
-              style={{ [isRTL ? 'right' : 'left']: annual ? 26 : 4 }}
-            />
+              className="absolute top-1 w-4 h-4 rounded-full bg-white"
+            >
+              {annual && <span className="absolute top-0.5 w-4 h-4 rounded-full bg-black" /> }
+            </span>
           </button>
-          <span className="text-sm font-medium" style={{ color: annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+          <span className="text-sm font-medium text-primary-color">
             {t.pricing.annual}
             {annual && (
-              <span className="ms-2 text-xs font-semibold" style={{ color: 'var(--accent)' }}>
+              <span className="ms-2 text-xs font-semibold text-accent-color">
                 ({t.pricing.annualSave})
               </span>
             )}
@@ -165,20 +165,28 @@ function PricingCard({
         {/* Badge */}
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
           <span
-            className="text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
-              color: 'var(--on-accent-text)',
-              boxShadow: '0 0 20px color-mix(in srgb, var(--accent) 30%, transparent)',
-            }}
+            className="reveal text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap bg-accent accent-shadow-lg text-on-accent"
           >
             {t.pricing.mostPopular}
           </span>
         </div>
 
         <div
-          className="flex flex-col h-full rounded-[14px] p-6"
-          style={{ background: 'var(--surface)' }}
+          className="reveal Card rounded-2xl flex flex-col h-full p-6 mouse-hover-hover"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 4px 16px var(--shadow-sm)',
+            transition: 'box-shadow var(--duration-fast) var(--ease-premium), transform var(--duration-fast) var(--ease-premium)',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 8px 30px var(--shadow-md)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 16px var(--shadow-sm)';
+          }}
         >
           <CardInner
             name={name}
@@ -188,7 +196,7 @@ function PricingCard({
             isRTL={isRTL}
             t={t}
             features={features}
-            popular
+            popular={true}
             pkg={pkg}
           />
         </div>
@@ -199,8 +207,22 @@ function PricingCard({
   return (
     <div
       ref={ref}
-      className="reveal card-hover rounded-2xl p-6 flex flex-col"
-      style={{ background: 'var(--surface)', border: '1px solid var(--border)', animationDelay: `${delay}s` }}
+      className="reveal Card rounded-2xl p-6 flex flex-col mouse-hover-hover"
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        boxShadow: '0 4px 16px var(--shadow-sm)',
+        transition: 'box-shadow var(--duration-fast) var(--ease-premium), transform var(--duration-fast) var(--ease-premium)',
+        animationDelay: `${delay}s`,
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'scale(1.02)';
+        e.currentTarget.style.boxShadow = '0 8px 30px var(--shadow-md)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 4px 16px var(--shadow-sm)';
+      }}
     >
       <CardInner
         name={name}
@@ -210,6 +232,7 @@ function PricingCard({
         isRTL={isRTL}
         t={t}
         features={features}
+        popular={false}
         pkg={pkg}
       />
     </div>
@@ -270,21 +293,21 @@ function CardInner({
   return (
     <>
       <div className="mb-6">
-        <h3 className="font-bold text-xl mb-1" style={{ color: 'var(--text-primary)' }}>{name}</h3>
-        <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>{description}</p>
+        <h3 className="font-bold text-xl mb-1 text-primary-color">{name}</h3>
+        <p className="text-xs mb-4 text-tertiary-color">{description}</p>
         <div className="flex items-end gap-1">
-          <span className="text-4xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}>
+          <span className="text-4xl font-black text-primary-color" style={{ letterSpacing: '-0.03em' }}>
             {price === 0 ? 'Free' : `${price} SAR`}
           </span>
           {price > 0 && (
-            <span className="text-sm mb-2" style={{ color: 'var(--text-tertiary)' }}>/{t.pricing.monthly}</span>
+            <span className="text-sm mb-2 text-tertiary-color">/{t.pricing.monthly}</span>
           )}
         </div>
       </div>
 
       <ul className="space-y-3 flex-1 mb-6">
         {features.map((f, j) => (
-          <li key={j} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <li key={j} className="flex items-center gap-2 text-sm text-secondary-color">
             <span style={{ color: 'var(--accent)', fontSize: 14 }}>✓</span>
             <span>{f}</span>
           </li>
@@ -293,35 +316,9 @@ function CardInner({
 
       <button
         onClick={handlePlanClick}
-        className="block w-full text-center py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
-        style={
-          popular
-            ? {
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
-                color: 'var(--on-accent-text)',
-              }
-            : {
-                border: '1px solid var(--border)',
-                color: 'var(--text-primary)',
-                background: 'transparent',
-              }
-        }
-        onMouseEnter={e => {
-          if (!popular) {
-            e.currentTarget.style.borderColor = 'var(--accent-focus)'
-            e.currentTarget.style.color = 'var(--accent)'
-          } else {
-            e.currentTarget.style.opacity = '0.9'
-          }
-        }}
-        onMouseLeave={e => {
-          if (!popular) {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.color = 'var(--text-primary)'
-          } else {
-            e.currentTarget.style.opacity = '1'
-          }
-        }}
+        className={`block w-full text-center py-3 rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 ${
+          popular ? 'btn-lime' : 'btn-ghost'
+        }`}
       >
         {token ? (isRTL ? 'اشترك الآن' : 'Subscribe Now') : t.pricing.startFree}
       </button>
