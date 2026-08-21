@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import NotificationCenter from '../NotificationCenter'
+import DarkModeToggle from '../DarkModeToggle'
 import {
   HomeIcon, InboxIcon, ChannelsIcon, WhatsAppIcon, ContentIcon, ReputationIcon,
   ReportsIcon, AIKnowledgeIcon, SettingsIcon, BillingIcon, HelpIcon,
@@ -162,7 +163,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#04061A]">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="relative w-16 h-16">
           <div className="absolute inset-0 rounded-full border-2 border-white/5" />
           <motion.div
@@ -189,12 +190,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <motion.div
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer relative ${
             active
-              ? 'text-white font-bold'
-              : 'text-text-secondary hover:text-white hover:bg-white/[0.03]'
+              ? 'font-bold'
+              : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.03]'
           }`}
           style={{
-            background: active ? 'linear-gradient(135deg, rgba(14,122,254,0.12) 0%, rgba(139,63,251,0.12) 100%)' : 'transparent',
-            border: active ? '1px solid rgba(255,255,255,0.07)' : '1px solid transparent',
+            color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+            background: active ? 'var(--accent-subtle)' : 'transparent',
+            border: active ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : '1px solid transparent',
             justifyContent: isCollapsedDesktop ? 'center' : undefined,
           }}
           whileHover={{ scale: 1.01 }}
@@ -213,7 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             />
           )}
 
-          <div className={`flex-shrink-0 transition-colors duration-200 ${active ? 'text-accent' : 'group-hover:text-white'}`}>
+          <div className={`flex-shrink-0 transition-colors duration-200`} style={{ color: active ? 'var(--accent)' : 'inherit' }}>
             <Icon size={18} />
           </div>
 
@@ -225,8 +227,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Collapsed tooltip */}
         {isCollapsedDesktop && (
           <div
-            className={`absolute ${isRTL ? 'right-full mr-2.5' : 'left-full ml-2.5'} top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150 z-50 shadow-xl border border-white/[0.07] whitespace-nowrap`}
-            style={{ background: '#1A1B27', color: 'white' }}
+            className={`absolute ${isRTL ? 'right-full mr-2.5' : 'left-full ml-2.5'} top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150 z-50 shadow-xl whitespace-nowrap`}
+            style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
           >
             {label}
           </div>
@@ -242,12 +244,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="mb-1">
         {!isCollapsedDesktop && (
           <div className="px-3 mb-1 mt-3">
-            <span className="text-[9px] font-black uppercase tracking-[0.12em] text-text-tertiary/60">
+            <span className="text-[9px] font-black uppercase tracking-[0.12em]" style={{ color: 'var(--text-tertiary)', opacity: 0.7 }}>
               {isRTL ? group.labelAr : group.labelEn}
             </span>
           </div>
         )}
-        {isCollapsedDesktop && <div className="h-px bg-white/[0.04] mx-3 mt-3 mb-1" />}
+        {isCollapsedDesktop && <div className="h-px mx-3 mt-3 mb-1" style={{ background: 'var(--border)' }} />}
         <div className="space-y-0.5">
           {group.items.map(item => <NavItem key={item.href} item={item} />)}
         </div>
@@ -256,12 +258,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen text-white bg-[#04061A]" style={{ fontFamily: 'var(--font-inter, sans-serif)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--background)', color: 'var(--text-primary)', fontFamily: 'var(--font-inter, sans-serif)' }}>
       {/* Background glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-accent/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#8B3FFB]/10 blur-[120px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px]" style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px]" style={{ background: 'color-mix(in srgb, var(--accent-end) 8%, transparent)' }} />
+        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, color-mix(in srgb, var(--text-primary) 3%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--text-primary) 3%, transparent) 1px, transparent 1px)', backgroundSize: '4rem 4rem' }} />
       </div>
 
       {/* Mobile overlay */}
@@ -283,16 +285,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         transition={{ type: 'spring', stiffness: 350, damping: 35 }}
         className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full z-50`}
         style={{
-          background: 'rgba(14,15,25,0.85)',
+          background: 'color-mix(in srgb, var(--surface) 85%, transparent)',
           backdropFilter: 'blur(24px)',
-          borderRight: isRTL ? 'none' : '1px solid rgba(255,255,255,0.05)',
-          borderLeft:  isRTL ? '1px solid rgba(255,255,255,0.05)' : 'none'
+          borderRight: isRTL ? 'none' : '1px solid var(--border)',
+          borderLeft:  isRTL ? '1px solid var(--border)' : 'none'
         }}
       >
         <div className="flex flex-col h-full">
 
           {/* Logo */}
-          <div className="flex items-center gap-3 px-4 h-[70px] border-b border-white/[0.04] flex-shrink-0">
+          <div className="flex items-center gap-3 px-4 h-[70px] flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
             {(!collapsed || isMobile) ? (
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center flex-shrink-0">
@@ -313,11 +315,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           {/* Bottom: Settings, Billing, Help */}
-          <div className="px-2 pb-2 pt-2 border-t border-white/[0.04] space-y-0.5 flex-shrink-0">
+          <div className="px-2 pb-2 pt-2 space-y-0.5 flex-shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
             {NAV_BOTTOM.map(item => <NavItem key={item.href} item={item} />)}
 
             {(!collapsed || isMobile) && (
-              <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full text-text-secondary hover:text-white hover:bg-white/[0.03] transition-all duration-200">
+              <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full transition-all duration-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.03]" style={{ color: 'var(--text-secondary)' }}>
                 <HelpIcon size={18} />
                 <span className="text-xs font-semibold">{isRTL ? 'مساعدة' : 'Help'}</span>
               </button>
@@ -326,14 +328,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* User profile card */}
           {(!collapsed || isMobile) && user && (
-            <div className="px-2 pb-3 border-t border-white/[0.04]">
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] mt-2">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs bg-gradient-to-br from-accent to-[#8B3FFB] text-white flex-shrink-0">
+            <div className="px-2 pb-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="flex items-center gap-3 p-2.5 rounded-xl mt-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: 'white' }}>
                   {user.name?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold truncate text-white">{user.name}</div>
-                  <div className="text-[10px] text-text-secondary truncate">{user.email}</div>
+                  <div className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user.name}</div>
+                  <div className="text-[10px] truncate" style={{ color: 'var(--text-secondary)' }}>{user.email}</div>
                 </div>
               </div>
             </div>
@@ -354,25 +356,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Topbar */}
         <header
           className="sticky top-0 z-30 border-b border-white/[0.04]"
-          style={{ height: 70, background: 'rgba(4, 6, 26, 0.75)', backdropFilter: 'blur(20px)' }}
+          style={{ height: 70, background: 'color-mix(in srgb, var(--background) 75%, transparent)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}
         >
           <div className="flex items-center justify-between h-full px-5">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileSidebar(!mobileSidebar)}
-                className="lg:hidden p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] text-white"
+                className="lg:hidden p-2 rounded-xl transition-all"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               >
                 {mobileSidebar ? <XIcon size={18} /> : <MenuIcon size={18} />}
               </button>
 
               <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex p-2 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.05] hover:border-white/[0.08] text-white transition-all items-center justify-center"
+                className="hidden lg:flex p-2 rounded-xl transition-all items-center justify-center"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
               >
                 <MenuIcon size={17} />
               </button>
 
-              <h1 className="text-sm font-bold tracking-tight text-white/90">{pageTitle}</h1>
+              <h1 className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{pageTitle}</h1>
             </div>
 
             {/* Search */}
@@ -382,7 +386,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <input
                   type="text"
                   placeholder={isRTL ? 'بحث...' : 'Search conversations, agents...'}
-                  className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40 focus:bg-white/[0.04] transition-all"
+                  className="w-full rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none transition-all"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
@@ -398,13 +403,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span className="text-[9px] font-black tracking-widest text-accent uppercase">{isRTL ? 'AI نشط' : 'AI ACTIVE'}</span>
               </div>
 
+              <DarkModeToggle />
               <NotificationCenter />
 
               {/* User menu */}
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs bg-gradient-to-br from-accent to-[#8B3FFB] text-white hover:brightness-110 transition-all"
+                  className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs hover:brightness-110 transition-all"
+                  style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: 'white' }}
                 >
                   {user?.name?.[0]?.toUpperCase() || 'U'}
                 </button>
@@ -415,15 +422,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       initial={{ opacity: 0, scale: 0.95, y: 8 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 8 }}
-                      className="absolute right-0 mt-2 w-52 rounded-xl bg-[#14151D] border border-white/[0.06] shadow-2xl overflow-hidden z-50"
+                      className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl overflow-hidden z-50"
+                      style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <div className="p-3.5 border-b border-white/[0.04] bg-white/[0.01]">
-                        <p className="text-xs font-bold text-white truncate">{user?.name}</p>
-                        <p className="text-[10px] text-text-secondary truncate mt-0.5">{user?.email}</p>
+                      <div className="p-3.5" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                        <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
+                        <p className="text-[10px] truncate mt-0.5" style={{ color: 'var(--text-secondary)' }}>{user?.email}</p>
                       </div>
                       <div className="p-1.5 space-y-0.5">
-                        <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-text-secondary hover:text-white hover:bg-white/[0.04] transition-all">
+                        <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-black/[0.04] dark:hover:bg-white/[0.04]" style={{ color: 'var(--text-secondary)' }}>
                           <SettingsIcon size={13} />
                           {isRTL ? 'الإعدادات' : 'Account Settings'}
                         </Link>
