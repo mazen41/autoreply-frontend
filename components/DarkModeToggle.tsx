@@ -1,6 +1,6 @@
 'use client';
 
-import { useTheme } from '../../lib/ThemeContext';
+import { useTheme } from '../lib/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
 
 export default function DarkModeToggle() {
