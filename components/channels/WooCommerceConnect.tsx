@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
+import { Package, ExternalLink, Key, Lock, Globe } from 'lucide-react'
 
 interface WooCommerceConnectProps {
   isConnected: boolean
@@ -47,11 +48,9 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img
-              src="/icons/woocommerce-icon.png"
-              alt="WooCommerce"
-              className="w-12 h-12"
-            />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-subtle)', color: '#96588a' }}>
+              <Package size={24} />
+            </div>
             <div>
               <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>
                 WooCommerce
@@ -100,11 +99,9 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
       }}
     >
       <div className="flex items-center gap-3 mb-6">
-        <img
-          src="/icons/woocommerce-icon.png"
-          alt="WooCommerce"
-          className="w-12 h-12"
-        />
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-subtle)', color: '#96588a' }}>
+          <Package size={24} />
+        </div>
         <div>
           <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
             WooCommerce
@@ -117,7 +114,8 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+          <label className="block text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Globe size={14} />
             Store URL
           </label>
           <input
@@ -144,7 +142,8 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+          <label className="block text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Key size={14} />
             Consumer Key
           </label>
           <input
@@ -171,7 +170,8 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+          <label className="block text-sm font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <Lock size={14} />
             Consumer Secret
           </label>
           <input

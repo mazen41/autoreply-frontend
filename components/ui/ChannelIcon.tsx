@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Facebook, Instagram, Mail, MessageCircle, Twitter, ShoppingBag, Send, Music, ShoppingCart, Package } from 'lucide-react'
 
 type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla' | 'telegram' | 'tiktok' | 'shopify' | 'woocommerce'
 
@@ -11,43 +12,44 @@ interface ChannelIconProps {
 }
 
 const channelColors: Record<ChannelType, string> = {
-  facebook: 'var(--accent)',
-  instagram: 'var(--accent)',
-  gmail: 'var(--accent)',
-  whatsapp: 'var(--accent)',
-  twitter: 'var(--surface)',
-  salla: 'var(--accent)',
-  telegram: 'var(--accent)',
-  tiktok: 'var(--accent)',
-  shopify: 'var(--accent)',
+  facebook: '#1877F2',
+  instagram: '#E4405F',
+  gmail: '#EA4335',
+  whatsapp: '#25D366',
+  twitter: '#1DA1F2',
+  salla: '#000000',
+  telegram: '#0088cc',
+  tiktok: '#000000',
+  shopify: '#96BF48',
   woocommerce: '#96588a',
 }
 
-const iconImages: Record<ChannelType, string> = {
-  facebook: '/icons/vecteezy_facebook-logo-png-facebook-icon-transparent-png_18930698.png',
-  instagram: '/icons/vecteezy_instagram-logo-png-instagram-icon-transparent_18930415.png',
-  whatsapp: '/icons/vecteezy_whatsapp-logo-png-icon_16716480.png',
-  telegram: '/icons/vecteezy_telegram-png-icon_16716472.png',
-  tiktok: '/icons/vecteezy_tiktok-png-icon_16716450.png',
-  salla: '/icons/sllla.png',
-  shopify: '/icons/35c56f2f7d80e6440f8e8f5fea0852ab.png',
-  woocommerce: '/icons/woocommerce-icon.png',
-  gmail: '/icons/vecteezy_facebook-logo-png-facebook-icon-transparent-png_18930698.png',
-  twitter: '/icons/vecteezy_facebook-logo-png-facebook-icon-transparent-png_18930698.png',
+const iconComponents: Record<ChannelType, React.ComponentType<{ size?: number; className?: string }>> = {
+  facebook: Facebook,
+  instagram: Instagram,
+  gmail: Mail,
+  whatsapp: MessageCircle,
+  twitter: Twitter,
+  salla: ShoppingBag,
+  telegram: Send,
+  tiktok: Music,
+  shopify: ShoppingCart,
+  woocommerce: Package,
 }
 
 export default function ChannelIcon({ type, size = 24, className = '' }: ChannelIconProps) {
-  const iconSrc = iconImages[type]
+  const IconComponent = iconComponents[type]
+  const color = channelColors[type]
 
   return (
     <div
       className={`inline-flex items-center justify-center ${className}`}
       style={{ width: size, height: size }}
     >
-      <img
-        src={iconSrc}
-        alt={type}
-        style={{ width: size, height: size, objectFit: 'contain' }}
+      <IconComponent
+        size={size}
+        className="text-[var(--text-primary)]"
+        style={{ color }}
       />
     </div>
   )

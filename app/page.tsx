@@ -5,7 +5,7 @@ import Footer from '../components/landing/Footer'
 import OSExperience from '../components/landing/OSExperience'
 import { useLang } from '../lib/LangContext'
 import { useAuth } from '../lib/AuthContext'
-import Image from 'next/image'
+import { Bot } from 'lucide-react'
 
 function Hero() {
   const { t, isRTL } = useLang()
@@ -15,13 +15,9 @@ function Hero() {
     <section className="relative z-10 px-6 py-16 md:py-24" style={{ background: 'transparent' }}>
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8 flex justify-center">
-          <Image
-            src="/icons/Logo (2).png"
-            alt="Logo"
-            width={200}
-            height={60}
-            className="object-contain"
-          />
+          <div className="w-48 h-14 flex items-center justify-center">
+            <Bot size={60} className="text-accent" />
+          </div>
         </div>
         <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           {isRTL

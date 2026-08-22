@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
 import { useAuth } from '../../lib/AuthContext'
-import Image from 'next/image'
+import { Bot } from 'lucide-react'
 
 export default function Footer() {
   const { t, isRTL } = useLang()
@@ -18,13 +18,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <Image
-                src="/icons/logo.png"
-                alt="NazBiz Logo"
-                width={32}
-                height={32}
-                className="object-contain"
-              />
+              <Bot size={32} className="text-accent" />
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full accent-subtle-bg accent-text border border-border">AI OS</span>
             </div>
             <p className="text-sm leading-relaxed mb-5 max-w-xs text-tertiary-color">

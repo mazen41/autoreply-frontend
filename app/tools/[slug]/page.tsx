@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/lib/AuthContext'
 import { use } from 'react'
-import Image from 'next/image'
+import { Bot } from 'lucide-react'
 
 const toolComponents: Record<string, React.ComponentType> = {
   'sales-script': dynamic(() => import('@/components/tools/SalesScriptGenerator'), { ssr: false }),
@@ -50,13 +50,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
       <div className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image 
-              src="/icons/Logo (2).png" 
-              alt="Naz Logo" 
-              width={100} 
-              height={35}
-              className="object-contain"
-            />
+            <Bot size={35} className="text-accent" />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/tools" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
