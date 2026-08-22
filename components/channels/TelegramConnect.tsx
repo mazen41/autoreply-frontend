@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
-import { Send, ExternalLink, Bot, QrCode, Search, Link as LinkIcon, Check, X } from 'lucide-react'
+import { Send, ExternalLink, Bot, QrCode, Search, Link2, Check, X } from 'lucide-react'
 
 interface TelegramConnectProps {
   isConnected: boolean
@@ -340,7 +340,7 @@ function TelegramInstructions({ onClose }: { onClose: () => void }) {
             <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                  <LinkIcon size={16} />
+                  <Link2 size={16} />
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
