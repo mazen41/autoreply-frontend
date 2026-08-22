@@ -46,7 +46,7 @@ export default function ChannelIcon({ type, size = 24, className = '' }: Channel
       className={`inline-flex items-center justify-center ${className}`}
       style={{ width: size, height: size, color }}
     >
-      <IconComponent size={size} strokeWidth={2} />
+      <IconComponent size={size} />
     </div>
   )
 }
