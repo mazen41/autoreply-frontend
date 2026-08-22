@@ -186,20 +186,22 @@ function ConnectModal({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{background:'rgba(0,0,0,0.6)',backdropFilter:'blur(8px)'}}
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     >
       <div className="absolute inset-0" onClick={onClose} />
       <motion.div
-        className="relative w-full max-w-md rounded-3xl p-6 bg-[#14151D] border border-white/[0.06] shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md rounded-3xl p-6 shadow-2xl overflow-hidden"
+        style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}
         initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }}
       >
         <div className="flex items-center gap-3.5 mb-5">
-          <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+          <div className="p-3 rounded-2xl" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
             <ChannelIcon type={ch.id as any} size={40} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold tracking-tight" style={{color:'var(--text-primary)'}}>
               {t.channels.connect} {ch.name}
             </h3>
             <p className="text-xs text-text-secondary mt-0.5">
@@ -208,7 +210,7 @@ function ConnectModal({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl mb-6 bg-white/[0.01] border border-white/[0.04]">
+        <div className="p-4 rounded-2xl mb-6" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
           <p className="text-xs text-text-secondary leading-relaxed">
             {t.channels.permissionText.replace('{channel}', ch.name)}
           </p>
@@ -217,7 +219,8 @@ function ConnectModal({
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl text-xs font-bold bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] text-white transition-all"
+            className="flex-1 py-3 rounded-xl text-xs font-bold transition-all"
+            style={{background:'var(--surface)',border:'1px solid var(--border)',color:'var(--text-primary)'}}
           >
             {t.common.cancel}
           </button>
@@ -338,7 +341,7 @@ export default function ChannelsPage() {
       
       {/* Page header */}
       <div className="space-y-1">
-        <h2 className="text-xl font-black text-white tracking-tight">
+        <h2 className="text-xl font-black tracking-tight" style={{color:'var(--text-primary)'}}>
           {t.channels.title}
         </h2>
         <p className="text-sm text-text-secondary">
@@ -358,8 +361,10 @@ export default function ChannelsPage() {
               initial={{ opacity: 0, y: 15 }} 
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="rounded-2xl p-5 bg-[#14151D] border border-white/[0.04] flex flex-col justify-between h-48 relative overflow-hidden group hover:border-white/[0.08]"
+              className="rounded-2xl p-5 flex flex-col justify-between h-48 relative overflow-hidden group transition-all"
               style={{
+                background: 'var(--surface)',
+                border: `1px solid ${ch.connected ? `color-mix(in srgb, ${ch.brandColor} 20%, var(--border))` : 'var(--border)'}`,
                 boxShadow: ch.connected ? `0 10px 30px -15px ${ch.brandColor}30` : 'none',
               }}
             >
@@ -373,13 +378,13 @@ export default function ChannelsPage() {
 
               <div className="flex items-start justify-between gap-3 relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
+                  <div className="p-3 rounded-2xl" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}>
                     <ChannelIcon type={ch.id as any} size={28} />
                   </div>
                   <div>
-                    <div className="font-bold text-xs text-white">{ch.name}</div>
+                    <div className="font-bold text-xs" style={{color:'var(--text-primary)'}}>{ch.name}</div>
                     {ch.pageName && (
-                      <div className="text-[10px] text-text-secondary truncate max-w-[140px] mt-0.5">
+                      <div className="text-[10px] truncate max-w-[140px] mt-0.5" style={{color:'var(--text-secondary)'}}>
                         {ch.pageName}
                       </div>
                     )}
@@ -387,11 +392,13 @@ export default function ChannelsPage() {
                 </div>
 
                 {/* Connection Status Badge */}
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${
-                  ch.connected 
-                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                    : 'bg-white/[0.03] border-white/[0.06] text-text-tertiary'
-                }`}>
+                <span
+                  className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg"
+                  style={ch.connected
+                    ? {background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.2)',color:'#10b981'}
+                    : {background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-tertiary)'}
+                  }
+                >
                   {ch.connected ? t.channels.connected : t.channels.notConnected}
                 </span>
               </div>
@@ -402,18 +409,19 @@ export default function ChannelsPage() {
                   <>
                     <button
                       onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
-                      className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border flex items-center justify-center gap-1.5 ${
-                        ch.aiEnabled 
-                          ? 'bg-accent/15 border-accent/20 text-accent' 
-                          : 'bg-white/[0.02] border-white/[0.05] text-text-secondary'
-                      }`}
+                      className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                      style={ch.aiEnabled
+                        ? {background:'var(--accent-subtle)',border:'1px solid color-mix(in srgb, var(--accent) 25%, transparent)',color:'var(--accent)'}
+                        : {background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-secondary)'}
+                      }
                     >
                       <LightningIcon size={10} />
                       {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
                     </button>
                     <button 
                       onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
-                      className="py-2.5 px-3.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.03] border border-white/[0.05] text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all"
+                      className="py-2.5 px-3.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                      style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'#f87171'}}
                     >
                       {t.channels.disconnect}
                     </button>
@@ -421,7 +429,8 @@ export default function ChannelsPage() {
                 ) : (
                   <button 
                     onClick={() => setConnecting(ch)}
-                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] text-white transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                    style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-primary)'}}
                   >
                     <PlusIcon size={10} />
                     {t.channels.connect}

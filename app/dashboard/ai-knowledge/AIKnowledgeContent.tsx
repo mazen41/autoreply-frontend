@@ -270,15 +270,17 @@ export default function AIKnowledgeContent() {
     )
   }
 
-  const inputClass = "w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40"
-  const labelClass = "block text-[10px] font-black uppercase tracking-wider text-text-secondary mb-1.5"
-  const cardClass = "rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-5"
+  const cardClass = "rounded-2xl p-6 space-y-5"
+  const cardStyle = { background: 'var(--surface)', border: '1px solid var(--border)' }
+  const inputStyle = { background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)' }
+  const inputClass = "w-full rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none"
+  const labelClass = "block text-[10px] font-black uppercase tracking-wider mb-1.5"
   const cardAnim = { initial: { opacity: 0, y: 15 }, animate: { opacity: 1, y: 0 } }
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="space-y-1">
-        <h2 className="text-xl font-black text-white tracking-tight">{t.aiKnowledge.title}</h2>
+        <h2 className="text-xl font-black tracking-tight" style={{color:'var(--text-primary)'}}>{t.aiKnowledge.title}</h2>
         <p className="text-sm text-text-secondary">{t.aiKnowledge.subtitle}</p>
       </div>
 
@@ -286,63 +288,63 @@ export default function AIKnowledgeContent() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Business Profile */}
-          <motion.div {...cardAnim} className={cardClass}>
+          <motion.div {...cardAnim} className={cardClass} style={cardStyle}>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-tight">Business Details</h3>
+              <h3 className="text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>Business Details</h3>
               <p className="text-[11px] text-text-secondary">Configure business facts used by the AI brain.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Business Name</label>
-                <input type="text" value={profile.business_name} onChange={e => setProfile({ ...profile, business_name: e.target.value })} className={inputClass} />
+                <input type="text" value={profile.business_name} onChange={e => setProfile({ ...profile, business_name: e.target.value })} className={inputClass} style={inputStyle} />
               </div>
               <div>
                 <label className={labelClass}>Business Type</label>
-                <input type="text" value={profile.business_type} onChange={e => setProfile({ ...profile, business_type: e.target.value })} className={inputClass} />
+                <input type="text" value={profile.business_type} onChange={e => setProfile({ ...profile, business_type: e.target.value })} className={inputClass} style={inputStyle} />
               </div>
               <div>
                 <label className={labelClass}>Phone Number</label>
-                <input type="text" value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} className={inputClass} />
+                <input type="text" value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} className={inputClass} style={inputStyle} />
               </div>
               <div>
                 <label className={labelClass}>City & Country</label>
                 <div className="flex gap-2">
-                  <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({ ...profile, city: e.target.value })} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
-                  <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({ ...profile, country: e.target.value })} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                  <input type="text" placeholder="City" value={profile.city} onChange={e => setProfile({ ...profile, city: e.target.value })} className="w-1/2 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
+                  <input type="text" placeholder="Country" value={profile.country} onChange={e => setProfile({ ...profile, country: e.target.value })} className="w-1/2 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Working Hours</label>
                 <div className="flex gap-2">
-                  <input type="text" placeholder="From (09:00)" value={profile.working_from} onChange={e => setProfile({ ...profile, working_from: e.target.value })} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
-                  <input type="text" placeholder="To (18:00)" value={profile.working_to} onChange={e => setProfile({ ...profile, working_to: e.target.value })} className="w-1/2 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
+                  <input type="text" placeholder="From (09:00)" value={profile.working_from} onChange={e => setProfile({ ...profile, working_from: e.target.value })} className="w-1/2 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
+                  <input type="text" placeholder="To (18:00)" value={profile.working_to} onChange={e => setProfile({ ...profile, working_to: e.target.value })} className="w-1/2 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Reply Tone / Style</label>
-                <input type="text" value={profile.reply_style} onChange={e => setProfile({ ...profile, reply_style: e.target.value })} placeholder="Friendly, formal..." className={inputClass} />
+                <input type="text" value={profile.reply_style} onChange={e => setProfile({ ...profile, reply_style: e.target.value })} placeholder="Friendly, formal..." className={inputClass} style={inputStyle} />
               </div>
             </div>
             <div>
               <label className={labelClass}>Services & Products Overview</label>
-              <textarea value={profile.services} onChange={e => setProfile({ ...profile, services: e.target.value })} rows={3} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40 resize-none" />
+              <textarea value={profile.services} onChange={e => setProfile({ ...profile, services: e.target.value })} rows={3} className="w-full rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none resize-none" style={inputStyle} />
             </div>
             <div className="space-y-3">
               <label className={labelClass}>Custom Q&A / FAQs</label>
               <div className="space-y-2">
                 {faqs.map((faq, index) => (
                   <div key={index} className="flex gap-2">
-                    <input type="text" placeholder="Question" value={faq.question} onChange={e => { const n = [...faqs]; n[index].question = e.target.value; setFaqs(n) }} className="w-1/3 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
-                    <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const n = [...faqs]; n[index].answer = e.target.value; setFaqs(n) }} className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" />
-                    <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-xl bg-white/[0.02] text-red-400 hover:bg-red-500/10">✕</button>
+                    <input type="text" placeholder="Question" value={faq.question} onChange={e => { const n = [...faqs]; n[index].question = e.target.value; setFaqs(n) }} className="w-1/3 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
+                    <input type="text" placeholder="Answer" value={faq.answer} onChange={e => { const n = [...faqs]; n[index].answer = e.target.value; setFaqs(n) }} className="flex-1 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} />
+                <button onClick={() => setFaqs(faqs.filter((_, i) => i !== index))} className="p-2 rounded-xl text-red-400 hover:bg-red-500/10" style={{background:'var(--surface-elevated)'}}>✕</button>
                   </div>
                 ))}
-                <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.05] text-text-secondary hover:text-white transition-all">
+                <button onClick={() => setFaqs([...faqs, { question: '', answer: '' }])} className="text-[10px] font-black uppercase tracking-wider px-3 py-2 rounded-xl transition-all" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-secondary)'}}>
                   + Add FAQ Item
                 </button>
               </div>
             </div>
-            <div className="flex justify-end pt-2 border-t border-white/[0.04]">
+              <div className="flex justify-end pt-2" style={{borderTop:'1px solid var(--border)'}}>
               <button onClick={handleSaveProfile} disabled={savingProfile} className="px-6 py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 disabled:opacity-50">
                 {savingProfile ? 'Saving...' : 'Save Profile'}
               </button>
@@ -350,13 +352,13 @@ export default function AIKnowledgeContent() {
           </motion.div>
 
           {/* Custom Instructions */}
-          <motion.div {...cardAnim} className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4">
+          <motion.div {...cardAnim} className="rounded-2xl p-6 space-y-4" style={cardStyle}>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-tight">{t.aiKnowledge.customInstructions}</h3>
+              <h3 className="text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>{t.aiKnowledge.customInstructions}</h3>
               <p className="text-[11px] text-text-secondary">{t.aiKnowledge.customInstructionsDesc}</p>
             </div>
-            <textarea value={aiInstructions} onChange={e => setAiInstructions(e.target.value)} placeholder={t.aiKnowledge.instructionsPlaceholder} rows={5} className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3.5 py-3.5 text-xs text-white placeholder-text-tertiary focus:outline-none focus:border-accent/40 resize-none font-mono" />
-            <div className="flex justify-end pt-2 border-t border-white/[0.04]">
+              <textarea value={aiInstructions} onChange={e => setAiInstructions(e.target.value)} placeholder={t.aiKnowledge.instructionsPlaceholder} rows={5} className="w-full rounded-xl px-3.5 py-3.5 text-xs placeholder-text-tertiary focus:outline-none resize-none font-mono" style={inputStyle} />
+              <div className="flex justify-end pt-2" style={{borderTop:'1px solid var(--border)'}}>
               <button onClick={handleSaveInstructions} disabled={savingInstructions} className="px-6 py-2.5 rounded-xl text-xs font-bold bg-accent text-white hover:brightness-110 disabled:opacity-50">
                 {savingInstructions ? 'Saving...' : t.aiKnowledge.saveInstructions}
               </button>
@@ -367,36 +369,36 @@ export default function AIKnowledgeContent() {
         {/* Right Column */}
         <div className="space-y-6">
           {/* File Upload */}
-          <motion.div {...cardAnim} className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4">
+          <motion.div {...cardAnim} className="rounded-2xl p-6 space-y-4" style={cardStyle}>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-tight">{t.aiKnowledge.knowledgeBase}</h3>
+              <h3 className="text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>{t.aiKnowledge.knowledgeBase}</h3>
               <p className="text-[11px] text-text-secondary">Upload business PDFs, sheets, or manuals.</p>
             </div>
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/[0.08] hover:border-accent/30 rounded-2xl p-6 cursor-pointer bg-white/[0.01] hover:bg-accent/5 transition-all text-center group">
+            <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-6 cursor-pointer transition-all text-center group" style={{borderColor:'var(--border)',background:'var(--surface-elevated)'}}>
               <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-text-secondary group-hover:text-accent transition-all mb-3">☁️</div>
-              <span className="text-xs font-bold text-white">{t.aiKnowledge.uploadFile}</span>
+              <span className="text-xs font-bold" style={{color:'var(--text-primary)'}}>{t.aiKnowledge.uploadFile}</span>
               <span className="text-[9px] text-text-tertiary mt-1">PDF or Excel (Max 10MB)</span>
               <input type="file" accept=".pdf,.xlsx,.xls" onChange={handleFileUpload} disabled={uploading} className="hidden" />
               {uploading && <div className="mt-3 w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />}
             </label>
-            <button onClick={handleReindex} disabled={reindexing} className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.15] text-white transition-all flex items-center justify-center gap-1.5">
+            <button onClick={handleReindex} disabled={reindexing} className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-primary)'}}>
               {reindexing ? 'Reindexing...' : 'Reindex Files'}
             </button>
           </motion.div>
 
           {/* Files List */}
-          <motion.div {...cardAnim} className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-3">
-            <div className="text-xs font-bold text-white">Files list</div>
+          <motion.div {...cardAnim} className="rounded-2xl p-6 space-y-3" style={cardStyle}>
+            <div className="text-xs font-bold" style={{color:'var(--text-primary)'}}>Files list</div>
             {files.length === 0 ? (
               <div className="text-center py-6 text-[10px] text-text-tertiary">{t.aiKnowledge.noFiles}</div>
             ) : (
               <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-none">
                 {files.map(file => (
-                  <div key={file.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.01] border border-white/[0.04]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-base">{file.file_type === 'pdf' ? '📄' : '📊'}</span>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-white truncate max-w-[140px]">{file.filename}</p>
+                        <p className="text-[11px] font-bold truncate max-w-[140px]" style={{color:'var(--text-primary)'}}>{file.filename}</p>
                         <p className="text-[9px] text-text-tertiary">{file.chunks_count || 0} chunks</p>
                       </div>
                     </div>
@@ -408,14 +410,14 @@ export default function AIKnowledgeContent() {
           </motion.div>
 
           {/* AI Simulator */}
-          <motion.div {...cardAnim} className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4">
+          <motion.div {...cardAnim} className="rounded-2xl p-6 space-y-4" style={cardStyle}>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-tight">{t.aiKnowledge.testAi || 'Simulate Chatbot'}</h3>
+              <h3 className="text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>{t.aiKnowledge.testAi || 'Simulate Chatbot'}</h3>
               <p className="text-[11px] text-text-secondary">Simulate a chat query to test the response logic.</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-2">
-                <input type="text" value={testQuestion} onChange={e => setTestQuestion(e.target.value)} placeholder={t.aiKnowledge.testQuestionPlaceholder || 'Ask a simulated query...'} className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" onKeyPress={e => { if (e.key === 'Enter') handleTestResponse() }} />
+                <input type="text" value={testQuestion} onChange={e => setTestQuestion(e.target.value)} placeholder={t.aiKnowledge.testQuestionPlaceholder || 'Ask a simulated query...'} className="flex-1 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} onKeyPress={e => { if (e.key === 'Enter') handleTestResponse() }} />
                 <button onClick={handleTestResponse} disabled={testing} className="px-4 rounded-xl bg-accent text-white text-xs font-bold hover:brightness-110 disabled:opacity-50">
                   {testing ? '...' : 'Send'}
                 </button>
@@ -423,21 +425,21 @@ export default function AIKnowledgeContent() {
               {testResponse && (
                 <div className="p-3.5 rounded-xl bg-accent/10 border border-accent/15 space-y-1">
                   <div className="text-[9px] font-black uppercase tracking-wider text-accent">Simulation Response:</div>
-                  <p className="text-[11px] leading-relaxed text-white/95">{testResponse}</p>
+                  <p className="text-[11px] leading-relaxed" style={{color:'var(--text-primary)'}}>{testResponse}</p>
                 </div>
               )}
             </div>
           </motion.div>
 
           {/* RAG Search */}
-          <motion.div {...cardAnim} className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-4">
+          <motion.div {...cardAnim} className="rounded-2xl p-6 space-y-4" style={cardStyle}>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-white tracking-tight">RAG Search</h3>
+              <h3 className="text-sm font-bold tracking-tight" style={{color:'var(--text-primary)'}}>RAG Search</h3>
               <p className="text-[11px] text-text-secondary">Search knowledge snippets semantically.</p>
             </div>
             <div className="space-y-3">
               <div className="flex gap-2">
-                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Query semantic search..." className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40" onKeyPress={e => { if (e.key === 'Enter') handleSearch() }} />
+                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Query semantic search..." className="flex-1 rounded-xl px-3 py-2 text-xs placeholder-text-secondary focus:outline-none" style={inputStyle} onKeyPress={e => { if (e.key === 'Enter') handleSearch() }} />
                 <button onClick={handleSearch} disabled={searching} className="px-4 rounded-xl bg-accent text-white text-xs font-bold hover:brightness-110 disabled:opacity-50">
                   {searching ? '...' : 'Find'}
                 </button>
@@ -445,7 +447,7 @@ export default function AIKnowledgeContent() {
               {searchResults.length > 0 && (
                 <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-none">
                   {searchResults.map((result, index) => (
-                    <div key={index} className="p-2.5 rounded-lg bg-white/[0.01] border border-white/[0.04] space-y-1 text-[11px]">
+                      <div className="p-2.5 rounded-lg space-y-1 text-[11px]" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}>
                       <div className="flex justify-between text-[9px] text-accent">
                         <span>Source: {result.source}</span>
                         <span>Score: {Math.round(result.score * 100)}%</span>
