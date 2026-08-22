@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { MessageSquare, Camera, Mail, MessageCircle, Share2, ShoppingBag, Send, Music, ShoppingCart, Package, Globe } from 'lucide-react'
+import { MessageSquare, Camera, Mail, MessageCircle, Share2, ShoppingBag, Send, Music, ShoppingCart, Package, Globe, Star, MessageCircleMore } from 'lucide-react'
 
-type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla' | 'telegram' | 'tiktok' | 'shopify' | 'woocommerce'
+type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla' | 'telegram' | 'tiktok' | 'shopify' | 'woocommerce' | 'reviews' | 'webchat'
 
 interface ChannelIconProps {
   type: ChannelType
@@ -22,6 +22,8 @@ const channelColors: Record<ChannelType, string> = {
   tiktok: '#000000',
   shopify: '#96BF48',
   woocommerce: '#96588a',
+  reviews: '#4285F4',
+  webchat: '#8B3FFB',
 }
 
 const iconComponents: Record<ChannelType, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -35,6 +37,8 @@ const iconComponents: Record<ChannelType, React.ComponentType<{ size?: number; c
   tiktok: Music,
   shopify: ShoppingCart,
   woocommerce: Package,
+  reviews: Star,
+  webchat: MessageCircleMore,
 }
 
 export default function ChannelIcon({ type, size = 24, className = '' }: ChannelIconProps) {
