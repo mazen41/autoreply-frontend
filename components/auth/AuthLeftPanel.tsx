@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
-import Image from 'next/image'
+import { Bot } from 'lucide-react'
 
 // Mini AI Core for the left panel
 function MiniCore({ size = 90 }: { size?: number }) {
@@ -94,13 +94,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-12">
-          <Image 
-            src="/icons/logo.png" 
-            alt="NazBiz Logo" 
-            width={150} 
-            height={50}
-            className="object-contain"
-          />
+          <Bot size={50} className="text-accent" />
         </div>
 
         {/* Core + system status */}

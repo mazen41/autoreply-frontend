@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
+import { Send, ExternalLink, Bot, QrCode, Search, Link as LinkIcon, Check, X } from 'lucide-react'
 
 interface TelegramConnectProps {
   isConnected: boolean
@@ -46,11 +47,9 @@ export default function TelegramConnect({ isConnected, channel, onConnect, onDis
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img
-              src="/icons/vecteezy_telegram-png-icon_16716472.png"
-              alt="Telegram"
-              className="w-12 h-12"
-            />
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-subtle)', color: '#0088cc' }}>
+              <Send size={24} />
+            </div>
             <div>
               <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>
                 Telegram
@@ -79,11 +78,7 @@ export default function TelegramConnect({ isConnected, channel, onConnect, onDis
             <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
               {isRTL ? 'رابط البوت:' : 'Bot link:'} {botLink}
             </span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-              <polyline points="15 3 21 3 21 9" />
-              <line x1="10" y1="14" x2="21" y2="3" />
-            </svg>
+            <ExternalLink size={16} />
           </a>
 
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -118,11 +113,9 @@ export default function TelegramConnect({ isConnected, channel, onConnect, onDis
       }}
     >
       <div className="flex items-center gap-3 mb-6">
-        <img
-          src="/icons/vecteezy_telegram-png-icon_16716472.png"
-          alt="Telegram"
-          className="w-12 h-12"
-        />
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-subtle)', color: '#0088cc' }}>
+          <Send size={24} />
+        </div>
         <div>
           <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
             Telegram
@@ -347,10 +340,7 @@ function TelegramInstructions({ onClose }: { onClose: () => void }) {
             <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                  </svg>
+                  <LinkIcon size={16} />
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -375,11 +365,7 @@ function TelegramInstructions({ onClose }: { onClose: () => void }) {
             <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <path d="M8 12h8" />
-                    <path d="M12 8v8" />
-                  </svg>
+                  <QrCode size={16} />
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -406,10 +392,7 @@ function TelegramInstructions({ onClose }: { onClose: () => void }) {
             <div className="p-4 rounded-xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  </svg>
+                  <Search size={16} />
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>

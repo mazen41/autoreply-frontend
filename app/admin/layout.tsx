@@ -5,10 +5,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BarChart3, Bell, Box, CreditCard, FileText, Home, LogOut, Menu, Moon, Search, Settings, Shield, Sun, Users, X } from 'lucide-react'
+import { BarChart3, Bell, Box, CreditCard, FileText, Home, LogOut, Menu, Moon, Search, Settings, Shield, Sun, Users, X, Bot } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useLang } from '../../lib/LangContext'
-import Image from 'next/image'
 
 const navItems = [
   { path: '/admin', ar: '????????', en: 'Overview', icon: Home },
@@ -89,13 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <aside className="flex h-full w-72 flex-col border-white/10 bg-white/90 p-4 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:border-r lg:shadow-none rtl:lg:border-l rtl:lg:border-r-0">
       <div className="flex items-center justify-between p-2">
         <Link href="/admin" className="flex items-center gap-3">
-          <Image 
-            src="/icons/logo.png" 
-            alt="NazBiz Logo" 
-            width={120} 
-            height={40}
-            className="object-contain"
-          />
+          <Bot size={40} className="text-accent" />
         </Link>
         <button className="rounded-xl p-2 text-white/70 hover:bg-white/5 dark:hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><X size={20} /></button>
       </div>
