@@ -10,7 +10,7 @@ import InboxComposer from '../../../components/inbox/InboxComposer'
 import ConversationListItem from '../../../components/inbox/ConversationListItem'
 import MessageBubble from '../../../components/inbox/MessageBubble'
 import CustomerPanel from '../../../components/inbox/CustomerPanel'
-import { Send, PanelLeft, PanelRight } from 'lucide-react'
+import { Archive, Bot, CheckCircle2, ChevronLeft, ChevronRight, Eye, PanelLeft, PanelRight, Send, SidebarClose, SidebarOpen } from 'lucide-react'
 
 function senderLabel(conv: ApiConversation) {
   if (conv.sender_name && conv.sender_name.trim()) return conv.sender_name.trim()
@@ -79,6 +79,7 @@ export default function InboxPage() {
     sendReply,
     sendMediaReply,
     toggleAi,
+    updateConversationStatus,
     reactToMessage,
     submitFeedback,
     getConversationTags,
@@ -100,6 +101,9 @@ export default function InboxPage() {
   const [showEscalationQueue, setShowEscalationQueue] = useState(false)
   const [showMyAssignments, setShowMyAssignments] = useState(false)
   const [showCustomerPanel, setShowCustomerPanel] = useState(true)
+  const [showConversationList, setShowConversationList] = useState(true)
+  const [focusMode, setFocusMode] = useState(false)
+  const [newMessagesWaiting, setNewMessagesWaiting] = useState(false)
 
   // Tags state
   const [showTagInput, setShowTagInput] = useState(false)
@@ -107,6 +111,7 @@ export default function InboxPage() {
   const [conversationTags, setConversationTags] = useState<Map<number, Array<{ id: number; tag: string }>>>(new Map())
 
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -133,10 +138,20 @@ export default function InboxPage() {
     }
   }, [selectedId, getConversationTags])
 
-  // Scroll to bottom on new message
+  const isNearBottom = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return true
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 140
+  }, [])
+
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, optimistic])
+    if (isNearBottom()) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      setNewMessagesWaiting(false)
+    } else {
+      setNewMessagesWaiting(true)
+    }
+  }, [messages.length, optimistic.length, isNearBottom])
 
   // Memoized filtered conversations with advanced filters
   const filtered = useMemo(() => {
@@ -187,6 +202,14 @@ export default function InboxPage() {
     selectConversation(id)
     setMobilePane('chat')
   }
+
+  const handleStatusChange = useCallback(async (status: 'open' | 'closed' | 'pending') => {
+    if (!selectedConv) return
+    const ok = await updateConversationStatus(selectedConv.id, status)
+    setToast(ok ? (status === 'closed' ? 'Conversation closed' : 'Conversation reopened') : 'Could not update conversation')
+  }, [selectedConv, updateConversationStatus])
+
+  const chatOnly = focusMode || (!showConversationList && !showCustomerPanel)
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -257,11 +280,13 @@ export default function InboxPage() {
   }, [isRTL])
 
   return (
-    <div className="flex h-[calc(100vh-100px)] rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm overflow-hidden">
+    <div className={`flex h-[calc(100vh-100px)] overflow-hidden border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm transition-all duration-300 ${focusMode ? 'fixed inset-3 z-50 rounded-xl' : 'rounded-2xl'}`}>
       
       {/* Conversations list (Left Side) */}
-      <div className={`w-80 border-r border-[var(--border)] bg-[var(--surface)]/80 flex flex-col flex-shrink-0 transition-all duration-300 ${
-        mobilePane === 'chat' ? 'hidden md:flex' : 'flex'
+      <div className={`border-r border-[var(--border)] bg-[var(--surface)]/80 flex-col flex-shrink-0 transition-all duration-300 ${
+        mobilePane === 'chat' || !showConversationList || focusMode ? 'hidden' : 'flex'
+      } ${
+        showConversationList ? 'w-80' : 'w-0'
       }`}>
         
         {/* List Header */}
@@ -422,7 +447,7 @@ export default function InboxPage() {
       </div>
 
       {/* Active Conversation (Center) */}
-      <div className={`flex-1 flex flex-col bg-[var(--background)]/40 relative transition-all duration-300 ${
+      <div className={`flex-1 flex flex-col bg-[var(--background)]/40 relative transition-all duration-300 ${chatOnly ? 'min-w-0' : ''} ${
         mobilePane === 'list' ? 'hidden md:flex' : 'flex'
       }`}>
         
@@ -441,54 +466,56 @@ export default function InboxPage() {
         ) : (
           <>
             {/* Thread Header */}
-            <div className="px-6 py-4.5 border-b border-[var(--divider)] bg-[var(--surface-elevated)] flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  onClick={() => setMobilePane('list')}
-                  className="md:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                >
-                  ←
+            <div className="px-4 sm:px-6 py-4 border-b border-[var(--divider)] bg-[var(--surface-elevated)] flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <button onClick={() => setMobilePane('list')} className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)]" aria-label="Back to conversations">
+                  <ChevronLeft size={18} />
+                </button>
+                {!showConversationList && !focusMode && (
+                  <button onClick={() => setShowConversationList(true)} className="hidden md:inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                    <SidebarOpen size={15} /> Conversations
+                  </button>
+                )}
+                {showConversationList && !focusMode && (
+                  <button onClick={() => setShowConversationList(false)} className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Hide conversations" aria-label="Hide conversations">
+                    <SidebarClose size={15} />
+                  </button>
+                )}
+                {focusMode && (
+                  <button onClick={() => { setFocusMode(false); setShowConversationList(true) }} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                    <ChevronRight size={15} /> Exit focus
+                  </button>
+                )}
+                <button onClick={() => { setFocusMode(true); setShowConversationList(false); setShowCustomerPanel(false) }} className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Focus mode" aria-label="Focus mode">
+                  <Eye size={15} />
                 </button>
                 <div className="relative flex-shrink-0">
                   <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={38} className="rounded-xl border border-[var(--border)]" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-[var(--text-primary)] truncate">
-                    {senderLabel(selectedConv)}
-                  </div>
-                  <div className="text-[10px] text-[var(--text-secondary)] mt-0.5 flex items-center gap-1.5">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="capitalize">{ch?.label} Channel</span>
+                  <div className="truncate text-sm font-bold text-[var(--text-primary)]">{senderLabel(selectedConv)}</div>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${selectedConv.status === 'closed' ? 'bg-[var(--text-tertiary)]' : 'bg-emerald-500'}`} />
+                    <span className="capitalize">{ch?.label} Channel - {selectedConv.status}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Header actions */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleAi(selectedConv.id)}
-                  className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
-                    selectedConv.ai_enabled
-                      ? 'bg-accent/15 border-accent/30 text-accent'
-                      : 'bg-[var(--surface-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)]'
-                  }`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.ai_enabled ? 'bg-accent' : 'bg-[var(--text-tertiary)]'}`} />
-                  <span>AI {selectedConv.ai_enabled ? 'ACTIVE' : 'OFF'}</span>
+              <div className="flex items-center gap-2 overflow-x-auto">
+                <button onClick={() => toggleAi(selectedConv.id)} className={`relative inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-[10px] font-black uppercase tracking-wider transition-all ${selectedConv.ai_enabled ? 'bg-accent/15 border-accent/30 text-accent' : 'bg-[var(--surface-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+                  <Bot size={13} />
+                  <span className="hidden sm:inline">AI {selectedConv.ai_enabled ? 'Active' : 'Off'}</span>
                 </button>
-
-                <button
-                  onClick={() => setShowTagInput(!showTagInput)}
-                  className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)] transition-all"
-                >
-                  🏷️ Tags
+                <button onClick={() => handleStatusChange(selectedConv.status === 'closed' ? 'open' : 'closed')} className={`inline-flex h-9 items-center gap-1.5 rounded-xl border px-3 text-[10px] font-black uppercase tracking-wider transition-all ${selectedConv.status === 'closed' ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-500' : 'border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`} title={selectedConv.status === 'closed' ? 'Reopen conversation' : 'Close conversation'}>
+                  {selectedConv.status === 'closed' ? <CheckCircle2 size={13} /> : <Archive size={13} />}
+                  <span className="hidden sm:inline">{selectedConv.status === 'closed' ? 'Reopen' : 'Close'}</span>
                 </button>
-
-                <button
-                  onClick={() => setShowCustomerPanel(!showCustomerPanel)}
-                  className="hidden lg:block px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)] transition-all"
-                >
-                  {showCustomerPanel ? 'Hide Panel' : 'Customer'}
+                <button onClick={() => setShowTagInput(!showTagInput)} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]">
+                  Tags
+                </button>
+                <button onClick={() => setShowCustomerPanel(!showCustomerPanel)} className="hidden lg:inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]">
+                  {showCustomerPanel ? <PanelRight size={13} /> : <PanelLeft size={13} />}
+                  <span>{showCustomerPanel ? 'Hide Panel' : 'Customer'}</span>
                 </button>
               </div>
             </div>
@@ -556,7 +583,11 @@ export default function InboxPage() {
             )}
 
             {/* Chat Thread Message Bubbles */}
-            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scrollbar-thin">
+            <div
+              ref={scrollRef}
+              onScroll={() => { if (isNearBottom()) setNewMessagesWaiting(false) }}
+              className={`flex-1 overflow-y-auto py-6 space-y-6 scrollbar-thin ${chatOnly ? 'px-4 sm:px-10 lg:px-16' : 'px-4 sm:px-6'}`}
+            >
               {loadingMsgs ? (
                 <div className="flex justify-center items-center h-full">
                   <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -590,6 +621,18 @@ export default function InboxPage() {
               <div ref={bottomRef} />
             </div>
 
+            {newMessagesWaiting && (
+              <button
+                onClick={() => {
+                  bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+                  setNewMessagesWaiting(false)
+                }}
+                className="absolute bottom-24 left-1/2 z-10 -translate-x-1/2 rounded-full border border-[var(--border)] bg-[var(--surface-elevated)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] shadow-md"
+              >
+                New messages
+              </button>
+            )}
+
             {/* Chat Composer */}
             <InboxComposer
               disabled={false}
@@ -602,7 +645,7 @@ export default function InboxPage() {
         )}
 
         {/* Customer Panel (Right Side) */}
-        {showCustomerPanel && (
+        {showCustomerPanel && !focusMode && (
           <div className="hidden lg:block transition-all duration-300">
             <CustomerPanel
               conversation={selectedConv}
