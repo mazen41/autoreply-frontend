@@ -172,7 +172,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) return
-      const res = await fetch(`${API}/api/business/profile`, {
+      const res = await fetch(`${API}/api/knowledge/profile`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ ...profile, faqs }),
