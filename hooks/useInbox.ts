@@ -76,6 +76,7 @@ export interface ApiConversation {
   priority?: string | null
   confidence?: number | null
   classified_at?: string | null
+  created_at?: string | null
 }
 
 function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] }): ApiConversation {
@@ -100,6 +101,7 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     priority: raw.priority ?? null,
     confidence: raw.confidence ?? null,
     classified_at: raw.classified_at ?? null,
+    created_at: raw.created_at ?? new Date().toISOString(),
   }
 }
 
