@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Facebook, Instagram, Mail, MessageCircle, Twitter, ShoppingBag, Send, Music, ShoppingCart, Package } from 'lucide-react'
+import { MessageSquare, Camera, Mail, MessageCircle, Share2, ShoppingBag, Send, Music, ShoppingCart, Package, Globe } from 'lucide-react'
 
 type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla' | 'telegram' | 'tiktok' | 'shopify' | 'woocommerce'
 
@@ -25,11 +25,11 @@ const channelColors: Record<ChannelType, string> = {
 }
 
 const iconComponents: Record<ChannelType, React.ComponentType<{ size?: number; className?: string }>> = {
-  facebook: Facebook,
-  instagram: Instagram,
+  facebook: MessageSquare,
+  instagram: Camera,
   gmail: Mail,
   whatsapp: MessageCircle,
-  twitter: Twitter,
+  twitter: Share2,
   salla: ShoppingBag,
   telegram: Send,
   tiktok: Music,
