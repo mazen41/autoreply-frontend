@@ -243,6 +243,28 @@ export function useInbox() {
     }
   }, [])
 
+  const updateConversationStatus = useCallback(async (convId: number, status: 'open' | 'closed' | 'pending'): Promise<boolean> => {
+    const previous = conversations.find(c => c.id === convId) ?? null
+    setConversations(prev => prev.map(c => c.id === convId ? { ...c, status } : c))
+    try {
+      const res = await fetch(`${API}/inbox/${convId}/status`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      if (data.conversation) {
+        const normalized = normalizeConversation(data.conversation)
+        setConversations(prev => prev.map(c => c.id === convId ? normalized : c))
+      }
+      return true
+    } catch {
+      if (previous) setConversations(prev => prev.map(c => c.id === convId ? previous : c))
+      return false
+    }
+  }, [conversations])
+
   const reactToMessage = useCallback(async (messageId: number, emoji: string): Promise<boolean> => {
     try {
       const res = await fetch(`${API}/messages/${messageId}/react`, {
@@ -398,7 +420,7 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, reactToMessage,
+    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, reactToMessage,
     getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   }
 }
