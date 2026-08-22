@@ -100,7 +100,7 @@ export default function InboxPage() {
   const [aiEnabledFilter, setAiEnabledFilter] = useState(false)
   const [showEscalationQueue, setShowEscalationQueue] = useState(false)
   const [showMyAssignments, setShowMyAssignments] = useState(false)
-  const [showCustomerPanel, setShowCustomerPanel] = useState(true)
+  const [showCustomerPanel, setShowCustomerPanel] = useState(false)
   const [showConversationList, setShowConversationList] = useState(true)
   const [focusMode, setFocusMode] = useState(false)
   const [newMessagesWaiting, setNewMessagesWaiting] = useState(false)
@@ -280,11 +280,11 @@ export default function InboxPage() {
   }, [isRTL])
 
   return (
-    <div className={`flex h-[calc(100vh-100px)] overflow-hidden border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm transition-all duration-300 ${focusMode ? 'fixed inset-3 z-50 rounded-xl' : 'rounded-2xl'}`}>
+    <div className={`flex h-[calc(100vh-100px)] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm transition-all duration-300 ${focusMode ? 'ring-2 ring-accent/20' : ''}`}>
       
       {/* Conversations list (Left Side) */}
       <div className={`border-r border-[var(--border)] bg-[var(--surface)]/80 flex-col flex-shrink-0 transition-all duration-300 ${
-        mobilePane === 'chat' || !showConversationList || focusMode ? 'hidden' : 'flex'
+        !showConversationList || focusMode ? 'hidden' : mobilePane === 'chat' ? 'hidden md:flex' : 'flex'
       } ${
         showConversationList ? 'w-80' : 'w-0'
       }`}>
@@ -447,9 +447,10 @@ export default function InboxPage() {
       </div>
 
       {/* Active Conversation (Center) */}
-      <div className={`flex-1 flex flex-col bg-[var(--background)]/40 relative transition-all duration-300 ${chatOnly ? 'min-w-0' : ''} ${
+      <div className={`flex-1 flex bg-[var(--background)]/40 relative transition-all duration-300 ${chatOnly ? 'min-w-0' : ''} ${
         mobilePane === 'list' ? 'hidden md:flex' : 'flex'
       }`}>
+        <div className="min-w-0 flex-1 flex flex-col">
         
         {!selectedConv ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -482,11 +483,26 @@ export default function InboxPage() {
                   </button>
                 )}
                 {focusMode && (
-                  <button onClick={() => { setFocusMode(false); setShowConversationList(true) }} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+                  <button onClick={() => { setFocusMode(false); setShowConversationList(true); setShowCustomerPanel(true) }} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                     <ChevronRight size={15} /> Exit focus
                   </button>
                 )}
-                <button onClick={() => { setFocusMode(true); setShowConversationList(false); setShowCustomerPanel(false) }} className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Focus mode" aria-label="Focus mode">
+                <button
+                  onClick={() => {
+                    if (focusMode) {
+                      setFocusMode(false)
+                      setShowConversationList(true)
+                      setShowCustomerPanel(true)
+                    } else {
+                      setFocusMode(true)
+                      setShowConversationList(false)
+                      setShowCustomerPanel(false)
+                    }
+                  }}
+                  className="hidden md:inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  title={focusMode ? 'Exit focus mode' : 'Focus mode'}
+                  aria-label={focusMode ? 'Exit focus mode' : 'Focus mode'}
+                >
                   <Eye size={15} />
                 </button>
                 <div className="relative flex-shrink-0">
@@ -513,7 +529,7 @@ export default function InboxPage() {
                 <button onClick={() => setShowTagInput(!showTagInput)} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]">
                   Tags
                 </button>
-                <button onClick={() => setShowCustomerPanel(!showCustomerPanel)} className="hidden lg:inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]">
+                <button onClick={() => { setFocusMode(false); setShowCustomerPanel(prev => !prev) }} className="hidden lg:inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)]">
                   {showCustomerPanel ? <PanelRight size={13} /> : <PanelLeft size={13} />}
                   <span>{showCustomerPanel ? 'Hide Panel' : 'Customer'}</span>
                 </button>
@@ -644,9 +660,29 @@ export default function InboxPage() {
           </>
         )}
 
+        </div>
+
+        {!showCustomerPanel && selectedConv && !focusMode && (
+          <button
+            onClick={() => setShowCustomerPanel(true)}
+            className="hidden lg:inline-flex absolute right-3 top-20 z-20 h-9 items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] px-3 text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)] shadow-sm transition-all hover:text-[var(--text-primary)]"
+            aria-label="Open customer details"
+            title="Open customer details"
+          >
+            <PanelLeft size={13} />
+            Customer
+          </button>
+        )}
+
         {/* Customer Panel (Right Side) */}
         {showCustomerPanel && !focusMode && (
-          <div className="hidden lg:block transition-all duration-300">
+          <>
+          <button
+            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+            onClick={() => setShowCustomerPanel(false)}
+            aria-label="Close customer details overlay"
+          />
+          <div className="fixed inset-y-0 right-0 z-50 block max-w-[90vw] flex-shrink-0 transition-all duration-300 lg:static lg:z-auto lg:max-w-none">
             <CustomerPanel
               conversation={selectedConv}
               tags={conversationTags.get(selectedId || 0)}
@@ -671,13 +707,14 @@ export default function InboxPage() {
               onClose={() => setShowCustomerPanel(false)}
             />
           </div>
+          </>
         )}
       </div>
 
       {/* Mobile/Tablet Panel Toggle */}
-      <div className="lg:hidden fixed bottom-4 right-4 z-50">
+      <div className="lg:hidden fixed bottom-4 right-4 z-30">
         <button
-          onClick={() => setShowCustomerPanel(!showCustomerPanel)}
+          onClick={() => setShowCustomerPanel(prev => !prev)}
           className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-lg"
           aria-label="Toggle customer panel"
         >
