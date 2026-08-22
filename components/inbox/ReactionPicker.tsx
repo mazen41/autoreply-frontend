@@ -23,7 +23,7 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
         initial={{ opacity: 0, y: 6, scale: 0.94 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 6, scale: 0.94 }}
-        transition={{ duration: 0.14 }}
+        transition={{ duration: 0.1 }}
         style={{
           position: 'fixed',
           left: position.x,
@@ -40,8 +40,8 @@ export default function ReactionPicker({ onSelect, onClose, position }: Reaction
             display: 'flex',
             alignItems: 'center',
             gap: 2,
-            boxShadow: '0 10px 30px var(--shadow-premium)',
-            backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 12px var(--shadow-md)',
+            backdropFilter: 'blur(8px)',
             maxWidth: 'calc(100vw - 24px)',
             flexWrap: expanded ? 'wrap' : 'nowrap',
           }}

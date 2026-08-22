@@ -1,22 +1,16 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useInbox, ApiConversation, ApiMessage } from '../../../hooks/useInbox'
 import { useLang } from '../../../lib/LangContext'
 import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import ReactionPicker from '../../../components/inbox/ReactionPicker'
-import { Download, FileText, Mic, Paperclip, Pause, Send, SmilePlus, Trash2, Video, X } from 'lucide-react'
-import DOMPurify from 'dompurify'
-
-function channelMeta(type: string) {
-  if (type === 'facebook')  return { label: 'FB',  color: '#0E7AFE', glow: 'rgba(14,122,254,0.15)' }
-  if (type === 'instagram') return { label: 'IG',  color: '#D62976', glow: 'rgba(214,41,118,0.15)' }
-  if (type === 'gmail')     return { label: 'GM',  color: '#EA4335', glow: 'rgba(234,67,53,0.15)'  }
-  if (type === 'whatsapp')  return { label: 'WA',  color: '#25D366', glow: 'rgba(37,211,102,0.15)' }
-  return { label: '??', color: 'var(--text-secondary)', glow: 'var(--border)' }
-}
+import InboxComposer from '../../../components/inbox/InboxComposer'
+import ConversationListItem from '../../../components/inbox/ConversationListItem'
+import MessageBubble from '../../../components/inbox/MessageBubble'
+import CustomerPanel from '../../../components/inbox/CustomerPanel'
+import { Send, PanelLeft, PanelRight } from 'lucide-react'
 
 function senderLabel(conv: ApiConversation) {
   if (conv.sender_name && conv.sender_name.trim()) return conv.sender_name.trim()
@@ -30,128 +24,21 @@ function formatTimestamp(iso: string | null) {
   const now = new Date()
   const diffMs = now.getTime() - d.getTime()
   const diffMin = Math.floor(diffMs / 60000)
-  const diffH   = Math.floor(diffMs / 3600000)
-  const diffD   = Math.floor(diffMs / 86400000)
+  const diffH = Math.floor(diffMs / 3600000)
+  const diffD = Math.floor(diffMs / 86400000)
   if (diffMin < 1) return 'just now'
   if (diffMin < 60) return `${diffMin}m`
-  if (diffH < 24)   return `${diffH}h`
-  if (diffD < 7)    return `${diffD}d`
+  if (diffH < 24) return `${diffH}h`
+  if (diffD < 7) return `${diffD}d`
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function formatMsgTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-}
-
-function absoluteMediaUrl(url?: string | null) {
-  if (!url) return ''
-  if (/^https?:\/\//i.test(url)) return url
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  return `${apiBase.replace(/\/$/, '')}${url.startsWith('/') ? url : `/${url}`}`
-}
-
-function formatFileSize(size?: number | null) {
-  if (!size) return ''
-  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
-  return `${(size / 1024 / 1024).toFixed(1)} MB`
-}
-
-function mediaTypeFromFile(file: File): 'image' | 'audio' | 'video' | 'document' {
-  if (file.type.startsWith('image/')) return 'image'
-  if (file.type.startsWith('audio/')) return 'audio'
-  if (file.type.startsWith('video/')) return 'video'
-  return 'document'
-}
-
-function renderHtmlContent(content: string, channelType?: string, contentHtml?: string | null) {
-  const htmlSource = contentHtml && contentHtml.trim() ? contentHtml : null
-  if (channelType === 'gmail' && htmlSource) {
-    const sanitizedContent = DOMPurify.sanitize(htmlSource, {
-      ALLOWED_TAGS: ['*'],
-      ALLOWED_ATTR: ['*'],
-      ALLOWED_URI_REGEXP: /^(?:...)/i,
-      ALLOW_DATA_ATTR: true,
-      WHOLE_DOCUMENT: true,
-    })
-    return <EmailIframe content={sanitizedContent} />
-  }
-  if (channelType === 'gmail' && !htmlSource && content && content.includes('<') && /<\/?[a-z][\s\S]*>/i.test(content)) {
-    const sanitizedContent = DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: ['*'],
-      ALLOWED_ATTR: ['*'],
-      WHOLE_DOCUMENT: true,
-    })
-    return <EmailIframe content={sanitizedContent.toString()} />
-  }
-  return <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>{content}</div>
-}
-
-function EmailIframe({ content }: { content: string }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [height, setHeight] = useState(200)
-
-  useEffect(() => {
-    const iframe = iframeRef.current
-    if (!iframe) return
-    const doc = iframe.contentDocument || iframe.contentWindow?.document
-    if (!doc) return
-
-    const resizeScript = `<script>
-  function _sendH() {
-    parent.postMessage({ type: 'iframe-height', height: document.documentElement.scrollHeight }, '*');
-  }
-  document.addEventListener('DOMContentLoaded', _sendH);
-  window.addEventListener('load', _sendH);
-  document.querySelectorAll('img').forEach(function(img) {
-    img.addEventListener('load', _sendH);
-    img.addEventListener('error', _sendH);
-  });
-  setTimeout(_sendH, 100);
-  setTimeout(_sendH, 600);
-<\/script>`
-
-    const isFullDoc = /^\s*(<(!DOCTYPE|html)[^>]*>|<!DOCTYPE)/i.test(content.trim())
-    let html: string
-    if (isFullDoc) {
-      html = content.includes('</body>')
-        ? content.replace(/<\/body>/i, resizeScript + '</body>')
-        : content + resizeScript
-    } else {
-      html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>body{margin:0;padding:0;background:#14151D;color:#fff;font-family:sans-serif}</style>
-</head>
-<body>${content}
-${resizeScript}
-</body>
-</html>`
-    }
-
-    doc.open()
-    doc.write(html)
-    doc.close()
-  }, [content])
-
-  useEffect(() => {
-    function onMessage(e: MessageEvent) {
-      if (e.data?.type === 'iframe-height' && typeof e.data.height === 'number') {
-        setHeight(Math.max(60, e.data.height + 8))
-      }
-    }
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [])
-
-  return (
-    <iframe
-      ref={iframeRef}
-      title="Email Content"
-      style={{ width: '100%', height, border: 'none', display: 'block', background: 'transparent', borderRadius: 8 }}
-      sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox"
-    />
-  )
+function channelMeta(type: string) {
+  if (type === 'facebook') return { label: 'FB', color: '#0E7AFE' }
+  if (type === 'instagram') return { label: 'IG', color: '#D62976' }
+  if (type === 'gmail') return { label: 'GM', color: '#EA4335' }
+  if (type === 'whatsapp') return { label: 'WA', color: '#25D366' }
+  return { label: '??', color: 'var(--text-secondary)' }
 }
 
 function groupMessagesByDate(msgs: ApiMessage[]) {
@@ -169,240 +56,18 @@ function groupMessagesByDate(msgs: ApiMessage[]) {
 function ConvSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 py-3.5 animate-pulse">
-      <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex-shrink-0" />
+      <div className="w-10 h-10 rounded-xl bg-[var(--surface-elevated)] flex-shrink-0" />
       <div className="flex-1">
-        <div className="h-3 bg-white/[0.03] rounded w-1/2 mb-2" />
-        <div className="h-2 bg-white/[0.02] rounded w-5/6" />
+        <div className="h-3 bg-[var(--surface-elevated)] rounded w-1/2 mb-2" />
+        <div className="h-2 bg-[var(--surface)] rounded w-5/6" />
       </div>
     </div>
   )
 }
 
-function ConvRow({ conv, active, onClick, onToggleAi, tags, isEscalated, isAssigned }: { 
-  conv: ApiConversation; 
-  active: boolean; 
-  onClick: () => void; 
-  onToggleAi: (id: number) => void;
-  tags?: Array<{ id: number; tag: string }>;
-  isEscalated?: boolean;
-  isAssigned?: boolean;
-}) {
-  const preview = conv.latest_message?.content ?? conv.subject ?? '—'
-  const isAI = conv.latest_message?.is_ai
-  const isHighPriority = conv.priority === 'high'
-  const isClassified = !!conv.category
-
-  return (
-    <motion.div
-      onClick={onClick}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01, x: 2 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-      className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 border-b border-white/[0.03] text-left transition-all duration-300 relative group cursor-pointer ${
-        active
-          ? 'bg-white/[0.03]'
-          : isEscalated
-            ? 'bg-amber-500/5'
-            : 'bg-transparent hover:bg-white/[0.01]'
-      }`}
-    >
-      {/* Indicator bar */}
-      {active && (
-        <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r bg-gradient-to-b from-accent to-[#8B3FFB]" />
-      )}
-
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="relative flex-shrink-0">
-          <ChannelIcon type={(conv.channel?.type || 'facebook') as any} size={38} className="rounded-xl border border-white/[0.05]" />
-          
-          {/* Status dots */}
-          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#14151D] flex items-center justify-center">
-            <div className={`w-1.5 h-1.5 rounded-full ${isEscalated ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-          </div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-1 mb-0.5">
-            <span className="text-xs font-bold text-white truncate">
-              {senderLabel(conv)}
-            </span>
-            <span className="text-[10px] text-text-secondary flex-shrink-0">
-              {formatTimestamp(conv.last_message_at)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-1.5 mb-1">
-            {isEscalated && <span className="text-[9px] text-amber-400 font-bold uppercase">🔥 Escalated</span>}
-            {isAI && <span className="text-[9px] text-accent font-bold uppercase">⚡ AI</span>}
-            {conv.category && <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent/15 text-accent">{conv.category}</span>}
-          </div>
-
-          <p className="text-xs text-text-secondary truncate">
-            {preview}
-          </p>
-
-          {/* Tags */}
-          {tags && tags.length > 0 && (
-            <div className="flex gap-1 mt-1.5 flex-wrap">
-              {tags.slice(0, 2).map(tag => (
-                <span key={tag.id} className="text-[8px] px-1.5 py-0.5 rounded bg-white/[0.03] text-text-secondary border border-white/[0.04]">
-                  {tag.tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <button
-        onClick={(e) => { e.stopPropagation(); onToggleAi(conv.id) }}
-        className={`p-1.5 rounded-lg border text-[10px] font-bold transition-all duration-300 flex-shrink-0 ${
-          conv.ai_enabled
-            ? 'bg-accent/15 border-accent/30 text-accent hover:bg-accent/25'
-            : 'bg-white/[0.02] border-white/[0.06] text-text-tertiary hover:border-white/[0.15] hover:text-text-secondary'
-        }`}
-      >
-        AI
-      </button>
-    </motion.div>
-  )
-}
-
-function MsgBubble({ msg, channelType, isRTL, onReact, conv, onSubmitFeedback }: { 
-  msg: ApiMessage; 
-  channelType?: string; 
-  isRTL: boolean; 
-  onReact?: (messageId: number, emoji: string) => void; 
-  conv?: ApiConversation;
-  onSubmitFeedback?: (messageId: number, feedback: 'positive' | 'negative') => void;
-}) {
-  const isIn = msg.direction === 'inbound'
-  const [showPicker, setShowPicker] = useState(false)
-  const [pickerPosition, setPickerPosition] = useState({ x: 0, y: 0 })
-  const [lightbox, setLightbox] = useState(false)
-  const reactButtonRef = useRef<HTMLButtonElement>(null)
-
-  const isWhatsApp = channelType === 'whatsapp'
-  const isGmail = channelType === 'gmail'
-  const canReact = isWhatsApp && !!msg.whatsapp_message_id
-  const isAIMessage = msg.is_ai
-
-  const handleFeedback = (feedback: 'positive' | 'negative') => {
-    if (onSubmitFeedback) {
-      onSubmitFeedback(msg.id, feedback)
-    }
-  }
-
-  if (isGmail) {
-    const hasHtml = !!(msg.content_html && msg.content_html.trim())
-    const sanitizedHtml = hasHtml ? DOMPurify.sanitize(msg.content_html!) : null
-    const senderName = conv?.sender_name || conv?.sender_email || 'Unknown'
-    const subject = conv?.subject || '(No Subject)'
-    const formattedDate = new Date(msg.created_at).toLocaleDateString('en-US', { 
-      weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-    })
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-4 w-full"
-      >
-        <div className="bg-[#14151D] border border-white/[0.05] rounded-2xl overflow-hidden">
-          <div className="bg-white/[0.01] border-b border-white/[0.04] px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent font-bold text-xs">
-                {senderName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <div className="text-xs font-bold text-white leading-none">{senderName}</div>
-                <div className="text-[10px] text-text-secondary mt-1">{isIn ? 'to me' : 'from me'}</div>
-              </div>
-            </div>
-            <div className="text-[10px] text-text-secondary">{formattedDate}</div>
-          </div>
-          <div className="p-5 text-sm text-white/95">
-            {subject && <div className="font-bold mb-3">{subject}</div>}
-            {sanitizedHtml ? <EmailIframe content={sanitizedHtml} /> : <div className="whitespace-pre-wrap">{msg.content}</div>}
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
-
-  const mediaUrl = absoluteMediaUrl(msg.media_url)
-  const hasMedia = !!mediaUrl && !!msg.media_type
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`w-full flex ${isIn ? 'justify-start' : 'justify-end'} mb-4`}
-    >
-      <div className={`max-w-[70%] flex items-end gap-2 group/msg ${isIn ? 'flex-row' : 'flex-row-reverse'}`}>
-        
-        {/* Chat message content bubble */}
-        <div className="relative">
-          <div
-            className={`border transition-all duration-200 ${
-              isIn
-                ? 'bg-[#14151D] border-white/[0.06] text-white rounded-[20px_20px_20px_4px]'
-                : msg.is_ai
-                ? 'bg-gradient-to-br from-accent to-[#8B3FFB] border-accent/20 text-white shadow-xl shadow-accent/5 rounded-[20px_20px_4px_20px]'
-                : 'bg-white/[0.03] border-white/[0.06] text-white rounded-[20px_20px_4px_20px]'
-            } ${hasMedia ? 'p-1.5' : 'px-4.5 py-3 text-xs leading-relaxed'}`}
-          >
-            {isAIMessage && (
-              <div className="text-[8px] font-black uppercase tracking-wider text-accent/80 mb-1 flex items-center gap-1">
-                ⚡ AI Drafted
-              </div>
-            )}
-            
-            {hasMedia && msg.media_type === 'image' && (
-              <div className="rounded-xl overflow-hidden cursor-pointer" onClick={() => setLightbox(true)}>
-                <img src={mediaUrl} alt="attachment" className="max-w-full max-h-60 object-cover" />
-              </div>
-            )}
-            
-            {!hasMedia && <div className="whitespace-pre-wrap">{msg.content}</div>}
-          </div>
-
-          <div className={`text-[9px] text-text-secondary mt-1 flex items-center gap-2 ${isIn ? 'justify-start' : 'justify-end'}`}>
-            <span>{formatMsgTime(msg.created_at)}</span>
-            {isAIMessage && (
-              <div className="flex items-center gap-1.5 ml-1">
-                <button onClick={() => handleFeedback('positive')} className="hover:text-emerald-400">👍</button>
-                <button onClick={() => handleFeedback('negative')} className="hover:text-rose-400">👎</button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {canReact && (
-          <button
-            ref={reactButtonRef}
-            onClick={() => {
-              if (onReact) onReact(msg.id, '❤️')
-            }}
-            className="w-7 h-7 rounded-lg border border-white/[0.06] bg-white/[0.02] text-text-secondary hover:text-white flex items-center justify-center opacity-0 group-hover/msg:opacity-100 transition-opacity"
-          >
-            ❤️
-          </button>
-        )}
-      </div>
-
-      {lightbox && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4" onClick={() => setLightbox(false)}>
-          <img src={mediaUrl} alt="attachment fullsize" className="max-w-full max-h-full object-contain rounded-xl" />
-        </div>
-      )}
-    </motion.div>
-  )
-}
-
 export default function InboxPage() {
   const { isRTL, t } = useLang()
+  const { theme } = useTheme()
   const {
     conversations,
     selectedId,
@@ -410,7 +75,6 @@ export default function InboxPage() {
     messages,
     loadingConvs,
     loadingMsgs,
-    sending,
     selectConversation,
     sendReply,
     sendMediaReply,
@@ -425,7 +89,6 @@ export default function InboxPage() {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [mobilePane, setMobilePane] = useState<'list' | 'chat'>('list')
-  const [reply, setReply] = useState('')
   const [toast, setToast] = useState('')
   const [optimistic, setOptimistic] = useState<ApiMessage[]>([])
   
@@ -434,26 +97,17 @@ export default function InboxPage() {
   const [channelFilter, setChannelFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [aiEnabledFilter, setAiEnabledFilter] = useState(false)
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
   const [showEscalationQueue, setShowEscalationQueue] = useState(false)
   const [showMyAssignments, setShowMyAssignments] = useState(false)
+  const [showCustomerPanel, setShowCustomerPanel] = useState(true)
 
   // Tags state
   const [showTagInput, setShowTagInput] = useState(false)
   const [newTag, setNewTag] = useState('')
   const [conversationTags, setConversationTags] = useState<Map<number, Array<{ id: number; tag: string }>>>(new Map())
 
-  // File attachments state
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [filePreview, setFilePreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
-  
-  // Audio state
-  const [isRecording, setIsRecording] = useState(false)
-  const recorderRef = useRef<MediaRecorder | null>(null)
-  const chunksRef = useRef<Blob[]>([])
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (toast) {
@@ -462,14 +116,14 @@ export default function InboxPage() {
     }
   }, [toast])
 
-  // Fetch with advanced filters
-  const fetchConversations = React.useCallback(async () => {
-    // Relying on useInbox logic
+  // Fetch conversations with filters
+  const fetchConversations = useCallback(async () => {
+    // This will be handled by useInbox hook
   }, [])
 
   useEffect(() => {
     fetchConversations()
-  }, [search, channelFilter, statusFilter, aiEnabledFilter, dateFrom, dateTo, showEscalationQueue, showMyAssignments, showAdvancedFilters, fetchConversations])
+  }, [search, channelFilter, statusFilter, aiEnabledFilter, showEscalationQueue, showMyAssignments, showAdvancedFilters, fetchConversations])
 
   useEffect(() => {
     if (selectedId) {
@@ -484,103 +138,136 @@ export default function InboxPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, optimistic])
 
-  const allMessages = [...messages, ...optimistic]
-  const grouped = groupMessagesByDate(allMessages)
+  // Memoized filtered conversations with advanced filters
+  const filtered = useMemo(() => {
+    return conversations.filter(c => {
+      // Basic channel filter
+      const matchType = filter === 'all' || c.channel?.type === filter
+      
+      // Advanced channel filter (if different from basic)
+      const matchAdvancedChannel = !channelFilter || c.channel?.type === channelFilter
+      
+      // Status filter
+      const matchStatus = !statusFilter || c.status === statusFilter
+      
+      // AI enabled filter
+      const matchAI = !aiEnabledFilter || c.ai_enabled
+      
+      // Escalation queue filter
+      const matchEscalated = !showEscalationQueue || c.category === 'escalation_needed'
+      
+      // My assignments filter
+      const matchAssigned = !showMyAssignments || c.assigned_agent_id
+      
+      // Search query
+      const q = search.toLowerCase()
+      const matchSearch = !q || 
+        senderLabel(c).toLowerCase().includes(q) || 
+        (c.subject ?? '').toLowerCase().includes(q) || 
+        (c.latest_message?.content ?? '').toLowerCase().includes(q) ||
+        (c.sender_email ?? '').toLowerCase().includes(q)
+      
+      // If advanced filters are not shown, use basic filter only
+      if (!showAdvancedFilters && !showEscalationQueue && !showMyAssignments) {
+        return matchType && matchSearch
+      }
+      
+      // Otherwise apply all filters
+      return matchType && matchAdvancedChannel && matchStatus && matchAI && matchEscalated && matchAssigned && matchSearch
+    })
+  }, [conversations, filter, search, showAdvancedFilters, channelFilter, statusFilter, aiEnabledFilter, showEscalationQueue, showMyAssignments])
+
+  const allMessages = useMemo(() => [...messages, ...optimistic], [messages, optimistic])
+  const grouped = useMemo(() => groupMessagesByDate(allMessages), [allMessages])
   
-  const filtered = conversations.filter(c => {
-    const matchType = filter === 'all' || c.channel?.type === filter
-    if (showAdvancedFilters || showEscalationQueue || showMyAssignments) return matchType
-    const q = search.toLowerCase()
-    return matchType && (!q || senderLabel(c).toLowerCase().includes(q) || (c.subject ?? '').toLowerCase().includes(q) || (c.latest_message?.content ?? '').toLowerCase().includes(q))
-  })
+  const ch = selectedConv ? channelMeta(selectedConv.channel?.type) : null
 
   function handleSelect(id: number) {
     setOptimistic([])
-    clearSelectedFile()
     selectConversation(id)
     setMobilePane('chat')
   }
 
-  function clearSelectedFile() {
-    if (filePreview) URL.revokeObjectURL(filePreview)
-    setSelectedFile(null)
-    setFilePreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
-  function handleFilePicked(file: File | null) {
-    clearSelectedFile()
-    if (!file) return
-    setSelectedFile(file)
-    setFilePreview(URL.createObjectURL(file))
-  }
-
-  async function handleSend() {
-    if (!selectedId) return
-    if (selectedFile) {
-      const mediaType = mediaTypeFromFile(selectedFile)
-      const uploaded = await sendMediaReply(selectedId, selectedFile, reply.trim(), mediaType, selectedFile.type.startsWith('audio/'))
-      if (!uploaded) {
-        setToast(isRTL ? 'تعذر إرسال الملف. حاول مرة أخرى.' : 'Failed to send media. Try again.')
-        return
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K to focus search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
       }
-      setReply('')
-      clearSelectedFile()
-      return
+      
+      // Escape to close panels
+      if (e.key === 'Escape') {
+        if (showAdvancedFilters) setShowAdvancedFilters(false)
+        if (showTagInput) setShowTagInput(false)
+        if (showCustomerPanel) setShowCustomerPanel(false)
+      }
+      
+      // Arrow key navigation for conversations
+      if (filtered.length > 0 && !showAdvancedFilters && !showTagInput) {
+        const currentIndex = filtered.findIndex(c => c.id === selectedId)
+        
+        if (e.key === 'ArrowDown' && currentIndex < filtered.length - 1) {
+          e.preventDefault()
+          handleSelect(filtered[currentIndex + 1].id)
+        }
+        
+        if (e.key === 'ArrowUp' && currentIndex > 0) {
+          e.preventDefault()
+          handleSelect(filtered[currentIndex - 1].id)
+        }
+      }
     }
 
-    if (!reply.trim()) return
-    const text = reply.trim()
-    setReply('')
-    const temp: ApiMessage = { id: Date.now(), conversation_id: selectedId, content: text, direction: 'outbound', is_ai: false, status: 'manual', created_at: new Date().toISOString() }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [filtered, selectedId, showAdvancedFilters, showTagInput, showCustomerPanel])
+
+  // Composer handlers with isolated state
+  const handleSendText = useCallback(async (text: string): Promise<boolean> => {
+    if (!selectedId) return false
+    const temp: ApiMessage = { 
+      id: Date.now(), 
+      conversation_id: selectedId, 
+      content: text, 
+      direction: 'outbound', 
+      is_ai: false, 
+      status: 'manual', 
+      created_at: new Date().toISOString() 
+    }
     setOptimistic(p => [...p, temp])
     const ok = await sendReply(selectedId, text)
-    if (!ok) { setOptimistic(p => p.filter(m => m.id !== temp.id)); setReply(text); setToast(isRTL ? 'تعذر الإرسال. حاول مرة أخرى.' : 'Failed to send. Try again.') }
-    else setOptimistic([])
-  }
-
-  async function toggleRecording() {
-    if (isRecording) {
-      recorderRef.current?.stop()
-      recorderRef.current?.stream.getTracks().forEach(track => track.stop())
-      setIsRecording(false)
-      return
+    if (!ok) { 
+      setOptimistic(p => p.filter(m => m.id !== temp.id))
+      return false
     }
+    setOptimistic([])
+    return true
+  }, [selectedId, sendReply])
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream)
-      chunksRef.current = []
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data)
-      }
-      recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
-        const file = new File([blob], `voice-note-${Date.now()}.webm`, { type: blob.type })
-        handleFilePicked(file)
-      }
-      recorderRef.current = recorder
-      recorder.start()
-      setIsRecording(true)
-    } catch {
-      setToast(isRTL ? 'تعذر تشغيل الميكروفون.' : 'Could not start microphone.')
-    }
-  }
+  const handleSendMedia = useCallback(async (file: File, caption: string, mediaType: string, isVoiceNote: boolean): Promise<boolean> => {
+    if (!selectedId) return false
+    const uploaded = await sendMediaReply(selectedId, file, caption, mediaType, isVoiceNote)
+    return uploaded !== null
+  }, [selectedId, sendMediaReply])
 
-  const ch = selectedConv ? channelMeta(selectedConv.channel?.type) : null
+  const handleComposerError = useCallback((message: string) => {
+    setToast(isRTL ? 'تعذر الإرسال. حاول مرة أخرى.' : message)
+  }, [isRTL])
 
   return (
-    <div className="flex h-[calc(100vh-100px)] rounded-2xl border border-white/[0.05] bg-[#14151D]/60 backdrop-blur-md overflow-hidden">
+    <div className="flex h-[calc(100vh-100px)] rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm overflow-hidden">
       
-      {/* ── Conversations list (Left Side) ── */}
-      <div className={`w-80 border-r border-white/[0.05] bg-[#14151D]/80 flex flex-col flex-shrink-0 ${
+      {/* Conversations list (Left Side) */}
+      <div className={`w-80 border-r border-[var(--border)] bg-[var(--surface)]/80 flex flex-col flex-shrink-0 transition-all duration-300 ${
         mobilePane === 'chat' ? 'hidden md:flex' : 'flex'
       }`}>
         
         {/* List Header */}
-        <div className="p-4 border-b border-white/[0.04] space-y-3 bg-white/[0.01]">
+        <div className="p-4 border-b border-[var(--divider)] space-y-3 bg-[var(--surface-elevated)]">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-black text-white tracking-tight">
+            <h2 className="text-base font-black text-[var(--text-primary)] tracking-tight">
               {t.inbox.title}
             </h2>
             <span className="text-[9px] font-black px-2.5 py-0.5 rounded-full bg-accent/10 border border-accent/15 text-accent uppercase">
@@ -596,8 +283,8 @@ export default function InboxPage() {
                 onClick={() => setFilter(f)}
                 className={`px-2.5 py-1.5 rounded-lg text-[9px] font-black tracking-wider uppercase transition-all duration-200 cursor-pointer flex-shrink-0 border ${
                   filter === f
-                    ? 'bg-accent border-accent text-white shadow-md shadow-accent/15'
-                    : 'bg-white/[0.02] text-text-secondary border-white/[0.04] hover:text-white'
+                    ? 'bg-accent border-accent text-white'
+                    : 'bg-[var(--surface-elevated)] text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {f}
@@ -608,26 +295,118 @@ export default function InboxPage() {
           {/* Search bar */}
           <div className="relative">
             <input
+              ref={searchInputRef}
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={isRTL ? 'بحث بالاسم أو المحتوى...' : 'Search inbox...'}
-              className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40"
+              className="w-full bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-accent/40"
+              aria-label={isRTL ? 'بحث في المحادثات' : 'Search conversations'}
             />
           </div>
+
+          {/* Advanced Filters Toggle */}
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+            aria-expanded={showAdvancedFilters}
+            aria-controls="advanced-filters-panel"
+          >
+            <span className="font-bold uppercase tracking-wider">
+              {isRTL ? 'فلاتر متقدمة' : 'Advanced Filters'}
+            </span>
+            <span className="text-accent">{showAdvancedFilters ? '▲' : '▼'}</span>
+          </button>
+
+          {/* Advanced Filters Panel */}
+          {showAdvancedFilters && (
+            <div id="advanced-filters-panel" className="space-y-2 pt-2 border-t border-[var(--divider)]" role="region" aria-label="Advanced filters">
+              {/* Channel Filter */}
+              <select
+                value={channelFilter}
+                onChange={e => setChannelFilter(e.target.value)}
+                className="w-full bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-accent/40"
+              >
+                <option value="">All Channels</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="gmail">Gmail</option>
+                <option value="whatsapp">WhatsApp</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="w-full bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-accent/40"
+              >
+                <option value="">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+                <option value="pending">Pending</option>
+              </select>
+
+              {/* AI Enabled Filter */}
+              <label className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aiEnabledFilter}
+                  onChange={e => setAiEnabledFilter(e.target.checked)}
+                  className="w-4 h-4 rounded border-[var(--border)] bg-[var(--surface-elevated)] accent-accent"
+                />
+                <span>{isRTL ? 'AI مفعل فقط' : 'AI Enabled Only'}</span>
+              </label>
+
+              {/* Escalation Queue Toggle */}
+              <label className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showEscalationQueue}
+                  onChange={e => setShowEscalationQueue(e.target.checked)}
+                  className="w-4 h-4 rounded border-[var(--border)] bg-[var(--surface-elevated)] accent-amber-500"
+                />
+                <span className="text-amber-400">{isRTL ? 'طابور التصعيد' : 'Escalation Queue'}</span>
+              </label>
+
+              {/* My Assignments Toggle */}
+              <label className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showMyAssignments}
+                  onChange={e => setShowMyAssignments(e.target.checked)}
+                  className="w-4 h-4 rounded border-[var(--border)] bg-[var(--surface-elevated)] accent-accent"
+                />
+                <span>{isRTL ? 'تعييناتي' : 'My Assignments'}</span>
+              </label>
+
+              {/* Clear Filters Button */}
+              <button
+                onClick={() => {
+                  setChannelFilter('')
+                  setStatusFilter('')
+                  setAiEnabledFilter(false)
+                  setShowEscalationQueue(false)
+                  setShowMyAssignments(false)
+                }}
+                className="w-full py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+              >
+                {isRTL ? 'مسح الفلاتر' : 'Clear Filters'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* List Display */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/[0.02] scrollbar-none">
+        <div className="flex-1 overflow-y-auto divide-y divide-[var(--divider)] scrollbar-none">
           {loadingConvs ? (
             Array(5).fill(0).map((_, i) => <ConvSkeleton key={i} />)
           ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-xs text-text-tertiary">
+            <div className="p-8 text-center text-xs text-[var(--text-tertiary)]">
               {search ? t.inbox.noResults : t.inbox.noConversations}
             </div>
           ) : (
             filtered.map(conv => (
-              <ConvRow
+              <ConversationListItem
                 key={conv.id}
                 conv={conv}
                 active={selectedId === conv.id}
@@ -642,42 +421,42 @@ export default function InboxPage() {
         </div>
       </div>
 
-      {/* ── Active Conversation (Right Side) ── */}
-      <div className={`flex-1 flex flex-col bg-[#04061A]/40 relative ${
+      {/* Active Conversation (Center) */}
+      <div className={`flex-1 flex flex-col bg-[var(--background)]/40 relative transition-all duration-300 ${
         mobilePane === 'list' ? 'hidden md:flex' : 'flex'
       }`}>
         
         {!selectedConv ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/[0.04] flex items-center justify-center text-accent mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-accent mb-4">
               <Send size={20} className="opacity-80" />
             </div>
-            <h3 className="text-sm font-bold text-white mb-1">
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">
               {isRTL ? 'اختر محادثة للبدء' : 'Select a conversation'}
             </h3>
-            <p className="text-xs text-text-secondary max-w-xs leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] max-w-xs leading-relaxed">
               {t.inbox.selectConversation}
             </p>
           </div>
         ) : (
           <>
             {/* Thread Header */}
-            <div className="px-6 py-4.5 border-b border-white/[0.04] bg-white/[0.01] flex items-center justify-between gap-4">
+            <div className="px-6 py-4.5 border-b border-[var(--divider)] bg-[var(--surface-elevated)] flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   onClick={() => setMobilePane('list')}
-                  className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-white"
+                  className="md:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   ←
                 </button>
                 <div className="relative flex-shrink-0">
-                  <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={38} className="rounded-xl border border-white/[0.05]" />
+                  <ChannelIcon type={(selectedConv.channel?.type || 'facebook') as any} size={38} className="rounded-xl border border-[var(--border)]" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-xs font-bold text-white truncate">
+                  <div className="text-xs font-bold text-[var(--text-primary)] truncate">
                     {senderLabel(selectedConv)}
                   </div>
-                  <div className="text-[10px] text-text-secondary mt-0.5 flex items-center gap-1.5">
+                  <div className="text-[10px] text-[var(--text-secondary)] mt-0.5 flex items-center gap-1.5">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     <span className="capitalize">{ch?.label} Channel</span>
                   </div>
@@ -690,33 +469,40 @@ export default function InboxPage() {
                   onClick={() => toggleAi(selectedConv.id)}
                   className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
                     selectedConv.ai_enabled
-                      ? 'bg-accent/15 border-accent/30 text-accent shadow-sm'
-                      : 'bg-white/[0.02] border-white/[0.05] text-text-secondary hover:border-white/[0.15]'
+                      ? 'bg-accent/15 border-accent/30 text-accent'
+                      : 'bg-[var(--surface-elevated)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)]'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.ai_enabled ? 'bg-accent animate-pulse' : 'bg-text-secondary'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${selectedConv.ai_enabled ? 'bg-accent' : 'bg-[var(--text-tertiary)]'}`} />
                   <span>AI {selectedConv.ai_enabled ? 'ACTIVE' : 'OFF'}</span>
                 </button>
 
                 <button
                   onClick={() => setShowTagInput(!showTagInput)}
-                  className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-white/[0.02] border border-white/[0.05] text-text-secondary hover:border-white/[0.15] transition-all"
+                  className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)] transition-all"
                 >
                   🏷️ Tags
+                </button>
+
+                <button
+                  onClick={() => setShowCustomerPanel(!showCustomerPanel)}
+                  className="hidden lg:block px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border)] transition-all"
+                >
+                  {showCustomerPanel ? 'Hide Panel' : 'Customer'}
                 </button>
               </div>
             </div>
 
             {/* Tag Management Panel */}
             {showTagInput && selectedId && (
-              <div className="px-6 py-3.5 border-b border-white/[0.04] bg-[#14151D]/60 space-y-2 animate-slide-down">
+              <div className="px-6 py-3.5 border-b border-[var(--divider)] bg-[var(--surface)]/60 space-y-2">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newTag}
                     onChange={e => setNewTag(e.target.value)}
                     placeholder={isRTL ? 'أضف وسماً...' : 'Add tag name...'}
-                    className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-xl px-3 py-2 text-xs text-white placeholder-text-secondary focus:outline-none focus:border-accent/40"
+                    className="flex-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-accent/40"
                     onKeyPress={e => {
                       if (e.key === 'Enter' && newTag.trim()) {
                         addTag(selectedId, newTag.trim()).then(tag => {
@@ -748,7 +534,7 @@ export default function InboxPage() {
                 {conversationTags.get(selectedId) && conversationTags.get(selectedId)!.length > 0 && (
                   <div className="flex gap-1.5 flex-wrap">
                     {conversationTags.get(selectedId)!.map(tag => (
-                      <div key={tag.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.03] text-text-secondary border border-white/[0.05] text-[10px]">
+                      <div key={tag.id} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border)] text-[10px]">
                         <span>{tag.tag}</span>
                         <button
                           onClick={() => {
@@ -776,19 +562,19 @@ export default function InboxPage() {
                   <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : grouped.length === 0 ? (
-                <div className="text-center py-16 text-xs text-text-tertiary">
+                <div className="text-center py-16 text-xs text-[var(--text-tertiary)]">
                   {t.inbox.noMessages}
                 </div>
               ) : (
                 grouped.map(group => (
                   <div key={group.date} className="space-y-4">
                     <div className="flex items-center gap-4 my-2">
-                      <div className="flex-1 h-px bg-white/[0.04]" />
-                      <span className="text-[9px] font-black text-text-tertiary uppercase tracking-widest">{group.date}</span>
-                      <div className="flex-1 h-px bg-white/[0.04]" />
+                      <div className="flex-1 h-px bg-[var(--divider)]" />
+                      <span className="text-[9px] font-black text-[var(--text-tertiary)] uppercase tracking-widest">{group.date}</span>
+                      <div className="flex-1 h-px bg-[var(--divider)]" />
                     </div>
                     {group.messages.map(msg => (
-                      <MsgBubble
+                      <MessageBubble
                         key={msg.id}
                         msg={msg}
                         channelType={selectedConv?.channel?.type}
@@ -804,102 +590,64 @@ export default function InboxPage() {
               <div ref={bottomRef} />
             </div>
 
-            {/* Chat Composer / Message Input Panel */}
-            <div className="p-4 border-t border-white/[0.04] bg-white/[0.01]">
-              
-              {selectedFile && (
-                <div className="mb-3 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center gap-3 animate-slide-up">
-                  <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden text-accent">
-                    {mediaTypeFromFile(selectedFile) === 'image' && filePreview ? (
-                      <img src={filePreview} alt={selectedFile.name} className="w-full h-full object-cover" />
-                    ) : mediaTypeFromFile(selectedFile) === 'video' ? (
-                      <Video size={18} />
-                    ) : mediaTypeFromFile(selectedFile) === 'audio' ? (
-                      <Mic size={18} />
-                    ) : (
-                      <FileText size={18} />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-bold text-white truncate">{selectedFile.name}</div>
-                    <div className="text-[9px] text-text-secondary mt-0.5">{formatFileSize(selectedFile.size)}</div>
-                  </div>
-                  <button onClick={clearSelectedFile} className="w-8 h-8 rounded-lg bg-white/[0.03] text-text-secondary hover:text-red-400 flex items-center justify-center">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 bg-white/[0.02] border border-white/[0.06] focus-within:border-accent/40 rounded-2xl p-1.5 transition-all">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={e => handleFilePicked(e.target.files?.[0] ?? null)}
-                  className="hidden"
-                />
-                
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={sending || selectedConv.channel?.type !== 'whatsapp'}
-                  className="p-2.5 rounded-xl text-text-secondary hover:text-white hover:bg-white/[0.03] transition-all disabled:opacity-30"
-                >
-                  <Paperclip size={16} />
-                </button>
-
-                <button
-                  onClick={toggleRecording}
-                  disabled={sending || selectedConv.channel?.type !== 'whatsapp'}
-                  className={`p-2.5 rounded-xl transition-all disabled:opacity-30 ${
-                    isRecording ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse' : 'text-text-secondary hover:text-white hover:bg-white/[0.03]'
-                  }`}
-                >
-                  {isRecording ? <Pause size={16} /> : <Mic size={16} />}
-                </button>
-
-                <input
-                  type="text"
-                  value={reply}
-                  onChange={e => setReply(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-                  placeholder={selectedFile ? (isRTL ? 'تعليق...' : 'Add a caption...') : (isRTL ? 'اكتب رسالتك...' : 'Type message...')}
-                  disabled={sending}
-                  className="flex-1 bg-transparent border-none text-xs text-white placeholder-text-tertiary focus:outline-none focus:ring-0 px-2.5"
-                />
-
-                <button
-                  onClick={handleSend}
-                  disabled={sending || (!reply.trim() && !selectedFile)}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                    sending || (!reply.trim() && !selectedFile)
-                      ? 'bg-transparent text-text-tertiary'
-                      : 'bg-accent text-white hover:brightness-110 shadow-lg shadow-accent/10'
-                  }`}
-                >
-                  {sending ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send size={14} />
-                  )}
-                </button>
-              </div>
-            </div>
+            {/* Chat Composer */}
+            <InboxComposer
+              disabled={false}
+              channelType={selectedConv?.channel?.type}
+              onSendText={handleSendText}
+              onSendMedia={handleSendMedia}
+              onError={handleComposerError}
+            />
           </>
+        )}
+
+        {/* Customer Panel (Right Side) */}
+        {showCustomerPanel && (
+          <div className="hidden lg:block transition-all duration-300">
+            <CustomerPanel
+              conversation={selectedConv}
+              tags={conversationTags.get(selectedId || 0)}
+              onRemoveTag={(tagId) => {
+                if (selectedId) {
+                  removeTag(selectedId, tagId).then(success => {
+                    if (success) {
+                      setConversationTags(prev => new Map(prev).set(selectedId, (prev.get(selectedId) || []).filter(t => t.id !== tagId)))
+                    }
+                  })
+                }
+              }}
+              onAddTag={(tag) => {
+                if (selectedId) {
+                  addTag(selectedId, tag).then(tag => {
+                    if (tag) {
+                      setConversationTags(prev => new Map(prev).set(selectedId, [...(prev.get(selectedId) || []), tag]))
+                    }
+                  })
+                }
+              }}
+              onClose={() => setShowCustomerPanel(false)}
+            />
+          </div>
         )}
       </div>
 
+      {/* Mobile/Tablet Panel Toggle */}
+      <div className="lg:hidden fixed bottom-4 right-4 z-50">
+        <button
+          onClick={() => setShowCustomerPanel(!showCustomerPanel)}
+          className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-lg"
+          aria-label="Toggle customer panel"
+        >
+          {showCustomerPanel ? <PanelLeft size={20} /> : <PanelRight size={20} />}
+        </button>
+      </div>
+
       {/* Floating Toast Notification */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 px-4 py-3 rounded-xl bg-accent/15 border border-accent/25 text-accent text-xs font-bold z-[1000] shadow-2xl backdrop-blur-md flex items-center gap-2"
-          >
-            {toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {toast && (
+        <div className="fixed bottom-6 right-6 px-4 py-3 rounded-xl bg-accent/15 border border-accent/25 text-accent text-xs font-bold z-[1000] backdrop-blur-sm flex items-center gap-2">
+          {toast}
+        </div>
+      )}
     </div>
   )
 }
