@@ -2,12 +2,14 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 import {
   Send, Plus, Trash2, Play, Edit2, X, Clock, CheckCircle,
   AlertCircle, RefreshCw, Users, MessageSquare, Filter,
   Calendar, BarChart2, Zap, ChevronDown, Search, TrendingUp,
   CalendarOff, Eye, ArrowLeft, Megaphone, Target, Activity,
 } from 'lucide-react'
+import Modal from './ui/Modal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -318,46 +320,68 @@ export default function CampaignsContent({ businessId }: { businessId: number })
     <div style={{ padding: '24px 0', maxWidth: 960, margin: '0 auto' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}
+      >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
             <div style={{
-              width: 38, height: 38, borderRadius: 11,
-              background: 'linear-gradient(135deg,var(--accent),var(--accent-hover,#8B3FFB))',
+              width: 44, height: 44, borderRadius: 13,
+              background: 'linear-gradient(135deg,var(--accent),var(--accent-end))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent)',
             }}>
-              <Send size={18} color="#fff" />
+              <Send size={20} color="#fff" />
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Campaigns</h1>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Campaigns</h1>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>Send bulk messages to your contacts across all connected channels</p>
+          <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', margin: 0 }}>Send bulk messages to your contacts across all connected channels</p>
         </div>
-        <button onClick={openCreate} style={{
-          display: 'flex', alignItems: 'center', gap: 7, padding: '10px 18px',
-          borderRadius: 12, background: 'var(--accent)', color: '#fff',
-          border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14,
-        }}>
-          <Plus size={15} /> New Campaign
+        <button
+          onClick={openCreate}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px',
+            borderRadius: 14, background: 'linear-gradient(135deg,var(--accent),var(--accent-end))', color: '#fff',
+            border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+            boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent)',
+            transition: 'transform .15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
+        >
+          <Plus size={16} /> New Campaign
         </button>
-      </div>
+      </motion.div>
 
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Total',        value: summary.total,       color: 'var(--text-primary)' },
-          { label: 'Drafts',       value: summary.draft,       color: '#64748b' },
-          { label: 'Sending',      value: summary.sending,     color: '#3b82f6' },
-          { label: 'Sent',         value: summary.sent,        color: '#10b981' },
-          { label: 'Total Reached',value: summary.totalReached, color: 'var(--accent)' },
-        ].map(s => (
-          <div key={s.label} style={{
-            padding: '16px 20px', borderRadius: 14,
-            background: 'var(--surface-elevated)', border: '1px solid var(--border)',
-            display: 'flex', flexDirection: 'column', gap: 4,
-          }}>
-            <span style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700 }}>{s.label}</span>
-            <span style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</span>
-          </div>
+          { label: 'Total',         value: summary.total,        color: 'var(--text-primary)', icon: <Megaphone size={15} /> },
+          { label: 'Drafts',        value: summary.draft,        color: '#64748b',              icon: <Edit2 size={15} /> },
+          { label: 'Sending',       value: summary.sending,      color: '#3b82f6',              icon: <RefreshCw size={15} /> },
+          { label: 'Sent',          value: summary.sent,         color: '#10b981',              icon: <CheckCircle size={15} /> },
+          { label: 'Total Reached', value: summary.totalReached, color: 'var(--accent)',        icon: <TrendingUp size={15} /> },
+        ].map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.35 }}
+            style={{
+              padding: '18px 20px', borderRadius: 16,
+              background: 'var(--surface-elevated)', border: '1px solid var(--border)',
+              display: 'flex', flexDirection: 'column', gap: 10, position: 'relative', overflow: 'hidden',
+            }}
+          >
+            <div style={{ position: 'absolute', top: -18, right: -18, width: 64, height: 64, borderRadius: '50%', background: s.color, opacity: 0.08 }} />
+            <div style={{
+              width: 30, height: 30, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `color-mix(in srgb, ${s.color} 14%, transparent)`, color: s.color,
+            }}>{s.icon}</div>
+            <div>
+              <span style={{ fontSize: 26, fontWeight: 900, color: s.color, lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</span>
+              <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 700, marginTop: 4 }}>{s.label}</div>
+            </div>
+          </motion.div>
         ))}
       </div>
 
