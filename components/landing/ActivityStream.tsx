@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 const FEED_ITEMS = [
@@ -113,11 +112,8 @@ export default function ActivityStream() {
                 const s = STATUS_CONFIG[item.status] || STATUS_CONFIG.received
                 const isProcessing = processingIdx !== null && FEED_ITEMS[processingIdx] === item
                 return (
-                  <motion.div
+                  <div
                     key={`${item.name}-${i}`}
-                    initial={{ opacity: 0, x: isRTL ? -40 : 40, scale: 0.96 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] as any }}
                     className="flex items-center gap-4 p-4 rounded-2xl glass card-os"
                     style={{ background: 'var(--surface)' }}
                   >
@@ -169,7 +165,7 @@ export default function ActivityStream() {
                     <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-tertiary)' }}>
                       {item.time}
                     </span>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
@@ -215,12 +211,14 @@ export default function ActivityStream() {
                     <span style={{ color: bar.color }}>{bar.pct}%</span>
                   </div>
                   <div className="h-1 rounded-full" style={{ background: 'var(--surface-elevated)' }}>
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: bar.color, boxShadow: `0 0 8px ${bar.color}60` }}
-                      initial={{ width: 0 }}
-                      animate={visible ? { width: `${bar.pct}%` } : {}}
-                      transition={{ duration: 1.2, delay: 0.5 + i * 0.2 }}
+                    <div
+                      className="h-full rounded-full transition-all duration-1000"
+                      style={{
+                        background: bar.color,
+                        boxShadow: `0 0 8px ${bar.color}60`,
+                        width: visible ? `${bar.pct}%` : '0%',
+                        transitionDelay: `${0.5 + i * 0.2}s`,
+                      }}
                     />
                   </div>
                 </div>

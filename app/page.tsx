@@ -16,7 +16,7 @@ function Hero() {
       <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8 flex justify-center">
           <div className="w-48 h-14 flex items-center justify-center">
-            <Bot size={60} className="text-accent" />
+            <img src="/icons/logo_icon.png" alt="NazBiz" className="w-16 h-16 object-contain" />
           </div>
         </div>
         <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>

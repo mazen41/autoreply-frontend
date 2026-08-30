@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../lib/LangContext'
-import { motion } from 'framer-motion'
 
 function useCountUp(target: number, duration = 2000, start = false) {
   const [value, setValue] = useState(0)
@@ -52,26 +51,30 @@ export default function CommandCenter() {
       className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-10 overflow-hidden"
     >
       {/* Top status bar */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6, delay: 0.2 }}
+      <div
         className="flex items-center gap-3 mb-10 px-5 py-2.5 rounded-full glass"
-        style={{ border: '1px solid var(--border)' }}
+        style={{
+          border: '1px solid var(--border)',
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(-15px)',
+          transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s',
+        }}
       >
         <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--accent)' }} />
         <span className="text-xs font-semibold" style={{ color: 'var(--accent)', letterSpacing: '0.08em' }}>
           {isRTL ? 'نظام الذكاء الاصطناعي — نشط' : 'AI OPERATING SYSTEM — ONLINE'}
         </span>
         <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>v4.1.0</span>
-      </motion.div>
+      </div>
 
       {/* Metrics row */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, delay: 0.3 }}
+      <div
         className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10 w-full max-w-3xl px-4"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s',
+        }}
       >
         {METRICS.map((m, i) => (
           <div
@@ -91,18 +94,20 @@ export default function CommandCenter() {
             <div className="mt-2 h-px shimmer-line rounded-full" />
           </div>
         ))}
-      </motion.div>
+      </div>
 
       {/* Central AI Core + Headline */}
       <div className="flex flex-col items-center relative">
 
         {/* AI Core */}
-        <motion.div
+        <div
           className="relative flex items-center justify-center mb-8"
-          style={{ width: 220, height: 220 }}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={visible ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] as any }}
+          style={{
+            width: 220,
+            height: 220,
+            opacity: visible ? 1 : 0,
+            transition: 'opacity 1s ease 0.4s',
+          }}
         >
           {/* Pulse rings */}
           <div className="absolute inset-0 flex items-center justify-center">
@@ -142,7 +147,6 @@ export default function CommandCenter() {
               borderRadius: '50%',
               background: 'radial-gradient(circle at 40% 35%, var(--accent-subtle) 0%, var(--accent-subtle) 50%, transparent 75%)',
               border: '2px solid var(--border)',
-              backdropFilter: 'blur(10px)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -168,14 +172,16 @@ export default function CommandCenter() {
               }}
             />
           ))}
-        </motion.div>
+        </div>
 
         {/* Headline — integrated into interface */}
-        <motion.div
+        <div
           className="text-center px-4 max-w-3xl"
-          initial={{ opacity: 0, y: 40 }}
-          animate={visible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.6 }}
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'opacity 0.8s ease 0.6s, transform 0.8s ease 0.6s',
+          }}
         >
           {/* System label */}
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -238,15 +244,16 @@ export default function CommandCenter() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
+      <div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        initial={{ opacity: 0 }}
-        animate={visible ? { opacity: 1 } : {}}
-        transition={{ delay: 1.2, duration: 0.6 }}
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 0.6s ease 1.2s',
+        }}
       >
         <span className="text-xs tracking-widest" style={{ color: 'var(--text-tertiary)' }}>
           {isRTL ? 'مرر للاكتشاف' : 'SCROLL TO EXPLORE'}
@@ -255,7 +262,7 @@ export default function CommandCenter() {
           className="w-px h-12"
           style={{ background: 'linear-gradient(to bottom, var(--accent-subtle), transparent)' }}
         />
-      </motion.div>
+      </div>
     </section>
   )
 }

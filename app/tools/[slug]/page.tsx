@@ -50,7 +50,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
       <div className="border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <Bot size={35} className="text-accent" />
+            <img src="/icons/logo_icon.png" alt="NazBiz" className="w-12 h-12 object-contain" />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/tools" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import { useAuth } from '../../lib/AuthContext'
-import { motion } from 'framer-motion'
-import { Bot, Sun, Moon } from 'lucide-react'
+import { Sun, Moon } from 'lucide-react'
 
 const NAV_LINKS = [
   { labelKey: 'commandCenter', href: '#command-center' },
@@ -34,13 +34,10 @@ export default function Navbar() {
   }
 
   return (
-    <motion.nav
-      initial={{ y: -64, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+    <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-xl ${
         scrolled
-          ? 'border-b border-border bg-background/80 shadow-lg shadow-black/20'
+          ? 'border-b border-border bg-background/80 shadow-md shadow-black/20'
           : 'border-b border-transparent bg-transparent'
       }`}
     >
@@ -49,9 +46,19 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="relative">
-              <Bot size={40} className="text-accent" />
-            </div>
+            <Image
+              src="/icons/logo_icon.png"
+              alt="NazBiz"
+              width={38}
+              height={38}
+              className="object-contain"
+              priority
+            />
+            <span className="text-sm font-black tracking-tight" style={{
+              background: 'linear-gradient(135deg, var(--accent, #0E7AFE), #8B3FFB)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}>NazBiz</span>
           </Link>
 
           {/* Desktop links */}
@@ -71,45 +78,35 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {/* Live indicator */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full surface-elevated border">
-              <div className="w-1.5 h-1.5 rounded-full status-live accent-bg accent-shadow-lg" aria-hidden="true"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
               <span className="text-xs font-medium text-text-secondary">{isRTL ? 'مباشر' : 'Live'}</span>
             </div>
 
             <button
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-colors duration-200 text-text-secondary"
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
 
             <button
               onClick={toggleLang}
-              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-colors duration-200 text-text-secondary"
             >
               {lang === 'ar' ? 'EN' : 'ع'}
             </button>
 
             {user ? (
-              <Link
-                href="/dashboard"
-                className="btn-primary"
-              >
+              <Link href="/dashboard" className="btn-primary">
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}
               </Link>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="text-text-secondary hover:text-accent-secondary"
-                >
+                <Link href="/login" className="text-text-secondary hover:text-accent-secondary transition-colors duration-200">
                   {t.nav.login}
                 </Link>
-
-                <Link
-                  href="/register"
-                  className="btn-primary"
-                >
+                <Link href="/register" className="btn-primary">
                   {t.nav.startFree}
                 </Link>
               </>
@@ -118,7 +115,7 @@ export default function Navbar() {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-all duration-200 text-text-secondary"
+            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-colors duration-200 text-text-secondary"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? '✕' : '☰'}
@@ -127,9 +124,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div
-            className="md:hidden py-4 space-y-2 border-t border-border bg-surface"
-          >
+          <div className="md:hidden py-4 space-y-2 border-t border-border bg-surface">
             {NAV_LINKS.map(({ labelKey, href }) => (
               <a
                 key={href}
@@ -165,6 +160,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-    </motion.nav>
+    </nav>
   )
 }

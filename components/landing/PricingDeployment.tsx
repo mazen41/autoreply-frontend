@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 function useRevealSection() {
@@ -86,13 +85,14 @@ export default function PricingDeployment() {
             const isPopular = !!plan.popular
 
             return (
-              <motion.div
+              <div
                 key={i}
-                initial={{ opacity: 0, y: 40 }}
-                animate={visible ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.7, delay: i * 0.1 }}
                 className="relative"
-                style={{ transform: isPopular ? 'scale(1.04)' : undefined }}
+                style={{
+                  transform: isPopular ? 'scale(1.04)' : undefined,
+                  opacity: visible ? 1 : 0,
+                  transition: `opacity 0.7s ease ${i * 0.1}s`,
+                }}
               >
                 {/* Module frame */}
                 {isPopular ? (
@@ -102,17 +102,15 @@ export default function PricingDeployment() {
                 ) : (
                   <PlanCard plan={plan} price={price} annual={annual} isPopular={false} isRTL={isRTL} t={t} />
                 )}
-              </motion.div>
+              </div>
             )
           })}
         </div>
 
         {/* Bottom note */}
-        <motion.div
+        <div
           className="text-center mt-12 flex flex-col items-center gap-3"
-          initial={{ opacity: 0 }}
-          animate={visible ? { opacity: 1 } : {}}
-          transition={{ delay: 0.8 }}
+          style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.6s ease 0.8s' }}
         >
           <div className="flex items-center gap-6">
             {[
@@ -126,7 +124,7 @@ export default function PricingDeployment() {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
@@ -146,7 +144,6 @@ function PlanCard({ plan, price, annual, isPopular, isRTL, t }: {
       style={{
         background: isPopular ? 'color-mix(in srgb, var(--accent) 92%, var(--surface))' : 'var(--surface)',
         border: isPopular ? 'none' : '1px solid var(--border)',
-        backdropFilter: 'blur(20px)',
       }}
     >
       {isPopular && (

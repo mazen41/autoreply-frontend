@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 function useCountUp(target: number, duration = 2000, start = false) {
@@ -113,13 +112,15 @@ export default function BusinessImpact() {
         {/* Before/After impact cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-20">
           {IMPACTS.map((imp, i) => (
-            <motion.div
+            <div
               key={i}
               className="card-os rounded-2xl p-6 glass"
-              style={{ background: 'var(--surface)' }}
-              initial={{ opacity: 0, y: 40 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.7, delay: i * 0.15 }}
+              style={{
+                background: 'var(--surface)',
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(30px)',
+                transition: `opacity 0.7s ease ${i * 0.15}s, transform 0.7s ease ${i * 0.15}s`,
+              }}
             >
               <div className="text-3xl mb-3">{imp.icon}</div>
               <h3 className="text-base font-black mb-5" style={{ color: 'var(--accent)', letterSpacing: '-0.02em' }}>
@@ -157,38 +158,42 @@ export default function BusinessImpact() {
                   {isRTL ? imp.after.label_ar : imp.after.label_en}
                 </div>
                 <div className="flex items-end gap-1">
-                  <motion.span
+                  <span
                     className="text-4xl font-black"
                     style={{ color: 'var(--accent)', letterSpacing: '-0.03em' }}
                   >
                     {(counts[i].after / 10).toFixed(imp.after.val % 1 !== 0 ? 1 : 0)}
-                  </motion.span>
+                  </span>
                   <span className="text-sm mb-1" style={{ color: 'color-mix(in srgb, var(--accent) 80%, transparent)' }}>{imp.after.suffix}</span>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full" style={{ background: 'var(--divider)' }}>
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'var(--accent)', boxShadow: '0 0 10px color-mix(in srgb, var(--accent) 60%, transparent)' }}
-                    initial={{ width: 0 }}
-                    animate={visible ? { width: `${(imp.after.val / Math.max(imp.before.val, imp.after.val)) * 100}%` } : {}}
-                    transition={{ duration: 1.5, delay: 0.3 + i * 0.15 }}
+                  <div
+                    className="h-full rounded-full transition-all duration-1000"
+                    style={{
+                      background: 'var(--accent)',
+                      boxShadow: '0 0 10px color-mix(in srgb, var(--accent) 60%, transparent)',
+                      width: visible ? `${(imp.after.val / Math.max(imp.before.val, imp.after.val)) * 100}%` : '0%',
+                      transitionDelay: `${0.3 + i * 0.15}s`,
+                    }}
                   />
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Testimonials */}
         <div className="grid md:grid-cols-3 gap-5">
           {TESTIMONIALS.map((t, i) => (
-            <motion.div
+            <div
               key={i}
               className="card-os rounded-2xl p-5 glass"
-              style={{ background: 'var(--surface)' }}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={visible ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 + i * 0.12 }}
+              style={{
+                background: 'var(--surface)',
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'scale(1)' : 'scale(0.97)',
+                transition: `opacity 0.6s ease ${0.5 + i * 0.12}s, transform 0.6s ease ${0.5 + i * 0.12}s`,
+              }}
             >
               <div className="flex mb-3">
                 {Array(t.rating).fill(0).map((_, j) => (
@@ -210,7 +215,7 @@ export default function BusinessImpact() {
                   <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? t.biz_ar : t.biz_en}</div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -27,7 +27,7 @@ export default function BlogTopBar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
-          <Bot size={35} className="text-accent" />
+          <img src="/icons/logo_icon.png" alt="NazBiz" className="w-10 h-10 object-contain" />
         </Link>
 
         <div className="flex items-center gap-2">

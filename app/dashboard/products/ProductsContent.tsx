@@ -19,19 +19,27 @@ interface Product {
   status: string
   product_url: string | null
   images: string[] | null
-  metadata: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: Record<string, unknown>
   synced_at: string | null
 }
 
+interface ProductStats {
+  total: number
+  active: number
+  low_stock: number
+  last_sync: string | null
+}
+
 export default function ProductsContent() {
-  const { isRTL, t } = useLang()
+  const { isRTL } = useLang()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [filterPlatform, setFilterPlatform] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [stats, setStats] = useState<any>(null)
+  const [stats, setStats] = useState<ProductStats | null>(null)
 
   const parentRef = useRef<HTMLDivElement>(null)
   const rowVirtualizer = useVirtualizer({

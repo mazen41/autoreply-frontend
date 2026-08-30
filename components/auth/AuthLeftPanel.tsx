@@ -94,7 +94,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
       <div className="relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-12">
-          <Bot size={50} className="text-accent" />
+          <img src="/icons/logo_icon.png" alt="NazBiz" className="w-16 h-16 object-contain drop-shadow-xl" />
         </div>
 
         {/* Core + system status */}
