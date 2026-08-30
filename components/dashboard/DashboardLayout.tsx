@@ -176,7 +176,7 @@ const NavItem = React.memo(function NavItem({
 
 // ─── Main Layout ─────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isRTL } = useLang()
+  const { isRTL, lang, toggleLang } = useLang()
   const pathname = usePathname()
   const router = useRouter()
   const { user, loading: authLoading } = useUser()
@@ -236,9 +236,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
         <div className="flex flex-col items-center gap-4">
           {/* Brand icon */}
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center bg-[var(--surface-elevated)] border border-[var(--border)] shadow-xl shadow-accent/10">
-            <img src="/icons/logo_icon.png" alt="Naz" className="w-8 h-8 object-contain" />
-          </div>
+          <img src="/icons/logo_icon.png" alt="Naz" className="w-14 h-14 object-contain" />
           {/* Simple CSS spinner — no framer-motion */}
           <div className="dl-spinner" />
         </div>
@@ -344,14 +342,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           overflow: hidden;
         }
         .dl-logo-icon {
-          width: 30px;
-          height: 30px;
-          border-radius: 10px;
-          background: var(--accent);
+          width: 34px;
+          height: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          background: transparent;
+          border: none;
         }
         .dl-logo-text {
           font-size: 15px;
@@ -583,8 +581,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Logo */}
           <div className="dl-logo">
-            <div className="dl-logo-icon bg-transparent border-none">
-              <img src="/icons/logo_icon.png" alt="Naz" className="w-6 h-6 object-contain drop-shadow-md" />
+            <div className="dl-logo-icon">
+              <img src="/icons/logo_icon.png" alt="Naz" className="w-9 h-9 object-contain" />
             </div>
             <span className="dl-logo-text">NazBiz</span>
           </div>
@@ -711,6 +709,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               <DarkModeToggle />
+
+              {/* Language switcher */}
+              <button
+                onClick={toggleLang}
+                aria-label="Switch language"
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: 8,
+                  background: 'var(--surface-elevated)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-secondary)',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: '0.05em',
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+              >
+                {isRTL ? 'EN' : 'ع'}
+              </button>
+
               <NotificationCenter />
 
               {/* User avatar + dropdown */}

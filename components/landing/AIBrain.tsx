@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 const CAPABILITIES = [
@@ -114,22 +113,21 @@ export default function AIBrain() {
             })}
           </svg>
 
-          {/* Nodes */}
           {CAPABILITIES.map((cap) => {
             const isActive = activeNodes.has(cap.id)
             const isHighlighted = hoveredNode === cap.id
             return (
-              <motion.div
+              <div
                 key={cap.id}
                 className="absolute"
                 style={{
                   left: `${cap.x}%`,
                   top: `${cap.y}%`,
                   transform: 'translate(-50%, -50%)',
+                  opacity: isActive ? 1 : 0,
+                  transition: 'opacity 0.6s ease',
+                  pointerEvents: isActive ? 'auto' : 'none',
                 }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={isActive ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as any }}
                 onMouseEnter={() => setHoveredNode(cap.id)}
                 onMouseLeave={() => setHoveredNode(null)}
               >
@@ -138,23 +136,6 @@ export default function AIBrain() {
                   className="relative flex flex-col items-center gap-2 cursor-pointer"
                   style={{ zIndex: 10 }}
                 >
-                  {/* Glow ring on highlight */}
-                  {isHighlighted && (
-                    <motion.div
-                      className="absolute rounded-full"
-                      style={{
-                        width: 60, height: 60,
-                        border: '2px solid var(--accent-subtle)',
-                        boxShadow: '0 0 30px var(--accent-subtle)',
-                        top: '50%', left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1.3, opacity: 0 }}
-                      transition={{ duration: 0.8, repeat: Infinity }}
-                    />
-                  )}
-
                   <div
                     className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all duration-300"
                     style={{
@@ -162,7 +143,6 @@ export default function AIBrain() {
                         ? 'var(--accent-subtle)'
                         : 'var(--surface)',
                       border: `2px solid ${isHighlighted ? 'var(--accent-subtle)' : 'var(--border)'}`,
-                      backdropFilter: 'blur(10px)',
                       boxShadow: isHighlighted ? '0 0 30px var(--accent-subtle)' : '0 0 20px var(--accent-subtle)',
                     }}
                   >
@@ -174,14 +154,13 @@ export default function AIBrain() {
                       background: 'var(--surface)',
                       border: '1px solid var(--border)',
                       color: isHighlighted ? 'var(--accent)' : 'var(--text-secondary)',
-                      backdropFilter: 'blur(8px)',
                       maxWidth: 120,
                     }}
                   >
                     {isRTL ? cap.labelAr : cap.labelEn}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )
           })}
 
@@ -190,12 +169,14 @@ export default function AIBrain() {
             className="absolute"
             style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
           >
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={visible ? { scale: 1, opacity: 1 } : {}}
-              transition={{ duration: 1, delay: 0.1 }}
+            <div
               className="relative flex items-center justify-center"
-              style={{ width: 80, height: 80 }}
+              style={{
+                width: 80,
+                height: 80,
+                opacity: visible ? 1 : 0,
+                transition: 'opacity 1s ease 0.1s',
+              }}
             >
               <div className="absolute inset-0 rounded-full core-glow" style={{ borderRadius: '50%' }} />
               <div
@@ -207,26 +188,28 @@ export default function AIBrain() {
               >
                 <span className="text-2xl font-black text-lime">✦</span>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
         {/* Capability list below */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-12">
           {CAPABILITIES.map((cap, i) => (
-            <motion.div
+            <div
               key={cap.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}
               className="flex items-center gap-3 p-4 rounded-xl card-os glass"
-              style={{ background: 'var(--surface)' }}
+              style={{
+                background: 'var(--surface)',
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(20px)',
+                transition: `opacity 0.6s ease ${0.5 + i * 0.1}s, transform 0.6s ease ${0.5 + i * 0.1}s`,
+              }}
             >
               <span className="text-2xl">{cap.icon}</span>
               <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {isRTL ? cap.labelAr : cap.labelEn}
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

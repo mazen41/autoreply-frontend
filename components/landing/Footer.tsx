@@ -18,7 +18,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <Bot size={32} className="text-accent" />
+              <img src="/icons/logo_icon.png" alt="NazBiz" className="w-10 h-10 object-contain" />
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full accent-subtle-bg accent-text border border-border">AI OS</span>
             </div>
             <p className="text-sm leading-relaxed mb-5 max-w-xs text-tertiary-color">

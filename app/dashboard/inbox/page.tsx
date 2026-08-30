@@ -488,9 +488,7 @@ export default function InboxPage() {
         
         {!selectedConv ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <div className="w-16 h-16 rounded-3xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-accent mb-6 shadow-xl shadow-accent/5">
-              <img src="/icons/logo_icon.png" alt="Naz" className="w-8 h-8 object-contain" />
-            </div>
+            <img src="/icons/logo_icon.png" alt="Naz" className="w-14 h-14 object-contain mb-6 opacity-80" />
             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">
               {isRTL ? 'اختر محادثة للبدء' : 'Select a conversation'}
             </h3>

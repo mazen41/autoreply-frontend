@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 const FLOW_STEPS = [
@@ -99,11 +98,13 @@ export default function AutomationEcosystem() {
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {FLOW_STEPS.map((step, i) => (
               <React.Fragment key={i}>
-                <motion.div
+                <div
                   className="flex-1 flex flex-col items-center gap-3"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={visible ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
+                  style={{
+                    opacity: visible ? 1 : 0,
+                    transform: visible ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`,
+                  }}
                 >
                   <div
                     className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl transition-all duration-500"
@@ -116,15 +117,6 @@ export default function AutomationEcosystem() {
                     }}
                   >
                     {step.icon}
-                    {activeStep === i && (
-                      <motion.div
-                        className="absolute inset-0 rounded-2xl"
-                        style={{ border: '1px solid var(--accent)', boxShadow: '0 0 20px color-mix(in srgb, var(--accent) 30%, transparent)' }}
-                        initial={{ scale: 1, opacity: 0.8 }}
-                        animate={{ scale: 1.3, opacity: 0 }}
-                        transition={{ duration: 0.8, repeat: Infinity }}
-                      />
-                    )}
                   </div>
                   <div className="text-center">
                     <div
@@ -137,24 +129,14 @@ export default function AutomationEcosystem() {
                       {isRTL ? step.desc_ar : step.desc_en}
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {i < FLOW_STEPS.length - 1 && (
                   <div className="flex-shrink-0 flex flex-col items-center gap-1" style={{ width: 40 }}>
                     <div className="relative w-full h-1 rounded-full" style={{ background: 'var(--divider)' }}>
-                      <motion.div
+                      <div
                         className="absolute top-0 h-full rounded-full"
-                        style={{ width: '30%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }}
-                        animate={visible ? {
-                          left: ['-30%', '130%'],
-                          opacity: [0, 1, 1, 0],
-                        } : {}}
-                        transition={{
-                          duration: 1.4,
-                          delay: i * 0.15,
-                          repeat: Infinity,
-                          ease: 'easeInOut',
-                        }}
+                        style={{ width: '30%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)', left: visible ? '35%' : '-30%', transition: 'left 0.6s ease' }}
                       />
                     </div>
                     <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>
@@ -170,13 +152,15 @@ export default function AutomationEcosystem() {
         {/* Automation cards */}
         <div className="grid md:grid-cols-3 gap-5">
           {AUTOMATIONS.map((auto, i) => (
-            <motion.div
+            <div
               key={i}
               className="card-os rounded-2xl p-5 glass group"
-              style={{ background: 'var(--surface)' }}
-              initial={{ opacity: 0, y: 40 }}
-              animate={visible ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4 + i * 0.12 }}
+              style={{
+                background: 'var(--surface)',
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(30px)',
+                transition: `opacity 0.6s ease ${0.4 + i * 0.12}s, transform 0.6s ease ${0.4 + i * 0.12}s`,
+              }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div
@@ -209,7 +193,7 @@ export default function AutomationEcosystem() {
                   {isRTL ? auto.result_ar : auto.result_en}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

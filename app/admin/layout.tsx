@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -88,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <aside className="flex h-full w-72 flex-col border-white/10 bg-white/90 p-4 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5 lg:border-r lg:shadow-none rtl:lg:border-l rtl:lg:border-r-0">
       <div className="flex items-center justify-between p-2">
         <Link href="/admin" className="flex items-center gap-3">
-          <Bot size={40} className="text-accent" />
+          <img src="/icons/logo_icon.png" alt="NazBiz" className="w-12 h-12 object-contain drop-shadow-md" />
         </Link>
         <button className="rounded-xl p-2 text-white/70 hover:bg-white/5 dark:hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><X size={20} /></button>
       </div>
