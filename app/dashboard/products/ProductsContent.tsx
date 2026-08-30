@@ -184,7 +184,7 @@ export default function ProductsContent() {
               {stats.last_sync ? new Date(stats.last_sync).toLocaleDateString() : 'Never'}
             </p>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Filters and Actions */}
