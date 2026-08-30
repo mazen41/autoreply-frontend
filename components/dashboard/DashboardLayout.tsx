@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
-import { motion, AnimatePresence } from 'framer-motion'
 import NotificationCenter from '../NotificationCenter'
 import DarkModeToggle from '../DarkModeToggle'
 import {
@@ -18,9 +18,6 @@ import {
 } from '../ui/DashboardIcons'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
-// Each group has a label (shown as a section divider) and a list of nav items.
-// Every item has a unique icon and a label in both AR and EN.
-
 const NAV_GROUPS = [
   {
     groupKey: 'core',
@@ -61,10 +58,10 @@ const NAV_GROUPS = [
     labelEn: 'Commerce',
     labelAr: 'التجارة',
     items: [
-      { icon: LinkIcon,        href: '/dashboard/products',            labelEn: 'Products',          labelAr: 'المنتجات' },
-      { icon: CalendarIcon,    href: '/dashboard/bookings',            labelEn: 'Bookings',          labelAr: 'الحجوزات' },
-      { icon: NotificationIcon, href: '/dashboard/order-notifications', labelEn: 'Order Alerts',      labelAr: 'إشعارات الطلبات' },
-      { icon: TrendDownIcon,   href: '/dashboard/cart-recovery',       labelEn: 'Cart Recovery',     labelAr: 'استرداد السلة' },
+      { icon: LinkIcon,        href: '/dashboard/products',            labelEn: 'Products',       labelAr: 'المنتجات' },
+      { icon: CalendarIcon,    href: '/dashboard/bookings',            labelEn: 'Bookings',       labelAr: 'الحجوزات' },
+      { icon: NotificationIcon,href: '/dashboard/order-notifications', labelEn: 'Order Alerts',   labelAr: 'إشعارات الطلبات' },
+      { icon: TrendDownIcon,   href: '/dashboard/cart-recovery',       labelEn: 'Cart Recovery',  labelAr: 'استرداد السلة' },
     ]
   },
   {
@@ -72,13 +69,13 @@ const NAV_GROUPS = [
     labelEn: 'Operations',
     labelAr: 'العمليات',
     items: [
-      { icon: UserIcon,        href: '/dashboard/team',            labelEn: 'Team',             labelAr: 'الفريق' },
-      { icon: ShieldIcon,      href: '/dashboard/routing',         labelEn: 'Routing',          labelAr: 'التوجيه' },
-      { icon: WorkflowIcon,    href: '/dashboard/workflows',       labelEn: 'Workflows',        labelAr: 'سير العمل' },
-      { icon: StarIcon,        href: '/dashboard/reputation',      labelEn: 'Reputation',       labelAr: 'السمعة' },
-      { icon: ReportsIcon,     href: '/dashboard/reports',         labelEn: 'Reports',          labelAr: 'التقارير' },
-      { icon: TagIcon,         href: '/dashboard/classification',  labelEn: 'Classification',   labelAr: 'التصنيف' },
-      { icon: LayersIcon,      href: '/dashboard/multimodal',      labelEn: 'Multimodal',       labelAr: 'متعدد الوسائط' },
+      { icon: UserIcon,        href: '/dashboard/team',            labelEn: 'Team',           labelAr: 'الفريق' },
+      { icon: ShieldIcon,      href: '/dashboard/routing',         labelEn: 'Routing',        labelAr: 'التوجيه' },
+      { icon: WorkflowIcon,    href: '/dashboard/workflows',       labelEn: 'Workflows',      labelAr: 'سير العمل' },
+      { icon: StarIcon,        href: '/dashboard/reputation',      labelEn: 'Reputation',     labelAr: 'السمعة' },
+      { icon: ReportsIcon,     href: '/dashboard/reports',         labelEn: 'Reports',        labelAr: 'التقارير' },
+      { icon: TagIcon,         href: '/dashboard/classification',  labelEn: 'Classification', labelAr: 'التصنيف' },
+      { icon: LayersIcon,      href: '/dashboard/multimodal',      labelEn: 'Multimodal',     labelAr: 'متعدد الوسائط' },
     ]
   },
   {
@@ -97,16 +94,14 @@ const NAV_BOTTOM = [
   { icon: BillingIcon,  href: '/dashboard/billing',  labelEn: 'Billing',  labelAr: 'الفوترة' },
 ]
 
-// ─── ALL ITEMS FLAT (for page title lookup) ──────────────────────────────────
-const ALL_ITEMS = [
-  ...NAV_GROUPS.flatMap(g => g.items),
-  ...NAV_BOTTOM,
-]
+const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...NAV_BOTTOM]
 
+// ─── Auth hook ─────────────────────────────────────────────────────────────────
 function useUser() {
   const router = useRouter()
-  const [user, setUser] = useState<{ name: string; email: string; onboarding_completed: boolean; email_verified?: boolean } | null>(null)
+  const [user, setUser] = useState<{ name: string; email: string; onboarding_completed: boolean } | null>(null)
   const [loading, setLoading] = useState(true)
+
   useEffect(() => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
     if (!token) { router.replace('/login'); setLoading(false); return }
@@ -125,336 +120,641 @@ function useUser() {
       router.replace('/login')
     }).finally(() => setLoading(false))
   }, [router])
+
   return { user, loading }
 }
 
+// ─── NavItem – no framer-motion, pure CSS transitions ──────────────────────
+const NavItem = React.memo(function NavItem({
+  item,
+  active,
+  collapsed,
+  onClick,
+}: {
+  item: typeof ALL_ITEMS[0]
+  active: boolean
+  collapsed: boolean
+  onClick?: () => void
+}) {
+  const Icon = item.icon
+  const { isRTL } = useLang()
+  const label = isRTL ? item.labelAr : item.labelEn
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      className="dl-nav-item group relative block"
+      data-active={active ? 'true' : undefined}
+      data-collapsed={collapsed ? 'true' : undefined}
+      title={collapsed ? label : undefined}
+    >
+      <span className="dl-nav-inner">
+        {/* Active bar */}
+        {active && (
+          <span className="dl-active-bar" aria-hidden="true" />
+        )}
+
+        {/* Icon */}
+        <span className="dl-nav-icon">
+          <Icon size={18} />
+        </span>
+
+        {/* Label */}
+        {!collapsed && (
+          <span className="dl-nav-label">{label}</span>
+        )}
+      </span>
+
+      {/* Collapsed tooltip */}
+      {collapsed && (
+        <span className="dl-tooltip" aria-hidden="true">{label}</span>
+      )}
+    </Link>
+  )
+})
+
+// ─── Main Layout ─────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isRTL } = useLang()
   const pathname = usePathname()
   const router = useRouter()
   const { user, loading: authLoading } = useUser()
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileSidebar, setMobileSidebar] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
 
+  const [collapsed, setCollapsed]         = useState(false)
+  const [mobileSidebar, setMobileSidebar] = useState(false)
+  const [userMenuOpen, setUserMenuOpen]   = useState(false)
+  const [isMobile, setIsMobile]           = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Responsive
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024)
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    const check = () => setIsMobile(window.innerWidth < 1024)
+    check()
+    window.addEventListener('resize', check, { passive: true })
+    return () => window.removeEventListener('resize', check)
   }, [])
 
-  const current = ALL_ITEMS.find(n => n.href === pathname)
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!userMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [userMenuOpen])
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = mobileSidebar ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileSidebar])
+
+  const current   = ALL_ITEMS.find(n => n.href === pathname)
   const pageTitle = current ? (isRTL ? current.labelAr : current.labelEn) : (isRTL ? 'الرئيسية' : 'Dashboard')
 
-  const logout = () => {
+  const logout = useCallback(() => {
     const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-    if (token) fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {})
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/logout`, {
+        method: 'POST', headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {})
+    }
     document.cookie = 'naz_token=; max-age=0; path=/'
     router.push('/login')
-  }
+  }, [router])
 
-  const sidebarVariants = {
-    expanded: { width: 264, x: 0 },
-    collapsed: { width: 72, x: 0 },
-    hidden:    { x: isRTL ? '100%' : '-100%', width: 264 }
-  }
+  const isCollapsed = collapsed && !isMobile
+  const sidebarW    = isCollapsed ? 72 : 264
 
+  // ─── Loading state ─────────────────────────────────────────────────────────
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-2 border-white/5" />
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-transparent"
-            style={{ borderTopColor: 'var(--accent)' }}
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center text-xs font-black tracking-widest text-accent">NAZ</div>
-        </div>
-      </div>
-    )
-  }
-
-  // ─── NavItem ────────────────────────────────────────────────────────────────
-  const NavItem = ({ item }: { item: typeof ALL_ITEMS[0] }) => {
-    const active = pathname === item.href
-    const Icon = item.icon
-    const label = isRTL ? item.labelAr : item.labelEn
-    const isCollapsedDesktop = collapsed && !isMobile
-
-    return (
-      <Link href={item.href} onClick={() => setMobileSidebar(false)} className="relative block group">
-        <motion.div
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer relative ${
-            active
-              ? 'font-bold'
-              : 'hover:bg-black/[0.04] dark:hover:bg-white/[0.03]'
-          }`}
-          style={{
-            color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-            background: active ? 'var(--accent-subtle)' : 'transparent',
-            border: active ? '1px solid color-mix(in srgb, var(--accent) 20%, transparent)' : '1px solid transparent',
-            justifyContent: isCollapsedDesktop ? 'center' : undefined,
-          }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-        >
-          {/* Active left bar */}
-          {active && (
-            <motion.div
-              layoutId="activeIndicator"
-              className="absolute top-2 bottom-2 w-1 rounded-full"
-              style={{
-                left: isRTL ? 'auto' : 0,
-                right: isRTL ? 0 : 'auto',
-                background: 'linear-gradient(to bottom, #0E7AFE, #8B3FFB)'
-              }}
-            />
-          )}
-
-          <div className={`flex-shrink-0 transition-colors duration-200`} style={{ color: active ? 'var(--accent)' : 'inherit' }}>
-            <Icon size={18} />
+        <div className="flex flex-col items-center gap-4">
+          {/* Brand icon */}
+          <div className="w-16 h-16 rounded-3xl flex items-center justify-center bg-[var(--surface-elevated)] border border-[var(--border)] shadow-xl shadow-accent/10">
+            <img src="/icons/logo_icon.png" alt="Naz" className="w-8 h-8 object-contain" />
           </div>
-
-          {!isCollapsedDesktop && (
-            <span className="text-xs font-semibold leading-none tracking-wide truncate">{label}</span>
-          )}
-        </motion.div>
-
-        {/* Collapsed tooltip */}
-        {isCollapsedDesktop && (
-          <div
-            className={`absolute ${isRTL ? 'right-full mr-2.5' : 'left-full ml-2.5'} top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150 z-50 shadow-xl whitespace-nowrap`}
-            style={{ background: 'var(--surface-elevated)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
-          >
-            {label}
-          </div>
-        )}
-      </Link>
-    )
-  }
-
-  // ─── Group Section Divider ───────────────────────────────────────────────────
-  const NavGroup = ({ group }: { group: typeof NAV_GROUPS[0] }) => {
-    const isCollapsedDesktop = collapsed && !isMobile
-    return (
-      <div className="mb-1">
-        {!isCollapsedDesktop && (
-          <div className="px-3 mb-1 mt-3">
-            <span className="text-[9px] font-black uppercase tracking-[0.12em]" style={{ color: 'var(--text-tertiary)', opacity: 0.7 }}>
-              {isRTL ? group.labelAr : group.labelEn}
-            </span>
-          </div>
-        )}
-        {isCollapsedDesktop && <div className="h-px mx-3 mt-3 mb-1" style={{ background: 'var(--border)' }} />}
-        <div className="space-y-0.5">
-          {group.items.map(item => <NavItem key={item.href} item={item} />)}
+          {/* Simple CSS spinner — no framer-motion */}
+          <div className="dl-spinner" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)', color: 'var(--text-primary)', fontFamily: 'var(--font-inter, sans-serif)' }}>
-      {/* Background glows */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[120px]" style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px]" style={{ background: 'color-mix(in srgb, var(--accent-end) 8%, transparent)' }} />
-        <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(to right, color-mix(in srgb, var(--text-primary) 3%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--text-primary) 3%, transparent) 1px, transparent 1px)', backgroundSize: '4rem 4rem' }} />
-      </div>
+    <>
+      {/* ── CSS-only styles scoped to dashboard layout ── */}
+      <style>{`
+        /* Layout shell */
+        .dl-shell {
+          min-height: 100vh;
+          background: var(--background);
+          color: var(--text-primary);
+        }
 
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {mobileSidebar && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={() => setMobileSidebar(false)}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md lg:hidden"
-          />
-        )}
-      </AnimatePresence>
+        /* Sidebar */
+        .dl-sidebar {
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          z-index: 50;
+          display: flex;
+          flex-direction: column;
+          width: ${sidebarW}px;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          transition: width 200ms cubic-bezier(0.4,0,0.2,1), transform 200ms cubic-bezier(0.4,0,0.2,1);
+          will-change: width;
+          contain: layout style;
+        }
+        html[dir="rtl"] .dl-sidebar {
+          border-right: none;
+          border-left: 1px solid var(--border);
+          left: auto;
+          right: 0;
+        }
+        html[dir="ltr"] .dl-sidebar { left: 0; }
 
-      {/* ── Sidebar ── */}
-      <motion.aside
-        initial={false}
-        animate={isMobile ? (mobileSidebar ? 'expanded' : 'hidden') : (collapsed ? 'collapsed' : 'expanded')}
-        variants={sidebarVariants}
-        transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-        className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full z-50`}
-        style={{
-          background: 'color-mix(in srgb, var(--surface) 85%, transparent)',
-          backdropFilter: 'blur(24px)',
-          borderRight: isRTL ? 'none' : '1px solid var(--border)',
-          borderLeft:  isRTL ? '1px solid var(--border)' : 'none'
-        }}
-      >
-        <div className="flex flex-col h-full">
+        /* Mobile sidebar hidden/shown */
+        @media (max-width: 1023px) {
+          .dl-sidebar {
+            width: 264px !important;
+            transform: ${mobileSidebar
+              ? 'translateX(0)'
+              : isRTL ? 'translateX(100%)' : 'translateX(-100%)'};
+          }
+        }
+
+        /* Sidebar overlay */
+        .dl-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 40;
+          background: rgba(0,0,0,0.55);
+          opacity: ${mobileSidebar ? 1 : 0};
+          transition: opacity 200ms ease;
+        }
+        @media (max-width: 1023px) {
+          .dl-overlay { display: block; pointer-events: ${mobileSidebar ? 'auto' : 'none'}; }
+        }
+
+        /* Main content area offset */
+        .dl-main {
+          transition: padding-left 200ms cubic-bezier(0.4,0,0.2,1),
+                      padding-right 200ms cubic-bezier(0.4,0,0.2,1);
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+        @media (min-width: 1024px) {
+          html[dir="ltr"] .dl-main { padding-left: ${sidebarW}px; }
+          html[dir="rtl"] .dl-main { padding-right: ${sidebarW}px; }
+        }
+
+        /* Topbar */
+        .dl-topbar {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 20px;
+          background: var(--surface);
+          border-bottom: 1px solid var(--border);
+          contain: layout style;
+        }
+
+        /* Logo area */
+        .dl-logo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          height: 60px;
+          padding: 0 16px;
+          flex-shrink: 0;
+          border-bottom: 1px solid var(--border);
+          overflow: hidden;
+        }
+        .dl-logo-icon {
+          width: 30px;
+          height: 30px;
+          border-radius: 10px;
+          background: var(--accent);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .dl-logo-text {
+          font-size: 15px;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          background: linear-gradient(135deg, var(--accent), var(--accent-end, #8B3FFB));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          white-space: nowrap;
+          opacity: ${isCollapsed ? 0 : 1};
+          width: ${isCollapsed ? 0 : 'auto'};
+          overflow: hidden;
+          transition: opacity 150ms ease, width 200ms ease;
+        }
+
+        /* Nav */
+        .dl-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; scrollbar-width: none; }
+        .dl-nav::-webkit-scrollbar { display: none; }
+
+        /* Group label */
+        .dl-group-label {
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--text-tertiary);
+          padding: 12px 8px 4px;
+          opacity: ${isCollapsed ? 0 : 0.65};
+          transition: opacity 150ms ease;
+        }
+        .dl-group-divider {
+          height: 1px;
+          background: var(--border);
+          margin: 10px 8px 4px;
+          display: ${isCollapsed ? 'block' : 'none'};
+        }
+
+        /* Nav item */
+        .dl-nav-item { display: block; text-decoration: none; position: relative; }
+        .dl-nav-inner {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 10px;
+          border-radius: 10px;
+          border: 1px solid transparent;
+          cursor: pointer;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+          color: var(--text-secondary);
+          position: relative;
+          justify-content: ${isCollapsed ? 'center' : 'flex-start'};
+        }
+        .dl-nav-item[data-active] .dl-nav-inner {
+          background: var(--accent-subtle);
+          border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+          color: var(--accent);
+          font-weight: 700;
+        }
+        .dl-nav-item:hover:not([data-active]) .dl-nav-inner {
+          background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+          color: var(--text-primary);
+        }
+        .dl-nav-icon { display: flex; align-items: center; flex-shrink: 0; }
+        .dl-nav-label { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; }
+
+        /* Active bar */
+        .dl-active-bar {
+          position: absolute;
+          top: 6px;
+          bottom: 6px;
+          width: 3px;
+          border-radius: 2px;
+          background: var(--accent);
+          left: ${isRTL ? 'auto' : 0};
+          right: ${isRTL ? 0 : 'auto'};
+        }
+
+        /* Tooltip for collapsed */
+        .dl-tooltip {
+          position: absolute;
+          ${isRTL ? 'right: 100%; margin-right: 10px;' : 'left: 100%; margin-left: 10px;'}
+          top: 50%;
+          transform: translateY(-50%);
+          background: var(--surface-elevated);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 5px 10px;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-primary);
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          transition: opacity 120ms ease;
+          z-index: 60;
+        }
+        .dl-nav-item:hover .dl-tooltip { opacity: 1; }
+
+        /* Bottom nav section */
+        .dl-nav-bottom {
+          padding: 8px;
+          border-top: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+
+        /* User card */
+        .dl-user-card {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px;
+          border-radius: 10px;
+          background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+          border: 1px solid var(--border);
+          margin: 8px 8px 0;
+          overflow: hidden;
+          transition: background 150ms ease;
+        }
+        .dl-user-card:hover { background: color-mix(in srgb, var(--text-primary) 6%, transparent); }
+        .dl-user-avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 8px;
+          background: linear-gradient(135deg, var(--accent), var(--accent-end, #8B3FFB));
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 800;
+          flex-shrink: 0;
+        }
+        .dl-user-info {
+          min-width: 0;
+          opacity: ${isCollapsed ? 0 : 1};
+          max-width: ${isCollapsed ? 0 : '160px'};
+          overflow: hidden;
+          transition: opacity 150ms ease, max-width 200ms ease;
+        }
+        .dl-user-name { font-size: 12px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dl-user-email { font-size: 10px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* User dropdown */
+        .dl-user-menu {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 8px);
+          width: 210px;
+          background: var(--surface-elevated);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+          overflow: hidden;
+          z-index: 60;
+          animation: dl-menu-in 150ms cubic-bezier(0.4,0,0.2,1) both;
+        }
+        html[dir="rtl"] .dl-user-menu { right: auto; left: 0; }
+        @keyframes dl-menu-in {
+          from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .dl-menu-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 14px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: background 120ms ease, color 120ms ease;
+          width: 100%;
+          background: none;
+          border: none;
+          text-align: ${isRTL ? 'right' : 'left'};
+          text-decoration: none;
+        }
+        .dl-menu-item:hover { background: color-mix(in srgb, var(--text-primary) 5%, transparent); color: var(--text-primary); }
+        .dl-menu-item.danger { color: var(--error); }
+        .dl-menu-item.danger:hover { background: var(--error-subtle); }
+
+        /* Spinner */
+        .dl-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid var(--border);
+          border-top-color: var(--accent);
+          border-radius: 50%;
+          animation: dl-spin 0.7s linear infinite;
+        }
+        @keyframes dl-spin { to { transform: rotate(360deg); } }
+
+        /* AI badge ping */
+        @keyframes dl-ping {
+          75%, 100% { transform: scale(1.8); opacity: 0; }
+        }
+        .dl-ping { animation: dl-ping 1.8s ease-out infinite; }
+
+        /* Search bar */
+        .dl-search {
+          width: 100%;
+          height: 36px;
+          background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 0 14px 0 36px;
+          font-size: 12px;
+          color: var(--text-primary);
+          transition: border-color 150ms ease, background 150ms ease;
+          outline: none;
+        }
+        .dl-search::placeholder { color: var(--text-tertiary); }
+        .dl-search:focus { border-color: var(--accent); background: var(--surface); }
+        html[dir="rtl"] .dl-search { padding: 0 36px 0 14px; }
+
+        /* Page content */
+        .dl-content { flex: 1; padding: 20px; position: relative; }
+      `}</style>
+
+      <div className="dl-shell">
+
+        {/* ── Mobile overlay ── */}
+        <div className="dl-overlay" onClick={() => setMobileSidebar(false)} />
+
+        {/* ── Sidebar ── */}
+        <aside className="dl-sidebar">
 
           {/* Logo */}
-          <div className="flex items-center gap-3 px-4 h-[70px] flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
-            {(!collapsed || isMobile) ? (
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center flex-shrink-0">
-                  <NazLogoIcon size={16} className="text-white" style={{ color: 'white' }} />
-                </div>
-                <span className="text-base font-black tracking-tight bg-gradient-to-r from-accent to-[#8B3FFB] bg-clip-text text-transparent">NazBiz</span>
-              </div>
-            ) : (
-              <div className="mx-auto w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center">
-                <NazLogoIcon size={14} style={{ color: 'white' }} />
-              </div>
-            )}
+          <div className="dl-logo">
+            <div className="dl-logo-icon bg-transparent border-none">
+              <img src="/icons/logo_icon.png" alt="Naz" className="w-6 h-6 object-contain drop-shadow-md" />
+            </div>
+            <span className="dl-logo-text">NazBiz</span>
           </div>
 
-          {/* Scrollable Nav */}
-          <nav className="flex-1 py-3 px-2 overflow-y-auto scrollbar-none space-y-0">
-            {NAV_GROUPS.map(group => <NavGroup key={group.groupKey} group={group} />)}
+          {/* Nav */}
+          <nav className="dl-nav" aria-label="Main navigation">
+            {NAV_GROUPS.map(group => (
+              <div key={group.groupKey} className="mb-1">
+                {!isCollapsed
+                  ? <div className="dl-group-label">{isRTL ? group.labelAr : group.labelEn}</div>
+                  : <div className="dl-group-divider" />
+                }
+                <div>
+                  {group.items.map(item => (
+                    <NavItem
+                      key={item.href}
+                      item={item}
+                      active={pathname === item.href}
+                      collapsed={isCollapsed}
+                      onClick={() => setMobileSidebar(false)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </nav>
 
-          {/* Bottom: Settings, Billing, Help */}
-          <div className="px-2 pb-2 pt-2 space-y-0.5 flex-shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
-            {NAV_BOTTOM.map(item => <NavItem key={item.href} item={item} />)}
-
-            {(!collapsed || isMobile) && (
-              <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl w-full transition-all duration-200 hover:bg-black/[0.04] dark:hover:bg-white/[0.03]" style={{ color: 'var(--text-secondary)' }}>
-                <HelpIcon size={18} />
-                <span className="text-xs font-semibold">{isRTL ? 'مساعدة' : 'Help'}</span>
+          {/* Bottom nav */}
+          <div className="dl-nav-bottom">
+            {NAV_BOTTOM.map(item => (
+              <NavItem
+                key={item.href}
+                item={item}
+                active={pathname === item.href}
+                collapsed={isCollapsed}
+                onClick={() => setMobileSidebar(false)}
+              />
+            ))}
+            {!isCollapsed && (
+              <button
+                className="dl-nav-item"
+                style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <span className="dl-nav-inner">
+                  <span className="dl-nav-icon"><HelpIcon size={18} /></span>
+                  <span className="dl-nav-label">{isRTL ? 'مساعدة' : 'Help'}</span>
+                </span>
               </button>
             )}
           </div>
 
-          {/* User profile card */}
-          {(!collapsed || isMobile) && user && (
-            <div className="px-2 pb-3" style={{ borderTop: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3 p-2.5 rounded-xl mt-2" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: 'white' }}>
-                  {user.name?.[0]?.toUpperCase() || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user.name}</div>
-                  <div className="text-[10px] truncate" style={{ color: 'var(--text-secondary)' }}>{user.email}</div>
-                </div>
+          {/* User card */}
+          {user && (
+            <div className="dl-user-card">
+              <div className="dl-user-avatar">{user.name?.[0]?.toUpperCase() || 'U'}</div>
+              <div className="dl-user-info">
+                <div className="dl-user-name">{user.name}</div>
+                <div className="dl-user-email">{user.email}</div>
               </div>
             </div>
           )}
-        </div>
-      </motion.aside>
+          <div style={{ height: 8 }} />
+        </aside>
 
-      {/* ── Main Content ── */}
-      <motion.div
-        initial={false}
-        animate={{
-          paddingLeft:  isMobile ? 0 : (isRTL ? 0 : (collapsed ? 72 : 264)),
-          paddingRight: isMobile ? 0 : (isRTL ? (collapsed ? 72 : 264) : 0),
-        }}
-        transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-        className="w-full min-h-screen flex flex-col relative z-10"
-      >
-        {/* Topbar */}
-        <header
-          className="sticky top-0 z-30 border-b border-white/[0.04]"
-          style={{ height: 70, background: 'color-mix(in srgb, var(--background) 75%, transparent)', backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)' }}
-        >
-          <div className="flex items-center justify-between h-full px-5">
-            <div className="flex items-center gap-3">
+        {/* ── Main content ── */}
+        <div className="dl-main">
+
+          {/* Topbar */}
+          <header className="dl-topbar">
+
+            {/* Left: hamburger + collapse + title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Mobile hamburger */}
               <button
-                onClick={() => setMobileSidebar(!mobileSidebar)}
-                className="lg:hidden p-2 rounded-xl transition-all"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                onClick={() => setMobileSidebar(v => !v)}
+                className="lg:hidden"
+                aria-label="Toggle sidebar"
+                style={{ padding: 8, borderRadius: 8, background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
               >
-                {mobileSidebar ? <XIcon size={18} /> : <MenuIcon size={18} />}
+                {mobileSidebar ? <XIcon size={16} /> : <MenuIcon size={16} />}
               </button>
 
+              {/* Desktop collapse */}
               <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex p-2 rounded-xl transition-all items-center justify-center"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                onClick={() => setCollapsed(v => !v)}
+                aria-label="Toggle sidebar width"
+                style={{ padding: 8, borderRadius: 8, background: 'var(--surface-elevated)', border: '1px solid var(--border)', color: 'var(--text-primary)', cursor: 'pointer', display: 'none', alignItems: 'center' }}
+                className="hidden lg:flex"
               >
-                <MenuIcon size={17} />
+                <MenuIcon size={16} />
               </button>
 
-              <h1 className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{pageTitle}</h1>
+              <h1 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                {pageTitle}
+              </h1>
             </div>
 
-            {/* Search */}
-            <div className="hidden md:flex flex-1 max-w-sm mx-6">
-              <div className="relative w-full">
-                <SearchIcon size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary" />
-                <input
-                  type="text"
-                  placeholder={isRTL ? 'بحث...' : 'Search conversations, agents...'}
-                  className="w-full rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none transition-all"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-                />
-              </div>
+            {/* Center: search */}
+            <div style={{ flex: 1, maxWidth: 340, margin: '0 20px', position: 'relative', display: 'none' }} className="md:block">
+              <SearchIcon size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)', pointerEvents: 'none' }} />
+              <input
+                className="dl-search"
+                type="search"
+                placeholder={isRTL ? 'بحث...' : 'Search...'}
+                aria-label="Search"
+              />
             </div>
 
-            {/* Right toolbar */}
-            <div className="flex items-center gap-2.5">
-              {/* AI Active badge */}
-              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-accent/10 border border-accent/15">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
+            {/* Right: AI badge, dark mode, notifications, user */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+
+              {/* AI active badge */}
+              <div
+                className="hidden sm:flex"
+                style={{ alignItems: 'center', gap: 6, padding: '5px 10px', borderRadius: 8, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)' }}
+              >
+                <span style={{ position: 'relative', display: 'inline-flex', width: 6, height: 6 }}>
+                  <span className="dl-ping" style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--accent)', opacity: 0.6 }} />
+                  <span style={{ position: 'relative', width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)' }} />
                 </span>
-                <span className="text-[9px] font-black tracking-widest text-accent uppercase">{isRTL ? 'AI نشط' : 'AI ACTIVE'}</span>
+                <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.1em', color: 'var(--accent)', textTransform: 'uppercase' }}>
+                  {isRTL ? 'AI نشط' : 'AI ACTIVE'}
+                </span>
               </div>
 
               <DarkModeToggle />
               <NotificationCenter />
 
-              {/* User menu */}
-              <div className="relative">
+              {/* User avatar + dropdown */}
+              <div style={{ position: 'relative' }} ref={userMenuRef}>
                 <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs hover:brightness-110 transition-all"
-                  style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: 'white' }}
+                  onClick={() => setUserMenuOpen(v => !v)}
+                  aria-label="User menu"
+                  aria-expanded={userMenuOpen}
+                  style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, var(--accent), var(--accent-end, #8B3FFB))', color: 'white', fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   {user?.name?.[0]?.toUpperCase() || 'U'}
                 </button>
 
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: 8 }}
-                      className="absolute right-0 mt-2 w-52 rounded-xl shadow-2xl overflow-hidden z-50"
-                      style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <div className="p-3.5" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-                        <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
-                        <p className="text-[10px] truncate mt-0.5" style={{ color: 'var(--text-secondary)' }}>{user?.email}</p>
-                      </div>
-                      <div className="p-1.5 space-y-0.5">
-                        <Link href="/dashboard/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-black/[0.04] dark:hover:bg-white/[0.04]" style={{ color: 'var(--text-secondary)' }}>
-                          <SettingsIcon size={13} />
-                          {isRTL ? 'الإعدادات' : 'Account Settings'}
-                        </Link>
-                        <button onClick={logout} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full text-left transition-all">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
-                          </svg>
-                          {isRTL ? 'تسجيل الخروج' : 'Logout'}
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {userMenuOpen && (
+                  <div className="dl-user-menu" role="menu">
+                    {/* User info header */}
+                    <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
+                    </div>
+                    <div style={{ padding: '4px' }}>
+                      <Link href="/dashboard/settings" className="dl-menu-item" role="menuitem" onClick={() => setUserMenuOpen(false)}>
+                        <SettingsIcon size={13} />
+                        {isRTL ? 'الإعدادات' : 'Account Settings'}
+                      </Link>
+                      <button className="dl-menu-item danger" role="menuitem" onClick={logout}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                        </svg>
+                        {isRTL ? 'تسجيل الخروج' : 'Log out'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-5 relative z-10">
-          {children}
-        </main>
-      </motion.div>
-    </div>
+          {/* Page content */}
+          <main className="dl-content">
+            {children}
+          </main>
+        </div>
+      </div>
+    </>
   )
 }

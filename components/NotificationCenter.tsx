@@ -114,7 +114,6 @@ export default function NotificationCenter() {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
 
     // Setup Pusher for realtime updates
     const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY || 'dummy_app_key'
@@ -132,13 +131,10 @@ export default function NotificationCenter() {
       })
 
       return () => {
-        clearInterval(interval)
         channel.unbind_all()
         pusher.disconnect()
       }
     }
-
-    return () => clearInterval(interval)
   }, []);
 
   return (

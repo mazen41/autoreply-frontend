@@ -1,15 +1,18 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo, useDeferredValue } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useInbox, ApiConversation, ApiMessage } from '../../../hooks/useInbox'
 import { useLang } from '../../../lib/LangContext'
 import { useTheme } from '../../../lib/ThemeContext'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
-import ReactionPicker from '../../../components/inbox/ReactionPicker'
-import InboxComposer from '../../../components/inbox/InboxComposer'
-import ConversationListItem from '../../../components/inbox/ConversationListItem'
+import dynamic from 'next/dynamic'
 import MessageBubble from '../../../components/inbox/MessageBubble'
-import CustomerPanel from '../../../components/inbox/CustomerPanel'
+import ConversationListItem from '../../../components/inbox/ConversationListItem'
+
+const CustomerPanel = dynamic(() => import('../../../components/inbox/CustomerPanel'), { ssr: false })
+const InboxComposer = dynamic(() => import('../../../components/inbox/InboxComposer'), { ssr: false })
+const ReactionPicker = dynamic(() => import('../../../components/inbox/ReactionPicker'), { ssr: false })
 import { Archive, Bot, CheckCircle2, ChevronLeft, ChevronRight, Eye, PanelLeft, PanelRight, Send, SidebarClose, SidebarOpen } from 'lucide-react'
 
 function senderLabel(conv: ApiConversation) {
@@ -153,6 +156,7 @@ export default function InboxPage() {
     }
   }, [messages.length, optimistic.length, isNearBottom])
 
+  const deferredSearch = useDeferredValue(search)
   // Memoized filtered conversations with advanced filters
   const filtered = useMemo(() => {
     return conversations.filter(c => {
@@ -175,7 +179,7 @@ export default function InboxPage() {
       const matchAssigned = !showMyAssignments || c.assigned_agent_id
       
       // Search query
-      const q = search.toLowerCase()
+      const q = deferredSearch.toLowerCase()
       const matchSearch = !q || 
         senderLabel(c).toLowerCase().includes(q) || 
         (c.subject ?? '').toLowerCase().includes(q) || 
@@ -190,7 +194,7 @@ export default function InboxPage() {
       // Otherwise apply all filters
       return matchType && matchAdvancedChannel && matchStatus && matchAI && matchEscalated && matchAssigned && matchSearch
     })
-  }, [conversations, filter, search, showAdvancedFilters, channelFilter, statusFilter, aiEnabledFilter, showEscalationQueue, showMyAssignments])
+  }, [conversations, filter, deferredSearch, showAdvancedFilters, channelFilter, statusFilter, aiEnabledFilter, showEscalationQueue, showMyAssignments])
 
   const allMessages = useMemo(() => [...messages, ...optimistic], [messages, optimistic])
   const grouped = useMemo(() => groupMessagesByDate(allMessages), [allMessages])
@@ -279,11 +283,19 @@ export default function InboxPage() {
     setToast(isRTL ? 'تعذر الإرسال. حاول مرة أخرى.' : message)
   }, [isRTL])
 
+  const parentRef = useRef<HTMLDivElement>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 10,
+  })
+
   return (
-    <div className={`flex h-[calc(100vh-100px)] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]/60 backdrop-blur-sm transition-all duration-300 ${focusMode ? 'ring-2 ring-accent/20' : ''}`}>
+    <div className={`flex h-[calc(100vh-100px)] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-opacity duration-200 ${focusMode ? 'ring-2 ring-accent/20' : ''}`}>
       
       {/* Conversations list (Left Side) */}
-      <div className={`border-r border-[var(--border)] bg-[var(--surface)]/80 flex-col flex-shrink-0 transition-all duration-300 ${
+      <div className={`border-r border-[var(--border)] bg-[var(--surface)] flex-col flex-shrink-0 transition-opacity duration-200 ${
         !showConversationList || focusMode ? 'hidden' : mobilePane === 'chat' ? 'hidden md:flex' : 'flex'
       } ${
         showConversationList ? 'w-80' : 'w-0'
@@ -422,7 +434,7 @@ export default function InboxPage() {
         </div>
 
         {/* List Display */}
-        <div className="flex-1 overflow-y-auto divide-y divide-[var(--divider)] scrollbar-none">
+        <div ref={parentRef} className="flex-1 overflow-y-auto divide-y divide-[var(--divider)] scrollbar-none">
           {loadingConvs ? (
             Array(5).fill(0).map((_, i) => <ConvSkeleton key={i} />)
           ) : filtered.length === 0 ? (
@@ -430,32 +442,54 @@ export default function InboxPage() {
               {search ? t.inbox.noResults : t.inbox.noConversations}
             </div>
           ) : (
-            filtered.map(conv => (
-              <ConversationListItem
-                key={conv.id}
-                conv={conv}
-                active={selectedId === conv.id}
-                onClick={() => handleSelect(conv.id)}
-                onToggleAi={toggleAi}
-                tags={conversationTags.get(conv.id)}
-                isEscalated={showEscalationQueue}
-                isAssigned={showMyAssignments}
-              />
-            ))
+            <div
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const conv = filtered[virtualRow.index]
+                return (
+                  <div
+                    key={virtualRow.key}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    <ConversationListItem
+                      conv={conv}
+                      active={selectedId === conv.id}
+                      onClick={() => handleSelect(conv.id)}
+                      onToggleAi={toggleAi}
+                      tags={conversationTags.get(conv.id)}
+                      isEscalated={showEscalationQueue}
+                      isAssigned={showMyAssignments}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
       </div>
 
       {/* Active Conversation (Center) */}
-      <div className={`flex-1 flex bg-[var(--background)]/40 relative transition-all duration-300 ${chatOnly ? 'min-w-0' : ''} ${
+      <div className={`flex-1 flex bg-[var(--background)] relative transition-opacity duration-200 ${chatOnly ? 'min-w-0' : ''} ${
         mobilePane === 'list' ? 'hidden md:flex' : 'flex'
       }`}>
         <div className="min-w-0 flex-1 flex flex-col">
         
         {!selectedConv ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-            <div className="w-14 h-14 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-accent mb-4">
-              <Send size={20} className="opacity-80" />
+            <div className="w-16 h-16 rounded-3xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center text-accent mb-6 shadow-xl shadow-accent/5">
+              <img src="/icons/logo_icon.png" alt="Naz" className="w-8 h-8 object-contain" />
             </div>
             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">
               {isRTL ? 'اختر محادثة للبدء' : 'Select a conversation'}
@@ -538,7 +572,7 @@ export default function InboxPage() {
 
             {/* Tag Management Panel */}
             {showTagInput && selectedId && (
-              <div className="px-6 py-3.5 border-b border-[var(--divider)] bg-[var(--surface)]/60 space-y-2">
+              <div className="px-6 py-3.5 border-b border-[var(--divider)] bg-[var(--surface)] space-y-2">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -724,7 +758,7 @@ export default function InboxPage() {
 
       {/* Floating Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 px-4 py-3 rounded-xl bg-accent/15 border border-accent/25 text-accent text-xs font-bold z-[1000] backdrop-blur-sm flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 px-4 py-3 rounded-xl bg-[var(--surface-elevated)] border border-accent/25 text-accent text-xs font-bold z-[1000] flex items-center gap-2 shadow-2xl">
           {toast}
         </div>
       )}
