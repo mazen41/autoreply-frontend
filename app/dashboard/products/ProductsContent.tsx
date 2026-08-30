@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect, useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useLang } from '../../../lib/LangContext'
 import toast from 'react-hot-toast'
 
@@ -32,6 +32,14 @@ export default function ProductsContent() {
   const [filterStatus, setFilterStatus] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [stats, setStats] = useState<any>(null)
+
+  const parentRef = useRef<HTMLDivElement>(null)
+  const rowVirtualizer = useVirtualizer({
+    count: products.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 140,
+    overscan: 5,
+  })
 
   useEffect(() => {
     fetchProducts()
@@ -146,27 +154,18 @@ export default function ProductsContent() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.4rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           Product Catalog
         </h1>
         <p className="text-base" style={{ color: 'var(--text-secondary)' }}>
           Manage your e-commerce products from connected platforms
         </p>
-      </motion.div>
+      </div>
 
       {/* Statistics */}
       {stats && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="p-4 rounded-xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
             <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>Total Products</p>
             <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.total}</p>
@@ -189,12 +188,7 @@ export default function ProductsContent() {
       )}
 
       {/* Filters and Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-wrap items-center gap-4"
-      >
+      <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex-1 min-w-64">
           <input
             type="text"
@@ -251,14 +245,11 @@ export default function ProductsContent() {
           )}
           Sync All
         </button>
-      </motion.div>
+      </div>
 
       {/* Products List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="premium-card p-6"
+      <div
+        className="premium-card p-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
         style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
       >
         {products.length === 0 ? (
@@ -274,67 +265,83 @@ export default function ProductsContent() {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="p-4 rounded-xl"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-              >
-                <div className="flex items-start gap-4">
-                  {product.images && product.images.length > 0 && (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden" style={{ background: 'var(--surface-elevated)' }}>
-                      <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{product.name}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded ${product.status === 'active' ? 'bg-green-500/20 text-green-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                        {product.status}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                        {product.source_platform}
-                      </span>
-                    </div>
-                    {product.description && (
-                      <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                        {product.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                      {product.sku && <span>SKU: {product.sku}</span>}
-                      {product.price && <span>Price: {product.price} {product.currency}</span>}
-                      {product.inventory !== null && <span>Stock: {product.inventory}</span>}
-                      {product.synced_at && <span>Synced: {new Date(product.synced_at).toLocaleDateString()}</span>}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {product.product_url && (
-                      <a
-                        href={product.product_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                        style={{ background: 'var(--surface-elevated)', color: 'var(--accent)' }}
-                      >
-                        View Product
-                      </a>
-                    )}
-                    <button
-                      onClick={() => handleSync(product.source_platform)}
-                      className="text-xs px-3 py-1.5 rounded-lg transition-colors"
-                      style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}
+          <div ref={parentRef} className="overflow-y-auto scrollbar-thin pr-2" style={{ maxHeight: '65vh' }}>
+            <div style={{ height: `${rowVirtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const product = products[virtualRow.index]
+                return (
+                  <div
+                    key={virtualRow.key}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      paddingBottom: '16px'
+                    }}
+                  >
+                    <div
+                      className="p-4 rounded-xl h-full"
+                      style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                     >
-                      Sync Platform
-                    </button>
+                      <div className="flex items-start gap-4 h-full">
+                        {product.images && product.images.length > 0 && (
+                          <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0" style={{ background: 'var(--surface-elevated)' }}>
+                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{product.name}</h3>
+                            <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${product.status === 'active' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'}`}>
+                              {product.status}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded shrink-0 font-bold tracking-wide uppercase" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+                              {product.source_platform}
+                            </span>
+                          </div>
+                          {product.description && (
+                            <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
+                              {product.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-xs mt-auto pt-2" style={{ color: 'var(--text-tertiary)' }}>
+                            {product.sku && <span>SKU: <span className="font-mono text-[var(--text-secondary)]">{product.sku}</span></span>}
+                            {product.price && <span>Price: <span className="font-semibold text-[var(--text-primary)]">{product.price} {product.currency}</span></span>}
+                            {product.inventory !== null && <span>Stock: <span className="font-semibold text-[var(--text-primary)]">{product.inventory}</span></span>}
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2 shrink-0">
+                          {product.product_url && (
+                            <a
+                              href={product.product_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg transition-colors text-center"
+                              style={{ background: 'var(--surface-elevated)', color: 'var(--accent)', border: '1px solid var(--border)' }}
+                            >
+                              View
+                            </a>
+                          )}
+                          <button
+                            onClick={() => handleSync(product.source_platform)}
+                            className="text-[10px] uppercase tracking-wider font-black px-3 py-1.5 rounded-lg transition-colors"
+                            style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
+                          >
+                            Sync
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                )
+              })}
+            </div>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   )
 }
