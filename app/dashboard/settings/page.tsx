@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLang } from '../../../lib/LangContext'
-import IntegrationHub from '../../../components/integrations/IntegrationHub'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -40,7 +39,6 @@ const TABS = [
   { id: 'profile',   label: 'Profile',          icon: '👤' },
   { id: 'business',  label: 'Business',         icon: '🏢' },
   { id: 'security',  label: 'Security',         icon: '🔐' },
-  { id: 'integrations', label: 'Integrations',  icon: '🔌' },
 ]
 
 export default function SettingsPage() {
@@ -329,27 +327,6 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </form>
-              </motion.div>
-            )}
-
-            {/* ── Integrations Tab ── */}
-            {activeTab === 'integrations' && (
-              <motion.div
-                key="integrations"
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04]"
-              >
-                <div className="space-y-1 pb-4 mb-5 border-b border-white/[0.04]">
-                  <div className="text-sm font-bold text-white">{isRTL ? 'التكاملات' : 'Integrations'}</div>
-                  <p className="text-[11px] text-text-secondary">{isRTL ? 'اربط أدوات خارجية بمنصتك' : 'Connect external tools and services'}</p>
-                </div>
-                {businessId ? (
-                  <IntegrationHub businessId={businessId} />
-                ) : (
-                  <div className="text-center py-8 text-xs text-text-secondary">
-                    {isRTL ? 'لم يتم العثور على معرف العمل' : 'No business ID found'}
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

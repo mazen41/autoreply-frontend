@@ -30,7 +30,7 @@ export default function NotificationCenter() {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       });
       const data = await response.json();
-      setNotifications(data.data || data);
+      setNotifications(data.notifications?.data || data.data || []);
       setUnreadCount(data.unread_count || 0);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -126,7 +126,7 @@ export default function NotificationCenter() {
 
       const channel = pusher.subscribe('notifications')
       channel.bind('new-notification', (data: Notification) => {
-        setNotifications(prev => [data, ...prev])
+        setNotifications(prev => Array.isArray(data) ? [...data, ...prev] : [data, ...prev])
         setUnreadCount(prev => prev + 1)
       })
 
@@ -179,7 +179,7 @@ export default function NotificationCenter() {
                 <p>No notifications</p>
               </div>
             ) : (
-              notifications.map((notification) => (
+              Array.isArray(notifications) && notifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${

@@ -397,9 +397,19 @@ export default function AIKnowledgeContent() {
                   <div className="flex items-center justify-between p-2.5 rounded-xl" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-base">{file.file_type === 'pdf' ? '📄' : '📊'}</span>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex flex-col items-start gap-0.5">
                         <p className="text-[11px] font-bold truncate max-w-[140px]" style={{color:'var(--text-primary)'}}>{file.filename}</p>
-                        <p className="text-[9px] text-text-tertiary">{file.chunks_count || 0} chunks</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider ${
+                            file.status === 'processing' ? 'bg-yellow-500/10 text-yellow-500' :
+                            file.status === 'failed' ? 'bg-red-500/10 text-red-500' :
+                            file.status === 'active' ? 'bg-green-500/10 text-green-500' :
+                            'bg-gray-500/10 text-gray-500'
+                          }`}>
+                            {file.status || 'active'}
+                          </span>
+                          <span className="text-[9px] text-text-tertiary">{file.chunks_count || 0} chunks</span>
+                        </div>
                       </div>
                     </div>
                     <button onClick={() => handleDeleteFile(file.id)} className="p-1 rounded-lg text-text-secondary hover:text-red-400">✕</button>

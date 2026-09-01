@@ -8,13 +8,12 @@ import { useLang } from '../../lib/LangContext'
 import NotificationCenter from '../NotificationCenter'
 import DarkModeToggle from '../DarkModeToggle'
 import {
-  HomeIcon, InboxIcon, ChannelsIcon, WhatsAppIcon, ContentIcon, ReputationIcon,
+  HomeIcon, InboxIcon, ChannelsIcon, WhatsAppIcon, 
   ReportsIcon, AIKnowledgeIcon, SettingsIcon, BillingIcon, HelpIcon,
   SearchIcon, MenuIcon, XIcon, UserIcon, LogOutIcon, NazLogoIcon,
-  SendIcon, LayersIcon, LinkIcon, BarChartIcon, LightningIcon, StarIcon,
-  NotificationIcon, TrendUpIcon, TrendDownIcon, ShieldIcon, MailIcon,
-  WorkflowIcon, TagIcon, FileTextIcon, PlugIcon, CalendarIcon,
-  CommentIcon
+  SendIcon, LayersIcon, BarChartIcon, LightningIcon, StarIcon,
+  NotificationIcon, TrendUpIcon, WorkflowIcon, TagIcon, 
+  FileTextIcon, CalendarIcon
 } from '../ui/DashboardIcons'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -46,22 +45,7 @@ const NAV_GROUPS = [
     labelAr: 'التسويق',
     items: [
       { icon: SendIcon,        href: '/dashboard/campaigns',         labelEn: 'Campaigns',       labelAr: 'الحملات' },
-      { icon: MailIcon,        href: '/dashboard/email-campaigns',   labelEn: 'Email Campaigns', labelAr: 'حملات البريد' },
-      { icon: LayersIcon,      href: '/dashboard/sequences',         labelEn: 'Sequences',       labelAr: 'التسلسلات' },
-      { icon: StarIcon,        href: '/dashboard/social-posts',      labelEn: 'Social Posts',    labelAr: 'المنشورات' },
-      { icon: FileTextIcon,    href: '/dashboard/content',           labelEn: 'Content',         labelAr: 'المحتوى' },
-      { icon: CommentIcon,     href: '/dashboard/comment-automation',labelEn: 'Comment Automation',labelAr: 'أتمتة التعليقات' },
-    ]
-  },
-  {
-    groupKey: 'commerce',
-    labelEn: 'Commerce',
-    labelAr: 'التجارة',
-    items: [
-      { icon: LinkIcon,        href: '/dashboard/products',            labelEn: 'Products',       labelAr: 'المنتجات' },
-      { icon: CalendarIcon,    href: '/dashboard/bookings',            labelEn: 'Bookings',       labelAr: 'الحجوزات' },
-      { icon: NotificationIcon,href: '/dashboard/order-notifications', labelEn: 'Order Alerts',   labelAr: 'إشعارات الطلبات' },
-      { icon: TrendDownIcon,   href: '/dashboard/cart-recovery',       labelEn: 'Cart Recovery',  labelAr: 'استرداد السلة' },
+      { icon: FileTextIcon,    href: '/dashboard/sequences',         labelEn: 'Sequences',       labelAr: 'التسلسلات' },
     ]
   },
   {
@@ -70,9 +54,7 @@ const NAV_GROUPS = [
     labelAr: 'العمليات',
     items: [
       { icon: UserIcon,        href: '/dashboard/team',            labelEn: 'Team',           labelAr: 'الفريق' },
-      { icon: ShieldIcon,      href: '/dashboard/routing',         labelEn: 'Routing',        labelAr: 'التوجيه' },
       { icon: WorkflowIcon,    href: '/dashboard/workflows',       labelEn: 'Workflows',      labelAr: 'سير العمل' },
-      { icon: StarIcon,        href: '/dashboard/reputation',      labelEn: 'Reputation',     labelAr: 'السمعة' },
       { icon: ReportsIcon,     href: '/dashboard/reports',         labelEn: 'Reports',        labelAr: 'التقارير' },
       { icon: TagIcon,         href: '/dashboard/classification',  labelEn: 'Classification', labelAr: 'التصنيف' },
       { icon: LayersIcon,      href: '/dashboard/multimodal',      labelEn: 'Multimodal',     labelAr: 'متعدد الوسائط' },
@@ -83,7 +65,6 @@ const NAV_GROUPS = [
     labelEn: 'Developer',
     labelAr: 'المطورين',
     items: [
-      { icon: PlugIcon,        href: '/dashboard/integrations', labelEn: 'Integrations', labelAr: 'التكاملات' },
       { icon: SearchIcon,      href: '/dashboard/api-keys',     labelEn: 'API Keys',     labelAr: 'مفاتيح API' },
     ]
   },

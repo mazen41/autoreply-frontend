@@ -1,17 +1,20 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import toast from 'react-hot-toast'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import {
-  Send, Plus, Trash2, Play, Edit2, X, Clock, CheckCircle,
-  AlertCircle, RefreshCw, Users, MessageSquare, Filter,
-  Calendar, BarChart2, Zap, ChevronDown, Search, TrendingUp,
-  CalendarOff, Eye, ArrowLeft, Megaphone, Target, Activity,
+  Send, Mail, MessageSquare, Calendar, BarChart2, Trash2, Edit2,
+  X, ChevronDown, Users, RefreshCw, Clock, CheckCircle,
+  AlertCircle, Filter, Eye, Zap, Search, TrendingUp, Plus,
+  Megaphone, Target, Activity, Globe, CalendarOff, Play,
+  FileText, ShoppingBag, ShoppingCart, MessageCircle, Bot,
 } from 'lucide-react'
-import Modal from './ui/Modal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+type CampaignType = 'bulk' | 'email' | 'social' | 'comment' | 'cart' | 'other'
+type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'partially_failed'
 
 interface Channel {
   id: number
@@ -20,35 +23,50 @@ interface Channel {
   status: string
 }
 
-interface CampaignFilters {
-  tags?: string[]
-  last_activity_days?: number | null
-  last_active_days?: number | null
-}
-
-interface Campaign {
+interface UnifiedCampaign {
   id: number
+  type: CampaignType
   name: string
-  message: string
-  channel_id: number
+  subject?: string
+  message?: string
+  content?: string
+  channel_id?: number
   channel?: Channel
-  status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+  status: CampaignStatus
   scheduled_at: string | null
   sent_at: string | null
   total_recipients: number | null
   sent_count: number | null
+  delivered_count: number | null
+  opened_count: number | null
+  clicked_count: number | null
   failed_count: number | null
-  error_message: string | null
-  filters: CampaignFilters | null
+  error_message?: string | null
   created_at: string
+  metrics?: {
+    conversions?: number
+    revenue?: number
+  }
 }
 
-interface FormState {
+interface BulkCampaignForm {
   name: string
   message: string
   channel_id: string
   scheduled_at: string
   last_activity_days: number | ''
+}
+
+interface EmailCampaignForm {
+  name: string
+  subject: string
+  content: string
+  audienceMode: 'manual' | 'gmail' | 'contacts'
+  recipientsText: string
+  channelIds: number[]
+  channelTypes: string[]
+  lastActiveDays: number | ''
+  scheduled_at: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -70,7 +88,10 @@ async function apiFetch(path: string, init: RequestInit = {}) {
     },
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(String(data.error || data.message || 'Request failed'))
+  if (!res.ok) {
+    const firstError = data.errors ? Object.values(data.errors).flat()[0] : null
+    throw new Error(String(firstError || data.error || data.message || 'Request failed'))
+  }
   return data
 }
 
@@ -94,12 +115,22 @@ const CHANNEL_ICONS: Record<string, string> = {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: React.ReactNode; label: string }> = {
-  draft:     { color: '#64748b', bg: 'rgba(100,116,139,0.12)', icon: <Edit2 size={11} />,   label: 'Draft' },
-  scheduled: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: <Clock size={11} />,   label: 'Scheduled' },
-  sending:   { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: <RefreshCw size={11} className="animate-spin" />, label: 'Sending' },
-  sent:      { color: '#10b981', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircle size={11} />, label: 'Sent' },
-  failed:    { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   icon: <AlertCircle size={11} />, label: 'Failed' },
+  draft:            { color: '#64748b', bg: 'rgba(100,116,139,0.12)', icon: <Edit2 size={11} />, label: 'Draft' },
+  scheduled:        { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  icon: <Clock size={11} />, label: 'Scheduled' },
+  sending:          { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  icon: <RefreshCw size={11} className="animate-spin" />, label: 'Sending' },
+  sent:             { color: '#10b981', bg: 'rgba(16,185,129,0.12)',  icon: <CheckCircle size={11} />, label: 'Sent' },
+  failed:           { color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   icon: <AlertCircle size={11} />, label: 'Failed' },
+  partially_failed: { color: '#f97316', bg: 'rgba(249,115,22,0.12)',  icon: <AlertCircle size={11} />, label: 'Partial' },
 }
+
+const CAMPAIGN_TYPES: { type: CampaignType; label: string; icon: React.ReactNode; description: string }[] = [
+  { type: 'bulk', label: 'Bulk Messages', icon: <Send size={16} />, description: 'Send bulk messages to connected channels' },
+  { type: 'email', label: 'Email Campaigns', icon: <Mail size={16} />, description: 'Create and send email campaigns' },
+  { type: 'social', label: 'Social Posts', icon: <MessageSquare size={16} />, description: 'Schedule AI-generated social media posts' },
+  { type: 'comment', label: 'Comment Automation', icon: <Bot size={16} />, description: 'AI-powered automatic comment replies' },
+  { type: 'cart', label: 'Cart Recovery', icon: <ShoppingCart size={16} />, description: 'Recover abandoned shopping carts' },
+  { type: 'other', label: 'Other Automation', icon: <Zap size={16} />, description: 'Other marketing automation workflows' },
+]
 
 const ACTIVITY_OPTIONS = [
   { value: 7,   label: 'Active last 7 days' },
@@ -110,10 +141,6 @@ const ACTIVITY_OPTIONS = [
   { value: 180, label: 'Active last 6 months' },
   { value: 365, label: 'Active last year' },
 ]
-
-const emptyForm: FormState = {
-  name: '', message: '', channel_id: '', scheduled_at: '', last_activity_days: 30,
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -135,6 +162,20 @@ function ChannelBadge({ channel }: { channel?: Channel }) {
       border: '1px solid var(--border)', color: 'var(--text-secondary)',
     }}>
       {CHANNEL_ICONS[channel.type] || '📱'} {channel.page_name || channel.type}
+    </span>
+  )
+}
+
+function CampaignTypeBadge({ type }: { type: CampaignType }) {
+  const config = CAMPAIGN_TYPES.find(t => t.type === type)
+  if (!config) return null
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11,
+      padding: '2px 8px', borderRadius: 20, background: 'var(--accent-subtle)',
+      border: '1px solid var(--accent-focus)', color: 'var(--accent)',
+    }}>
+      {config.icon} {config.label}
     </span>
   )
 }
@@ -171,14 +212,17 @@ function btnStyle(variant: 'primary' | 'ghost' | 'danger' | 'success'): React.CS
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function CampaignsContent({ businessId }: { businessId: number }) {
-  const [campaigns, setCampaigns]     = useState<Campaign[]>([])
+export default function CampaignsContent() {
+  const [campaigns, setCampaigns]     = useState<UnifiedCampaign[]>([])
   const [channels, setChannels]       = useState<Channel[]>([])
   const [loading, setLoading]         = useState(true)
+  const [filterType, setFilterType]   = useState<CampaignType | ''>('')
   const [filterStatus, setFilterStatus] = useState('')
   const [modalOpen, setModalOpen]     = useState(false)
-  const [editing, setEditing]         = useState<Campaign | null>(null)
-  const [form, setForm]               = useState<FormState>(emptyForm)
+  const [modalType, setModalType]     = useState<CampaignType>('bulk')
+  const [editing, setEditing]         = useState<UnifiedCampaign | null>(null)
+  const [bulkForm, setBulkForm]       = useState<BulkCampaignForm>({ name: '', message: '', channel_id: '', scheduled_at: '', last_activity_days: 30 })
+  const [emailForm, setEmailForm]     = useState<EmailCampaignForm>({ name: '', subject: '', content: '', audienceMode: 'manual', recipientsText: '', channelIds: [], channelTypes: [], lastActiveDays: 30, scheduled_at: '' })
   const [saving, setSaving]           = useState(false)
   const [actionId, setActionId]       = useState<number | null>(null)
   const [statsId, setStatsId]         = useState<number | null>(null)
@@ -200,20 +244,23 @@ export default function CampaignsContent({ businessId }: { businessId: number })
   const fetchCampaigns = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
-      const params = filterStatus ? `?status=${filterStatus}` : ''
-      const d = await apiFetch(`/api/businesses/${businessId}/campaigns${params}`)
-      setCampaigns(Array.isArray(d) ? d : d.data || [])
+      // Fetch both bulk and email campaigns
+      const [bulkRes, emailRes] = await Promise.all([
+        apiFetch('/api/campaigns').catch(() => ({ data: [] })),
+        apiFetch('/api/email-campaigns').catch(() => ({ data: [] }))
+      ])
+
+      const bulkCampaigns = (bulkRes.data || []).map((c: any) => ({ ...c, type: 'bulk' as CampaignType }))
+      const emailCampaigns = (emailRes.data || []).map((c: any) => ({ ...c, type: 'email' as CampaignType }))
+
+      setCampaigns([...bulkCampaigns, ...emailCampaigns])
     } catch (e: any) { if (!silent) toast.error(e.message) }
     finally { if (!silent) setLoading(false) }
-  }, [businessId, filterStatus])
+  }, [])
 
   useEffect(() => { fetchCampaigns() }, [fetchCampaigns])
 
-  // ─── Real-time progress: auto-refresh while any campaign is sending ──────
-  // Polls silently (no loading skeleton, no error toasts) every 3s so the
-  // user sees live sent/failed counts and the progress bar move without
-  // having to manually hit refresh. Stops the instant nothing is "sending"
-  // anymore, so it never polls forever for a business with no active sends.
+  // Real-time progress for sending campaigns
   const hasSendingCampaign = campaigns.some(c => c.status === 'sending')
   useEffect(() => {
     if (!hasSendingCampaign) return
@@ -221,103 +268,138 @@ export default function CampaignsContent({ businessId }: { businessId: number })
     return () => clearInterval(interval)
   }, [hasSendingCampaign, fetchCampaigns])
 
-  const openCreate = () => { setEditing(null); setForm(emptyForm); setModalOpen(true) }
+  const openCreate = (type: CampaignType) => {
+    setEditing(null)
+    setModalType(type)
+    setBulkForm({ name: '', message: '', channel_id: '', scheduled_at: '', last_activity_days: 30 })
+    setEmailForm({ name: '', subject: '', content: '', audienceMode: 'manual', recipientsText: '', channelIds: [], channelTypes: [], lastActiveDays: 30, scheduled_at: '' })
+    setModalOpen(true)
+  }
 
-  const openEdit = (c: Campaign) => {
+  const openEdit = (c: UnifiedCampaign) => {
     setEditing(c)
-    setForm({
-      name: c.name, message: c.message,
-      channel_id: String(c.channel_id),
-      scheduled_at: '',
-      last_activity_days: c.filters?.last_activity_days ?? c.filters?.last_active_days ?? 30,
-    })
+    setModalType(c.type)
+    if (c.type === 'bulk') {
+      setBulkForm({
+        name: c.name,
+        message: c.message || '',
+        channel_id: String(c.channel_id || ''),
+        scheduled_at: '',
+        last_activity_days: 30,
+      })
+    } else if (c.type === 'email') {
+      setEmailForm({
+        name: c.name,
+        subject: c.subject || '',
+        content: c.content || '',
+        audienceMode: 'manual',
+        recipientsText: '',
+        channelIds: [],
+        channelTypes: [],
+        lastActiveDays: 30,
+        scheduled_at: '',
+      })
+    }
     setModalOpen(true)
   }
 
   const saveCampaign = async () => {
-    if (!form.channel_id) { toast.error('Please select a channel'); return }
     setSaving(true)
     try {
-      const body = {
-        name: form.name.trim(),
-        message: form.message.trim(),
-        channel_id: Number(form.channel_id),
-        ...(form.scheduled_at ? { scheduled_at: form.scheduled_at, timezone: tz } : {}),
-        filters: { last_activity_days: form.last_activity_days !== '' ? Number(form.last_activity_days) : null },
-      }
-      if (editing) {
-        await apiFetch(`/api/businesses/${businessId}/campaigns/${editing.id}`, { method: 'PUT', body: JSON.stringify(body) })
-        toast.success('Campaign updated ✓')
-      } else {
-        await apiFetch(`/api/businesses/${businessId}/campaigns`, { method: 'POST', body: JSON.stringify(body) })
+      if (modalType === 'bulk') {
+        if (!bulkForm.channel_id) { toast.error('Please select a channel'); setSaving(false); return }
+        const body = {
+          name: bulkForm.name.trim(),
+          message: bulkForm.message.trim(),
+          channel_id: Number(bulkForm.channel_id),
+          ...(bulkForm.scheduled_at ? { scheduled_at: bulkForm.scheduled_at, timezone: tz } : {}),
+        }
+        await apiFetch('/api/campaigns', { method: 'POST', body: JSON.stringify(body) })
         toast.success('Campaign created ✓')
+      } else if (modalType === 'email') {
+        const body = {
+          name: emailForm.name.trim(),
+          subject: emailForm.subject.trim(),
+          content: emailForm.content,
+          audience_criteria: {
+            mode: emailForm.audienceMode,
+            recipients: emailForm.audienceMode === 'manual' ? emailForm.recipientsText.split(/[\n,;]/).map(e => e.trim().toLowerCase()).filter(Boolean) : undefined,
+            channel_ids: emailForm.channelIds,
+            channel_types: emailForm.channelTypes,
+            last_active_days: emailForm.lastActiveDays !== '' ? Number(emailForm.lastActiveDays) : null,
+          },
+          ...(emailForm.scheduled_at ? { scheduled_at: emailForm.scheduled_at, timezone: tz } : {}),
+        }
+        await apiFetch('/api/email-campaigns', { method: 'POST', body: JSON.stringify(body) })
+        toast.success('Email campaign created ✓')
+      } else {
+        toast.error('Campaign type not implemented yet')
+        setSaving(false)
+        return
       }
-      setModalOpen(false); fetchCampaigns()
+      setModalOpen(false)
+      fetchCampaigns()
     } catch (e: any) { toast.error(e.message) }
     finally { setSaving(false) }
-  }
-
-  const launchCampaign = async (id: number) => {
-    if (!confirm('Launch this campaign now? It will send to all matching contacts.')) return
-    setActionId(id)
-    try {
-      await apiFetch(`/api/businesses/${businessId}/campaigns/${id}/launch`, { method: 'POST' })
-      toast.success('Campaign launched ✓'); fetchCampaigns()
-    } catch (e: any) { toast.error(e.message) }
-    finally { setActionId(null) }
   }
 
   const deleteCampaign = async (id: number) => {
     if (!confirm('Delete this campaign permanently?')) return
     setActionId(id)
     try {
-      await apiFetch(`/api/businesses/${businessId}/campaigns/${id}`, { method: 'DELETE' })
-      toast.success('Deleted'); fetchCampaigns()
-    } catch (e: any) { toast.error(e.message) }
-    finally { setActionId(null) }
-  }
-
-  const cancelSchedule = async (id: number) => {
-    if (!confirm('Unschedule this campaign? It will revert to Draft.')) return
-    setActionId(id)
-    try {
-      await apiFetch(`/api/businesses/${businessId}/campaigns/${id}/cancel-schedule`, { method: 'POST' })
-      toast.success('Schedule cancelled — campaign is now a draft')
+      const campaign = campaigns.find(c => c.id === id)
+      if (campaign?.type === 'bulk') {
+        await apiFetch(`/api/campaigns/${id}`, { method: 'DELETE' })
+      } else if (campaign?.type === 'email') {
+        await apiFetch(`/api/email-campaigns/${id}`, { method: 'DELETE' })
+      }
+      toast.success('Deleted')
       fetchCampaigns()
     } catch (e: any) { toast.error(e.message) }
     finally { setActionId(null) }
   }
 
   const statsMap = useMemo(() => {
-    const m: Record<number, Campaign> = {}; campaigns.forEach(c => { m[c.id] = c }); return m
+    const m: Record<number, UnifiedCampaign> = {}
+    campaigns.forEach(c => { m[c.id] = c })
+    return m
   }, [campaigns])
 
   const viewingStats = statsId ? statsMap[statsId] : null
 
-  // ─── Filtered campaigns ────────────────────────────────────────────────────
+  // Filtered campaigns
   const filteredCampaigns = useMemo(() => {
-    if (!search.trim()) return campaigns
-    const q = search.toLowerCase()
-    return campaigns.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.message.toLowerCase().includes(q) ||
-      c.channel?.page_name?.toLowerCase().includes(q) ||
-      c.channel?.type?.toLowerCase().includes(q)
-    )
-  }, [campaigns, search])
+    let result = campaigns
+    if (filterType) result = result.filter(c => c.type === filterType)
+    if (filterStatus) result = result.filter(c => c.status === filterStatus)
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.message?.toLowerCase().includes(q) ||
+        c.subject?.toLowerCase().includes(q) ||
+        c.channel?.page_name?.toLowerCase().includes(q)
+      )
+    }
+    return result
+  }, [campaigns, filterType, filterStatus, search])
 
-  // ─── Summary stats ──────────────────────────────────────────────────────────
+  // Summary stats
   const summary = useMemo(() => ({
     total: campaigns.length,
     sent: campaigns.filter(c => c.status === 'sent').length,
     sending: campaigns.filter(c => c.status === 'sending').length,
     draft: campaigns.filter(c => c.status === 'draft').length,
-    totalReached: campaigns.reduce((a, c) => a + (c.sent_count || 0), 0),
+    byType: CAMPAIGN_TYPES.reduce((acc, t) => {
+      acc[t.type] = campaigns.filter(c => c.type === t.type).length
+      return acc
+    }, {} as Record<CampaignType, number>),
   }), [campaigns])
 
   // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
-    <div style={{ padding: '24px 0', maxWidth: 960, margin: '0 auto' }}>
+    <div style={{ padding: '24px 0', maxWidth: 1200, margin: '0 auto' }}>
 
       {/* Header */}
       <motion.div
@@ -332,14 +414,14 @@ export default function CampaignsContent({ businessId }: { businessId: number })
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent)',
             }}>
-              <Send size={20} color="#fff" />
+              <Megaphone size={20} color="#fff" />
             </div>
             <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>Campaigns</h1>
           </div>
-          <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', margin: 0 }}>Send bulk messages to your contacts across all connected channels</p>
+          <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', margin: 0 }}>Manage all your marketing campaigns in one place</p>
         </div>
         <button
-          onClick={openCreate}
+          onClick={() => setModalOpen(true)}
           style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px',
             borderRadius: 14, background: 'linear-gradient(135deg,var(--accent),var(--accent-end))', color: '#fff',
@@ -355,13 +437,12 @@ export default function CampaignsContent({ businessId }: { businessId: number })
       </motion.div>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Total',         value: summary.total,        color: 'var(--text-primary)', icon: <Megaphone size={15} /> },
-          { label: 'Drafts',        value: summary.draft,        color: '#64748b',              icon: <Edit2 size={15} /> },
-          { label: 'Sending',       value: summary.sending,      color: '#3b82f6',              icon: <RefreshCw size={15} /> },
-          { label: 'Sent',          value: summary.sent,         color: '#10b981',              icon: <CheckCircle size={15} /> },
-          { label: 'Total Reached', value: summary.totalReached, color: 'var(--accent)',        icon: <TrendingUp size={15} /> },
+          { label: 'Total', value: summary.total, color: 'var(--text-primary)', icon: <Megaphone size={15} /> },
+          { label: 'Drafts', value: summary.draft, color: '#64748b', icon: <Edit2 size={15} /> },
+          { label: 'Sending', value: summary.sending, color: '#3b82f6', icon: <RefreshCw size={15} /> },
+          { label: 'Sent', value: summary.sent, color: '#10b981', icon: <CheckCircle size={15} /> },
         ].map((s, i) => (
           <motion.div
             key={s.label}
@@ -385,6 +466,25 @@ export default function CampaignsContent({ businessId }: { businessId: number })
         ))}
       </div>
 
+      {/* Campaign type quick stats */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+        {CAMPAIGN_TYPES.map(t => (
+          <button
+            key={t.type}
+            onClick={() => setFilterType(filterType === t.type ? '' : t.type)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+              borderRadius: 10, border: '1.5px solid var(--border)',
+              background: filterType === t.type ? 'var(--accent-subtle)' : 'var(--surface)',
+              color: filterType === t.type ? 'var(--accent)' : 'var(--text-secondary)',
+              cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all .15s',
+            }}
+          >
+            {t.icon} {t.label} <span style={{ fontSize: 10, opacity: 0.7 }}>({summary.byType[t.type] || 0})</span>
+          </button>
+        ))}
+      </div>
+
       {/* Stats panel */}
       {viewingStats && (
         <div style={{ marginBottom: 24, padding: 24, borderRadius: 16, background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
@@ -392,18 +492,21 @@ export default function CampaignsContent({ businessId }: { businessId: number })
             <div>
               <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{viewingStats.name}</h2>
               <div style={{ marginTop: 4, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <CampaignTypeBadge type={viewingStats.type} />
                 <ChannelBadge channel={viewingStats.channel} />
                 {viewingStats.sent_at && <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Sent {formatDate(viewingStats.sent_at, tz)}</span>}
               </div>
             </div>
             <button onClick={() => setStatsId(null)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>← Back</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: 12 }}>
             {[
               { label: 'Recipients', value: viewingStats.total_recipients },
-              { label: 'Sent',       value: viewingStats.sent_count,    color: '#10b981' },
-              { label: 'Failed',     value: viewingStats.failed_count,  color: '#ef4444' },
-            ].map(s => (
+              { label: 'Sent', value: viewingStats.sent_count || viewingStats.delivered_count, color: '#10b981' },
+              { label: 'Opened', value: viewingStats.opened_count, color: '#3b82f6' },
+              { label: 'Clicked', value: viewingStats.clicked_count, color: '#f59e0b' },
+              { label: 'Failed', value: viewingStats.failed_count, color: '#ef4444' },
+            ].filter(s => s.value !== null && s.value !== undefined).map(s => (
               <div key={s.label} style={{ textAlign: 'center', padding: '16px 8px', borderRadius: 12, background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <StatPill label={s.label} value={s.value} color={s.color} />
               </div>
@@ -414,10 +517,6 @@ export default function CampaignsContent({ businessId }: { businessId: number })
               ⚠ {viewingStats.error_message}
             </div>
           )}
-          <div style={{ marginTop: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-            <span style={{ fontWeight: 700, color: 'var(--text-tertiary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Message</span>
-            <div style={{ marginTop: 6, color: 'var(--text-primary)' }}>{viewingStats.message}</div>
-          </div>
         </div>
       )}
 
@@ -473,12 +572,12 @@ export default function CampaignsContent({ businessId }: { businessId: number })
               ))
             ) : filteredCampaigns.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '72px 24px', borderRadius: 20, background: 'var(--surface-elevated)', border: '1.5px dashed var(--border)' }}>
-                {search.trim() ? (
+                {search.trim() || filterType || filterStatus ? (
                   <>
                     <Search size={40} style={{ color: 'var(--text-tertiary)', marginBottom: 14 }} />
                     <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-secondary)', margin: '0 0 6px' }}>No matching campaigns</p>
-                    <p style={{ fontSize: 13, color: 'var(--text-tertiary)', margin: '0 0 20px' }}>Try a different search term or clear the filter</p>
-                    <button onClick={() => setSearch('')} style={{ padding: '9px 20px', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Clear Search</button>
+                    <p style={{ fontSize: 13, color: 'var(--text-tertiary)', margin: '0 0 20px' }}>Try different filters or clear search</p>
+                    <button onClick={() => { setSearch(''); setFilterType(''); setFilterStatus('') }} style={{ padding: '9px 20px', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Clear Filters</button>
                   </>
                 ) : (
                   <>
@@ -486,9 +585,9 @@ export default function CampaignsContent({ businessId }: { businessId: number })
                       <Megaphone size={32} style={{ color: 'var(--accent)' }} />
                     </div>
                     <p style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', letterSpacing: '-0.01em' }}>No campaigns yet</p>
-                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 28px' }}>Send your first bulk message to all your contacts across channels</p>
+                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 28px' }}>Create your first campaign to reach your audience</p>
                     <button
-                      onClick={openCreate}
+                      onClick={() => setModalOpen(true)}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px',
                         borderRadius: 12, background: 'var(--accent)', color: '#fff',
@@ -503,7 +602,7 @@ export default function CampaignsContent({ businessId }: { businessId: number })
             ) : filteredCampaigns.map(c => {
               const sc = STATUS_CONFIG[c.status] || STATUS_CONFIG.draft
               const busy = actionId === c.id
-              const sentPct = (c.total_recipients ?? 0) > 0 ? Math.round(((c.sent_count ?? 0) / c.total_recipients!) * 100) : 0
+              const sentPct = (c.total_recipients ?? 0) > 0 ? Math.round(((c.sent_count || c.delivered_count || 0) / c.total_recipients!) * 100) : 0
               return (
                 <div
                   key={c.id}
@@ -524,13 +623,14 @@ export default function CampaignsContent({ businessId }: { businessId: number })
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{c.name}</span>
+                        <CampaignTypeBadge type={c.type} />
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, background: sc.bg, color: sc.color }}>
                           {sc.icon} {sc.label}
                         </span>
                         <ChannelBadge channel={c.channel} />
                       </div>
                       <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 520 }}>
-                        {c.message || '—'}
+                        {c.subject || c.message || '—'}
                       </p>
                       <div style={{ display: 'flex', gap: 14, marginTop: 8, flexWrap: 'wrap' }}>
                         {c.scheduled_at && (
@@ -553,7 +653,9 @@ export default function CampaignsContent({ businessId }: { businessId: number })
                     <div style={{ display: 'flex', gap: 20, flexShrink: 0, alignItems: 'center' }}>
                       {[
                         { label: 'Recipients', value: c.total_recipients, color: 'var(--text-primary)' },
-                        { label: 'Sent', value: c.sent_count, color: '#10b981' },
+                        { label: 'Sent', value: c.sent_count || c.delivered_count, color: '#10b981' },
+                        ...(c.opened_count !== null ? [{ label: 'Opened', value: c.opened_count, color: '#3b82f6' }] : []),
+                        ...(c.clicked_count !== null ? [{ label: 'Clicked', value: c.clicked_count, color: '#f59e0b' }] : []),
                         ...((c.failed_count ?? 0) > 0 ? [{ label: 'Failed', value: c.failed_count, color: '#ef4444' }] : []),
                       ].map(s => (
                         <div key={s.label} style={{ textAlign: 'center' }}>
@@ -572,31 +674,15 @@ export default function CampaignsContent({ businessId }: { businessId: number })
                   )}
 
                   {/* Action bar */}
-                  <div style={{ padding: '10px 24px', borderTop: '1px solid var(--border)', background: 'rgba(0,0,0,0.12)', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ padding: '10px 24px', borderTop: '1px solid var(--border)', background: 'rgba(0,0,0,0.02)', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <button onClick={() => setStatsId(c.id)} disabled={busy} style={{ ...btnStyle('ghost'), fontSize: 12 }}>
                       <BarChart2 size={12} /> Statistics
                     </button>
 
-                    {c.status === 'draft' && (
-                      <>
-                        <button onClick={() => openEdit(c)} disabled={busy} style={{ ...btnStyle('ghost'), fontSize: 12 }}>
-                          <Edit2 size={12} /> Edit
-                        </button>
-                        <button onClick={() => launchCampaign(c.id)} disabled={busy} style={{ ...btnStyle('success'), fontSize: 12 }}>
-                          <Play size={12} /> {busy ? 'Launching…' : 'Launch Now'}
-                        </button>
-                      </>
-                    )}
-
-                    {c.status === 'scheduled' && (
-                      <>
-                        <button onClick={() => openEdit(c)} disabled={busy} style={{ ...btnStyle('ghost'), fontSize: 12 }}>
-                          <Edit2 size={12} /> Edit
-                        </button>
-                        <button onClick={() => cancelSchedule(c.id)} disabled={busy} style={{ ...btnStyle('ghost'), fontSize: 12 }}>
-                          <CalendarOff size={12} /> Unschedule
-                        </button>
-                      </>
+                    {['draft', 'scheduled'].includes(c.status) && (
+                      <button onClick={() => openEdit(c)} disabled={busy} style={{ ...btnStyle('ghost'), fontSize: 12 }}>
+                        <Edit2 size={12} /> Edit
+                      </button>
                     )}
 
                     {c.status === 'sending' && (
@@ -605,7 +691,7 @@ export default function CampaignsContent({ businessId }: { businessId: number })
                       </span>
                     )}
 
-                    {['draft', 'failed', 'scheduled'].includes(c.status) && (
+                    {['draft', 'scheduled', 'failed'].includes(c.status) && (
                       <button onClick={() => deleteCampaign(c.id)} disabled={busy} style={{ ...btnStyle('danger'), fontSize: 12, marginLeft: 'auto' }}>
                         <Trash2 size={12} /> Delete
                       </button>
@@ -618,11 +704,11 @@ export default function CampaignsContent({ businessId }: { businessId: number })
         </>
       )}
 
-      {/* Create / Edit Modal */}
+      {/* Create Campaign Modal */}
       {modalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 16 }}>
           <div style={{
-            width: '100%', maxWidth: 580, maxHeight: '92vh', overflowY: 'auto',
+            width: '100%', maxWidth: 600, maxHeight: '92vh', overflowY: 'auto',
             background: 'var(--surface-elevated)', borderRadius: 20,
             border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.45)',
           }}>
@@ -638,93 +724,179 @@ export default function CampaignsContent({ businessId }: { businessId: number })
               <button onClick={() => setModalOpen(false)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: 7, cursor: 'pointer', display: 'flex', color: 'var(--text-secondary)' }}><X size={15} /></button>
             </div>
 
-            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
-
-              {/* Name */}
-              <Field label="Campaign Name" required>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Summer Promotion" style={inputStyle} />
-              </Field>
-
-              {/* Channel picker */}
-              <Field label="Channel" required>
-                {channels.length === 0 ? (
-                  <div style={{ padding: '12px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-tertiary)' }}>
-                    No connected channels found. Connect a channel first.
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {channels.map(ch => (
-                      <button key={ch.id} onClick={() => setForm(f => ({ ...f, channel_id: String(ch.id) }))} style={{
-                        display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                        borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600,
-                        border: `1.5px solid ${form.channel_id === String(ch.id) ? 'var(--accent)' : 'var(--border)'}`,
-                        background: form.channel_id === String(ch.id) ? 'rgba(14,122,254,0.1)' : 'var(--surface)',
-                        color: form.channel_id === String(ch.id) ? 'var(--accent)' : 'var(--text-secondary)',
-                        transition: 'all .15s',
-                      }}>
-                        {CHANNEL_ICONS[ch.type] || '📱'} {ch.page_name || ch.type}
+            {/* Campaign type selector */}
+            {!editing && (
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+                <Field label="Campaign Type" required>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 10 }}>
+                    {CAMPAIGN_TYPES.map(t => (
+                      <button
+                        key={t.type}
+                        onClick={() => setModalType(t.type)}
+                        style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                          padding: '16px 12px', borderRadius: 12, cursor: 'pointer',
+                          border: `2px solid ${modalType === t.type ? 'var(--accent)' : 'var(--border)'}`,
+                          background: modalType === t.type ? 'rgba(14,122,254,0.08)' : 'var(--surface)',
+                          transition: 'all .15s',
+                        }}
+                      >
+                        <div style={{ color: modalType === t.type ? 'var(--accent)' : 'var(--text-secondary)' }}>{t.icon}</div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: modalType === t.type ? 'var(--accent)' : 'var(--text-primary)' }}>{t.label}</span>
                       </button>
                     ))}
                   </div>
-                )}
-              </Field>
+                </Field>
+              </div>
+            )}
 
-              {/* Message */}
-              <Field label="Message" required>
-                <textarea
-                  value={form.message}
-                  onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
-                  placeholder="Hey {name}! We have a special offer just for you..."
-                  rows={5}
-                  style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
-                />
-                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Tip: Use {'{'}<span>name</span>{'}'} to personalise with the contact's name.</span>
-              </Field>
+            {/* Type-specific form */}
+            <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {modalType === 'bulk' && (
+                <>
+                  <Field label="Campaign Name" required>
+                    <input value={bulkForm.name} onChange={e => setBulkForm(f => ({ ...f, name: e.target.value }))} placeholder="Summer Promotion" style={inputStyle} />
+                  </Field>
 
-              {/* Audience filter */}
-              <Field label="Audience Filter">
-                <select
-                  value={form.last_activity_days}
-                  onChange={e => setForm(f => ({ ...f, last_activity_days: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  style={inputStyle}
-                >
-                  <option value="">All contacts on this channel</option>
-                  {ACTIVITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
-                  <Filter size={10} style={{ display: 'inline', marginRight: 3 }} />
-                  Only contacts who messaged within the selected window.
-                </span>
-              </Field>
+                  <Field label="Channel" required>
+                    {channels.length === 0 ? (
+                      <div style={{ padding: '12px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-tertiary)' }}>
+                        No connected channels found. Connect a channel first.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {channels.map(ch => (
+                          <button key={ch.id} onClick={() => setBulkForm(f => ({ ...f, channel_id: String(ch.id) }))} style={{
+                            display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
+                            borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                            border: `1.5px solid ${bulkForm.channel_id === String(ch.id) ? 'var(--accent)' : 'var(--border)'}`,
+                            background: bulkForm.channel_id === String(ch.id) ? 'rgba(14,122,254,0.1)' : 'var(--surface)',
+                            color: bulkForm.channel_id === String(ch.id) ? 'var(--accent)' : 'var(--text-secondary)',
+                            transition: 'all .15s',
+                          }}>
+                            {CHANNEL_ICONS[ch.type] || '📱'} {ch.page_name || ch.type}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </Field>
 
-              {/* Schedule */}
-              <Field label={`Schedule (${tz})`}>
-                <input
-                  type="datetime-local"
-                  value={form.scheduled_at}
-                  onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))}
-                  style={inputStyle}
-                />
-                <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Leave empty to save as draft and launch manually.</span>
-              </Field>
+                  <Field label="Message" required>
+                    <textarea
+                      value={bulkForm.message}
+                      onChange={e => setBulkForm(f => ({ ...f, message: e.target.value }))}
+                      placeholder="Hey {name}! We have a special offer just for you..."
+                      rows={5}
+                      style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
+                    />
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Tip: Use {'{'}<span>name</span>{'}'} to personalise with the contact's name.</span>
+                  </Field>
+
+                  <Field label="Audience Filter">
+                    <select
+                      value={bulkForm.last_activity_days}
+                      onChange={e => setBulkForm(f => ({ ...f, last_activity_days: e.target.value === '' ? '' : Number(e.target.value) }))}
+                      style={inputStyle}
+                    >
+                      <option value="">All contacts on this channel</option>
+                      {ACTIVITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+                      <Filter size={10} style={{ display: 'inline', marginRight: 3 }} />
+                      Only contacts who messaged within the selected window.
+                    </span>
+                  </Field>
+
+                  <Field label={`Schedule (${tz})`}>
+                    <input
+                      type="datetime-local"
+                      value={bulkForm.scheduled_at}
+                      onChange={e => setBulkForm(f => ({ ...f, scheduled_at: e.target.value }))}
+                      style={inputStyle}
+                    />
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Leave empty to save as draft and launch manually.</span>
+                  </Field>
+                </>
+              )}
+
+              {modalType === 'email' && (
+                <>
+                  <Field label="Campaign Name" required>
+                    <input value={emailForm.name} onChange={e => setEmailForm(f => ({ ...f, name: e.target.value }))} placeholder="Black Friday Sale" style={inputStyle} />
+                  </Field>
+
+                  <Field label="Email Subject" required>
+                    <input value={emailForm.subject} onChange={e => setEmailForm(f => ({ ...f, subject: e.target.value }))} placeholder="🎉 Special offer inside" style={inputStyle} />
+                  </Field>
+
+                  <Field label="Email Content (HTML or plain text)" required>
+                    <textarea value={emailForm.content} onChange={e => setEmailForm(f => ({ ...f, content: e.target.value }))} placeholder="Write your email content here..." rows={7} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 12 }} />
+                  </Field>
+
+                  <Field label="Audience Mode">
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+                      {[
+                        { mode: 'manual', icon: <Edit2 size={13} />, label: 'Manual Emails' },
+                        { mode: 'gmail', icon: <Mail size={13} />, label: 'Gmail Contacts' },
+                        { mode: 'contacts', icon: <MessageSquare size={13} />, label: 'Conversation Contacts' },
+                      ].map(opt => (
+                        <button key={opt.mode} onClick={() => setEmailForm(f => ({ ...f, audienceMode: opt.mode as any }))} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 10, border: `1.5px solid ${emailForm.audienceMode === opt.mode ? 'var(--accent)' : 'var(--border)'}`, background: emailForm.audienceMode === opt.mode ? 'rgba(14,122,254,0.1)' : 'var(--surface)', color: emailForm.audienceMode === opt.mode ? 'var(--accent)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 13, transition: 'all .15s' }}>
+                          {opt.icon} {opt.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {emailForm.audienceMode === 'manual' && (
+                      <textarea value={emailForm.recipientsText} onChange={e => setEmailForm(f => ({ ...f, recipientsText: e.target.value }))} placeholder={"email1@example.com\nemail2@example.com\nor comma/semicolon separated"} rows={4} style={{ ...inputStyle, resize: 'vertical', fontSize: 12 }} />
+                    )}
+
+                    {emailForm.audienceMode === 'gmail' && (
+                      <div style={{ padding: '14px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>📧 Sends to all email addresses extracted from your connected Gmail conversations.</p>
+                      </div>
+                    )}
+
+                    {emailForm.audienceMode === 'contacts' && (
+                      <div style={{ padding: '12px 16px', borderRadius: 10, background: 'var(--surface)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        💬 Sends to contacts from your conversations who have a known email address.
+                      </div>
+                    )}
+                  </Field>
+
+                  <Field label={`Schedule (${tz})`}>
+                    <input type="datetime-local" value={emailForm.scheduled_at} onChange={e => setEmailForm(f => ({ ...f, scheduled_at: e.target.value }))} style={inputStyle} />
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Leave empty to save as draft and send manually.</span>
+                  </Field>
+                </>
+              )}
+
+              {modalType !== 'bulk' && modalType !== 'email' && (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <Bot size={32} style={{ color: 'var(--accent)', marginBottom: 12 }} />
+                  <p style={{ fontSize: 14, fontWeight: 600 }}>Coming Soon</p>
+                  <p style={{ fontSize: 12 }}>This campaign type will be available in a future update.</p>
+                </div>
+              )}
             </div>
 
             {/* Modal footer */}
-            <div style={{
-              padding: '16px 24px', borderTop: '1px solid var(--border)',
-              display: 'flex', justifyContent: 'flex-end', gap: 10,
-              position: 'sticky', bottom: 0, background: 'var(--surface-elevated)',
-            }}>
-              <button disabled={saving} onClick={() => setModalOpen(false)} style={{ ...btnStyle('ghost'), padding: '10px 18px' }}>Cancel</button>
-              <button disabled={saving} onClick={saveCampaign} style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '10px 22px',
-                borderRadius: 12, background: 'var(--accent)', color: '#fff',
-                border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
-                fontWeight: 700, fontSize: 14, opacity: saving ? 0.7 : 1,
+            {modalType === 'bulk' || modalType === 'email' ? (
+              <div style={{
+                padding: '16px 24px', borderTop: '1px solid var(--border)',
+                display: 'flex', justifyContent: 'flex-end', gap: 10,
+                position: 'sticky', bottom: 0, background: 'var(--surface-elevated)',
               }}>
-                <Zap size={14} /> {saving ? 'Saving…' : editing ? 'Update Campaign' : 'Create Campaign'}
-              </button>
-            </div>
+                <button disabled={saving} onClick={() => setModalOpen(false)} style={{ ...btnStyle('ghost'), padding: '10px 18px' }}>Cancel</button>
+                <button disabled={saving} onClick={saveCampaign} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '10px 22px',
+                  borderRadius: 12, background: 'var(--accent)', color: '#fff',
+                  border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
+                  fontWeight: 700, fontSize: 14, opacity: saving ? 0.7 : 1,
+                }}>
+                  <Zap size={14} /> {saving ? 'Saving…' : editing ? 'Update Campaign' : 'Create Campaign'}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       )}
