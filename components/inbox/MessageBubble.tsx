@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, useMemo, useRef, useState } from 'react'
+import React, { memo, useMemo, useRef, useState, useCallback } from 'react'
 import DOMPurify from 'dompurify'
 import {
   AlertCircle,
@@ -18,8 +18,12 @@ import {
   Image as ImageIcon,
   Loader2,
   MessageCircle,
+  Pencil,
   RefreshCw,
   XCircle,
+  X,
+  SendHorizonal,
+  CheckCircle2,
 } from 'lucide-react'
 
 type MediaType = 'image' | 'audio' | 'video' | 'document' | null
@@ -51,6 +55,7 @@ interface MessageBubbleProps {
     subject: string | null
   }
   onSubmitFeedback?: (messageId: number, feedback: 'positive' | 'negative') => void
+  onCorrectAI?: (messageId: number, aiDraft: string, correction: string, learningType: string) => Promise<void>
 }
 
 const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
@@ -230,6 +235,7 @@ const MessageBubble = memo(function MessageBubble({
   onReact,
   conv,
   onSubmitFeedback,
+  onCorrectAI,
 }: MessageBubbleProps) {
   const isIn = msg.direction === 'inbound'
   const isGmail = channelType === 'gmail'
@@ -237,6 +243,31 @@ const MessageBubble = memo(function MessageBubble({
   const hasMedia = !!msg.media_url || !!msg.media_type
   const isFailed = msg.status === 'failed'
   const isPending = msg.status === 'pending'
+
+  // Correction panel state
+  const [showCorrection, setShowCorrection] = useState(false)
+  const [correctionText, setCorrectionText] = useState('')
+  const [learningType, setLearningType] = useState<'knowledge' | 'faq' | 'tone'>('knowledge')
+  const [submittingCorrection, setSubmittingCorrection] = useState(false)
+  const [correctionSubmitted, setCorrectionSubmitted] = useState(false)
+
+  const handleSubmitCorrection = useCallback(async () => {
+    if (!correctionText.trim() || !onCorrectAI || submittingCorrection) return
+    setSubmittingCorrection(true)
+    try {
+      await onCorrectAI(msg.id, msg.content, correctionText.trim(), learningType)
+      setCorrectionSubmitted(true)
+      setCorrectionText('')
+      setTimeout(() => {
+        setShowCorrection(false)
+        setCorrectionSubmitted(false)
+      }, 2000)
+    } catch {
+      // keep panel open on error
+    } finally {
+      setSubmittingCorrection(false)
+    }
+  }, [correctionText, learningType, msg.id, msg.content, onCorrectAI, submittingCorrection])
 
   const textDirection = useMemo(() => {
     const sample = `${msg.content || ''} ${msg.file_name || ''}`
@@ -325,12 +356,69 @@ const MessageBubble = memo(function MessageBubble({
               </div>
             )}
           </div>
+
+          {/* Inline AI Correction Panel */}
+          {showCorrection && msg.is_ai && !isIn && (
+            <div className="mt-2 w-full max-w-[min(76%,42rem)] rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/20 p-3 shadow-md">
+              {correctionSubmitted ? (
+                <div className="flex items-center gap-2 py-2 text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={16} />
+                  <span className="text-sm font-semibold">Correction submitted for review!</span>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">Correct this AI reply</span>
+                    <button onClick={() => { setShowCorrection(false); setCorrectionText('') }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                      <X size={14} />
+                    </button>
+                  </div>
+                  <textarea
+                    value={correctionText}
+                    onChange={e => setCorrectionText(e.target.value)}
+                    placeholder="Write the correct response the AI should have given..."
+                    rows={3}
+                    className="w-full resize-none rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  />
+                  <div className="mt-2 flex items-center gap-2">
+                    <select
+                      value={learningType}
+                      onChange={e => setLearningType(e.target.value as 'knowledge' | 'faq' | 'tone')}
+                      className="flex-1 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-2 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    >
+                      <option value="knowledge">Knowledge base</option>
+                      <option value="faq">FAQ answer</option>
+                      <option value="tone">Tone correction</option>
+                    </select>
+                    <button
+                      onClick={handleSubmitCorrection}
+                      disabled={!correctionText.trim() || submittingCorrection}
+                      className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                    >
+                      {submittingCorrection ? <Loader2 size={12} className="animate-spin" /> : <SendHorizonal size={12} />}
+                      {submittingCorrection ? 'Submitting...' : 'Submit'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
           {msg.content && (
             <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Copy message" aria-label="Copy message">
               <Copy size={14} />
+            </button>
+          )}
+          {msg.is_ai && !isIn && onCorrectAI && (
+            <button
+              onClick={() => setShowCorrection(v => !v)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-800/40"
+              title="Correct this AI reply (trains the AI)"
+              aria-label="Correct AI reply"
+            >
+              <Pencil size={14} />
             </button>
           )}
           {isFailed && (

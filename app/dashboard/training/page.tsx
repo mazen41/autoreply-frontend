@@ -232,9 +232,17 @@ export default function TrainingDashboard() {
             <BrainCircuit className="w-4 h-4" />
             {L('AI Analytics Core', 'نواة تحليلات الذكاء الاصطناعي')}
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-            {L('Training Dashboard', 'لوحة التدريب')}
-          </h1>
+          <div className="flex items-center gap-4 mb-2">
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+              {L('Training Dashboard', 'لوحة التدريب')}
+            </h1>
+            <a 
+              href="/dashboard/training/review" 
+              className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+            >
+              {L('Review Corrections', 'مراجعة التصحيحات')}
+            </a>
+          </div>
           <p className="text-base text-gray-500 dark:text-gray-400 max-w-xl">
             {L('Deep insights into AI performance, auto-replies, and human handoffs across all channels.', 'رؤى عميقة حول أداء الذكاء الاصطناعي، والردود التلقائية، والتسليم للبشر عبر جميع القنوات.')}
           </p>
