@@ -1,263 +1,181 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
-import { X, User, Mail, Phone, Tag, Clock, FileText, ChevronDown, ChevronUp } from 'lucide-react'
+import React, { useState } from 'react'
+import { ApiConversation } from '../../hooks/useInbox'
+import {
+  User, Phone, Mail, MapPin, Calendar, Clock, ShoppingBag,
+  Tag, CreditCard, ExternalLink, ChevronDown, ChevronUp, Edit2, X, Plus
+} from 'lucide-react'
 
 interface CustomerPanelProps {
-  conversation: {
-    id: number
-    sender_id: string
-    sender_name: string | null
-    sender_email: string | null
-    subject: string | null
-    status: string
-    channel: { type: string; page_name: string | null }
-    assigned_agent_id?: number | null
-    assigned_at?: string | null
-    created_at?: string | null
-  } | null
-  tags?: Array<{ id: number; tag: string }>
-  onRemoveTag?: (tagId: number) => void
-  onAddTag?: (tag: string) => void
+  conv: ApiConversation
+  isRTL: boolean
   onClose?: () => void
 }
 
-function formatTimestamp(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { 
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+export default function CustomerPanel({ conv, isRTL, onClose }: CustomerPanelProps) {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    details: true,
+    orders: true,
+    history: true,
+    activity: false
   })
-}
+  const L = (en: string, ar: string) => isRTL ? ar : en
 
-const CustomerPanel = ({ 
-  conversation, 
-  tags, 
-  onRemoveTag, 
-  onAddTag,
-  onClose 
-}: CustomerPanelProps) => {
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    profile: false,
-    contact: false,
-    conversation: false,
-    tags: false
-  })
-  const [showTagInput, setShowTagInput] = useState(false)
-  const [newTag, setNewTag] = useState('')
+  const toggleSection = (key: string) => {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
-  const toggleSection = useCallback((section: string) => {
-    setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
-  }, [])
-
-  const handleAddTag = useCallback(() => {
-    if (newTag.trim() && onAddTag) {
-      onAddTag(newTag.trim())
-      setNewTag('')
-      setShowTagInput(false)
-    }
-  }, [newTag, onAddTag])
-
-  if (!conversation) return null
+  // Mock data for UI
+  const orders = [
+    { id: '#1042', date: '2 days ago', amount: 'SAR 450', status: 'delivered' },
+    { id: '#0984', date: '1 month ago', amount: 'SAR 120', status: 'processing' }
+  ]
+  const history = [
+    { id: 1, date: 'Oct 12', preview: 'Where is my order?', ch: 'whatsapp' },
+    { id: 2, date: 'Sep 05', preview: 'Do you ship to Dubai?', ch: 'instagram' }
+  ]
+  const tags = ['VIP', 'Returning', 'Complained']
 
   return (
-    <div className="w-80 border-l border-[var(--border)] bg-[var(--surface)] flex flex-col h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-[var(--divider)] flex items-center justify-between bg-[var(--surface-elevated)]">
-        <h3 className="text-xs font-bold text-[var(--text-primary)]">Customer Details</h3>
-        <button 
-          onClick={onClose}
-          className="p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]"
-        >
-          <X size={14} />
-        </button>
+    <div className="flex flex-col h-full bg-[var(--surface)] border-l border-[var(--border)] overflow-y-auto w-[320px] flex-shrink-0">
+      
+      {/* Header Profile */}
+      <div className="relative p-6 border-b border-[var(--border)] bg-gradient-to-b from-[var(--surface-elevated)] to-[var(--surface)] text-center">
+        {onClose && (
+          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-tertiary)]">
+            <X size={16} />
+          </button>
+        )}
+        
+        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-end)] flex items-center justify-center text-white text-2xl font-black shadow-md mb-3 border-4 border-[var(--surface)]">
+          {(conv.sender_name?.charAt(0) || '?').toUpperCase()}
+        </div>
+        
+        <h2 className="text-lg font-bold text-[var(--text-primary)] leading-tight">
+          {conv.sender_name || 'Unknown Contact'}
+        </h2>
+        <p className="text-xs text-[var(--text-tertiary)] mt-1">
+          {L('Customer since', 'عميل منذ')} {new Date().getFullYear()}
+        </p>
+
+        <div className="flex justify-center gap-2 mt-4">
+          <button className="flex-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg py-2 text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent)] transition-colors">
+            {L('Edit Profile', 'تعديل الملف')}
+          </button>
+          <button className="w-9 h-9 flex items-center justify-center bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg text-[var(--text-primary)] hover:border-[var(--accent)] transition-colors">
+            <Phone size={14} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-        {/* Profile Section */}
+      {/* Sections */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+        {/* Tags */}
         <div className="space-y-2">
-          <button
-            onClick={() => toggleSection('profile')}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)]">Profile</span>
-            {collapsedSections.profile ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {!collapsedSections.profile && (
-            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-3 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center text-white font-bold text-sm">
-                  {conversation.sender_name?.[0]?.toUpperCase() || conversation.sender_id[0]}
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{L('Tags', 'العلامات')}</h3>
+            <button className="text-[var(--accent)] p-1 hover:bg-[var(--accent-subtle)] rounded"><Plus size={12} /></button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {tags.map(t => (
+              <span key={t} className="px-2 py-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-md text-[10px] font-bold text-[var(--text-primary)]">
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <Section title={L('Contact Details', 'تفاصيل الاتصال')} expanded={expandedSections.details} onToggle={() => toggleSection('details')}>
+          <div className="space-y-3">
+            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value="+966 50 123 4567" />
+            <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={conv.sender_email || 'Not provided'} />
+            <DetailRow icon={<MapPin size={14} />} label={L('Location', 'الموقع')} value="Riyadh, SA" />
+            <DetailRow icon={<Clock size={14} />} label={L('Local Time', 'الوقت المحلي')} value={new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} />
+          </div>
+        </Section>
+
+        {/* Orders Section */}
+        <Section title={L('Recent Orders', 'الطلبات الأخيرة')} expanded={expandedSections.orders} onToggle={() => toggleSection('orders')}>
+          <div className="space-y-2">
+            {orders.map(o => (
+              <div key={o.id} className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] hover:border-[var(--accent)] cursor-pointer transition-colors">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-xs text-[var(--text-primary)]">{o.id}</span>
+                  <span className="text-[10px] font-medium text-[var(--text-tertiary)]">{o.date}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-[var(--text-secondary)]">{o.amount}</span>
+                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                    o.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                  }`}>
+                    {o.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <button className="w-full py-1.5 text-xs text-[var(--accent)] font-medium hover:underline">
+              {L('View all in Salla', 'عرض الكل في سلة')}
+            </button>
+          </div>
+        </Section>
+
+        {/* Conversation History */}
+        <Section title={L('Previous Conversations', 'المحادثات السابقة')} expanded={expandedSections.history} onToggle={() => toggleSection('history')}>
+          <div className="space-y-2">
+            {history.map(h => (
+              <div key={h.id} className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] cursor-pointer group flex items-start gap-2 transition-colors">
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
+                  h.ch === 'whatsapp' ? 'bg-[#25D366]/10 text-[#25D366]' : 'bg-[#C13584]/10 text-[#C13584]'
+                }`}>
+                  <MessageSquareIcon size={12} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-[var(--text-primary)] truncate">
-                    {conversation.sender_name || 'Unknown'}
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-[var(--text-secondary)] capitalize">{h.ch}</span>
+                    <span className="text-[9px] text-[var(--text-tertiary)]">{h.date}</span>
                   </div>
-                  <div className="text-[10px] text-[var(--text-secondary)] truncate">
-                    {conversation.sender_id}
-                  </div>
+                  <p className="text-xs text-[var(--text-primary)] truncate">{h.preview}</p>
                 </div>
               </div>
-              
-              <div className="space-y-2 pt-2 border-t border-[var(--divider)]">
-                {conversation.created_at && (
-                  <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)]">
-                    <Clock size={12} />
-                    <span>Joined {formatTimestamp(conversation.created_at)}</span>
-                  </div>
-                )}
-                {conversation.assigned_agent_id && (
-                  <div className="flex items-center gap-2 text-[10px] text-accent">
-                    <User size={12} />
-                    <span>Assigned to agent</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        </Section>
 
-        {/* Contact Section */}
-        <div className="space-y-2">
-          <button
-            onClick={() => toggleSection('contact')}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)]">Contact</span>
-            {collapsedSections.contact ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {!collapsedSections.contact && (
-            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-3 space-y-2">
-              {conversation.sender_email && (
-                <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)]">
-                  <Mail size={12} />
-                  <span className="truncate">{conversation.sender_email}</span>
-                </div>
-              )}
-              {conversation.sender_name && (
-                <div className="flex items-center gap-2 text-[10px] text-[var(--text-secondary)]">
-                  <User size={12} />
-                  <span>{conversation.sender_name}</span>
-                </div>
-              )}
-              {!conversation.sender_email && !conversation.sender_name && (
-                <div className="text-[10px] text-[var(--text-tertiary)] italic">No contact information</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Conversation Section */}
-        <div className="space-y-2">
-          <button
-            onClick={() => toggleSection('conversation')}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)]">Conversation</span>
-            {collapsedSections.conversation ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {!collapsedSections.conversation && (
-            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[var(--text-secondary)]">Status</span>
-                <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                  conversation.status === 'open' ? 'bg-emerald-500/10 text-emerald-400' :
-                  conversation.status === 'closed' ? 'bg-rose-500/10 text-rose-400' :
-                  'bg-amber-500/10 text-amber-400'
-                }`}>
-                  {conversation.status}
-                </span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[var(--text-secondary)]">Channel</span>
-                <span className="text-[10px] text-[var(--text-primary)] capitalize">{conversation.channel.type}</span>
-              </div>
-
-              {conversation.subject && (
-                <div className="pt-2 border-t border-[var(--divider)]">
-                  <div className="text-[10px] text-[var(--text-secondary)] mb-1">Subject</div>
-                  <div className="text-xs text-[var(--text-primary)] truncate">{conversation.subject}</div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Tags Section */}
-        <div className="space-y-2">
-          <button
-            onClick={() => toggleSection('tags')}
-            className="flex items-center justify-between w-full text-left"
-          >
-            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-secondary)]">Tags</span>
-            {collapsedSections.tags ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-          
-          {!collapsedSections.tags && (
-            <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-3 space-y-2">
-              {showTagInput ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newTag}
-                    onChange={e => setNewTag(e.target.value)}
-                    placeholder="Add tag..."
-                    className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-lg px-2 py-1.5 text-[10px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-accent/40"
-                    onKeyPress={e => { if (e.key === 'Enter') handleAddTag() }}
-                  />
-                  <button
-                    onClick={handleAddTag}
-                    className="px-3 py-1.5 rounded-lg bg-accent text-white text-[10px] font-bold hover:brightness-110"
-                  >
-                    Add
-                  </button>
-                  <button
-                    onClick={() => { setShowTagInput(false); setNewTag('') }}
-                    className="px-3 py-1.5 rounded-lg bg-[var(--surface)] text-[var(--text-secondary)] text-[10px] font-bold hover:bg-[var(--surface-elevated)]"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowTagInput(true)}
-                  className="w-full py-1.5 rounded-lg border border-dashed border-[var(--border)] text-[10px] text-[var(--text-secondary)] hover:border-accent/30 hover:text-accent transition-all duration-150"
-                >
-                  + Add Tag
-                </button>
-              )}
-              
-              {tags && tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {tags.map(tag => (
-                    <div key={tag.id} className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-accent/10 text-accent border border-accent/20 text-[10px]">
-                      <Tag size={10} />
-                      <span>{tag.tag}</span>
-                      {onRemoveTag && (
-                        <button
-                          onClick={() => onRemoveTag(tag.id)}
-                          className="hover:text-red-400"
-                        >
-                          <X size={10} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {(!tags || tags.length === 0) && !showTagInput && (
-                <div className="text-[10px] text-[var(--text-tertiary)] italic">No tags assigned</div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
 }
 
-export default CustomerPanel
+function Section({ title, expanded, onToggle, children }: { title: string, expanded: boolean, onToggle: () => void, children: React.ReactNode }) {
+  return (
+    <div className="border border-[var(--border)] rounded-xl bg-[var(--surface-elevated)] overflow-hidden">
+      <button 
+        onClick={onToggle}
+        className="w-full flex justify-between items-center p-3 bg-[var(--surface-elevated)] hover:bg-[var(--surface)] transition-colors"
+      >
+        <span className="text-xs font-bold text-[var(--text-primary)]">{title}</span>
+        {expanded ? <ChevronUp size={14} className="text-[var(--text-tertiary)]" /> : <ChevronDown size={14} className="text-[var(--text-tertiary)]" />}
+      </button>
+      {expanded && <div className="p-3 pt-0 border-t border-[var(--border)] mt-1">{children}</div>}
+    </div>
+  )
+}
+
+function DetailRow({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <div className="text-[var(--text-tertiary)] w-4 flex justify-center">{icon}</div>
+      <div className="flex-1">
+        <div className="text-[10px] text-[var(--text-tertiary)]">{label}</div>
+        <div className="font-medium text-[var(--text-primary)] truncate">{value}</div>
+      </div>
+    </div>
+  )
+}
+
+function MessageSquareIcon(props: any) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+}

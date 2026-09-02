@@ -2,6 +2,22 @@
 
 import React, { useState, useEffect } from 'react'
 
+const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
+
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
+function authHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`,
+    'Accept': 'application/json',
+  }
+}
+
 interface Correction {
   id: number
   ai_draft: string
@@ -27,7 +43,7 @@ export default function TrainingReview({ onApprove, onReject }: TrainingReviewPr
 
   const fetchCorrections = async () => {
     try {
-      const response = await fetch('/api/training/corrections')
+      const response = await fetch(`${API}/training/corrections`, { headers: authHeaders() })
       const data = await response.json()
       setCorrections(data.corrections)
     } catch (error) {
