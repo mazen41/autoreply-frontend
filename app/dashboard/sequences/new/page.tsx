@@ -37,6 +37,8 @@ export default function SequenceEditorPage() {
   const [sequenceDescription, setSequenceDescription] = useState('')
   const [triggerType, setTriggerType] = useState<'manual' | 'new_user' | 'tag_added' | 'no_reply' | 'order_created'>('manual')
   const [channel, setChannel] = useState<'whatsapp' | 'telegram' | 'email'>('whatsapp')
+  const [noReplyHours, setNoReplyHours] = useState(24)
+  const [noReplyUnit, setNoReplyUnit] = useState<'minutes' | 'hours' | 'days'>('hours')
   const [steps, setSteps] = useState<SequenceStepUI[]>([])
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
@@ -55,6 +57,13 @@ export default function SequenceEditorPage() {
           setSequenceDescription(sequence.description || '')
           setTriggerType(sequence.trigger_type || 'manual')
           setChannel((sequence.channel || 'whatsapp') as any)
+          
+          // Load no_reply configuration
+          if (sequence.trigger_type === 'no_reply' && sequence.trigger_config) {
+            const hours = sequence.trigger_config.hours || 24
+            setNoReplyHours(hours)
+            setNoReplyUnit('hours') // Default to hours
+          }
           
           // Convert backend steps to UI format
           const uiSteps = (sequence.steps || []).map((step: SequenceStep) => ({
@@ -170,12 +179,25 @@ export default function SequenceEditorPage() {
 
     setIsSaving(true)
     try {
-      const sequenceData = {
+      const sequenceData: any = {
         name: sequenceName,
         description: sequenceDescription,
         trigger_type: triggerType,
         channel: channel,
         steps: steps,
+      }
+
+      // Add trigger config for no_reply
+      if (triggerType === 'no_reply') {
+        let hours = noReplyHours
+        if (noReplyUnit === 'minutes') {
+          hours = noReplyHours / 60
+        } else if (noReplyUnit === 'days') {
+          hours = noReplyHours * 24
+        }
+        sequenceData.trigger_config = {
+          hours: hours,
+        }
       }
 
       let sequence: Sequence | null = null
@@ -195,19 +217,32 @@ export default function SequenceEditorPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, router, validateSequence])
+  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, router, validateSequence, noReplyHours, noReplyUnit])
 
   const handleActivate = useCallback(async () => {
     if (!validateSequence()) return
 
     setIsSaving(true)
     try {
-      const sequenceData = {
+      const sequenceData: any = {
         name: sequenceName,
         description: sequenceDescription,
         trigger_type: triggerType,
         channel: channel,
         steps: steps,
+      }
+
+      // Add trigger config for no_reply
+      if (triggerType === 'no_reply') {
+        let hours = noReplyHours
+        if (noReplyUnit === 'minutes') {
+          hours = noReplyHours / 60
+        } else if (noReplyUnit === 'days') {
+          hours = noReplyHours * 24
+        }
+        sequenceData.trigger_config = {
+          hours: hours,
+        }
       }
 
       let sequence: Sequence | null = null
@@ -234,7 +269,7 @@ export default function SequenceEditorPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, activateSequence, router, validateSequence])
+  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, activateSequence, router, validateSequence, noReplyHours, noReplyUnit])
 
   const renderStepEditor = (step: SequenceStepUI, index: number) => {
     switch (step.step_type) {
@@ -427,6 +462,32 @@ export default function SequenceEditorPage() {
                 </select>
               </div>
             </div>
+
+            {/* No Reply Configuration */}
+            {triggerType === 'no_reply' && (
+              <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4">
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">No Reply Time Threshold</label>
+                <p className="text-xs text-[var(--text-tertiary)] mb-3">Trigger this sequence when a customer doesn't reply for this duration after your last message.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={noReplyHours}
+                    onChange={(e) => setNoReplyHours(parseInt(e.target.value) || 0)}
+                    className="flex-1 px-3 py-2 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
+                    min="1"
+                  />
+                  <select
+                    value={noReplyUnit}
+                    onChange={(e) => setNoReplyUnit(e.target.value as any)}
+                    className="px-3 py-2 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
+                  >
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
