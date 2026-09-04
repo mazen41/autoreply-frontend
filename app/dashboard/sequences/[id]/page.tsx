@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
@@ -8,36 +8,7 @@ import {
   Users, CheckCircle, MessageSquare, AlertCircle, Clock, Zap,
   ChevronDown, BarChart2, ArrowUpRight, Trash2, RefreshCw
 } from 'lucide-react'
-
-// ─── Mock data for the detail page ────────────────────────────────────────────
-const MOCK_SEQUENCE = {
-  id: '1',
-  name: 'Welcome New Customers',
-  description: 'Greet new customers and guide them through your store with a personal touch.',
-  status: 'active' as 'active' | 'paused' | 'draft',
-  trigger: 'Customer Added',
-  channel: 'whatsapp' as 'whatsapp' | 'telegram' | 'email',
-  steps: [
-    { type: 'message',   label: 'Welcome message',              sent: 1240, delivered: 1198, replied: 312 },
-    { type: 'delay',     label: 'Wait 1 day',                   sent: null, delivered: null, replied: null },
-    { type: 'message',   label: 'Introduce your catalog',       sent: 1105, delivered: 1072, replied: 198 },
-    { type: 'delay',     label: 'Wait 3 days',                  sent: null, delivered: null, replied: null },
-    { type: 'condition', label: 'If customer replied…',         sent: null, delivered: null, replied: null },
-    { type: 'message',   label: 'Exclusive offer for you 🎁',   sent: 891,  delivered: 871,  replied: 278 },
-  ],
-  stats: {
-    enrolled: 1240,
-    active: 349,
-    completed: 891,
-    dropped: 0,
-    messagesSent: 4820,
-    deliveryRate: 96.7,
-    replyRate: 24.1,
-    conversionRate: 34.2,
-  },
-  updatedAt: '2 hours ago',
-  createdAt: 'Sep 12, 2024',
-}
+import { useSequences } from '../../../../hooks/useSequences'
 
 const STATUS_CONFIG = {
   active: { label: 'Active',  color: '#16A085', bg: 'rgba(22,160,133,0.1)', dot: '#16A085' },
@@ -125,19 +96,86 @@ function StatTile({ label, value, sub, accent }: { label: string; value: string;
 export default function SequenceDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const seq = MOCK_SEQUENCE
-  const [status, setStatus] = useState(seq.status)
+  const { fetchSequence, activateSequence, pauseSequence, deleteSequence } = useSequences()
+  
+  const [sequence, setSequence] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState('draft')
   const [moreOpen, setMoreOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'contacts'>('overview')
-  const st = STATUS_CONFIG[status]
+  
+  const sequenceId = params.id ? parseInt(params.id as string) : 0
+  
+  useEffect(() => {
+    if (sequenceId) {
+      loadSequence()
+    }
+  }, [sequenceId])
+  
+  const loadSequence = async () => {
+    setLoading(true)
+    const data = await fetchSequence(sequenceId)
+    if (data) {
+      setSequence(data)
+      setStatus(data.status || 'draft')
+    }
+    setLoading(false)
+  }
+  
+  const handleStatusToggle = async () => {
+    if (status === 'active') {
+      const paused = await pauseSequence(sequenceId)
+      if (paused) {
+        setStatus('paused')
+        setSequence(paused)
+      }
+    } else {
+      const activated = await activateSequence(sequenceId)
+      if (activated) {
+        setStatus('active')
+        setSequence(activated)
+      }
+    }
+  }
+  
+  const handleDelete = async () => {
+    if (confirm('Are you sure you want to delete this sequence?')) {
+      const deleted = await deleteSequence(sequenceId)
+      if (deleted) {
+        router.push('/dashboard/sequences')
+      }
+    }
+  }
+  
+  const st = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.draft
 
-  const highestDropoffIndex = seq.steps
-    .filter(s => s.type === 'message')
-    .reduce((worst, s, i, arr) => {
-      const replyRate = s.replied && s.sent ? s.replied / s.sent : 1
-      const worstRate = arr[worst].replied && arr[worst].sent ? arr[worst].replied! / arr[worst].sent! : 1
-      return replyRate < worstRate ? i : worst
-    }, 0)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Loading sequence...</div>
+      </div>
+    )
+  }
+  
+  if (!sequence) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Sequence not found</div>
+      </div>
+    )
+  }
+  
+  const steps = sequence.steps || []
+  const stats = {
+    enrolled: sequence.total_enrollments || 0,
+    active: sequence.active_enrollments || 0,
+    completed: 0, // Would need from analytics
+    dropped: 0,
+    messagesSent: 0, // Would need from analytics
+    deliveryRate: 0,
+    replyRate: 0,
+    conversionRate: 0,
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -151,23 +189,23 @@ export default function SequenceDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-black text-[var(--text-primary)]">{seq.name}</h1>
+              <h1 className="text-xl font-black text-[var(--text-primary)]">{sequence.name}</h1>
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                 style={{ background: st.bg, color: st.color }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
                 {st.label}
               </span>
               <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)]">
-                {seq.channel === 'whatsapp' ? '● WhatsApp' : seq.channel === 'telegram' ? '● Telegram' : '● Email'}
+                {sequence.channel === 'whatsapp' ? '● WhatsApp' : sequence.channel === 'telegram' ? '● Telegram' : '● Email'}
               </span>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">{seq.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{sequence.description}</p>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
-              <span className="flex items-center gap-1"><Zap size={11} className="text-amber-500" /> {seq.trigger}</span>
+              <span className="flex items-center gap-1"><Zap size={11} className="text-amber-500" /> {sequence.trigger_type}</span>
               <span>·</span>
-              <span>{seq.steps.length} steps</span>
+              <span>{steps.length} steps</span>
               <span>·</span>
-              <span>Updated {seq.updatedAt}</span>
+              <span>Updated {new Date(sequence.updated_at).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
