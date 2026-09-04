@@ -340,9 +340,9 @@ export default function SequenceDetailPage() {
           {/* Key metrics */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Completion Rate', value: `${Math.round((sequence.stats.completed / sequence.stats.enrolled) * 100)}%`, desc: 'Contacts who finish all steps', color: '#16A085' },
-              { label: 'Avg Reply Rate',  value: `${sequence.stats.replyRate}%`, desc: 'Across all message steps', color: 'var(--accent)' },
-              { label: 'Conversion',      value: `${sequence.stats.conversionRate}%`, desc: 'Achieved the sequenceuence goal', color: '#8B3FFB' },
+              { label: 'Completion Rate', value: '0%', desc: 'Contacts who finish all steps', color: '#16A085' },
+              { label: 'Avg Reply Rate',  value: '0%', desc: 'Across all message steps', color: 'var(--accent)' },
+              { label: 'Conversion',      value: '0%', desc: 'Achieved the sequence goal', color: '#8B3FFB' },
             ].map(m => (
               <div key={m.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black mb-1" style={{ color: m.color }}>{m.value}</p>
@@ -360,9 +360,9 @@ export default function SequenceDetailPage() {
           {/* Enrollment breakdown */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'In Progress',  value: sequence.stats.active,    color: 'var(--accent)' },
-              { label: 'Completed',    value: sequence.stats.completed,  color: '#16A085' },
-              { label: 'Dropped',      value: sequence.stats.dropped,    color: '#FF4757' },
+              { label: 'In Progress',  value: stats.active,    color: 'var(--accent)' },
+              { label: 'Completed',    value: stats.completed,  color: '#16A085' },
+              { label: 'Dropped',      value: stats.dropped,    color: '#FF4757' },
             ].map(c => (
               <div key={c.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black" style={{ color: c.color }}>{c.value.toLocaleString()}</p>
