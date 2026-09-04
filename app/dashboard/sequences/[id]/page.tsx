@@ -78,23 +78,23 @@ export default function SequenceDetailPage() {
   const router = useRouter()
   const { fetchSequence, activateSequence, pauseSequence, deleteSequence } = useSequences()
   
-  const [sequence, setSequence] = useState<any>(null)
+  const [sequenceuence, setSequence] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('draft')
   const [moreOpen, setMoreOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'contacts'>('overview')
   
-  const sequenceId = params.id ? parseInt(params.id as string) : 0
+  const sequenceuenceId = params.id ? parseInt(params.id as string) : 0
   
   useEffect(() => {
-    if (sequenceId) {
+    if (sequenceuenceId) {
       loadSequence()
     }
-  }, [sequenceId])
+  }, [sequenceuenceId])
   
   const loadSequence = async () => {
     setLoading(true)
-    const data = await fetchSequence(sequenceId)
+    const data = await fetchSequence(sequenceuenceId)
     if (data) {
       setSequence(data)
       setStatus(data.status || 'draft')
@@ -104,13 +104,13 @@ export default function SequenceDetailPage() {
   
   const handleStatusToggle = async () => {
     if (status === 'active') {
-      const paused = await pauseSequence(sequenceId)
+      const paused = await pauseSequence(sequenceuenceId)
       if (paused) {
         setStatus('paused')
         setSequence(paused)
       }
     } else {
-      const activated = await activateSequence(sequenceId)
+      const activated = await activateSequence(sequenceuenceId)
       if (activated) {
         setStatus('active')
         setSequence(activated)
@@ -119,10 +119,10 @@ export default function SequenceDetailPage() {
   }
   
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this sequence?')) {
-      const deleted = await deleteSequence(sequenceId)
+    if (confirm('Are you sure you want to delete this sequenceuence?')) {
+      const deleted = await deleteSequence(sequenceuenceId)
       if (deleted) {
-        router.push('/dashboard/sequences')
+        router.push('/dashboard/sequenceuences')
       }
     }
   }
@@ -132,12 +132,12 @@ export default function SequenceDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading sequence...</div>
+        <div className="text-gray-500">Loading sequenceuence...</div>
       </div>
     )
   }
   
-  if (!sequence) {
+  if (!sequenceuence) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-gray-500">Sequence not found</div>
@@ -145,10 +145,10 @@ export default function SequenceDetailPage() {
     )
   }
   
-  const steps = sequence.steps || []
+  const steps = sequenceuence.steps || []
   const stats = {
-    enrolled: sequence.total_enrollments || 0,
-    active: sequence.active_enrollments || 0,
+    enrolled: sequenceuence.total_enrollments || 0,
+    active: sequenceuence.active_enrollments || 0,
     completed: 0, // Would need from analytics
     dropped: 0,
     messagesSent: 0, // Would need from analytics
@@ -163,29 +163,29 @@ export default function SequenceDetailPage() {
       {/* ── Header ── */}
       <div className="flex items-start gap-4 justify-between">
         <div className="flex items-start gap-3">
-          <Link href="/dashboard/sequences"
+          <Link href="/dashboard/sequenceuences"
             className="mt-1 p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] transition-colors flex-shrink-0">
             <ArrowLeft size={16} />
           </Link>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-black text-[var(--text-primary)]">{sequence.name}</h1>
+              <h1 className="text-xl font-black text-[var(--text-primary)]">{sequenceuence.name}</h1>
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                 style={{ background: st.bg, color: st.color }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
                 {st.label}
               </span>
               <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)]">
-                {sequence.channel === 'whatsapp' ? '● WhatsApp' : sequence.channel === 'telegram' ? '● Telegram' : '● Email'}
+                {sequenceuence.channel === 'whatsapp' ? '● WhatsApp' : sequenceuence.channel === 'telegram' ? '● Telegram' : '● Email'}
               </span>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">{sequence.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{sequenceuence.description}</p>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
-              <span className="flex items-center gap-1"><Zap size={11} className="text-amber-500" /> {sequence.trigger_type}</span>
+              <span className="flex items-center gap-1"><Zap size={11} className="text-amber-500" /> {sequenceuence.trigger_type}</span>
               <span>·</span>
               <span>{steps.length} steps</span>
               <span>·</span>
-              <span>Updated {new Date(sequence.updated_at).toLocaleDateString()}</span>
+              <span>Updated {new Date(sequenceuence.updated_at).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function SequenceDetailPage() {
             }`}>
             {status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Activate</>}
           </button>
-          <Link href={`/dashboard/sequences/${params.id}/edit`}
+          <Link href={`/dashboard/sequenceuences/${params.id}/edit`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors">
             <Edit2 size={14} /> Edit
           </Link>
@@ -305,14 +305,14 @@ export default function SequenceDetailPage() {
           {/* Per-step drop-off */}
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5">
             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">Step-by-Step Drop-off</h3>
-            <p className="text-xs text-[var(--text-tertiary)] mb-4">See where contacts leave the sequence</p>
+            <p className="text-xs text-[var(--text-tertiary)] mb-4">See where contacts leave the sequenceuence</p>
             <div className="space-y-3">
-              {seq.steps.filter(s => s.type === 'message').map((step, i) => {
-                const rate = step.sent && step.replied ? Math.round((step.replied / step.sent) * 100) : 0
+              {steps.filter(s => s.step_type === 'message').map((step, i) => {
+                const rate = 50 // Placeholder - would come from real analytics
                 return (
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[var(--text-secondary)] font-medium">{step.label}</span>
+                      <span className="text-[var(--text-secondary)] font-medium">Message {i + 1}</span>
                       <span className="font-bold text-[var(--text-primary)]">{rate}% replied</span>
                     </div>
                     <div className="h-2 rounded-full bg-[var(--surface)] overflow-hidden">
@@ -331,9 +331,9 @@ export default function SequenceDetailPage() {
           {/* Key metrics */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'Completion Rate', value: `${Math.round((seq.stats.completed / seq.stats.enrolled) * 100)}%`, desc: 'Contacts who finish all steps', color: '#16A085' },
-              { label: 'Avg Reply Rate',  value: `${seq.stats.replyRate}%`, desc: 'Across all message steps', color: 'var(--accent)' },
-              { label: 'Conversion',      value: `${seq.stats.conversionRate}%`, desc: 'Achieved the sequence goal', color: '#8B3FFB' },
+              { label: 'Completion Rate', value: `${Math.round((sequence.stats.completed / sequence.stats.enrolled) * 100)}%`, desc: 'Contacts who finish all steps', color: '#16A085' },
+              { label: 'Avg Reply Rate',  value: `${sequence.stats.replyRate}%`, desc: 'Across all message steps', color: 'var(--accent)' },
+              { label: 'Conversion',      value: `${sequence.stats.conversionRate}%`, desc: 'Achieved the sequenceuence goal', color: '#8B3FFB' },
             ].map(m => (
               <div key={m.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black mb-1" style={{ color: m.color }}>{m.value}</p>
@@ -351,9 +351,9 @@ export default function SequenceDetailPage() {
           {/* Enrollment breakdown */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'In Progress',  value: seq.stats.active,    color: 'var(--accent)' },
-              { label: 'Completed',    value: seq.stats.completed,  color: '#16A085' },
-              { label: 'Dropped',      value: seq.stats.dropped,    color: '#FF4757' },
+              { label: 'In Progress',  value: sequence.stats.active,    color: 'var(--accent)' },
+              { label: 'Completed',    value: sequence.stats.completed,  color: '#16A085' },
+              { label: 'Dropped',      value: sequence.stats.dropped,    color: '#FF4757' },
             ].map(c => (
               <div key={c.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black" style={{ color: c.color }}>{c.value.toLocaleString()}</p>
