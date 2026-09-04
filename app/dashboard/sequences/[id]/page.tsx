@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowLeft, Play, Pause, Copy, MoreHorizontal, Edit2, TrendingUp,
   Users, CheckCircle, MessageSquare, AlertCircle, Clock, Zap,
-  ChevronDown, BarChart2, ArrowUpRight, Trash2, RefreshCw
+  ChevronDown, BarChart2, ArrowUpRight, Trash2, RefreshCw, GitBranch
 } from 'lucide-react'
 import { useSequences } from '../../../../hooks/useSequences'
 
@@ -32,51 +32,31 @@ function TinyBarChart() {
 }
 
 // ─── Step row ─────────────────────────────────────────────────────────────────
-function StepRow({ step, index, isHighestDropoff }: {
-  step: typeof MOCK_SEQUENCE.steps[0]; index: number; isHighestDropoff: boolean
+function StepRow({ step, index }: {
+  step: any; index: number
 }) {
   const colors: Record<string, { border: string; bg: string; icon: string }> = {
     message:   { border: 'border-blue-100 dark:border-blue-900/30',    bg: 'bg-blue-50/50 dark:bg-blue-900/10',   icon: 'text-blue-500' },
     delay:     { border: 'border-purple-100 dark:border-purple-900/30', bg: 'bg-purple-50/50 dark:bg-purple-900/10', icon: 'text-purple-500' },
     condition: { border: 'border-emerald-100 dark:border-emerald-900/30', bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', icon: 'text-emerald-600' },
+    action:    { border: 'border-orange-100 dark:border-orange-900/30', bg: 'bg-orange-50/50 dark:bg-orange-900/10', icon: 'text-orange-600' },
   }
-  const StepIcon = step.type === 'message' ? MessageSquare : step.type === 'delay' ? Clock : AlertCircle
-  const c = colors[step.type]
+  const StepIcon = step.step_type === 'message' ? MessageSquare : step.step_type === 'delay' ? Clock : step.step_type === 'condition' ? GitBranch : Zap
+  const c = colors[step.step_type] || colors.message
 
   return (
-    <div className={`flex items-center gap-4 p-4 rounded-xl border ${c.border} ${c.bg} ${isHighestDropoff ? 'ring-2 ring-red-300 dark:ring-red-700' : ''} relative`}>
-      {isHighestDropoff && (
-        <span className="absolute -top-2 right-3 bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
-          Highest Drop-off
-        </span>
-      )}
+    <div className={`flex items-center gap-4 p-4 rounded-xl border ${c.border} ${c.bg} relative`}>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${c.icon} bg-white dark:bg-black/20 border border-current/10`}>
         <StepIcon size={15} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[var(--text-primary)]">{step.label}</p>
-        <p className="text-xs text-[var(--text-tertiary)] capitalize">{step.type}</p>
+        <p className="text-sm font-semibold text-[var(--text-primary)]">
+          {step.step_type === 'message' ? step.message?.substring(0, 50) + '...' : 
+           step.step_type === 'delay' ? `Wait ${step.delay_hours} ${step.delay_unit}` :
+           step.step_type}
+        </p>
+        <p className="text-xs text-[var(--text-tertiary)] capitalize">{step.step_type}</p>
       </div>
-      {step.sent !== null && (
-        <div className="flex gap-6 text-right flex-shrink-0">
-          <div>
-            <p className="text-sm font-black text-[var(--text-primary)]">{step.sent?.toLocaleString()}</p>
-            <p className="text-[10px] text-[var(--text-tertiary)]">Sent</p>
-          </div>
-          <div>
-            <p className="text-sm font-black text-emerald-600">
-              {step.delivered ? Math.round((step.delivered / step.sent!) * 100) : 0}%
-            </p>
-            <p className="text-[10px] text-[var(--text-tertiary)]">Delivered</p>
-          </div>
-          <div>
-            <p className="text-sm font-black text-[var(--accent)]">
-              {step.replied ? Math.round((step.replied / step.sent!) * 100) : 0}%
-            </p>
-            <p className="text-[10px] text-[var(--text-tertiary)]">Reply rate</p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -265,32 +245,31 @@ export default function SequenceDetailPage() {
         <div className="space-y-6">
           {/* Stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="Enrolled"    value={seq.stats.enrolled.toLocaleString()} sub="Total contacts" />
-            <StatTile label="Active Now"  value={seq.stats.active.toLocaleString()} sub="In progress" accent="var(--accent)" />
-            <StatTile label="Completed"   value={seq.stats.completed.toLocaleString()} sub="Finished all steps" accent="#16A085" />
-            <StatTile label="Conversion"  value={`${seq.stats.conversionRate}%`} sub="Goal achieved" accent="#8B3FFB" />
+            <StatTile label="Enrolled"    value={stats.enrolled.toLocaleString()} sub="Total contacts" />
+            <StatTile label="Active Now"  value={stats.active.toLocaleString()} sub="In progress" accent="var(--accent)" />
+            <StatTile label="Completed"   value={stats.completed.toLocaleString()} sub="Finished all steps" accent="#16A085" />
+            <StatTile label="Conversion"  value={`${stats.conversionRate}%`} sub="Goal achieved" accent="#8B3FFB" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="Msgs Sent"   value={seq.stats.messagesSent.toLocaleString()} />
-            <StatTile label="Delivery"    value={`${seq.stats.deliveryRate}%`} accent="#16A085" />
-            <StatTile label="Reply Rate"  value={`${seq.stats.replyRate}%`} accent="var(--accent)" />
-            <StatTile label="Dropped"     value={seq.stats.dropped.toLocaleString()} />
+            <StatTile label="Msgs Sent"   value={stats.messagesSent.toLocaleString()} />
+            <StatTile label="Delivery"    value={`${stats.deliveryRate}%`} accent="#16A085" />
+            <StatTile label="Reply Rate"  value={`${stats.replyRate}%`} accent="var(--accent)" />
+            <StatTile label="Dropped"     value={stats.dropped.toLocaleString()} />
           </div>
 
           {/* Steps timeline */}
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
               <h3 className="text-sm font-bold text-[var(--text-primary)]">Sequence Steps</h3>
-              <span className="text-xs text-[var(--text-tertiary)]">{seq.steps.length} steps total</span>
+              <span className="text-xs text-[var(--text-tertiary)]">{steps.length} steps total</span>
             </div>
             <div className="p-4 space-y-2">
-              {seq.steps.map((step, i) => (
+              {steps.map((step, i) => (
                 <React.Fragment key={i}>
                   <StepRow
                     step={step} index={i}
-                    isHighestDropoff={step.type === 'message' && i === seq.steps.findIndex(s => s.type === 'message' && s.sent === 891)}
                   />
-                  {i < seq.steps.length - 1 && (
+                  {i < steps.length - 1 && (
                     <div className="flex justify-center py-1">
                       <div className="w-px h-4 bg-[var(--border)]" />
                     </div>
