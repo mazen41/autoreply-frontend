@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useSequences, Sequence, SequenceStep } from '../../../hooks/useSequences'
+import { useSequences, Sequence, SequenceStep } from '../../../../hooks/useSequences'
 import { Plus, Trash2, Save, Play, ArrowLeft, MessageSquare, Clock, GitBranch, Copy } from 'lucide-react'
 
 type StepType = 'message' | 'delay' | 'condition' | 'action'
@@ -23,7 +23,7 @@ export default function SequenceEditorPage() {
   const router = useRouter()
   const params = useParams()
   const isEditing = !!params.id
-  const sequenceId = params.id ? parseInt(params.id) : null
+  const sequenceId = params.id ? parseInt(String(params.id)) : null
   
   const { 
     createSequence, 
@@ -44,46 +44,46 @@ export default function SequenceEditorPage() {
 
   // Load existing sequence if editing
   useEffect(() => {
+    const loadSequence = async () => {
+      if (!sequenceId) return
+      
+      setIsLoading(true)
+      try {
+        const sequence = await fetchSequence(sequenceId)
+        if (sequence) {
+          setSequenceName(sequence.name)
+          setSequenceDescription(sequence.description || '')
+          setTriggerType(sequence.trigger_type || 'manual')
+          setChannel((sequence.channel || 'whatsapp') as any)
+          
+          // Convert backend steps to UI format
+          const uiSteps = (sequence.steps || []).map((step: SequenceStep) => ({
+            id: step.id.toString(),
+            step_type: step.step_type as StepType,
+            step_order: step.step_order,
+            message: step.message || undefined,
+            config: step.config || undefined,
+            delay_hours: step.delay_hours,
+            delay_unit: step.delay_unit as any,
+            condition_config: step.condition_config || undefined,
+            is_active: step.is_active,
+          }))
+          setSteps(uiSteps)
+        }
+      } catch (error) {
+        console.error('Failed to load sequence:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     if (isEditing && sequenceId) {
       loadSequence()
     }
-  }, [isEditing, sequenceId])
-
-  const loadSequence = async () => {
-    if (!sequenceId) return
-    
-    setIsLoading(true)
-    try {
-      const sequence = await fetchSequence(sequenceId)
-      if (sequence) {
-        setSequenceName(sequence.name)
-        setSequenceDescription(sequence.description || '')
-        setTriggerType(sequence.trigger_type || 'manual')
-        setChannel((sequence.channel || 'whatsapp') as any)
-        
-        // Convert backend steps to UI format
-        const uiSteps = (sequence.steps || []).map((step: SequenceStep) => ({
-          id: step.id.toString(),
-          step_type: step.step_type as StepType,
-          step_order: step.step_order,
-          message: step.message || undefined,
-          config: step.config || undefined,
-          delay_hours: step.delay_hours,
-          delay_unit: step.delay_unit as any,
-          condition_config: step.condition_config || undefined,
-          is_active: step.is_active,
-        }))
-        setSteps(uiSteps)
-      }
-    } catch (error) {
-      console.error('Failed to load sequence:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }()
+  }, [isEditing, sequenceId, fetchSequence])
 
   const addStep = useCallback((type: StepType) => {
-    const newStep: SequenceStep = {
+    const newStep: SequenceStepUI = {
       id: Date.now().toString(),
       step_type: type,
       step_order: steps.length + 1,
@@ -96,7 +96,7 @@ export default function SequenceEditorPage() {
     setSteps([...steps, newStep])
   }, [steps])
 
-  const updateStep = useCallback((stepId: string, updates: Partial<SequenceStep>) => {
+  const updateStep = useCallback((stepId: string, updates: Partial<SequenceStepUI>) => {
     setSteps(steps.map(step => 
       step.id === stepId ? { ...step, ...updates } : step
     ))
@@ -113,7 +113,7 @@ export default function SequenceEditorPage() {
     const stepToDuplicate = steps.find(s => s.id === stepId)
     if (!stepToDuplicate) return
 
-    const newStep: SequenceStep = {
+    const newStep: SequenceStepUI = {
       ...stepToDuplicate,
       id: Date.now().toString(),
       step_order: steps.length + 1,
@@ -236,7 +236,7 @@ export default function SequenceEditorPage() {
     }
   }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, activateSequence, router, validateSequence])
 
-  const renderStepEditor = (step: SequenceStep, index: number) => {
+  const renderStepEditor = (step: SequenceStepUI, index: number) => {
     switch (step.step_type) {
       case 'message':
         return (
@@ -374,62 +374,62 @@ export default function SequenceEditorPage() {
         </div>
       ) : (
         <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-6 mb-6">
-        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Sequence Settings</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Sequence Name</label>
-            <input
-              type="text"
-              value={sequenceName}
-              onChange={(e) => setSequenceName(e.target.value)}
-              className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors"
-              placeholder="Welcome New Customers"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Description</label>
-            <textarea
-              value={sequenceDescription}
-              onChange={(e) => setSequenceDescription(e.target.value)}
-              className="w-full h-20 px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors resize-none"
-              placeholder="Describe what this sequence does..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Sequence Settings</h2>
+          
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Trigger</label>
-              <select
-                value={triggerType}
-                onChange={(e) => setTriggerType(e.target.value as any)}
-                className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
-              >
-                <option value="manual">Manual</option>
-                <option value="new_user">New User</option>
-                <option value="tag_added">Tag Added</option>
-                <option value="no_reply">No Reply</option>
-                <option value="order_created">Order Created</option>
-              </select>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Sequence Name</label>
+              <input
+                type="text"
+                value={sequenceName}
+                onChange={(e) => setSequenceName(e.target.value)}
+                className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors"
+                placeholder="Welcome New Customers"
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Channel</label>
-              <select
-                value={channel}
-                onChange={(e) => setChannel(e.target.value as any)}
-                className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
-              >
-                <option value="whatsapp">WhatsApp</option>
-                <option value="telegram">Telegram</option>
-                <option value="email">Email</option>
-              </select>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Description</label>
+              <textarea
+                value={sequenceDescription}
+                onChange={(e) => setSequenceDescription(e.target.value)}
+                className="w-full h-20 px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors resize-none"
+                placeholder="Describe what this sequence does..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Trigger</label>
+                <select
+                  value={triggerType}
+                  onChange={(e) => setTriggerType(e.target.value as any)}
+                  className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="manual">Manual</option>
+                  <option value="new_user">New User</option>
+                  <option value="tag_added">Tag Added</option>
+                  <option value="no_reply">No Reply</option>
+                  <option value="order_created">Order Created</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Channel</label>
+                <select
+                  value={channel}
+                  onChange={(e) => setChannel(e.target.value as any)}
+                  className="w-full px-4 py-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors"
+                >
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="telegram">Telegram</option>
+                  <option value="email">Email</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
       )}
-      </div>
 
       {/* Sequence Builder */}
       {isLoading ? (
@@ -440,98 +440,99 @@ export default function SequenceEditorPage() {
         </div>
       ) : (
         <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-[var(--text-primary)]">Sequence Steps</h2>
-          <div className="relative">
-            <button className="flex items-center gap-2 px-3 py-2 bg-[var(--accent)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--accent-hover)] transition-colors">
-              <Plus size={16} />
-              Add Step
-            </button>
-            <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-10 overflow-hidden">
-              <button onClick={() => addStep('message')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
-                <MessageSquare size={14} /> Message
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Sequence Steps</h2>
+            <div className="relative">
+              <button className="flex items-center gap-2 px-3 py-2 bg-[var(--accent)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--accent-hover)] transition-colors">
+                <Plus size={16} />
+                Add Step
               </button>
-              <button onClick={() => addStep('delay')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
-                <Clock size={14} /> Delay
-              </button>
-              <button onClick={() => addStep('condition')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
-                <GitBranch size={14} /> Condition
-              </button>
-              <button onClick={() => addStep('action')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
-                <Play size={14} /> Action
-              </button>
+              <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-10 overflow-hidden">
+                <button onClick={() => addStep('message')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
+                  <MessageSquare size={14} /> Message
+                </button>
+                <button onClick={() => addStep('delay')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
+                  <Clock size={14} /> Delay
+                </button>
+                <button onClick={() => addStep('condition')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
+                  <GitBranch size={14} /> Condition
+                </button>
+                <button onClick={() => addStep('action')} className="w-full text-left px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors flex items-center gap-2">
+                  <Play size={14} /> Action
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {steps.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-[var(--border)] rounded-xl">
-            <div className="w-16 h-16 rounded-full bg-[var(--surface)] flex items-center justify-center mx-auto mb-4">
-              <Plus size={24} className="text-[var(--text-tertiary)]" />
+          {steps.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed border-[var(--border)] rounded-xl">
+              <div className="w-16 h-16 rounded-full bg-[var(--surface)] flex items-center justify-center mx-auto mb-4">
+                <Plus size={24} className="text-[var(--text-tertiary)]" />
+              </div>
+              <p className="text-sm text-[var(--text-secondary)] mb-4">No steps yet. Add your first step to get started.</p>
+              <button
+                onClick={() => addStep('message')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--accent-hover)] transition-colors"
+              >
+                <Plus size={16} /> Add First Step
+              </button>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-4">No steps yet. Add your first step to get started.</p>
-            <button
-              onClick={() => addStep('message')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--accent-hover)] transition-colors"
-            >
-              <Plus size={16} /> Add First Step
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {steps.map((step, index) => (
-              <div key={step.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center text-[var(--accent)]">
-                      {getStepIcon(step.step_type)}
-                    </div>
-                    <div>
-                      <span className="text-sm font-semibold text-[var(--text-primary)]">
-                        Step {index + 1}: {getStepTypeLabel(step.step_type)}
-                      </span>
-                      <div className="flex items-center gap-2 mt-1">
-                        <button
-                          onClick={() => moveStep(step.id, 'up')}
-                          disabled={index === 0}
-                          className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => moveStep(step.id, 'down')}
-                          disabled={index === steps.length - 1}
-                          className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          ↓
-                        </button>
+          ) : (
+            <div className="space-y-4">
+              {steps.map((step, index) => (
+                <div key={step.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center text-[var(--accent)]">
+                        {getStepIcon(step.step_type)}
+                      </div>
+                      <div>
+                        <span className="text-sm font-semibold text-[var(--text-primary)]">
+                          Step {index + 1}: {getStepTypeLabel(step.step_type)}
+                        </span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <button
+                            onClick={() => moveStep(step.id, 'up')}
+                            disabled={index === 0}
+                            className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => moveStep(step.id, 'down')}
+                            disabled={index === steps.length - 1}
+                            className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            ↓
+                          </button>
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => duplicateStep(step.id)}
+                        className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                        title="Duplicate"
+                      >
+                        <Copy size={14} />
+                      </button>
+                      <button
+                        onClick={() => deleteStep(step.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => duplicateStep(step.id)}
-                      className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                      title="Duplicate"
-                    >
-                      <Copy size={14} />
-                    </button>
-                    <button
-                      onClick={() => deleteStep(step.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 text-[var(--text-tertiary)] hover:text-red-500 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
 
-                {renderStepEditor(step, index)}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  {renderStepEditor(step, index)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Validation Errors */}
       {validationErrors.length > 0 && (

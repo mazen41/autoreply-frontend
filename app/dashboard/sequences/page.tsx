@@ -6,19 +6,29 @@ import {
   Plus, Search, Filter, MoreHorizontal, Play, Pause, Copy,
   Trash2, Edit2, Zap, Clock, Users, CheckCircle, TrendingUp,
   MessageSquare, ChevronDown, Activity, ArrowUpRight, Mail,
-  Instagram, Phone, Send, Globe, AlertCircle
+  Phone, Send, Globe, AlertCircle
 } from 'lucide-react'
-import { useSequences, Sequence } from '../../hooks/useSequences'
+import { useSequences, Sequence } from '../../../hooks/useSequences'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type SeqStatus = 'active' | 'paused' | 'draft'
 type Channel   = 'whatsapp' | 'telegram' | 'email'
 
-interface SequenceWithStats extends Sequence {
+interface SequenceWithStats {
+  id: number
+  name: string
+  description?: string | null
+  channel?: 'whatsapp' | 'telegram' | 'email' | null
+  status: 'draft' | 'active' | 'paused' | 'archived'
+  trigger_type: 'new_user' | 'tag_added' | 'no_reply' | 'manual' | 'order_created'
+  trigger?: string
   enrolled: number
   completed: number
   conversionRate: number
   messagesSent: number
+  updatedAt?: string
+  createdAt?: string
+  steps?: any[]
 }
 
 // ─── Channel config ───────────────────────────────────────────────────────────
@@ -194,7 +204,7 @@ export default function SequencesPage() {
       conversionRate: seq.total_enrollments ? Math.round((seq.active_enrollments || 0) / seq.total_enrollments * 100) : 0,
       messagesSent: seq.total_enrollments || 0,
       trigger: seq.trigger_type,
-      steps: seq.steps?.length || 0,
+      steps: seq.steps || [],
       updatedAt: new Date(seq.updated_at).toLocaleString(),
     } as SequenceWithStats))
   }, [sequences])
