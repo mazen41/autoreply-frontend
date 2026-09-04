@@ -32,8 +32,17 @@ function TinyBarChart() {
 }
 
 // ─── Step row ─────────────────────────────────────────────────────────────────
+interface StepData {
+  step_type: string
+  message?: string
+  delay_hours?: number
+  delay_unit?: string
+  condition_config?: any
+  action_config?: any
+}
+
 function StepRow({ step, index }: {
-  step: any; index: number
+  step: StepData; index: number
 }) {
   const colors: Record<string, { border: string; bg: string; icon: string }> = {
     message:   { border: 'border-blue-100 dark:border-blue-900/30',    bg: 'bg-blue-50/50 dark:bg-blue-900/10',   icon: 'text-blue-500' },
@@ -264,7 +273,7 @@ export default function SequenceDetailPage() {
               <span className="text-xs text-[var(--text-tertiary)]">{steps.length} steps total</span>
             </div>
             <div className="p-4 space-y-2">
-              {steps.map((step, i) => (
+              {steps.map((step: StepData, i: number) => (
                 <React.Fragment key={i}>
                   <StepRow
                     step={step} index={i}
@@ -307,7 +316,7 @@ export default function SequenceDetailPage() {
             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">Step-by-Step Drop-off</h3>
             <p className="text-xs text-[var(--text-tertiary)] mb-4">See where contacts leave the sequenceuence</p>
             <div className="space-y-3">
-              {steps.filter(s => s.step_type === 'message').map((step, i) => {
+              {steps.filter((s: any) => s.step_type === 'message').map((step: any, i: number) => {
                 const rate = 50 // Placeholder - would come from real analytics
                 return (
                   <div key={i}>
