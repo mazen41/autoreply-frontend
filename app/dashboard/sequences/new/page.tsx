@@ -69,9 +69,24 @@ export default function SequenceEditorPage() {
   const [sequenceDescription, setSequenceDescription] = useState('')
   const [triggerType, setTriggerType] = useState<string>('manual')
   const [channel, setChannel] = useState<ChannelType>('whatsapp')
+  const [selectedChannels, setSelectedChannels] = useState<ChannelType[]>(['whatsapp'])
   const [noReplyHours, setNoReplyHours] = useState(24)
   const [noReplyUnit, setNoReplyUnit] = useState<'minutes' | 'hours' | 'days'>('hours')
   const [allowReentry, setAllowReentry] = useState(false)
+
+  const toggleChannel = (chId: ChannelType) => {
+    if (selectedChannels.includes(chId)) {
+      if (selectedChannels.length > 1) {
+        const next = selectedChannels.filter(c => c !== chId)
+        setSelectedChannels(next)
+        setChannel(next[0])
+      }
+    } else {
+      const next = [...selectedChannels, chId]
+      setSelectedChannels(next)
+      setChannel(next[0])
+    }
+  }
   const [steps, setSteps] = useState<SequenceStepUI[]>([
     { id: '1', step_type: 'message', step_order: 1, is_active: true, message: 'Welcome to our store! How can we help you today?' },
     { id: '2', step_type: 'delay', step_order: 2, is_active: true, delay_hours: 1, delay_unit: 'days' },
@@ -357,27 +372,44 @@ export default function SequenceEditorPage() {
 
             {/* Channel Selection */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-2.5">
-                Target Channel *
-              </label>
+              <div className="flex items-center justify-between mb-2.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                  Target Channels (Select Multiple or All) *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSelectedChannels(CHANNELS.map(c => c.id))}
+                  className="text-[11px] font-bold text-[var(--accent)] hover:underline"
+                >
+                  Select All Channels
+                </button>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-                {CHANNELS.map(ch => (
-                  <button
-                    key={ch.id}
-                    type="button"
-                    onClick={() => setChannel(ch.id)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer text-xs font-bold ${
-                      channel === ch.id
-                        ? 'border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)] shadow-sm'
-                        : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/50 hover:bg-[var(--surface)]'
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-lg mb-1 flex items-center justify-center" style={{ background: ch.bg }}>
-                      <span className="w-3 h-3 rounded-full" style={{ background: ch.color }} />
-                    </div>
-                    {ch.label}
-                  </button>
-                ))}
+                {CHANNELS.map(ch => {
+                  const isSelected = selectedChannels.includes(ch.id)
+                  return (
+                    <button
+                      key={ch.id}
+                      type="button"
+                      onClick={() => toggleChannel(ch.id)}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all cursor-pointer text-xs font-bold relative ${
+                        isSelected
+                          ? 'border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)] shadow-sm'
+                          : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/50 hover:bg-[var(--surface)]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-lg mb-1 flex items-center justify-center" style={{ background: ch.bg }}>
+                        <span className="w-3 h-3 rounded-full" style={{ background: ch.color }} />
+                      </div>
+                      {ch.label}
+                      {isSelected && (
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-[10px]">
+                          ✓
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
