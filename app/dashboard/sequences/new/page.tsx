@@ -39,6 +39,7 @@ export default function SequenceEditorPage() {
   const [channel, setChannel] = useState<'whatsapp' | 'telegram' | 'email'>('whatsapp')
   const [noReplyHours, setNoReplyHours] = useState(24)
   const [noReplyUnit, setNoReplyUnit] = useState<'minutes' | 'hours' | 'days'>('hours')
+  const [allowReentry, setAllowReentry] = useState(false)
   const [steps, setSteps] = useState<SequenceStepUI[]>([])
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
@@ -59,10 +60,22 @@ export default function SequenceEditorPage() {
           setChannel((sequence.channel || 'whatsapp') as any)
           
           // Load no_reply configuration
+          // Supports new format (delay_value + delay_unit) and legacy (hours).
           if (sequence.trigger_type === 'no_reply' && sequence.trigger_config) {
-            const hours = sequence.trigger_config.hours || 24
-            setNoReplyHours(hours)
-            setNoReplyUnit('hours') // Default to hours
+            const cfg = sequence.trigger_config
+            if (cfg.delay_value !== undefined && cfg.delay_unit) {
+              setNoReplyHours(cfg.delay_value)
+              setNoReplyUnit(cfg.delay_unit)
+            } else {
+              // Legacy: stored as fractional hours
+              setNoReplyHours(cfg.hours || 24)
+              setNoReplyUnit('hours')
+            }
+          }
+          
+          // Load settings
+          if (sequence.settings) {
+            setAllowReentry(sequence.settings.allow_reentry || false)
           }
           
           // Convert backend steps to UI format
@@ -185,18 +198,19 @@ export default function SequenceEditorPage() {
         trigger_type: triggerType,
         channel: channel,
         steps: steps,
+        settings: {
+          allow_reentry: allowReentry,
+        },
       }
 
       // Add trigger config for no_reply
+      // Store delay_value + delay_unit directly — do NOT convert to fractional
+      // hours (e.g. 3 minutes → 0.05 hours) because (int)0.05 === 0 on the
+      // backend, which made delay_seconds always 0.
       if (triggerType === 'no_reply') {
-        let hours = noReplyHours
-        if (noReplyUnit === 'minutes') {
-          hours = noReplyHours / 60
-        } else if (noReplyUnit === 'days') {
-          hours = noReplyHours * 24
-        }
         sequenceData.trigger_config = {
-          hours: hours,
+          delay_value: noReplyHours,   // the raw number the user typed
+          delay_unit:  noReplyUnit,    // 'minutes' | 'hours' | 'days'
         }
       }
 
@@ -217,7 +231,7 @@ export default function SequenceEditorPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, router, validateSequence, noReplyHours, noReplyUnit])
+  }, [sequenceName, sequenceDescription, triggerType, channel, steps, isEditing, sequenceId, createSequence, updateSequence, router, validateSequence, noReplyHours, noReplyUnit, allowReentry])
 
   const handleActivate = useCallback(async () => {
     if (!validateSequence()) return
@@ -230,18 +244,17 @@ export default function SequenceEditorPage() {
         trigger_type: triggerType,
         channel: channel,
         steps: steps,
+        settings: {
+          allow_reentry: allowReentry,
+        },
       }
 
       // Add trigger config for no_reply
+      // Store delay_value + delay_unit directly — same fix as handleSave.
       if (triggerType === 'no_reply') {
-        let hours = noReplyHours
-        if (noReplyUnit === 'minutes') {
-          hours = noReplyHours / 60
-        } else if (noReplyUnit === 'days') {
-          hours = noReplyHours * 24
-        }
         sequenceData.trigger_config = {
-          hours: hours,
+          delay_value: noReplyHours,
+          delay_unit:  noReplyUnit,
         }
       }
 
@@ -461,6 +474,20 @@ export default function SequenceEditorPage() {
                   <option value="email">Email</option>
                 </select>
               </div>
+            </div>
+
+            {/* Allow Reentry */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="allowReentry"
+                checked={allowReentry}
+                onChange={(e) => setAllowReentry(e.target.checked)}
+                className="w-4 h-4 rounded border-[var(--border)] bg-[var(--surface)] text-[var(--accent)] focus:ring-[var(--accent)]"
+              />
+              <label htmlFor="allowReentry" className="text-sm text-[var(--text-primary)]">
+                Allow re-entry (customer can be enrolled in this sequence multiple times)
+              </label>
             </div>
 
             {/* No Reply Configuration */}
