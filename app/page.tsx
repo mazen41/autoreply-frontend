@@ -27,7 +27,7 @@ function Hero() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
             href="/pricing"
-            className="px-8 py-3 rounded-xl font-bold btn-primary"
+            className="px-8 py-3 rounded-xl font-bold btn-lime"
           >
             {isRTL ? 'ابدأ مجاناً' : 'Start Free'}
           </a>

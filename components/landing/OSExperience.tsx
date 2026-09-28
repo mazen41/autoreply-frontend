@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  motion, useScroll, useTransform, useSpring, AnimatePresence, MotionValue,
-} from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 
 // ─── SVG ICON SET ─────────────────────────────────────────────────────────────
@@ -59,12 +57,6 @@ const IC = {
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
   ),
-  Users: ({ c = 'var(--text-secondary)', s = 20 }) => (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
-    </svg>
-  ),
   PenTool: ({ c = 'var(--text-secondary)', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
@@ -114,34 +106,22 @@ const IC = {
   ),
 }
 
-// ─── SCROLL SLOTS ─────────────────────────────────────────────────────────────
-const S = 1 / 7
-function slot(i: number): [number, number, number, number] {
-  const start = i * S, end = (i + 1) * S, fade = S * 0.38
-  return [start, start + fade, end - fade, end]
-}
-function slotOpacity(p: MotionValue<number>, i: number): MotionValue<number> {
-  const [a, b, c, d] = slot(i)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useTransform(p, [a, b, c, d], [0, 1, 1, 0])
-}
-
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const CHANNELS = [
-  { id: 'wa',  label: 'WhatsApp',  Icon: IC.WhatsApp,  color: 'var(--accent)', angle: -130, dist: 155 },
-  { id: 'ig',  label: 'Instagram', Icon: IC.Instagram, color: 'var(--accent-secondary)', angle: -60,  dist: 150 },
-  { id: 'em',  label: 'Gmail',     Icon: IC.Mail,      color: 'var(--accent)', angle:  60,  dist: 150 },
-  { id: 'web', label: 'Website',   Icon: IC.Globe,     color: 'var(--accent-secondary)', angle:  130, dist: 155 },
-  { id: 'fb',  label: 'Facebook',  Icon: IC.Facebook,  color: 'var(--accent)', angle:  180, dist: 148 },
+  { id: 'wa',  label: 'WhatsApp',  Icon: IC.WhatsApp,  color: 'var(--accent)', angle: -130, dist: 145 },
+  { id: 'ig',  label: 'Instagram', Icon: IC.Instagram, color: 'var(--accent-secondary)', angle: -60,  dist: 140 },
+  { id: 'em',  label: 'Gmail',     Icon: IC.Mail,      color: 'var(--accent)', angle:  60,  dist: 140 },
+  { id: 'web', label: 'Website',   Icon: IC.Globe,     color: 'var(--accent-secondary)', angle:  130, dist: 145 },
+  { id: 'fb',  label: 'Facebook',  Icon: IC.Facebook,  color: 'var(--accent)', angle:  180, dist: 138 },
 ]
 
 const CAPS = [
-  { id: 'lead',    ar: 'تأهيل العملاء',    en: 'Lead Qualification', Icon: IC.Target,       angle: -115, dist: 210, color: 'var(--accent)' },
-  { id: 'support', ar: 'دعم العملاء',       en: 'Customer Support',   Icon: IC.MessageSquare,angle:  -45, dist: 220, color: 'var(--accent-secondary)' },
-  { id: 'review',  ar: 'استرداد التقييمات', en: 'Review Recovery',    Icon: IC.Star,         angle:   30, dist: 215, color: 'var(--accent)' },
-  { id: 'content', ar: 'توليد المحتوى',     en: 'Content Creation',   Icon: IC.PenTool,      angle:  105, dist: 210, color: 'var(--accent-secondary)' },
-  { id: 'sales',   ar: 'أتمتة المبيعات',    en: 'Sales Automation',   Icon: IC.DollarSign,   angle:  170, dist: 218, color: 'var(--accent)' },
-  { id: 'inbox',   ar: 'الوارد الموحد',      en: 'Unified Inbox',      Icon: IC.Inbox,        angle: -168, dist: 208, color: 'var(--accent-secondary)' },
+  { id: 'lead',    ar: 'تأهيل العملاء',    en: 'Lead Qualification', Icon: IC.Target,       angle: -115, dist: 180, color: 'var(--accent)' },
+  { id: 'support', ar: 'دعم العملاء',       en: 'Customer Support',   Icon: IC.MessageSquare,angle:  -45, dist: 185, color: 'var(--accent-secondary)' },
+  { id: 'review',  ar: 'استرداد التقييمات', en: 'Review Recovery',    Icon: IC.Star,         angle:   30, dist: 180, color: 'var(--accent)' },
+  { id: 'content', ar: 'توليد المحتوى',     en: 'Content Creation',   Icon: IC.PenTool,      angle:  105, dist: 175, color: 'var(--accent-secondary)' },
+  { id: 'sales',   ar: 'أتمتة المبيعات',    en: 'Sales Automation',   Icon: IC.DollarSign,   angle:  170, dist: 182, color: 'var(--accent)' },
+  { id: 'inbox',   ar: 'الوارد الموحد',      en: 'Unified Inbox',      Icon: IC.Inbox,        angle: -168, dist: 175, color: 'var(--accent-secondary)' },
 ]
 
 const MSGS = [
@@ -164,16 +144,6 @@ const PLANS = [
   { ar: 'أساسي',   en: 'Basic',      mo: 49,  yr: 39,  f: ['500 replies/mo', '2 channels', 'Reports'] },
   { ar: 'أعمال',   en: 'Business',   mo: 99,  yr: 79,  pop: true, f: ['Unlimited replies', 'All channels', 'Advanced AI', '24/7 support'] },
   { ar: 'مؤسسات',  en: 'Enterprise', mo: 249, yr: 199, f: ['Everything', 'Dedicated server', 'SLA', 'Full API'] },
-]
-
-const LABELS = [
-  { ar: 'تمهيد النظام',     en: 'System Boot'         },
-  { ar: 'القنوات تتصل',     en: 'Channels Connecting' },
-  { ar: 'الرسائل تتدفق',    en: 'Messages Flow In'    },
-  { ar: 'عقل الذكاء يتشكل', en: 'AI Brain Forming'    },
-  { ar: 'الأتمتة تنشط',     en: 'Automations Active'  },
-  { ar: 'النتائج تتحقق',    en: 'Outcomes Generated'  },
-  { ar: 'النشر جاهز',       en: 'Ready to Deploy'     },
 ]
 
 interface RealPackage {
@@ -205,7 +175,7 @@ function useCountUp(target: string, run: boolean) {
   return val
 }
 
-// ─── AI CORE ──────────────────────────────────────────────────────────────────
+// ─── AI CORE VISUAL ───────────────────────────────────────────────────────────
 function AICore({ size = 130 }: { size?: number }) {
   const s = size
   return (
@@ -256,147 +226,119 @@ function AICore({ size = 130 }: { size?: number }) {
   )
 }
 
-// ─── STATE 0 — Hero (visible immediately on load) ─────────────────────────────
-function State0({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
-  const variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } }),
+const sectionVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
   }
-  return (
-    <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6"
-      style={{ opacity: op, pointerEvents: useTransform(op, v => v > 0.05 ? 'auto' : 'none') as any }}>
-
-      <motion.div custom={0} initial="hidden" animate="visible" variants={variants}
-        className="flex items-center gap-2 mb-8 px-4 py-2 rounded-full glass"
-        style={{ border: '1px solid var(--border)' }}>
-        <div className="w-2 h-2 rounded-full status-live" style={{ background: 'var(--accent)' }} />
-        <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
-          {isRTL ? 'نظام الذكاء الاصطناعي — مشغّل' : 'AI OPERATING SYSTEM — ONLINE'}
-        </span>
-      </motion.div>
-
-      <motion.div custom={1} initial="hidden" animate="visible" variants={variants} className="mb-10">
-        <AICore size={160} />
-      </motion.div>
-
-      <motion.div custom={2} initial="hidden" animate="visible" variants={variants}
-        className="flex flex-wrap items-center justify-center gap-3 mb-8">
-        {[
-          { v: '247',   l: isRTL ? 'محادثة نشطة' : 'Active Convos', c: 'var(--accent)' },
-          { v: '3,842', l: isRTL ? 'رد اليوم'    : 'Replies Today', c: 'var(--accent)' },
-          { v: '128',   l: isRTL ? 'عميل محتمل'  : 'Leads Today',   c: 'var(--accent)' },
-          { v: '8s',    l: isRTL ? 'وقت الرد'    : 'Avg Response',  c: 'var(--accent)' },
-        ].map((m, i) => (
-          <div key={i} className="glass rounded-xl px-4 py-2.5 text-center"
-            style={{ border: '1px solid var(--border)', minWidth: 80 }}>
-            <div className="text-xl font-black" style={{ color: m.c, letterSpacing: '-0.04em' }}>{m.v}</div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>{m.l}</div>
-          </div>
-        ))}
-      </motion.div>
-
-      <motion.h1 custom={3} initial="hidden" animate="visible" variants={variants}
-        className="font-black leading-[1.05] text-center mb-4"
-        style={{ fontSize: 'clamp(2rem,5vw,4.2rem)', letterSpacing: '-0.04em' }}>
-        <span className="block" style={{ color: 'var(--text-primary)' }}>
-          {isRTL ? 'ندير مراسلاتك' : 'Manage Your Messages'}
-        </span>
-        <span className="block text-dual">{isRTL ? 'و مبيعاتك بذكاء.' : 'And Sales With AI.'}</span>
-      </motion.h1>
-
-      <motion.p custom={4} initial="hidden" animate="visible" variants={variants}
-        className="text-base text-center mb-8 max-w-lg" style={{ color: 'var(--text-secondary)' }}>
-        {isRTL
-          ? 'منصة ذكاء اصطناعي تتولى الردود وتحوّل الرسائل إلى عملاء — تلقائياً.'
-          : 'AI that handles replies, builds relationships, and converts messages into customers — automatically.'}
-      </motion.p>
-
-      <motion.div custom={5} initial="hidden" animate="visible" variants={variants}
-        className="flex flex-wrap gap-4 justify-center">
-        <Link href="/register" className="btn-lime px-8 py-3.5 rounded-xl font-bold text-base"
-          style={{ minWidth: 190, textAlign: 'center', letterSpacing: '-0.01em' }}>
-          {isRTL ? 'ابدأ مجاناً — 14 يوم' : 'Start Free — 14 Days'}
-        </Link>
-        <button className="btn-ghost px-8 py-3.5 rounded-xl font-bold text-base"
-          style={{ minWidth: 150 }}>
-          {isRTL ? 'شاهد العرض' : 'Watch Demo'}
-        </button>
-      </motion.div>
-
-      <motion.div custom={6} initial="hidden" animate="visible" variants={variants}
-        className="mt-10 flex items-center justify-center gap-2 text-xs"
-        style={{ color: 'var(--text-tertiary)' }}>
-        <span className="tracking-[0.18em]">{isRTL ? '▼ مرر للاستكشاف ▼' : '▼ SCROLL TO EXPLORE ▼'}</span>
-      </motion.div>
-    </motion.div>
-  )
 }
 
-// ─── STATE 1 — Channels ───────────────────────────────────────────────────────
-function State1({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+// ─── SECTION 1 — CHANNELS ─────────────────────────────────────────────────────
+function ChannelsSection({ isRTL }: { isRTL: boolean }) {
+  const [isInView, setIsInView] = useState(false)
   const [pulse, setPulse] = useState(0)
+
   useEffect(() => {
+    if (!isInView) return
     const iv = setInterval(() => setPulse(p => (p + 1) % CHANNELS.length), 900)
     return () => clearInterval(iv)
-  }, [])
+  }, [isInView])
 
   return (
-    <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10"
-      style={{ opacity: op, pointerEvents: 'none' }}>
-      <div className="absolute top-24 text-center">
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass"
-          style={{ border: '1px solid var(--border)' }}>
+    <motion.section
+      id="command-center"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      onViewportEnter={() => setIsInView(true)}
+      onViewportLeave={() => setIsInView(false)}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
           <div className="w-1.5 h-1.5 rounded-full status-live" style={{ background: 'var(--accent)' }} />
           <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'القنوات تتصل بالنظام' : 'CHANNELS CONNECTING'}
           </span>
         </div>
-        <h2 className="font-black" style={{ fontSize: 'clamp(1.6rem,3vw,2.8rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'كل قنواتك في مكان واحد.' : 'All your channels. One system.'}
         </h2>
       </div>
 
-      <AICore size={140} />
-
-      {CHANNELS.map((ch, i) => {
-        const pos = polar(ch.angle, ch.dist)
-        const isHot = pulse === i
-        return (
-          <div key={ch.id} className="absolute flex flex-col items-center gap-2"
-            style={{ left: `calc(50% + ${pos.x}px - 26px)`, top: `calc(50% + ${pos.y}px - 26px)`, transition: 'transform 0.3s ease', transform: isHot ? 'scale(1.14)' : 'scale(1)' }}>
-            <div className="w-13 h-13 flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                style={{
-                  background: `${ch.color}12`,
-                  border: `1.5px solid ${ch.color}${isHot ? '60' : '22'}`,
-                  boxShadow: isHot ? `0 0 24px ${ch.color}35` : 'none',
-                  backdropFilter: 'blur(8px)',
-                  transition: 'all 0.3s ease',
-                }}>
-                <ch.Icon c={ch.color} s={22} />
+      <div className="relative w-full max-w-md h-[340px] sm:h-[380px] flex items-center justify-center my-4">
+        <AICore size={130} />
+        {CHANNELS.map((ch, i) => {
+          const pos = polar(ch.angle, ch.dist)
+          const isHot = pulse === i
+          return (
+            <div key={ch.id} className="absolute flex flex-col items-center gap-1.5"
+              style={{
+                left: `calc(50% + ${pos.x}px - 26px)`,
+                top: `calc(50% + ${pos.y}px - 26px)`,
+                transition: 'transform 0.3s ease',
+                transform: isHot ? 'scale(1.14)' : 'scale(1)',
+              }}>
+              <div className="w-13 h-13 flex flex-col items-center gap-1.5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: `${ch.color}12`,
+                    border: `1.5px solid ${ch.color}${isHot ? '60' : '22'}`,
+                    boxShadow: isHot ? `0 0 24px ${ch.color}35` : 'none',
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 0.3s ease',
+                  }}>
+                  <ch.Icon c={ch.color} s={22} />
+                </div>
+                <span className="text-[10px] font-bold whitespace-nowrap" style={{ color: isHot ? ch.color : 'var(--text-tertiary)', transition: 'color 0.3s' }}>{ch.label}</span>
               </div>
-              <span className="text-[10px] font-bold whitespace-nowrap" style={{ color: isHot ? ch.color : 'var(--text-tertiary)', transition: 'color 0.3s' }}>{ch.label}</span>
             </div>
-          </div>
-        )
-      })}
-    </motion.div>
+          )
+        })}
+      </div>
+    </motion.section>
   )
 }
 
-// ─── STATE 2 — Messages ───────────────────────────────────────────────────────
-function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+// ─── SECTION 2 — MESSAGES ─────────────────────────────────────────────────────
+function MessagesSection({ isRTL }: { isRTL: boolean }) {
+  const [isInView, setIsInView] = useState(false)
   const [activeMsg, setActiveMsg] = useState(0)
+
   useEffect(() => {
+    if (!isInView) return
     const iv = setInterval(() => setActiveMsg(p => (p + 1) % MSGS.length), 1600)
     return () => clearInterval(iv)
-  }, [])
+  }, [isInView])
 
   return (
-    <motion.div className="absolute inset-0 flex items-center justify-center z-10 px-6"
-      style={{ opacity: op, pointerEvents: 'none' }}>
-      <div className="w-full max-w-4xl flex flex-col lg:flex-row items-center gap-8">
+    <motion.section
+      id="messages"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      onViewportEnter={() => setIsInView(true)}
+      onViewportLeave={() => setIsInView(false)}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
+          <IC.MessageSquare c="var(--accent)" s={12} />
+          <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
+            {isRTL ? 'تفاعل مباشر' : 'LIVE INTERACTION'}
+          </span>
+        </div>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+          {isRTL ? 'مراسلة فورية وردود ذكية متواصلة.' : 'Real-time messaging & instant AI response.'}
+        </h2>
+      </div>
 
+      <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8">
+        {/* Messages list */}
         <div className="flex-1 max-w-sm w-full">
           <div className="text-[10px] font-bold tracking-widest mb-3" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'رسائل واردة — مباشر' : 'INCOMING — LIVE'}
@@ -436,6 +378,7 @@ function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
           </div>
         </div>
 
+        {/* Center AI visual */}
         <div className="flex flex-col items-center gap-4">
           <AICore size={130} />
           <div className="text-xs font-medium text-center" style={{ color: 'var(--text-tertiary)', maxWidth: 180 }}>
@@ -443,6 +386,7 @@ function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
           </div>
         </div>
 
+        {/* Right stats */}
         <div className="flex-1 max-w-xs w-full">
           <div className="text-[10px] font-bold tracking-widest mb-3" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'معالجة الذكاء الاصطناعي' : 'AI PROCESSING'}
@@ -459,7 +403,7 @@ function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
                   <span style={{ color: 'var(--text-secondary)' }}>{b.l}</span>
                   <span style={{ color: b.c }}>{b.p}%</span>
                 </div>
-                <div className="h-[3px] rounded-full" style={{ background: 'var(--surface-elevated)' }}>
+                <div className="h-[3px] rounded-full" style={{ background: 'var(--surface)' }}>
                   <div className="h-full rounded-full bar-scale" style={{ transform: b.p > 0 ? 'scaleX(' + (b.p / 100) + ')' : 'scaleX(0)', background: b.c, boxShadow: `0 0 6px ${b.c}50` }} />
                 </div>
               </div>
@@ -471,118 +415,131 @@ function State2({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </motion.section>
   )
 }
 
-// ─── STATE 3 — Neural Brain ───────────────────────────────────────────────────
-function State3({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+// ─── SECTION 3 — NEURAL BRAIN ─────────────────────────────────────────────────
+function NeuralBrainSection({ isRTL }: { isRTL: boolean }) {
+  const [isInView, setIsInView] = useState(false)
   const [pulse, setPulse] = useState<string | null>(null)
-  const [dim, setDim] = useState({ w: 1200, h: 700 })
-  useEffect(() => { setDim({ w: window.innerWidth, h: window.innerHeight }) }, [])
+
   useEffect(() => {
+    if (!isInView) return
     const ids = CAPS.map(c => c.id)
     const iv = setInterval(() => {
       const p = ids[Math.floor(Math.random() * ids.length)]
       setPulse(p)
-      setTimeout(() => setPulse(null), 700)
+      const t = setTimeout(() => setPulse(null), 700)
     }, 1200)
     return () => clearInterval(iv)
-  }, [])
-  const cx = dim.w / 2, cy = dim.h / 2
+  }, [isInView])
 
   return (
-    <motion.div className="absolute inset-0 flex items-center justify-center z-10"
-      style={{ opacity: op, pointerEvents: 'none' }}>
-      <div className="absolute top-24 text-center">
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass"
-          style={{ border: '1px solid var(--border)' }}>
+    <motion.section
+      id="ai-brain"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      onViewportEnter={() => setIsInView(true)}
+      onViewportLeave={() => setIsInView(false)}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
           <IC.Sparkle c="var(--accent)" s={12} />
           <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'الشبكة العصبية' : 'NEURAL CAPABILITY NETWORK'}
           </span>
         </div>
-        <h2 className="font-black" style={{ fontSize: 'clamp(1.6rem,3vw,2.8rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'عقل متصل بكل شيء.' : 'A brain connected to everything.'}
         </h2>
       </div>
 
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
+      <div className="relative w-full max-w-lg h-[400px] sm:h-[440px] flex items-center justify-center my-4">
+        {/* SVG connection lines inside local container */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 400">
+          {CAPS.map(cap => {
+            const pos = polar(cap.angle, cap.dist)
+            const isHot = pulse === cap.id
+            return (
+              <line key={cap.id} x1={200} y1={200} x2={200 + pos.x} y2={200 + pos.y}
+                stroke="var(--accent)"
+                strokeWidth={isHot ? 1.5 : 0.6}
+                strokeOpacity={isHot ? 0.8 : 0.2}
+                strokeDasharray="3 5"
+                style={{ transition: 'all 0.3s' }}
+              />
+            )
+          })}
+          {CAPS.map((a, ai) => CAPS.slice(ai+1, ai+3).map((b, bi) => {
+            const pa = polar(a.angle, a.dist), pb = polar(b.angle, b.dist)
+            const isHot = pulse === a.id || pulse === b.id
+            return (
+              <line key={`${a.id}-${b.id}-${bi}`}
+                x1={200 + pa.x} y1={200 + pa.y} x2={200 + pb.x} y2={200 + pb.y}
+                stroke="var(--accent)"
+                strokeWidth={isHot ? 0.8 : 0.3}
+                strokeOpacity={isHot ? 0.5 : 0.1}
+                style={{ transition: 'all 0.3s' }}
+              />
+            )
+          }))}
+        </svg>
+
+        <AICore size={120} />
+
         {CAPS.map(cap => {
           const pos = polar(cap.angle, cap.dist)
           const isHot = pulse === cap.id
           return (
-            <line key={cap.id} x1={cx} y1={cy} x2={cx+pos.x} y2={cy+pos.y}
-              stroke={isHot ? 'var(--accent)' : 'var(--accent)'}
-              strokeWidth={isHot ? 1.5 : 0.5}
-              strokeOpacity={isHot ? 0.75 : 0.18}
-              strokeDasharray="3 5"
-              style={{ transition: 'all 0.3s' }}
-            />
+            <div key={cap.id} className="absolute flex flex-col items-center gap-1.5"
+              style={{ left: `calc(50% + ${pos.x}px - 22px)`, top: `calc(50% + ${pos.y}px - 22px)` }}>
+              {isHot && (
+                <div className="absolute rounded-full" style={{
+                  width: 52, height: 52, border: '1.5px solid var(--accent-subtle)',
+                  top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+                  animation: 'nodePulse 0.7s ease-out infinite',
+                }} />
+              )}
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{
+                  background: isHot ? 'var(--accent-subtle)' : 'var(--surface-elevated)',
+                  border: `1.5px solid ${isHot ? 'var(--accent-subtle)' : 'var(--border)'}`,
+                  boxShadow: isHot ? '0 0 24px var(--accent-subtle)' : 'none',
+                  backdropFilter: 'blur(8px)',
+                  transition: 'all 0.3s ease',
+                }}>
+                <cap.Icon c={isHot ? 'var(--accent)' : 'var(--text-secondary)'} s={18} />
+              </div>
+              <div className="text-[10px] font-bold text-center whitespace-nowrap px-2 py-0.5 rounded-lg"
+                style={{
+                  background: 'var(--surface-elevated)', border: '1px solid var(--border)',
+                  color: isHot ? 'var(--accent)' : 'var(--text-secondary)',
+                  backdropFilter: 'blur(6px)', transition: 'color 0.3s',
+                }}>
+                {isRTL ? cap.ar : cap.en}
+              </div>
+            </div>
           )
         })}
-        {CAPS.map((a, ai) => CAPS.slice(ai+1, ai+3).map((b, bi) => {
-          const pa = polar(a.angle, a.dist), pb = polar(b.angle, b.dist)
-          const isHot = pulse === a.id || pulse === b.id
-          return (
-            <line key={`${a.id}-${b.id}-${bi}`}
-              x1={cx+pa.x} y1={cy+pa.y} x2={cx+pb.x} y2={cy+pb.y}
-              stroke={isHot ? 'var(--accent)' : 'var(--accent)'}
-              strokeWidth={isHot ? 0.8 : 0.25}
-              strokeOpacity={isHot ? 0.45 : 0.08}
-              style={{ transition: 'all 0.3s' }}
-            />
-          )
-        }))}
-      </svg>
-
-      <AICore size={120} />
-
-      {CAPS.map(cap => {
-        const pos = polar(cap.angle, cap.dist)
-        const isHot = pulse === cap.id
-        return (
-          <div key={cap.id} className="absolute flex flex-col items-center gap-1.5"
-            style={{ left: `calc(50% + ${pos.x}px - 22px)`, top: `calc(50% + ${pos.y}px - 22px)` }}>
-            {isHot && (
-              <div className="absolute rounded-full" style={{
-                width: 52, height: 52, border: '1.5px solid var(--accent-subtle)',
-                top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                animation: 'nodePulse 0.7s ease-out infinite',
-              }} />
-            )}
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center"
-              style={{
-                background: isHot ? 'var(--accent-subtle)' : 'var(--surface-elevated)',
-                border: `1.5px solid ${isHot ? 'var(--accent-subtle)' : 'var(--border)'}`,
-                boxShadow: isHot ? '0 0 24px var(--accent-subtle)' : 'none',
-                backdropFilter: 'blur(8px)',
-                transition: 'all 0.3s ease',
-              }}>
-              <cap.Icon c={isHot ? 'var(--accent)' : 'var(--text-secondary)'} s={18} />
-            </div>
-            <div className="text-[10px] font-bold text-center whitespace-nowrap px-2 py-0.5 rounded-lg"
-              style={{
-                background: 'var(--surface-elevated)', border: '1px solid var(--border)',
-                color: isHot ? 'var(--accent)' : 'var(--text-secondary)',
-                backdropFilter: 'blur(6px)', transition: 'color 0.3s',
-              }}>
-              {isRTL ? cap.ar : cap.en}
-            </div>
-          </div>
-        )
-      })}
-    </motion.div>
+      </div>
+    </motion.section>
   )
 }
 
-// ─── STATE 4 — Automations ────────────────────────────────────────────────────
-function State4({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+// ─── SECTION 4 — AUTOMATIONS ──────────────────────────────────────────────────
+function AutomationsSection({ isRTL }: { isRTL: boolean }) {
+  const [isInView, setIsInView] = useState(false)
   const [step, setStep] = useState(0)
+
   useEffect(() => {
+    if (!isInView) return
     const iv = setInterval(() => setStep(s => (s + 1) % 4), 1000)
     return () => clearInterval(iv)
-  }, [])
+  }, [isInView])
 
   const flow = [
     { Icon: IC.MessageSquare, ar: 'رسالة',  en: 'Message', c: 'var(--accent)' },
@@ -597,22 +554,29 @@ function State4({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
   ]
 
   return (
-    <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6"
-      style={{ opacity: op, pointerEvents: 'none' }}>
+    <motion.section
+      id="automations"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      onViewportEnter={() => setIsInView(true)}
+      onViewportLeave={() => setIsInView(false)}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass"
-          style={{ border: '1px solid var(--border)' }}>
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
           <IC.Zap c="var(--accent)" s={12} />
           <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'شبكة الأتمتة' : 'AUTOMATION NETWORK'}
           </span>
         </div>
-        <h2 className="font-black" style={{ fontSize: 'clamp(1.6rem,3vw,2.8rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'الرسالة تصل. الذكاء يعمل.' : 'Message in. Magic out.'}
         </h2>
       </div>
 
-      <div className="flex items-center gap-2 mb-12">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 mb-12">
         {flow.map((s, i) => (
           <React.Fragment key={i}>
             <div className="flex flex-col items-center gap-2 transition-all duration-300"
@@ -631,8 +595,8 @@ function State4({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
             </div>
             {i < flow.length - 1 && (
               <div className="flex items-center pb-5 mx-1">
-                <div className="h-px w-10 sm:w-16 rounded-full" style={{
-                  background: step > i ? `linear-gradient(to right, var(--accent), var(--accent))` : 'var(--surface-elevated)',
+                <div className="h-px w-6 sm:w-12 rounded-full" style={{
+                  background: step > i ? 'var(--accent)' : 'var(--border)',
                   transition: 'all 0.4s ease',
                 }} />
                 <span style={{ color: step > i ? 'var(--text-secondary)' : 'var(--text-tertiary)', fontSize: 14 }}>›</span>
@@ -652,14 +616,21 @@ function State4({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
           </div>
         ))}
       </div>
-    </motion.div>
+    </motion.section>
   )
 }
 
-// ─── STATE 5 — Outcomes ───────────────────────────────────────────────────────
-function State5({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
+// ─── SECTION 5 — OUTCOMES ─────────────────────────────────────────────────────
+function OutcomesSection({ isRTL }: { isRTL: boolean }) {
+  const [isInView, setIsInView] = useState(false)
   const [run, setRun] = useState(false)
-  useEffect(() => { const u = op.on('change', v => { if (v > 0.3) setRun(true) }); return u }, [op])
+
+  useEffect(() => {
+    if (isInView && !run) {
+      setRun(true)
+    }
+  }, [isInView, run])
+
   const v0 = useCountUp(OUTCOMES[0].after, run)
   const v1 = useCountUp(OUTCOMES[1].after, run)
   const v2 = useCountUp(OUTCOMES[2].after, run)
@@ -667,17 +638,24 @@ function State5({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
   const vals = [v0, v1, v2, v3]
 
   return (
-    <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6"
-      style={{ opacity: op, pointerEvents: 'none' }}>
+    <motion.section
+      id="outcomes"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      onViewportEnter={() => setIsInView(true)}
+      onViewportLeave={() => setIsInView(false)}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass"
-          style={{ border: '1px solid var(--border)' }}>
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
           <IC.TrendingUp c="var(--accent)" s={12} />
           <span className="text-xs font-bold tracking-[0.12em]" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'التأثير على الأعمال' : 'BUSINESS IMPACT'}
           </span>
         </div>
-        <h2 className="font-black" style={{ fontSize: 'clamp(1.6rem,3vw,2.8rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'الأعمال تتحول أمام عينيك.' : 'Watch your business transform.'}
         </h2>
       </div>
@@ -725,37 +703,42 @@ function State5({ op, isRTL }: { op: MotionValue<number>; isRTL: boolean }) {
           </div>
         ))}
       </div>
-    </motion.div>
+    </motion.section>
   )
 }
 
-// ─── STATE 6 — Pricing ────────────────────────────────────────────────────────
-function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boolean; packages: RealPackage[] }) {
+// ─── SECTION 6 — PRICING ──────────────────────────────────────────────────────
+function PricingSection({ isRTL, packages }: { isRTL: boolean; packages: RealPackage[] }) {
   const [annual, setAnnual] = useState(false)
   const displayPlans = packages.length > 0 ? packages : null
 
   return (
-    <motion.div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-4 pt-20 pb-4 overflow-y-auto"
-      style={{ opacity: op, pointerEvents: useTransform(op, v => v > 0.1 ? 'auto' : 'none') as any }}>
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass"
-          style={{ border: '1px solid var(--border)' }}>
+    <motion.section
+      id="pricing"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={sectionVariants}
+      className="py-16 md:py-24 px-4 sm:px-6 relative max-w-6xl mx-auto flex flex-col items-center justify-center border-t border-border/40"
+    >
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 mb-3 px-4 py-2 rounded-full glass" style={{ border: '1px solid var(--border)' }}>
           <IC.Sparkle c="var(--accent)" s={12} />
           <span className="text-[11px] font-bold tracking-widest" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'نشر بنية الذكاء الاصطناعي' : 'DEPLOY AI INFRASTRUCTURE'}
           </span>
         </div>
-        <h2 className="font-black" style={{ fontSize: 'clamp(1.5rem,2.8vw,2.6rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+        <h2 className="font-black text-2xl sm:text-3xl md:text-4xl" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
           {isRTL ? 'اختر مستوى التفعيل.' : 'Choose your activation tier.'}
         </h2>
-        <div className="flex items-center justify-center gap-3 mt-3">
+        <div className="flex items-center justify-center gap-3 mt-4">
           <span className="text-xs font-medium" style={{ color: !annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
             {isRTL ? 'شهري' : 'Monthly'}
           </span>
           <button onClick={() => setAnnual(a => !a)}
             className="relative w-10 h-5 rounded-full transition-colors duration-300"
             style={{ background: annual ? 'var(--accent)' : 'var(--surface-elevated)' }}>
-            <span className="absolute top-0.5 w-4 h-4 rounded-full bg-black transition-all duration-300"
+            <span className="absolute top-0.5 w-4 h-4 rounded-full bg-black dark:bg-white transition-all duration-300"
               style={{ left: annual ? 22 : 2 }} />
           </button>
           <span className="text-xs font-medium flex items-center gap-1.5" style={{ color: annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
@@ -768,7 +751,7 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
         </div>
       </div>
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 w-full max-w-5xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full max-w-5xl">
         {(displayPlans ?? PLANS).map((plan: any, i: number) => {
           const isReal = displayPlans !== null
           const price = isReal ? (annual ? plan.price_yearly : plan.price_monthly) : (annual ? plan.yr : plan.mo)
@@ -777,12 +760,11 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
           const feats = isReal ? (isRTL ? plan.features_ar : plan.features) : plan.f
           const href = isReal ? `/checkout?package=${plan.id}&billing=${annual ? 'yearly' : 'monthly'}` : '/register'
           const inner = (
-            <div className="relative rounded-2xl p-4 flex flex-col h-full"
-              style={{ background: isPop ? 'var(--surface-elevated)' : 'var(--surface-elevated)', border: isPop ? 'none' : '1px solid var(--border)', backdropFilter: 'blur(20px)' }}>
+            <div className="relative rounded-2xl p-5 flex flex-col h-full"
+              style={{ background: 'var(--surface-elevated)', border: isPop ? '1.5px solid var(--accent)' : '1px solid var(--border)' }}>
               {isPop && (
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap">
-                  <span className="text-[11px] font-bold px-3 py-1 rounded-full"
-                    style={{ background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--on-accent-text)' }}>
+                  <span className="text-[11px] font-bold px-3 py-1 rounded-full btn-lime shadow-sm">
                     {isRTL ? 'الأكثر طلباً' : 'Most Popular'}
                   </span>
                 </div>
@@ -797,33 +779,29 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
                 </span>
                 {price > 0 && <span className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>/{isRTL ? 'شهر' : 'mo'}</span>}
               </div>
-              <ul className="space-y-1.5 flex-1 mb-4">
+              <ul className="space-y-2 flex-1 mb-6">
                 {feats.map((f: string, j: number) => (
-                  <li key={j} className="flex items-start gap-1.5 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-                    <IC.CheckCircle c="var(--accent)" s={11} />
+                  <li key={j} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <IC.CheckCircle c="var(--accent)" s={13} />
                     <span className="mt-px">{f}</span>
                   </li>
                 ))}
               </ul>
               <Link href={href}
-                className="block text-center py-2 rounded-xl text-xs font-bold transition-all duration-200"
-                style={isPop
-                  ? { background: 'linear-gradient(135deg,var(--accent),var(--accent))', color: 'var(--on-accent-text)' }
-                  : { border: '1px solid var(--border)', color: 'var(--text-primary)', background: 'var(--surface-elevated)' }
-                }>
+                className={`block text-center py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${isPop ? 'btn-lime' : 'btn-secondary'}`}>
                 {isRTL ? 'تفعيل الوحدة' : 'Deploy Module'}
               </Link>
             </div>
           )
           return (
-            <div key={isReal ? plan.id : i} style={{ transform: isPop ? 'scale(1.04)' : undefined, transformOrigin: 'center' }}>
-              {isPop ? <div className="animated-border rounded-2xl p-[2px] h-full">{inner}</div> : inner}
+            <div key={isReal ? plan.id : i} style={{ transform: isPop ? 'scale(1.02)' : undefined, transformOrigin: 'center' }}>
+              {inner}
             </div>
           )
         })}
       </div>
 
-      <div className="flex items-center gap-6 mt-5">
+      <div className="flex flex-wrap items-center justify-center gap-6 mt-8">
         {[
           { Icon: IC.Shield,   ar: 'بدون بطاقة',    en: 'No credit card'  },
           { Icon: IC.Sparkle,  ar: '14 يوم مجاني',  en: '14-day free'     },
@@ -835,16 +813,13 @@ function State6({ op, isRTL, packages }: { op: MotionValue<number>; isRTL: boole
           </div>
         ))}
       </div>
-    </motion.div>
+    </motion.section>
   )
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function OSExperience() {
   const { isRTL } = useLang()
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: scrollRef })
-  const smooth = useSpring(scrollYProgress, { stiffness: 55, damping: 20 })
 
   const [packages, setPackages] = useState<RealPackage[]>([])
   useEffect(() => {
@@ -854,65 +829,14 @@ export default function OSExperience() {
       .catch(() => {})
   }, [])
 
-  const [stateIdx, setStateIdx] = useState(0)
-  useEffect(() => scrollYProgress.on('change', v => setStateIdx(Math.min(6, Math.floor(v * 7)))), [scrollYProgress])
-
-  // State0: visible immediately, fades OUT as you scroll away
-  const op0 = useTransform(smooth, [0, 0.06, 0.14], [1, 1, 0])
-  // States 1-6: fade in + out per slot
-  const op1 = slotOpacity(smooth, 1)
-  const op2 = slotOpacity(smooth, 2)
-  const op3 = slotOpacity(smooth, 3)
-  const op4 = slotOpacity(smooth, 4)
-  const op5 = slotOpacity(smooth, 5)
-  const op6 = slotOpacity(smooth, 6)
-
-  const coreOpacity = useTransform(smooth, [0, 0.04, 0.82, 0.90], [0, 1, 1, 0])
-  const coreScale   = useTransform(smooth, [0, 0.04, 3/7, 4/7, 5/7], [0.5, 1, 1.15, 1.25, 0.85])
-  const barWidth    = useTransform(scrollYProgress, [0,1], [0,1])
-  const labelOpacity = useTransform(smooth, [0.03, 0.10], [0, 1])
-
   return (
-    <div ref={scrollRef} style={{ height: '700vh' }} className="relative">
-      <div className="sticky top-0 h-screen overflow-hidden">
-
-        {/* Persistent AI Core */}
-        <motion.div className="absolute z-0 pointer-events-none"
-          style={{ left:'50%', top:'50%', transform:'translate(-50%,-50%)', opacity: coreOpacity, scale: coreScale }}>
-          <AICore size={130} />
-        </motion.div>
-
-        {/* States */}
-        <State0 op={op0} isRTL={isRTL} />
-        <State1 op={op1} isRTL={isRTL} />
-        <State2 op={op2} isRTL={isRTL} />
-        <State3 op={op3} isRTL={isRTL} />
-        <State4 op={op4} isRTL={isRTL} />
-        <State5 op={op5} isRTL={isRTL} />
-        <State6 op={op6} isRTL={isRTL} packages={packages} />
-
-        {/* State indicator */}
-        <motion.div className="absolute bottom-8 flex flex-col gap-1.5 z-50 pointer-events-none"
-          style={{ left: 24, opacity: labelOpacity }}>
-          {LABELS.map((lbl, i) => (
-            <div key={i} className="flex items-center gap-2"
-              style={{ opacity: stateIdx === i ? 1 : 0.18, transition: 'opacity 0.3s' }}>
-              <div className="rounded-full flex-shrink-0 transition-all duration-300"
-                style={{ width: 4, height: 4, transform: stateIdx === i ? 'scaleX(5)' : 'scaleX(1)', transformOrigin: 'left', background: stateIdx === i ? 'var(--accent)' : 'var(--text-tertiary)', transition: 'transform 0.3s ease' }} />
-              {stateIdx === i && (
-                <span className="text-[10px] font-bold whitespace-nowrap"
-                  style={{ color: 'var(--accent)', letterSpacing: '0.08em' }}>
-                  {isRTL ? lbl.ar : lbl.en}
-                </span>
-              )}
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Progress bar */}
-        <motion.div className="absolute bottom-0 left-0 h-[2px] z-50"
-          style={{ width: '100%', background: 'linear-gradient(to right, var(--accent), var(--accent))', boxShadow: '0 0 8px var(--accent-subtle)', transform: `scaleX(${barWidth})`, transformOrigin: 'left center' }} />
-      </div>
+    <div className="relative w-full">
+      <ChannelsSection isRTL={isRTL} />
+      <MessagesSection isRTL={isRTL} />
+      <NeuralBrainSection isRTL={isRTL} />
+      <AutomationsSection isRTL={isRTL} />
+      <OutcomesSection isRTL={isRTL} />
+      <PricingSection isRTL={isRTL} packages={packages} />
     </div>
   )
 }
