@@ -151,31 +151,47 @@ body {
 }
 
 /* ─── Buttons ──────────────────────────────────────────────────────────────── */
+/* ─── Buttons ──────────────────────────────────────────────────────────────── */
 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: var(--accent);
   color: var(--on-accent-text);
   border: 1px solid var(--accent);
-  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
   cursor: pointer;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
+  border-color: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .btn-primary:active:not(:disabled) { transform: translateY(0) scale(0.99); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border);
-  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
   cursor: pointer;
 }
 .btn-secondary:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-subtle);
   transform: translateY(-1px);
 }
 .btn-secondary:active:not(:disabled) { transform: translateY(0) scale(0.99); }
@@ -185,36 +201,39 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-end));
+  gap: 8px;
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, #ffffff 16%, transparent) 0%, transparent 60%), linear-gradient(135deg, var(--accent), var(--accent-end));
   color: var(--on-accent-text);
-  border: none;
+  border: 1px solid color-mix(in srgb, #ffffff 25%, transparent);
   font-weight: 700;
+  letter-spacing: -0.01em;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
-  box-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 20%, transparent);
+  transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 30%, transparent), 0 3px 14px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .btn-lime:hover:not(:disabled) {
-  filter: brightness(1.07);
+  filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 30%, transparent);
+  border-color: color-mix(in srgb, #ffffff 40%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 40%, transparent), 0 6px 22px color-mix(in srgb, var(--accent) 45%, transparent);
 }
-.btn-lime:active:not(:disabled) { transform: scale(0.98); }
-.btn-lime:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-lime:active:not(:disabled) { transform: translateY(0) scale(0.98); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
+.btn-lime:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
 
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-primary);
   font-weight: 600;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--text-primary) 5%, transparent); border-color: color-mix(in srgb, var(--text-primary) 15%, var(--border)); transform: translateY(-1px); }
 .btn-ghost:active:not(:disabled) { transform: scale(0.98); }
@@ -224,27 +243,37 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   background: var(--error-subtle);
   color: var(--error);
   border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
   font-weight: 700;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
-.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--error) 18%, transparent); }
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--error) 18%, transparent); transform: translateY(-1px); }
+.btn-danger:active:not(:disabled) { transform: scale(0.98); }
 .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Standard icon sizing & gap for buttons */
+.btn-primary svg, .btn-secondary svg, .btn-lime svg, .btn-ghost svg, .btn-danger svg, .btn-base svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
 
 /* Size variants */
 .btn-sm { padding: 0 12px; min-height: var(--button-height-sm); font-size: 12px; }
+.btn-sm svg { width: 0.875rem; height: 0.875rem; }
 .btn-lg { padding: 0 24px; min-height: var(--button-height-lg); font-size: 16px; }
+.btn-lg svg { width: 1.25rem; height: 1.25rem; }
 
 .btn-base {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 600;
   border-radius: var(--radius-md);
   min-height: var(--button-height-md);
