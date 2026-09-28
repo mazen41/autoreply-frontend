@@ -77,7 +77,10 @@ export default function AIKnowledgeContent() {
             services: data.profile.services || '',
             reply_style: data.profile.reply_style || '',
           })
-          setFaqs(data.profile.faqs || [])
+          setFaqs((data.profile.faqs || []).map((f: any) => ({
+            question: f.question ?? f.q ?? '',
+            answer: f.answer ?? f.a ?? '',
+          })))
         }
       }
     } catch (error) {

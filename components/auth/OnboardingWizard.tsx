@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
+import WhatsAppConnect from '../channels/WhatsAppConnect'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface OnboardingData {
@@ -17,7 +18,7 @@ interface OnboardingData {
   workingFrom: string
   workingTo: string
   services: string
-  faqs: { q: string; a: string }[]
+  faqs: { question: string; answer: string }[]
   replyStyle: string
   connectedChannel: string | null
 }
@@ -51,6 +52,8 @@ const REPLY_STYLES = [
 ]
 
 const CHANNELS = [
+  { id: 'whatsapp', icon: '💬', label: 'WhatsApp',        color: '#25D366', note: '' },
+  { id: 'salla',    icon: '🛍️', label: 'Salla',           color: '#00B4D8', note: '' },
   { id: 'gmail',    icon: '📧', label: 'Gmail',           color: 'var(--accent)', note: '' },
   { id: 'instagram',icon: '📸', label: 'Instagram',       color: 'var(--accent)', note: '' },
   { id: 'facebook', icon: '🔵', label: 'Facebook',        color: 'var(--accent)', note: '' },
@@ -291,9 +294,9 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
 // ─── STEP 3: AI BRAIN ─────────────────────────────────────────────────────────
 function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: OnboardingData) => void; isRTL: boolean }) {
-  const addFaq = () => setData({ ...data, faqs: [...data.faqs, { q: '', a: '' }] })
+  const addFaq = () => setData({ ...data, faqs: [...data.faqs, { question: '', answer: '' }] })
   const removeFaq = (i: number) => setData({ ...data, faqs: data.faqs.filter((_, j) => j !== i) })
-  const updateFaq = (i: number, field: 'q' | 'a', val: string) => {
+  const updateFaq = (i: number, field: 'question' | 'answer', val: string) => {
     const faqs = [...data.faqs]
     faqs[i] = { ...faqs[i], [field]: val }
     setData({ ...data, faqs })
@@ -369,16 +372,16 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                   ✕
                 </button>
                 <input type="text"
-                  value={faq.q}
-                  onChange={e => updateFaq(i, 'q', e.target.value)}
+                  value={faq.question}
+                  onChange={e => updateFaq(i, 'question', e.target.value)}
                   placeholder={isRTL ? 'السؤال...' : 'Question...'}
                   className="w-full px-3 py-2 rounded-lg text-sm mb-2 transition-all duration-200"
                   style={{ ...taStyle, borderRadius: 10 }}
                   onFocus={taFocus} onBlur={taBlur}
                 />
                 <input type="text"
-                  value={faq.a}
-                  onChange={e => updateFaq(i, 'a', e.target.value)}
+                  value={faq.answer}
+                  onChange={e => updateFaq(i, 'answer', e.target.value)}
                   placeholder={isRTL ? 'الإجابة...' : 'Answer...'}
                   className="w-full px-3 py-2 rounded-lg text-sm transition-all duration-200"
                   style={{ ...taStyle, borderRadius: 10 }}
@@ -481,29 +484,66 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 // ─── STEP 4: CONNECT CHANNEL ──────────────────────────────────────────────────
 function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: OnboardingData) => void; isRTL: boolean }) {
   const [connecting, setConnecting] = useState<string | null>(null)
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
 
-  const handleConnect = (id: string) => {
+  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+  const getToken = () => {
+    return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
+  }
+
+  const saveChannelStep = async (channelId: string) => {
+    const token = getToken()
+    if (!token) return
+    try {
+      await fetch(`${API}/api/onboarding/step4`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ connected_channel: channelId }),
+      })
+    } catch (e) {
+      console.error('Failed to save channel step:', e)
+    }
+  }
+
+  const handleConnect = async (id: string) => {
     setConnecting(id)
-    if (id === 'facebook' || id === 'instagram') {
-      const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
-      const token = match ? decodeURIComponent(match[1]) : ''
+    const token = getToken()
+
+    if (id === 'whatsapp') {
+      setShowWhatsAppModal(true)
+    } else if (id === 'salla') {
+      window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}&redirect=onboarding`
+    } else if (id === 'facebook' || id === 'instagram') {
       const width = 600, height = 700
       const left = window.screen.width / 2 - width / 2
       const top = window.screen.height / 2 - height / 2
-      window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/channels/connect/facebook?token=${token}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
-    } else {
-      setTimeout(() => {
-        setData({ ...data, connectedChannel: id })
+      window.open(`${API}/api/channels/connect/facebook?token=${encodeURIComponent(token)}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
+    } else if (id === 'gmail') {
+      try {
+        const res = await fetch(`${API}/api/channels/connect/gmail`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
+        if (res.ok) {
+          const json = await res.json()
+          if (json.url) window.location.href = json.url
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
         setConnecting(null)
-      }, 1800)
+      }
+    } else {
+      setConnecting(null)
     }
   }
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      if (e.data?.type === 'facebook_connected') {
-        // Here we just hardcode setting the channel to facebook, since the API was hit successfully.
-        setData({ ...data, connectedChannel: 'facebook' })
+      if (e.data?.type === 'facebook_connected' || e.data?.type === 'instagram_connected') {
+        const ch = e.data?.type === 'instagram_connected' ? 'instagram' : 'facebook'
+        setData({ ...data, connectedChannel: ch })
+        saveChannelStep(ch)
         setConnecting(null)
       }
     }
@@ -525,7 +565,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
         style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
         <span style={{ color: 'var(--accent)', fontSize: 13 }}>💡</span>
         <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-          {isRTL ? 'نوصي بربط Gmail أولاً — الأسهل والأسرع' : 'We recommend Gmail first — easiest to connect'}
+          {isRTL ? 'نوصي بربط WhatsApp أو Salla' : 'We recommend WhatsApp or Salla'}
         </span>
       </div>
 
@@ -584,6 +624,22 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
           )
         })}
       </div>
+
+      {showWhatsAppModal && (
+        <WhatsAppConnect
+          isConnected={false}
+          onConnected={() => {
+            setData({ ...data, connectedChannel: 'whatsapp' })
+            saveChannelStep('whatsapp')
+            setShowWhatsAppModal(false)
+            setConnecting(null)
+          }}
+          onClose={() => {
+            setShowWhatsAppModal(false)
+            setConnecting(null)
+          }}
+        />
+      )}
 
       {/* Skip */}
       <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
@@ -698,7 +754,7 @@ export default function OnboardingWizard() {
     workingFrom: '09:00',
     workingTo: '22:00',
     services: '',
-    faqs: [{ q: '', a: '' }],
+    faqs: [{ question: '', answer: '' }],
     replyStyle: 'auto',
     connectedChannel: null,
   })
@@ -714,8 +770,10 @@ export default function OnboardingWizard() {
     const loadProgress = async () => {
       const token = getToken()
       if (!token) { setLoading(false); return }
+      const channelParam = searchParams.get('channel') || (searchParams.get('success') ? 'salla' : null)
+
       try {
-        const res = await fetch(`${API}/api/onboarding`, {
+        const res = await fetch(`${API}/api/onboarding/status`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
         if (res.ok) {
@@ -739,13 +797,23 @@ export default function OnboardingWizard() {
               workingFrom:      b.working_from       || prev.workingFrom,
               workingTo:        b.working_to         || prev.workingTo,
               services:         b.services           || prev.services,
-              faqs:             b.faqs?.length       ? b.faqs : prev.faqs,
+              faqs:             b.faqs?.length       ? b.faqs.map((f: any) => ({ question: f.question ?? f.q ?? '', answer: f.answer ?? f.a ?? '' })) : prev.faqs,
               replyStyle:       b.reply_style        || prev.replyStyle,
+              connectedChannel: channelParam || b.connected_channel || prev.connectedChannel,
             }))
           }
+
+          if (channelParam) {
+            fetch(`${API}/api/onboarding/step4`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ connected_channel: channelParam }),
+            }).catch(() => {})
+          }
+
           // Restore step from completed steps
           const completedSteps: string[] = json.completed_steps || []
-          if (completedSteps.includes('step3') || completedSteps.includes('enable_ai')) setStep(4)
+          if (channelParam || completedSteps.includes('step3') || completedSteps.includes('enable_ai')) setStep(4)
           else if (completedSteps.includes('step2') || completedSteps.includes('business_info')) setStep(3)
           else if (completedSteps.includes('step1')) setStep(2)
         }

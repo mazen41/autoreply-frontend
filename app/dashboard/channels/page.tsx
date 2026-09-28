@@ -8,6 +8,7 @@ import ChannelIcon from '../../../components/ui/ChannelIcon'
 import { PlusIcon, XIcon, LightningIcon } from '../../../components/ui/DashboardIcons'
 import TelegramConnect from '../../../components/channels/TelegramConnect'
 import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
+import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -138,6 +139,27 @@ function ConnectModal({
       }
       return
     }
+  }
+
+  if (ch.id === 'whatsapp') {
+    return (
+      <WhatsAppConnect
+        isConnected={false}
+        channel={ch}
+        onConnected={() => {
+          onConnected()
+        }}
+        onDisconnect={async () => {
+          const token = getToken()
+          await fetch(`${API}/api/whatsapp/disconnect`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          })
+          onConnected()
+        }}
+        onClose={onClose}
+      />
+    )
   }
 
   if (ch.id === 'telegram') {
