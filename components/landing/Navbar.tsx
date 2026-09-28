@@ -45,20 +45,15 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16 lg:h-[68px]">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center group">
             <Image
               src="/icons/logo_icon.png"
-              alt="NazBiz"
+              alt="Logo"
               width={38}
               height={38}
-              className="object-contain"
+              className="object-contain transition-transform duration-200 group-hover:scale-105"
               priority
             />
-            <span className="text-sm font-black tracking-tight" style={{
-              background: 'linear-gradient(135deg, var(--accent, #0E7AFE), #8B3FFB)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>NazBiz</span>
           </Link>
 
           {/* Desktop links */}
@@ -98,15 +93,15 @@ export default function Navbar() {
             </button>
 
             {user ? (
-              <Link href="/dashboard" className="btn-primary">
+              <Link href="/dashboard" className="px-5 py-2 rounded-xl text-xs font-bold btn-primary">
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}
               </Link>
             ) : (
               <>
-                <Link href="/login" className="text-text-secondary hover:text-accent-secondary transition-colors duration-200">
+                <Link href="/login" className="text-text-secondary hover:text-accent-secondary transition-colors duration-200 text-xs font-medium px-2 py-1">
                   {t.nav.login}
                 </Link>
-                <Link href="/register" className="btn-primary">
+                <Link href="/register" className="px-5 py-2 rounded-xl text-xs font-bold btn-lime">
                   {t.nav.startFree}
                 </Link>
               </>

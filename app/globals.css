@@ -157,6 +157,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 16px;
+  min-height: var(--button-height-md, 2.5rem);
+  font-size: 14px;
   background: var(--accent);
   color: var(--on-accent-text);
   border: 1px solid var(--accent);
@@ -180,6 +183,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 16px;
+  min-height: var(--button-height-md, 2.5rem);
+  font-size: 14px;
   background: transparent;
   color: var(--text-primary);
   border: 1px solid var(--border);
@@ -202,6 +208,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 18px;
+  min-height: var(--button-height-md, 2.5rem);
+  font-size: 14px;
   position: relative;
   background: linear-gradient(180deg, color-mix(in srgb, #ffffff 16%, transparent) 0%, transparent 60%), linear-gradient(135deg, var(--accent), var(--accent-end));
   color: var(--on-accent-text);
@@ -227,6 +236,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 16px;
+  min-height: var(--button-height-md, 2.5rem);
+  font-size: 14px;
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-primary);
@@ -244,6 +256,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  padding: 0 16px;
+  min-height: var(--button-height-md, 2.5rem);
+  font-size: 14px;
   background: var(--error-subtle);
   color: var(--error);
   border: 1px solid color-mix(in srgb, var(--error) 25%, transparent);
