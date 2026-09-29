@@ -56,6 +56,7 @@ export interface ApiChannel {
   id?: number
   type: string
   page_name: string | null
+  page_id?: string | null
 }
 
 export interface ApiConversation {

@@ -347,14 +347,11 @@ export default function ChannelsPage() {
   }
 
   const CHANNELS = CHANNELS_DEFS.map(def => {
-    const apiCh = apiChannels.find(c => c.type === def.id)
+    const instances = apiChannels.filter(c => c.type === def.id)
     return {
       ...def,
-      connected: !!apiCh,
-      dbId: apiCh?.id ?? null,
-      pageName: apiCh?.page_name ?? null,
-      aiEnabled: apiCh?.ai_enabled ?? false,
-      connectedAt: apiCh?.connected_at ?? null,
+      connected: instances.length > 0,
+      instances: instances,
     }
   })
 
@@ -383,7 +380,7 @@ export default function ChannelsPage() {
               initial={{ opacity: 0, y: 15 }} 
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4 }}
-              className="rounded-2xl p-5 flex flex-col justify-between h-48 relative overflow-hidden group transition-all"
+              className="rounded-2xl p-5 flex flex-col justify-between min-h-[190px] relative overflow-hidden group transition-all"
               style={{
                 background: 'var(--surface)',
                 border: `1px solid ${ch.connected ? `color-mix(in srgb, ${ch.brandColor} 20%, var(--border))` : 'var(--border)'}`,
@@ -398,22 +395,22 @@ export default function ChannelsPage() {
                 />
               )}
 
-              <div className="flex items-start justify-between gap-3 relative z-10">
+              <div className="flex items-start justify-between gap-3 relative z-10 mb-3">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-2xl" style={{background:'var(--surface-elevated)',border:'1px solid var(--border)'}}>
                     <ChannelIcon type={ch.id as any} size={28} />
                   </div>
                   <div>
                     <div className="font-bold text-xs" style={{color:'var(--text-primary)'}}>{ch.name}</div>
-                    {ch.pageName && (
-                      <div className="text-[10px] truncate max-w-[140px] mt-0.5" style={{color:'var(--text-secondary)'}}>
-                        {ch.pageName}
-                      </div>
-                    )}
+                    <div className="text-[10px] mt-0.5" style={{color:'var(--text-secondary)'}}>
+                      {ch.instances.length > 0 
+                        ? `${ch.instances.length} ${ch.instances.length === 1 ? 'account' : 'accounts'} connected`
+                        : t.channels.notConnected}
+                    </div>
                   </div>
                 </div>
 
-                {/* Connection Status Badge */}
+                {/* Platform Connection Status Badge */}
                 <span
                   className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg"
                   style={ch.connected
@@ -425,39 +422,61 @@ export default function ChannelsPage() {
                 </span>
               </div>
 
+              {/* Connected Instances List */}
+              {ch.instances.length > 0 && (
+                <div className="space-y-2 mb-4 relative z-10 max-h-48 overflow-y-auto pr-1">
+                  {ch.instances.map((inst: any) => (
+                    <div 
+                      key={inst.id}
+                      className="p-2.5 rounded-xl flex items-center justify-between gap-2"
+                      style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                          {inst.page_name || inst.page_id || `Account #${inst.id}`}
+                        </div>
+                        <div className="text-[9px] text-text-tertiary truncate">
+                          ID: {inst.page_id || inst.id}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => handleToggleAI(inst.id, inst.ai_enabled)}
+                          title={inst.ai_enabled ? 'Disable AI for this instance' : 'Enable AI for this instance'}
+                          className="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center gap-1"
+                          style={inst.ai_enabled
+                            ? {background:'var(--accent-subtle)',border:'1px solid color-mix(in srgb, var(--accent) 25%, transparent)',color:'var(--accent)'}
+                            : {background:'var(--surface)',border:'1px solid var(--border)',color:'var(--text-secondary)'}
+                          }
+                        >
+                          <LightningIcon size={9} />
+                          {inst.ai_enabled ? 'AI On' : 'AI Off'}
+                        </button>
+                        <button 
+                          onClick={() => handleDisconnect(inst.id)}
+                          title="Disconnect this account"
+                          className="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all hover:bg-red-500/10"
+                          style={{background:'var(--surface)',border:'1px solid var(--border)',color:'#f87171'}}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex gap-2 relative z-10 mt-auto">
-                {ch.connected ? (
-                  <>
-                    <button
-                      onClick={() => ch.dbId && handleToggleAI(ch.dbId, ch.aiEnabled)}
-                      className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
-                      style={ch.aiEnabled
-                        ? {background:'var(--accent-subtle)',border:'1px solid color-mix(in srgb, var(--accent) 25%, transparent)',color:'var(--accent)'}
-                        : {background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-secondary)'}
-                      }
-                    >
-                      <LightningIcon size={10} />
-                      {ch.aiEnabled ? t.channels.aiOn : t.channels.aiOff}
-                    </button>
-                    <button 
-                      onClick={() => ch.dbId && handleDisconnect(ch.dbId)}
-                      className="py-2.5 px-3.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
-                      style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'#f87171'}}
-                    >
-                      {t.channels.disconnect}
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    onClick={() => setConnecting(ch)}
-                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
-                    style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-primary)'}}
-                  >
-                    <PlusIcon size={10} />
-                    {t.channels.connect}
-                  </button>
-                )}
+                <button 
+                  onClick={() => setConnecting(ch)}
+                  className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+                  style={{background:'var(--surface-elevated)',border:'1px solid var(--border)',color:'var(--text-primary)'}}
+                >
+                  <PlusIcon size={10} />
+                  {ch.connected ? '+ Add Another Account' : t.channels.connect}
+                </button>
               </div>
             </motion.div>
           ))}
