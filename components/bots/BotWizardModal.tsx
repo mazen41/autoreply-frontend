@@ -88,8 +88,14 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
   const [aiInstructions, setAiInstructions] = useState(bot?.ai_instructions || '')
   const [replyStyle, setReplyStyle] = useState(bot?.reply_style || 'Friendly & Professional')
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(bot?.ai_confidence_threshold ?? 0.80)
+  const [ecommerceChannelId, setEcommerceChannelId] = useState<number | null>(
+    bot?.ecommerce_channel_id || null
+  )
   const [selectedChannelIds, setSelectedChannelIds] = useState<number[]>(
     bot?.channels?.map((c: any) => c.id) || []
+  )
+  const [primaryChannelIds, setPrimaryChannelIds] = useState<number[]>(
+    bot?.channels?.filter((c: any) => c.pivot?.is_primary).map((c: any) => c.id) || []
   )
   const [assignments, setAssignments] = useState<Array<{ file_id: number; channel_id: number | null }>>(
     bot?.knowledgeAssignments?.map((a: any) => ({
@@ -142,7 +148,9 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
         ai_instructions: aiInstructions,
         reply_style: replyStyle,
         ai_confidence_threshold: confidenceThreshold,
+        ecommerce_channel_id: ecommerceChannelId,
         channel_ids: selectedChannelIds,
+        primary_channel_ids: primaryChannelIds,
         knowledge_assignments: assignments,
       }
 
@@ -382,51 +390,108 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
 
           {/* STEP 2: Channel Mapping */}
           {step === 2 && (
-            <div className="space-y-4">
-              <p className="text-xs text-text-secondary">
-                Select which connected channel accounts this Bot should handle. An incoming message on any selected channel will route to this Bot.
-              </p>
+            <div className="space-y-5">
+              {/* E-Commerce Store Binding */}
+              <div className="p-4 rounded-2xl border space-y-2" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <label className="block text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  🛒 Reference E-Commerce Store
+                </label>
+                <p className="text-[11px] text-text-secondary">
+                  Explicitly bind this Bot to a specific store for checking order status, inventory, and placing orders.
+                </p>
+                <select
+                  value={ecommerceChannelId ?? ''}
+                  onChange={(e) => setEcommerceChannelId(e.target.value ? Number(e.target.value) : null)}
+                  className="w-full px-3.5 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-accent"
+                  style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                >
+                  <option value="">None / FAQ Only (No Live Store Integration)</option>
+                  {channels
+                    .filter((c) => ['salla', 'shopify', 'woocommerce'].includes(c.type?.toLowerCase()))
+                    .map((store) => (
+                      <option key={store.id} value={store.id}>
+                        {store.type?.toUpperCase()} — {store.page_name || store.page_id || `Store #${store.id}`}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
-              {channels.length === 0 ? (
-                <div className="p-8 text-center rounded-2xl border border-dashed" style={{ borderColor: 'var(--border)' }}>
-                  <p className="text-xs text-text-secondary">No connected channel accounts found. Please connect accounts in Channels tab first.</p>
-                </div>
-              ) : (
+              <div>
+                <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                  💬 Communication Channels
+                </label>
+                <p className="text-xs text-text-secondary mb-3">
+                  Select which connected channel accounts this Bot should handle. If multiple bots are attached to the same account, mark one as <strong>Primary Responder</strong> for new incoming threads.
+                </p>
+
+                {channels.length === 0 ? (
+                  <div className="p-8 text-center rounded-2xl border border-dashed" style={{ borderColor: 'var(--border)' }}>
+                    <p className="text-xs text-text-secondary">No connected channel accounts found. Please connect accounts in Channels tab first.</p>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {channels.map((ch) => {
                     const isSelected = selectedChannelIds.includes(ch.id)
+                    const isPrimary = primaryChannelIds.includes(ch.id)
+
                     return (
                       <div
                         key={ch.id}
-                        onClick={() => toggleChannel(ch.id)}
-                        className={`p-3.5 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
+                        className={`p-3.5 rounded-2xl border transition-all ${
                           isSelected ? 'border-accent bg-accent/10' : 'hover:border-accent/50'
                         }`}
                         style={{ background: isSelected ? undefined : 'var(--surface)' }}
                       >
-                        <div className="flex items-center gap-3">
-                          <ChannelIcon type={ch.type as any} size={24} />
-                          <div>
-                            <div className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                              {ch.page_name || ch.page_id || `Account #${ch.id}`}
-                            </div>
-                            <div className="text-[10px] text-text-tertiary capitalize">
-                              {ch.type} · ID: {ch.page_id || ch.id}
+                        <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleChannel(ch.id)}>
+                          <div className="flex items-center gap-3">
+                            <ChannelIcon type={ch.type as any} size={24} />
+                            <div>
+                              <div className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                                {ch.page_name || ch.page_id || `Account #${ch.id}`}
+                              </div>
+                              <div className="text-[10px] text-text-tertiary capitalize">
+                                {ch.type} · ID: {ch.page_id || ch.id}
+                              </div>
                             </div>
                           </div>
+                          <div
+                            className={`w-5 h-5 rounded-md flex items-center justify-center border ${
+                              isSelected ? 'bg-accent border-accent text-white' : 'border-border'
+                            }`}
+                          >
+                            {isSelected && <CheckIcon size={12} />}
+                          </div>
                         </div>
-                        <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                            isSelected ? 'bg-accent border-accent text-white' : 'border-border'
-                          }`}
-                        >
-                          {isSelected && <CheckIcon size={12} />}
-                        </div>
+
+                        {isSelected && (
+                          <div className="mt-3 pt-2.5 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+                            <span className="text-[10px] text-text-secondary">Multi-Bot Priority:</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (isPrimary) {
+                                  setPrimaryChannelIds(primaryChannelIds.filter((id) => id !== ch.id))
+                                } else {
+                                  setPrimaryChannelIds([...primaryChannelIds, ch.id])
+                                }
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                                isPrimary
+                                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                                  : 'bg-surface-elevated text-text-tertiary border-border hover:text-text-primary'
+                              }`}
+                            >
+                              {isPrimary ? '★ Primary Responder' : 'Set as Primary'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
                 </div>
               )}
+              </div>
             </div>
           )}
 
