@@ -80,8 +80,14 @@ export default function ConversationHeader({
               className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md text-white flex-shrink-0"
               style={{ background: ch.color }}
             >
-              {ch.label}
+              {conv.channel?.page_name || conv.channel?.page_id || ch.label}
             </span>
+            {(conv as any).bot?.name && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
+                <Bot size={10} />
+                Handled by Bot: {(conv as any).bot.name}
+              </span>
+            )}
           </div>
           {conv.sender_email && (
             <p className="text-[10px] text-[var(--text-tertiary)] truncate">{conv.sender_email}</p>
@@ -89,11 +95,11 @@ export default function ConversationHeader({
         </div>
       </div>
 
-      {/* AI State Toggle */}
+      {/* AI State Toggle & Manual Takeover */}
       <button
         onClick={onToggleAI}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all flex-shrink-0 ${aiStateConfig.bg} ${aiStateConfig.text} border border-current/10`}
-        title={L('Toggle AI', 'تبديل AI')}
+        title={L('Toggle AI / Manual Takeover', 'تبديل AI / الاستحواذ اليدوي')}
       >
         <span className={`w-1.5 h-1.5 rounded-full ${aiStateConfig.dot} ${aiState === 'active' ? 'animate-pulse' : ''}`} />
         {aiStateConfig.label}

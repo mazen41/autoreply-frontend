@@ -34,6 +34,7 @@ const NAV_GROUPS = [
     labelEn: 'AI & Knowledge',
     labelAr: 'الذكاء الاصطناعي',
     items: [
+      { icon: LightningIcon,   href: '/dashboard/bots',         labelEn: 'Bots',          labelAr: 'البوتات' },
       { icon: AIKnowledgeIcon, href: '/dashboard/ai-knowledge', labelEn: 'AI Knowledge',  labelAr: 'قاعدة المعرفة' },
       { icon: LightningIcon,   href: '/dashboard/training',     labelEn: 'Training',      labelAr: 'التدريب' },
       { icon: BarChartIcon,    href: '/dashboard/analytics',    labelEn: 'Analytics',     labelAr: 'التحليلات' },

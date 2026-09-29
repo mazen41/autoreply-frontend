@@ -113,6 +113,11 @@ const ConversationListItem = memo(function ConversationListItem({
           </div>
 
           <div className="flex items-center gap-1.5 mb-1">
+            {conv.channel.page_name && (
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-surface-elevated text-text-secondary border border-border truncate max-w-[100px]">
+                {conv.channel.page_name}
+              </span>
+            )}
             {isEscalated && <span className="text-[9px] text-amber-400 font-bold uppercase">🔥 Escalated</span>}
             {isAI && <span className="text-[9px] text-accent font-bold uppercase">⚡ AI</span>}
             {conv.category && <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent/15 text-accent">{conv.category}</span>}
