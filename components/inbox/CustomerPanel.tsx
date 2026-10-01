@@ -11,31 +11,65 @@ interface CustomerPanelProps {
   conv: ApiConversation
   isRTL: boolean
   onClose?: () => void
+  customer?: {
+    id: number
+    name: string | null
+    phone: string | null
+    email: string | null
+    avatar: string | null
+    lead_score: number
+    tags: string[]
+    custom_fields: Record<string, any>
+  } | null
+  notes?: Array<{
+    id: number
+    content: string
+    author: { id: number; name: string }
+    created_at: string
+  }>
+  onAddNote?: (content: string) => void
+  isAddingNote?: boolean
 }
 
-export default function CustomerPanel({ conv, isRTL, onClose }: CustomerPanelProps) {
+export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = [], onAddNote, isAddingNote = false }: CustomerPanelProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     details: true,
     orders: true,
     history: true,
-    activity: false
+    notes: true
   })
+  const [newNoteContent, setNewNoteContent] = useState('')
   const L = (en: string, ar: string) => isRTL ? ar : en
 
   const toggleSection = (key: string) => {
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Mock data for UI
-  const orders = [
-    { id: '#1042', date: '2 days ago', amount: 'SAR 450', status: 'delivered' },
-    { id: '#0984', date: '1 month ago', amount: 'SAR 120', status: 'processing' }
-  ]
-  const history = [
-    { id: 1, date: 'Oct 12', preview: 'Where is my order?', ch: 'whatsapp' },
-    { id: 2, date: 'Sep 05', preview: 'Do you ship to Dubai?', ch: 'instagram' }
-  ]
-  const tags = ['VIP', 'Returning', 'Complained']
+  // Use real customer data if available, fallback to conversation data
+  const customerName = customer?.name || conv.sender_name || 'Unknown Contact'
+  const customerPhone = customer?.phone || conv.sender_id || ''
+  const customerEmail = customer?.email || conv.sender_email || ''
+  const customerTags = customer?.tags || []
+  const leadScore = customer?.lead_score || 0
+
+  // Derive orders from conversation checkout_state
+  const orders = []
+  if (conv.checkout_state?.order_id) {
+    orders.push({
+      id: conv.checkout_state.order_id,
+      date: conv.last_message_at,
+      amount: conv.checkout_state.product_price ? `${conv.checkout_state.product_price} ${conv.checkout_state.product_currency || 'SAR'}` : 'N/A',
+      status: conv.checkout_state.status || 'unknown'
+    })
+  }
+
+  // Derive history from conversation messages
+  const history = conv.messages?.slice(-5).map((msg: any, i: number) => ({
+    id: i,
+    date: msg.created_at,
+    preview: msg.content?.substring(0, 50) || '',
+    ch: conv.channel?.type || 'unknown'
+  })) || []
 
   return (
     <div className="flex flex-col h-full bg-[var(--surface)] border-l border-[var(--border)] overflow-y-auto w-[320px] flex-shrink-0">
@@ -79,21 +113,23 @@ export default function CustomerPanel({ conv, isRTL, onClose }: CustomerPanelPro
             <button className="text-[var(--accent)] p-1 hover:bg-[var(--accent-subtle)] rounded"><Plus size={12} /></button>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {tags.map(t => (
+            {customerTags.map(t => (
               <span key={t} className="px-2 py-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-md text-[10px] font-bold text-[var(--text-primary)]">
                 {t}
               </span>
             ))}
+            {customerTags.length === 0 && (
+              <span className="text-[10px] text-[var(--text-tertiary)] italic">{L('No tags', 'لا توجد علامات')}</span>
+            )}
           </div>
         </div>
 
         {/* Details Section */}
         <Section title={L('Contact Details', 'تفاصيل الاتصال')} expanded={expandedSections.details} onToggle={() => toggleSection('details')}>
           <div className="space-y-3">
-            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value="+966 50 123 4567" />
-            <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={conv.sender_email || 'Not provided'} />
-            <DetailRow icon={<MapPin size={14} />} label={L('Location', 'الموقع')} value="Riyadh, SA" />
-            <DetailRow icon={<Clock size={14} />} label={L('Local Time', 'الوقت المحلي')} value={new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} />
+            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value={customerPhone || 'Not provided'} />
+            <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={customerEmail || 'Not provided'} />
+            <DetailRow icon={<User size={14} />} label={L('Lead Score', 'درجة العميل')} value={`${leadScore}/100`} />
           </div>
         </Section>
 
@@ -125,7 +161,7 @@ export default function CustomerPanel({ conv, isRTL, onClose }: CustomerPanelPro
         {/* Conversation History */}
         <Section title={L('Previous Conversations', 'المحادثات السابقة')} expanded={expandedSections.history} onToggle={() => toggleSection('history')}>
           <div className="space-y-2">
-            {history.map(h => (
+            {history.map((h: any) => (
               <div key={h.id} className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] cursor-pointer group flex items-start gap-2 transition-colors">
                 <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
                   h.ch === 'whatsapp' ? 'bg-[#25D366]/10 text-[#25D366]' : 'bg-[#C13584]/10 text-[#C13584]'
@@ -141,6 +177,48 @@ export default function CustomerPanel({ conv, isRTL, onClose }: CustomerPanelPro
                 </div>
               </div>
             ))}
+          </div>
+        </Section>
+
+        {/* Internal Notes */}
+        <Section title={L('Internal Notes', 'ملاحظات داخلية')} expanded={expandedSections.notes} onToggle={() => toggleSection('notes')}>
+          <div className="space-y-2">
+            {onAddNote && (
+              <div className="mb-3">
+                <textarea
+                  value={newNoteContent}
+                  onChange={e => setNewNoteContent(e.target.value)}
+                  placeholder={L('Add a note...', 'أضف ملاحظة...')}
+                  rows={2}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent)] resize-none"
+                />
+                <button
+                  onClick={() => {
+                    if (newNoteContent.trim()) {
+                      onAddNote(newNoteContent.trim())
+                      setNewNoteContent('')
+                    }
+                  }}
+                  disabled={isAddingNote || !newNoteContent.trim()}
+                  className="mt-1 w-full py-1.5 text-xs font-bold rounded-lg bg-[var(--accent)] text-white hover:brightness-110 transition-all disabled:opacity-50"
+                >
+                  {isAddingNote ? L('Adding...', 'جاري الإضافة...') : L('Add Note', 'إضافة ملاحظة')}
+                </button>
+              </div>
+            )}
+            {notes.length === 0 ? (
+              <p className="text-[10px] text-[var(--text-tertiary)] italic">{L('No notes yet', 'لا توجد ملاحظات بعد')}</p>
+            ) : (
+              notes.map(note => (
+                <div key={note.id} className="p-2 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)]">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] font-bold text-[var(--accent)]">{note.author?.name || 'Agent'}</span>
+                    <span className="text-[9px] text-[var(--text-tertiary)]">{new Date(note.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-xs text-[var(--text-primary)]">{note.content}</p>
+                </div>
+              ))
+            )}
           </div>
         </Section>
 

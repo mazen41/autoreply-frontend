@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { ApiConversation } from '../../hooks/useInbox'
+import { ApiConversation, ApiBot } from '../../hooks/useInbox'
 import {
   Bot, User, AlertTriangle, ChevronDown, CheckCircle, Archive,
   Clock, UserPlus, ArrowRight, PanelLeft, PanelRight, Phone,
-  MoreHorizontal, Zap, X
+  MoreHorizontal, Zap, X, Loader2
 } from 'lucide-react'
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
@@ -28,14 +28,24 @@ interface ConversationHeaderProps {
   onToggleRightPanel: () => void
   leftCollapsed: boolean
   rightCollapsed: boolean
+  availableBots?: ApiBot[]
+  onBotChange?: (botId: number | null) => void
+  isUpdatingBot?: boolean
+  availableAgents?: Array<{ id: number; name: string }>
+  onAgentChange?: (agentId: number | null) => void
+  isUpdatingAgent?: boolean
 }
 
 export default function ConversationHeader({
   conv, isRTL, onToggleAI, onStatusChange,
-  onToggleLeftPanel, onToggleRightPanel, leftCollapsed, rightCollapsed
+  onToggleLeftPanel, onToggleRightPanel, leftCollapsed, rightCollapsed,
+  availableBots = [], onBotChange, isUpdatingBot = false,
+  availableAgents = [], onAgentChange, isUpdatingAgent = false
 }: ConversationHeaderProps) {
   const [statusOpen, setStatusOpen] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
+  const [botDropdownOpen, setBotDropdownOpen] = useState(false)
+  const [agentDropdownOpen, setAgentDropdownOpen] = useState(false)
   const L = (en: string, ar: string) => isRTL ? ar : en
 
   const ch = CHANNEL_LABELS[conv.channel?.type?.toLowerCase() || ''] ?? { label: conv.channel?.type ?? 'Chat', color: 'var(--accent)' }
@@ -82,11 +92,51 @@ export default function ConversationHeader({
             >
               {conv.channel?.page_name || conv.channel?.page_id || ch.label}
             </span>
-            {(conv as any).bot?.name && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
-                <Bot size={10} />
-                Handled by Bot: {(conv as any).bot.name}
-              </span>
+            {conv.bot?.name && (
+              <div className="relative flex items-center">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
+                  <Bot size={10} />
+                  {conv.bot.name}
+                </span>
+                {availableBots.length > 0 && onBotChange && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setBotDropdownOpen(v => !v)}
+                      disabled={isUpdatingBot}
+                      className="ml-1 p-0.5 rounded hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors disabled:opacity-50"
+                      title={isRTL ? 'تغيير البوت' : 'Switch Bot'}
+                    >
+                      {isUpdatingBot ? <Loader2 size={10} className="animate-spin" /> : <ChevronDown size={10} />}
+                    </button>
+                    {botDropdownOpen && (
+                      <div className="absolute left-0 top-full mt-1 w-44 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+                        <button
+                          onClick={() => { onBotChange(null); setBotDropdownOpen(false) }}
+                          className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                            !conv.bot_id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                          }`}
+                        >
+                          {isRTL ? 'بدون بوت' : 'No Bot'}
+                        </button>
+                        {availableBots.map(bot => (
+                          <button
+                            key={bot.id}
+                            onClick={() => { onBotChange(bot.id); setBotDropdownOpen(false) }}
+                            className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                              conv.bot_id === bot.id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <Bot size={11} />
+                              {bot.name}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
           {conv.sender_email && (
@@ -132,6 +182,53 @@ export default function ConversationHeader({
           </div>
         )}
       </div>
+
+      {/* Agent Assignment */}
+      {availableAgents.length > 0 && onAgentChange && (
+        <div className="relative flex-shrink-0">
+          <button
+            onClick={() => setAgentDropdownOpen(v => !v)}
+            disabled={isUpdatingAgent}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
+            style={{ color: conv.assigned_agent_id ? 'var(--accent)' : 'var(--text-tertiary)' }}
+          >
+            {isUpdatingAgent ? (
+              <Loader2 size={10} className="animate-spin" />
+            ) : (
+              <User size={10} />
+            )}
+            {conv.assigned_agent_id
+              ? (availableAgents.find(a => a.id === conv.assigned_agent_id)?.name ?? L('Assigned', 'معين'))
+              : L('Unassigned', 'غير معين')
+            }
+            <ChevronDown size={9} />
+          </button>
+          {agentDropdownOpen && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+              <button
+                onClick={() => { onAgentChange(null); setAgentDropdownOpen(false) }}
+                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                  !conv.assigned_agent_id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                }`}
+              >
+                {L('Unassigned', 'غير معين')}
+              </button>
+              {availableAgents.map(agent => (
+                <button
+                  key={agent.id}
+                  onClick={() => { onAgentChange(agent.id); setAgentDropdownOpen(false) }}
+                  className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-1.5 ${
+                    conv.assigned_agent_id === agent.id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                  }`}
+                >
+                  <User size={11} />
+                  {agent.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* More actions */}
       <div className="relative flex-shrink-0">

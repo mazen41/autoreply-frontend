@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ApiConversation } from '../../hooks/useInbox'
+import { ApiConversation, ApiBot } from '../../hooks/useInbox'
 import ConversationCard from './ConversationCard'
 import {
   Search, X, SlidersHorizontal, RefreshCw, Inbox, Bot, User,
@@ -37,16 +37,21 @@ interface ConversationListProps {
   onFilterChange: (filters: Record<string, any>) => void
   collapsed?: boolean
   onToggleCollapse?: () => void
+  bots?: ApiBot[]
+  channels?: Array<{ id: number; type: string; page_name: string | null; page_id?: string | null }>
 }
 
 export default function ConversationList({
-  conversations, selectedId, loading, isRTL, onSelect, onRefresh, onFilterChange, collapsed, onToggleCollapse
+  conversations, selectedId, loading, isRTL, onSelect, onRefresh, onFilterChange, collapsed, onToggleCollapse,
+  bots = [], channels = []
 }: ConversationListProps) {
   const [activeTab, setActiveTab] = useState('all')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [channelFilter, setChannelFilter] = useState('')
+  const [channelIdFilter, setChannelIdFilter] = useState<number | ''>('')
+  const [botFilter, setBotFilter] = useState<number | ''>('')
   const [showFilters, setShowFilters] = useState(false)
   const [showSortMenu, setShowSortMenu] = useState(false)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -65,6 +70,8 @@ export default function ConversationList({
     const filters: Record<string, any> = {}
     if (debouncedSearch) filters.search = debouncedSearch
     if (channelFilter) filters.channel_type = channelFilter
+    if (channelIdFilter !== '') filters.channel_id = channelIdFilter
+    if (botFilter !== '') filters.bot_id = botFilter
     if (activeTab === 'unread') filters.unread = true
     if (activeTab === 'ai_active') filters.ai_enabled = true
     if (activeTab === 'human') filters.ai_enabled = false
@@ -72,7 +79,7 @@ export default function ConversationList({
     if (activeTab === 'mine') filters.assigned_to_me = true
     if (activeTab === 'resolved') filters.status = 'closed'
     onFilterChange(filters)
-  }, [activeTab, debouncedSearch, channelFilter, onFilterChange])
+  }, [activeTab, debouncedSearch, channelFilter, channelIdFilter, botFilter, onFilterChange])
 
   // Client-side sort
   const sorted = useMemo(() => {
@@ -181,8 +188,42 @@ export default function ConversationList({
               ))}
             </div>
           </div>
-          {channelFilter && (
-            <button onClick={() => setChannelFilter('')} className="text-[10px] text-[var(--accent)] hover:underline flex items-center gap-1">
+          {/* Channel account filter */}
+          {channels.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase text-[var(--text-tertiary)] tracking-wide">Account</span>
+              <select
+                value={channelIdFilter}
+                onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              >
+                <option value="">All Accounts</option>
+                {channels.map(ch => (
+                  <option key={ch.id} value={ch.id}>
+                    {ch.page_name || ch.page_id || `Account #${ch.id}`} ({ch.type})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {/* Bot filter */}
+          {bots.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase text-[var(--text-tertiary)] tracking-wide">Bot</span>
+              <select
+                value={botFilter}
+                onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              >
+                <option value="">All Bots</option>
+                {bots.map(bot => (
+                  <option key={bot.id} value={bot.id}>{bot.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {(channelFilter || channelIdFilter !== '' || botFilter !== '') && (
+            <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-[var(--accent)] hover:underline flex items-center gap-1">
               <X size={10} /> Clear filters
             </button>
           )}

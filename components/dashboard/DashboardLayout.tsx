@@ -24,7 +24,7 @@ const NAV_GROUPS = [
     labelAr: 'الأساسية',
     items: [
       { icon: HomeIcon,        href: '/dashboard',             labelEn: 'Dashboard',      labelAr: 'الرئيسية' },
-      { icon: InboxIcon,       href: '/dashboard/inbox',       labelEn: 'Inbox',          labelAr: 'الرسائل' },
+      { icon: InboxIcon,       href: '/inbox',                 labelEn: 'Inbox',          labelAr: 'الرسائل' },
       { icon: ChannelsIcon,    href: '/dashboard/channels',    labelEn: 'Channels',       labelAr: 'القنوات' },
       { icon: WhatsAppIcon,    href: '/dashboard/whatsapp',    labelEn: 'WhatsApp',       labelAr: 'واتساب' },
     ]

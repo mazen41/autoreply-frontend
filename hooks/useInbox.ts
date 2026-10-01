@@ -59,6 +59,11 @@ export interface ApiChannel {
   page_id?: string | null
 }
 
+export interface ApiBot {
+  id: number
+  name: string
+}
+
 export interface ApiConversation {
   id: number
   sender_id: string
@@ -69,6 +74,8 @@ export interface ApiConversation {
   ai_enabled: boolean
   last_message_at: string | null
   channel: ApiChannel
+  bot?: ApiBot | null
+  bot_id?: number | null
   latest_message?: ApiMessage | null
   assigned_agent_id?: number | null
   assigned_at?: string | null
@@ -78,6 +85,12 @@ export interface ApiConversation {
   confidence?: number | null
   classified_at?: string | null
   created_at?: string | null
+  customer_id?: number | null
+  checkout_state?: Record<string, any> | null
+  messages?: ApiMessage[]
+  requires_human?: boolean
+  escalated_at?: string | null
+  escalation_reason?: string | null
 }
 
 function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] }): ApiConversation {
@@ -94,6 +107,8 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     ai_enabled: raw.ai_enabled ?? true,
     last_message_at: raw.last_message_at,
     channel: raw.channel,
+    bot: raw.bot ?? null,
+    bot_id: raw.bot_id ?? null,
     latest_message: latest,
     assigned_agent_id: raw.assigned_agent_id,
     assigned_at: raw.assigned_at,
@@ -122,6 +137,8 @@ export function useInbox() {
   const fetchConversations = useCallback(async (silent = false, filters?: {
     search?: string
     channel_type?: string
+    channel_id?: number
+    bot_id?: number
     status?: string
     ai_enabled?: boolean
     unread?: boolean
@@ -136,6 +153,8 @@ export function useInbox() {
       const params = new URLSearchParams()
       if (filters?.search) params.append('search', filters.search)
       if (filters?.channel_type) params.append('channel_type', filters.channel_type)
+      if (filters?.channel_id) params.append('channel_id', String(filters.channel_id))
+      if (filters?.bot_id) params.append('bot_id', String(filters.bot_id))
       if (filters?.status) params.append('status', filters.status)
       if (filters?.ai_enabled !== undefined) params.append('ai_enabled', String(filters.ai_enabled))
       if (filters?.unread) params.append('unread', 'true')
@@ -262,6 +281,30 @@ export function useInbox() {
       return true
     } catch {
       if (previous) setConversations(prev => prev.map(c => c.id === convId ? previous : c))
+      return false
+    }
+  }, [conversations])
+
+  const updateConversationBot = useCallback(async (conversationId: number, botId: number | null): Promise<boolean> => {
+    const previous = conversations.find(c => c.id === conversationId) ?? null
+    // Optimistic update
+    setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, bot_id: botId } : c))
+    try {
+      const res = await fetch(`${API}/conversations/${conversationId}/bot`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ bot_id: botId }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      if (data.conversation) {
+        const normalized = normalizeConversation(data.conversation)
+        setConversations(prev => prev.map(c => c.id === conversationId ? normalized : c))
+      }
+      return true
+    } catch {
+      // Rollback on failure
+      if (previous) setConversations(prev => prev.map(c => c.id === conversationId ? previous : c))
       return false
     }
   }, [conversations])
@@ -421,7 +464,7 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, reactToMessage,
+    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, updateConversationBot, reactToMessage,
     getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   }
 }
