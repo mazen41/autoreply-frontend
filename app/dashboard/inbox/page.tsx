@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useInbox } from '../../../hooks/useInbox'
 import { useLang } from '../../../lib/LangContext'
 
@@ -13,19 +13,55 @@ import ChatComposer from '../../../components/inbox/ChatComposer'
 import AICopilot from '../../../components/inbox/AICopilot'
 import CustomerPanel from '../../../components/inbox/CustomerPanel'
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
+
 export default function InboxPage() {
   const { isRTL } = useLang()
   const {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
     fetchConversations, selectConversation, sendReply, sendMediaReply,
-    toggleAi, updateConversationStatus, reactToMessage, submitFeedback
+    toggleAi, updateConversationStatus, updateConversationBot, reactToMessage, submitFeedback
   } = useInbox()
 
   const [leftCollapsed, setLeftCollapsed] = useState(false)
   const [rightCollapsed, setRightCollapsed] = useState(false)
   const [showCopilot, setShowCopilot] = useState(false)
   const [composerInitialText, setComposerInitialText] = useState('')
+  const [bots, setBots] = useState<Array<{ id: number; name: string }>>([])
+  const [channels, setChannels] = useState<Array<{ id: number; type: string; page_name: string | null; page_id?: string | null }>>([])
+  const [isUpdatingBot, setIsUpdatingBot] = useState(false)
+
+  // Fetch bots and channels for filters
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+
+    fetch(`${API}/api/bots`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.bots) setBots(data.bots.map((b: any) => ({ id: b.id, name: b.name })))
+      })
+      .catch(() => {})
+
+    fetch(`${API}/api/channels`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const chs = Array.isArray(data) ? data : data?.data || []
+        setChannels(chs.map((c: any) => ({ id: c.id, type: c.type, page_name: c.page_name, page_id: c.page_id })))
+      })
+      .catch(() => {})
+  }, [])
 
   // Handle window resize for responsive panels
   useEffect(() => {
@@ -51,6 +87,26 @@ export default function InboxPage() {
   const handleFilterChange = useCallback((filters: Record<string, any>) => {
     fetchConversations(false, filters)
   }, [fetchConversations])
+
+  const handleBotChange = useCallback(async (botId: number | null) => {
+    if (!selectedConv) return
+    setIsUpdatingBot(true)
+    try {
+      await updateConversationBot(selectedConv.id, botId)
+    } finally {
+      setIsUpdatingBot(false)
+    }
+  }, [selectedConv, updateConversationBot])
+
+  // Get bots available for the selected conversation's channel
+  const availableBotsForConv = useMemo(() => {
+    if (!selectedConv?.channel?.id) return []
+    return bots.filter(bot => {
+      // Only show bots that are assigned to this conversation's channel
+      // We need to check the full bot data for channel assignments
+      return true // We'll filter this properly when we have the full bot data with channels
+    })
+  }, [bots, selectedConv])
 
   const handleCorrectAI = useCallback(async (
     messageId: number,
@@ -91,6 +147,8 @@ export default function InboxPage() {
           onFilterChange={handleFilterChange}
           collapsed={leftCollapsed}
           onToggleCollapse={() => setLeftCollapsed(v => !v)}
+          bots={bots}
+          channels={channels}
         />
       )}
       {leftCollapsed && (
@@ -118,6 +176,9 @@ export default function InboxPage() {
               onToggleRightPanel={() => setRightCollapsed(v => !v)}
               leftCollapsed={leftCollapsed}
               rightCollapsed={rightCollapsed}
+              availableBots={availableBotsForConv}
+              onBotChange={handleBotChange}
+              isUpdatingBot={isUpdatingBot}
             />
             
             <AIStatusBar conv={selectedConv} isRTL={isRTL} />
