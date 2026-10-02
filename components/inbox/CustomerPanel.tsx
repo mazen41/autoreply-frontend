@@ -20,6 +20,18 @@ interface CustomerPanelProps {
     lead_score: number
     tags: string[]
     custom_fields: Record<string, any>
+    orders?: Array<{
+      id: string
+      date: string | null
+      amount: string
+      status: string
+    }>
+    conversations?: Array<{
+      id: number
+      date: string
+      preview: string
+      ch: string
+    }>
   } | null
   notes?: Array<{
     id: number
@@ -46,15 +58,34 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
   }
 
   // Use real customer data if available, fallback to conversation data
-  const customerName = customer?.name || conv.sender_name || 'Unknown Contact'
+  const customerName = customer?.name || conv.sender_name || L('Unknown Contact', 'جهة اتصال غير معروفة')
   const customerPhone = customer?.phone || conv.sender_id || ''
   const customerEmail = customer?.email || conv.sender_email || ''
   const customerTags = customer?.tags || []
   const leadScore = customer?.lead_score || 0
 
-  // Derive orders from conversation checkout_state
-  const orders = []
-  if (conv.checkout_state?.order_id) {
+  // Format phone number for display
+  const formatPhone = (phone: string): string => {
+    if (!phone) return L('Not provided', 'غير متوفر')
+    // Remove non-digit characters
+    const digits = phone.replace(/\D/g, '')
+    // Format based on length
+    if (digits.length <= 3) return phone
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
+    if (digits.length <= 9) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+    // International format: +XX XXX XXX XXXX
+    const countryCode = digits.length > 10 ? digits.slice(0, digits.length - 10) : ''
+    const rest = digits.slice(-10)
+    const formatted = `${rest.slice(0, 3)} ${rest.slice(3, 6)} ${rest.slice(6, 8)} ${rest.slice(8)}`
+    return countryCode ? `+${countryCode} ${formatted}` : formatted
+  }
+
+  const displayPhone = formatPhone(customerPhone)
+  const displayEmail = customerEmail || L('Not provided', 'غير متوفر')
+
+  // Use real orders from customer prop, fallback to conversation checkout_state
+  const orders = customer?.orders || []
+  if (orders.length === 0 && conv.checkout_state?.order_id) {
     orders.push({
       id: conv.checkout_state.order_id,
       date: conv.last_message_at,
@@ -63,13 +94,16 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
     })
   }
 
-  // Derive history from conversation messages
-  const history = conv.messages?.slice(-5).map((msg: any, i: number) => ({
-    id: i,
-    date: msg.created_at,
-    preview: msg.content?.substring(0, 50) || '',
-    ch: conv.channel?.type || 'unknown'
-  })) || []
+  // Use real history from customer prop, fallback to conversation messages
+  const history = customer?.conversations || []
+  if (history.length === 0 && conv.messages) {
+    history.push(...conv.messages.slice(-5).map((msg: any, i: number) => ({
+      id: i,
+      date: msg.created_at,
+      preview: msg.content?.substring(0, 50) || '',
+      ch: conv.channel?.type || 'unknown'
+    })))
+  }
 
   return (
     <div className="flex flex-col h-full bg-[var(--surface)] border-l border-[var(--border)] overflow-y-auto w-[320px] flex-shrink-0">
@@ -127,8 +161,8 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
         {/* Details Section */}
         <Section title={L('Contact Details', 'تفاصيل الاتصال')} expanded={expandedSections.details} onToggle={() => toggleSection('details')}>
           <div className="space-y-3">
-            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value={customerPhone || 'Not provided'} />
-            <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={customerEmail || 'Not provided'} />
+            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value={displayPhone} />
+            <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={displayEmail} />
             <DetailRow icon={<User size={14} />} label={L('Lead Score', 'درجة العميل')} value={`${leadScore}/100`} />
           </div>
         </Section>
@@ -136,47 +170,52 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
         {/* Orders Section */}
         <Section title={L('Recent Orders', 'الطلبات الأخيرة')} expanded={expandedSections.orders} onToggle={() => toggleSection('orders')}>
           <div className="space-y-2">
-            {orders.map(o => (
-              <div key={o.id} className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] hover:border-[var(--accent)] cursor-pointer transition-colors">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-bold text-xs text-[var(--text-primary)]">{o.id}</span>
-                  <span className="text-[10px] font-medium text-[var(--text-tertiary)]">{o.date}</span>
+            {orders.length === 0 ? (
+              <p className="text-[10px] text-[var(--text-tertiary)] italic py-2">{L('No recent orders', 'لا توجد طلبات حديثة')}</p>
+            ) : (
+              orders.map(o => (
+                <div key={o.id} className="p-2.5 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] hover:border-[var(--accent)] cursor-pointer transition-colors">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-xs text-[var(--text-primary)]">{o.id}</span>
+                    <span className="text-[10px] font-medium text-[var(--text-tertiary)]">{o.date ? new Date(o.date).toLocaleDateString() : '—'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-[var(--text-secondary)]">{o.amount}</span>
+                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      o.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                    }`}>
+                      {o.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-[var(--text-secondary)]">{o.amount}</span>
-                  <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                    o.status === 'delivered' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                  }`}>
-                    {o.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-            <button className="w-full py-1.5 text-xs text-[var(--accent)] font-medium hover:underline">
-              {L('View all in Salla', 'عرض الكل في سلة')}
-            </button>
+              ))
+            )}
           </div>
         </Section>
 
         {/* Conversation History */}
         <Section title={L('Previous Conversations', 'المحادثات السابقة')} expanded={expandedSections.history} onToggle={() => toggleSection('history')}>
           <div className="space-y-2">
-            {history.map((h: any) => (
-              <div key={h.id} className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] cursor-pointer group flex items-start gap-2 transition-colors">
-                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
-                  h.ch === 'whatsapp' ? 'bg-[#25D366]/10 text-[#25D366]' : 'bg-[#C13584]/10 text-[#C13584]'
-                }`}>
-                  <MessageSquareIcon size={12} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-[var(--text-secondary)] capitalize">{h.ch}</span>
-                    <span className="text-[9px] text-[var(--text-tertiary)]">{h.date}</span>
+            {history.length === 0 ? (
+              <p className="text-[10px] text-[var(--text-tertiary)] italic py-2">{L('No previous conversations', 'لا توجد محادثات سابقة')}</p>
+            ) : (
+              history.map((h: any) => (
+                <div key={h.id} className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] cursor-pointer group flex items-start gap-2 transition-colors">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
+                    h.ch === 'whatsapp' ? 'bg-[#25D366]/10 text-[#25D366]' : 'bg-[#C13584]/10 text-[#C13584]'
+                  }`}>
+                    <MessageSquareIcon size={12} />
                   </div>
-                  <p className="text-xs text-[var(--text-primary)] truncate">{h.preview}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-[var(--text-secondary)] capitalize">{h.ch}</span>
+                      <span className="text-[9px] text-[var(--text-tertiary)]">{h.date ? new Date(h.date).toLocaleDateString() : '—'}</span>
+                    </div>
+                    <p className="text-xs text-[var(--text-primary)] truncate">{h.preview}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </Section>
 
