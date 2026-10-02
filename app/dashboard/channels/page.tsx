@@ -291,6 +291,39 @@ export default function ChannelsPage() {
     const params = new URLSearchParams(window.location.search)
     const success = params.get('success')
     const error = params.get('error')
+    const sallaClaim = params.get('salla_claim') || sessionStorage.getItem('naz_salla_claim')
+    if (sallaClaim) {
+      window.history.replaceState({}, '', window.location.pathname)
+      if (!getToken()) {
+        // Not logged in yet: keep the claim token for after login (valid ~15 min)
+        sessionStorage.setItem('naz_salla_claim', sallaClaim)
+        return
+      }
+      sessionStorage.removeItem('naz_salla_claim')
+      ;(async () => {
+        try {
+          const res = await fetch(`${API}/api/channels/salla/claim`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${getToken()}`,
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({ token: sallaClaim }),
+          })
+          if (res.ok) {
+            setToast({ message: t.channels.connectedSuccess, type: 'success' })
+            fetchChannels()
+          } else {
+            setToast({ message: 'Salla connection failed', type: 'error' })
+          }
+        } catch (e) {
+          console.error('Salla claim failed', e)
+          setToast({ message: 'Salla connection failed', type: 'error' })
+        }
+      })()
+      return
+    }
     if (success) {
       setToast({ message: t.channels.connectedSuccess, type: 'success' })
       fetchChannels()

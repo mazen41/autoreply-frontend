@@ -17,8 +17,12 @@ export default function AIStatusBar({ conv, isRTL }: AIStatusBarProps) {
   const confidence = conv.confidence || 0
   const dialect = (conv.latest_message as any)?.detected_dialect
 
-  // Mock sentiment based on confidence for visual purposes (since backend might not send it explicitly yet)
-  const sentiment = confidence > 0.8 ? 'positive' : confidence < 0.4 ? 'negative' : 'neutral'
+  // Derive sentiment from intent and confidence — greetings/inquiries default to neutral
+  const greetingIntents = ['greeting', 'hello', 'hi', 'welcome', 'question', 'general'];
+  const isGreeting = !conv.intent || greetingIntents.includes(conv.intent.toLowerCase());
+  const sentiment = isGreeting
+    ? 'neutral'
+    : confidence > 0.8 ? 'positive' : confidence < 0.4 ? 'negative' : 'neutral'
   const sentimentConfig = {
     positive: { color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
     neutral:  { color: 'text-blue-500',    bg: 'bg-blue-500/10' },

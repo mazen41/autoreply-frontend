@@ -350,9 +350,21 @@ const MessageBubble = memo(function MessageBubble({
             <span>{formatMsgTime(msg.created_at)}</span>
             {!isIn && statusIndicator()}
             {msg.is_ai && onSubmitFeedback && (
-              <div className="ml-1 flex items-center gap-1">
-                <button onClick={() => onSubmitFeedback(msg.id, 'positive')} className="rounded p-0.5 hover:text-emerald-500" title="Helpful">+</button>
-                <button onClick={() => onSubmitFeedback(msg.id, 'negative')} className="rounded p-0.5 hover:text-rose-500" title="Not helpful">-</button>
+              <div className="ml-1 flex items-center gap-0.5">
+                <button
+                  onClick={() => onSubmitFeedback(msg.id, 'positive')}
+                  className="w-5 h-5 flex items-center justify-center rounded text-[var(--text-tertiary)] hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                  title="Helpful"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+                <button
+                  onClick={() => onSubmitFeedback(msg.id, 'negative')}
+                  className="w-5 h-5 flex items-center justify-center rounded text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                  title="Not helpful"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/></svg>
+                </button>
               </div>
             )}
           </div>
