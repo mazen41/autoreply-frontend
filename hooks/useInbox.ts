@@ -413,6 +413,10 @@ export function useInbox() {
   // Real-time updates via Pusher - replaces polling entirely.
   // We fetch the current user's id once, then subscribe to their private
   // inbox channel and merge incoming events straight into state.
+  //
+  // Event contract (MessageReceived::broadcastWith, backend):
+  //   { message: ApiMessage & { content_truncated?: boolean },
+  //     conversation: Partial<ApiConversation> & { channel: ApiChannel } }
   useEffect(() => {
     let channelName: string | null = null
 
@@ -426,8 +430,11 @@ export function useInbox() {
         channelName = `inbox.${user.id}`
         const echo = getEcho()
 
-        echo.private(channelName).listen('.message.received', (payload: { message: ApiMessage; conversation: ApiConversation & { messages?: ApiMessage[] } }) => {
-          const incomingConv = normalizeConversation({ ...payload.conversation, latest_message: payload.message })
+        echo.private(channelName).listen('.message.received', (payload: {
+          message: ApiMessage & { content_truncated?: boolean }
+          conversation: Partial<ApiConversation> & { channel: ApiChannel }
+        }) => {
+          const incomingConv = normalizeConversation({ ...payload.conversation, latest_message: payload.message } as ApiConversation)
 
           setConversations(prev => {
             const exists = prev.some(c => c.id === incomingConv.id)
@@ -443,6 +450,11 @@ export function useInbox() {
               ? prev.map(m => m.id === payload.message.id ? { ...m, ...payload.message } : m)
               : [...prev, payload.message]
             )
+            // Long content is capped server-side to stay under Pusher's event
+            // limit; pull the full text so the open timeline isn't truncated.
+            if (payload.message.content_truncated) {
+              fetchMessages(payload.message.conversation_id)
+            }
           }
         })
       } catch {
@@ -455,7 +467,7 @@ export function useInbox() {
     return () => {
       if (channelName) getEcho().leave(channelName)
     }
-  }, [])
+  }, [fetchMessages])
 
   useEffect(() => () => disconnectEcho(), [])
 
