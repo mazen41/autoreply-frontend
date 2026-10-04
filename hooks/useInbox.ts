@@ -72,6 +72,9 @@ export interface ApiConversation {
   subject: string | null
   status: string
   ai_enabled: boolean
+  requires_human?: boolean
+  escalated_at?: string | null
+  escalation_reason?: string | null
   last_message_at: string | null
   channel: ApiChannel
   bot?: ApiBot | null
@@ -79,6 +82,7 @@ export interface ApiConversation {
   latest_message?: ApiMessage | null
   assigned_agent_id?: number | null
   assigned_at?: string | null
+  unread_count?: number
   category?: string | null
   intent?: string | null
   priority?: string | null
@@ -88,9 +92,6 @@ export interface ApiConversation {
   customer_id?: number | null
   checkout_state?: Record<string, any> | null
   messages?: ApiMessage[]
-  requires_human?: boolean
-  escalated_at?: string | null
-  escalation_reason?: string | null
 }
 
 function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] }): ApiConversation {
@@ -105,6 +106,9 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     subject: raw.subject ?? null,
     status: raw.status,
     ai_enabled: raw.ai_enabled ?? true,
+    requires_human: raw.requires_human ?? false,
+    escalated_at: raw.escalated_at ?? null,
+    escalation_reason: raw.escalation_reason ?? null,
     last_message_at: raw.last_message_at,
     channel: raw.channel,
     bot: raw.bot ?? null,
@@ -112,6 +116,7 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     latest_message: latest,
     assigned_agent_id: raw.assigned_agent_id,
     assigned_at: raw.assigned_at,
+    unread_count: raw.unread_count ?? 0,
     category: raw.category ?? null,
     intent: raw.intent ?? null,
     priority: raw.priority ?? null,
@@ -414,11 +419,27 @@ export function useInbox() {
   // We fetch the current user's id once, then subscribe to their private
   // inbox channel and merge incoming events straight into state.
   //
-  // Event contract (MessageReceived::broadcastWith, backend):
-  //   { message: ApiMessage & { content_truncated?: boolean },
-  //     conversation: Partial<ApiConversation> & { channel: ApiChannel } }
+  // Event contract (backend — App\Support\InboxBroadcastPayload):
+  //
+  //   message.received {
+  //     message:      ApiMessage & { content_truncated?: boolean },
+  //     conversation: Partial<ApiConversation> & { channel: ApiChannel,
+  //                   bot?: { id, name } | null, unread_count?: number },
+  //     channel:      { id, type, page_name } | null,
+  //     bot:          { id, name } | null,
+  //     metadata:     { content_truncated: boolean }
+  //   }
+  //
+  //   conversation.updated {
+  //     conversation: Partial<ApiConversation> & { channel: ApiChannel,
+  //                   bot?: { id, name } | null, unread_count?: number,
+  //                   assigned_agent_id, ai_enabled, status, ... },
+  //     tags:         Array<{ id: number, tag: string }>,
+  //     metadata:     { event: 'conversation.updated' }
+  //   }
   useEffect(() => {
     let channelName: string | null = null
+    let unbindResync: (() => void) | null = null
 
     async function subscribe() {
       try {
@@ -439,7 +460,12 @@ export function useInbox() {
           setConversations(prev => {
             const exists = prev.some(c => c.id === incomingConv.id)
             const merged = exists
-              ? prev.map(c => c.id === incomingConv.id ? { ...c, ...incomingConv } : c)
+              // The event carries the conversation fields it knows;
+              // keep the locally-known bot identity when the payload
+              // has none, so bot identity never regresses to null.
+              ? prev.map(c => c.id === incomingConv.id
+                  ? { ...c, ...incomingConv, bot: incomingConv.bot ?? c.bot }
+                  : c)
               : [incomingConv, ...prev]
             // newest activity first
             return [...merged].sort((a, b) => new Date(b.last_message_at ?? 0).getTime() - new Date(a.last_message_at ?? 0).getTime())
@@ -457,6 +483,45 @@ export function useInbox() {
             }
           }
         })
+
+        // conversation.updated — agent assignment, AI toggle, status,
+        // bot switch and tag changes. Merged into the list so every
+        // agent viewing the inbox sees changes immediately.
+        echo.private(channelName).listen('.conversation.updated', (payload: {
+          conversation: Partial<ApiConversation> & { channel: ApiChannel }
+          tags?: Array<{ id: number; tag: string }>
+        }) => {
+          if (!payload.conversation?.id) return
+
+          const updated = normalizeConversation(payload.conversation as ApiConversation)
+
+          setConversations(prev => {
+            // Only merge conversations already visible in this list —
+            // the event carries no latest_message, so an unknown
+            // conversation would render an empty preview row.
+            if (!prev.some(c => c.id === updated.id)) return prev
+            return prev.map(c => c.id === updated.id
+              ? { ...c, ...updated, bot: updated.bot ?? c.bot, latest_message: c.latest_message }
+              : c
+            )
+          })
+        })
+
+        // Reconnect re-sync: Pusher replays nothing after a drop, so a
+        // reconnect can leave the inbox stale. When the connection
+        // recovers, silently re-fetch the list and the open thread.
+        const connection = (echo as any).connector?.connection
+        if (connection?.bind) {
+          const onStateChange = (state: { current: string; previous: string }) => {
+            if (state.current === 'connected' && state.previous !== 'connected') {
+              fetchConversations(true)
+              const openId = selectedIdRef.current
+              if (openId !== null) fetchMessages(openId)
+            }
+          }
+          connection.bind('state_change', onStateChange)
+          unbindResync = () => connection.unbind('state_change', onStateChange)
+        }
       } catch {
         // silent - real-time is a nice-to-have, manual refresh still works
       }
@@ -465,9 +530,10 @@ export function useInbox() {
     subscribe()
 
     return () => {
+      if (unbindResync) unbindResync()
       if (channelName) getEcho().leave(channelName)
     }
-  }, [fetchMessages])
+  }, [fetchConversations, fetchMessages])
 
   useEffect(() => () => disconnectEcho(), [])
 
