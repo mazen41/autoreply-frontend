@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { TableRowSkeleton } from './Skeleton'
 
 export interface Column<T> {
   key: string
@@ -8,6 +9,7 @@ export interface Column<T> {
   render?: (row: T, index: number) => React.ReactNode
   width?: string
   align?: 'left' | 'center' | 'right'
+  selected?: boolean
 }
 
 export interface DataTableProps<T> {
@@ -17,6 +19,7 @@ export interface DataTableProps<T> {
   loading?: boolean
   emptyState?: React.ReactNode
   onRowClick?: (row: T) => void
+  selectedKeys?: Set<string | number>
   className?: string
 }
 
@@ -27,6 +30,7 @@ export default function DataTable<T>({
   loading = false,
   emptyState,
   onRowClick,
+  selectedKeys,
   className = '',
 }: DataTableProps<T>) {
   return (
@@ -41,7 +45,7 @@ export default function DataTable<T>({
                 <th
                   key={col.key}
                   style={{ width: col.width }}
-                  className={`px-4 py-3 font-semibold text-text-secondary select-none tracking-wider uppercase text-[10px] ${
+                  className={`px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-text-secondary select-none ${
                     col.align === 'right'
                       ? 'text-right'
                       : col.align === 'center'
@@ -58,13 +62,7 @@ export default function DataTable<T>({
           <tbody className="divide-y divide-border/50">
             {loading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3.5">
-                      <div className="h-4 bg-surface-elevated rounded w-3/4" />
-                    </td>
-                  ))}
-                </tr>
+                <TableRowSkeleton key={i} cols={columns.length} />
               ))
             ) : data.length === 0 ? (
               <tr>
@@ -75,34 +73,42 @@ export default function DataTable<T>({
                 </td>
               </tr>
             ) : (
-              data.map((row, index) => (
-                <tr
-                  key={keyExtractor(row, index)}
-                  onClick={() => onRowClick && onRowClick(row)}
-                  className={`transition-colors ${
-                    onRowClick
-                      ? 'hover:bg-surface-elevated/70 cursor-pointer active:bg-surface-overlay'
-                      : 'hover:bg-surface-elevated/40'
-                  }`}
-                >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={`px-4 py-3.5 text-text-primary ${
-                        col.align === 'right'
-                          ? 'text-right'
-                          : col.align === 'center'
-                          ? 'text-center'
-                          : 'text-left'
-                      }`}
-                    >
-                      {col.render
-                        ? col.render(row, index)
-                        : (row as any)[col.key] ?? '—'}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              data.map((row, index) => {
+                const rowKey = keyExtractor(row, index)
+                const isSelected = selectedKeys?.has(rowKey)
+                return (
+                  <tr
+                    key={rowKey}
+                    onClick={() => onRowClick && onRowClick(row)}
+                    className={`stagger-item hover:bg-surface-hover transition-colors duration-100 ${
+                      isSelected
+                        ? 'bg-brand/5 border-l-2 border-l-brand'
+                        : ''
+                    } ${
+                      onRowClick
+                        ? 'cursor-pointer active:bg-surface-overlay'
+                        : ''
+                    }`}
+                  >
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className={`px-4 py-3.5 text-text-primary ${
+                          col.align === 'right'
+                            ? 'text-right'
+                            : col.align === 'center'
+                            ? 'text-center'
+                            : 'text-left'
+                        }`}
+                      >
+                        {col.render
+                          ? col.render(row, index)
+                          : (row as any)[col.key] ?? '—'}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })
             )}
           </tbody>
         </table>

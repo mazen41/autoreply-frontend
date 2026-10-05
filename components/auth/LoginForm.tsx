@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
+import { springs } from '../../lib/motion'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
 import { Mail, Lock, Eye, EyeOff, Check, Loader2, Play } from 'lucide-react'
@@ -116,9 +117,9 @@ export default function LoginForm() {
   return (
     <motion.div 
       className="relative w-full overflow-hidden rounded-2xl p-5 sm:p-7 bg-surface-elevated border border-border shadow-lg"
-      initial={{ opacity: 0, y: 18, scale: 0.985 }} 
-      animate={{ opacity: 1, y: 0, scale: 1 }} 
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, y: 16 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={springs.standard}
     >
       <div className="relative z-10">
         <Link href="/" className="flex items-center gap-2.5 justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40">
@@ -218,8 +219,8 @@ export default function LoginForm() {
             type="submit" 
             disabled={loading || successPulse} 
             className="group relative overflow-hidden w-full mt-2 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 bg-brand text-brand-text hover:bg-brand-hover disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface" 
-            whileHover={!loading && !successPulse ? { scale: 1.015 } : {}} 
-            whileTap={!loading && !successPulse ? { scale: 0.985 } : {}} 
+            whileHover={!loading && !successPulse ? { scale: 1.02, y: -1 } : {}} 
+            whileTap={!loading && !successPulse ? { scale: 0.97 } : {}} 
             initial={{ opacity: 0, y: 18, scale: 0.98 }} 
             animate={{ opacity: 1, y: 0, scale: 1 }} 
             transition={{ delay: 0.42, duration: 0.45 }}

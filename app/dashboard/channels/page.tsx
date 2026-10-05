@@ -1,12 +1,15 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { springs, variants } from '../../../lib/motion'
 import PageHeader from '../../../components/ui/PageHeader'
 import FilterBar from '../../../components/ui/FilterBar'
 import MetricCard from '../../../components/ui/MetricCard'
 import Button from '../../../components/ui/Button'
 import EmptyState from '../../../components/ui/EmptyState'
 import Skeleton, { SkeletonCard } from '../../../components/ui/Skeleton'
+import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
 import ChannelCard, { ChannelDef, ChannelInstance } from '../../../components/channels/ChannelCard'
 import ChannelConnectWizard, { ALL_CHANNELS, ChannelOption } from '../../../components/channels/ChannelConnectWizard'
 import TelegramConnect from '../../../components/channels/TelegramConnect'
@@ -453,7 +456,13 @@ export default function ChannelsPage() {
   }, [channelCards, searchQuery, selectedCategory, sortOption])
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      variants={variants.page}
+      initial="hidden"
+      animate="visible"
+      transition={springs.smooth}
+    >
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
         title="Channels"
@@ -488,39 +497,62 @@ export default function ChannelsPage() {
       />
 
       {/* ─── Overview KPI Metrics Row ────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-        <MetricCard
-          label="Connected Accounts"
-          value={totalConnected}
-          subValue="Across all platforms"
-          icon={<Radio size={18} />}
-          trend={{ value: 12, isPositive: true, label: 'vs last month' }}
-        />
-        <MetricCard
-          label="Active AI Automations"
-          value={totalActiveAI}
-          subValue="Handling customer DMs"
-          icon={<Sparkles size={18} />}
-          variant="ai"
-        />
-        <MetricCard
-          label="Needs Attention"
-          value={totalNeedsAttention}
-          subValue={
-            totalNeedsAttention > 0
-              ? 'Token re-auth or alert'
-              : 'All accounts healthy'
-          }
-          icon={<AlertTriangle size={18} />}
-          variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
-        />
-        <MetricCard
-          label="Available Platforms"
-          value={totalAvailable}
-          subValue="Integrations ready"
-          icon={<Layers size={18} />}
-        />
-      </div>
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        variants={variants.staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCardSkeleton />
+            </motion.div>
+          ))
+        ) : (
+          <>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Connected Accounts"
+                value={totalConnected}
+                subValue="Across all platforms"
+                icon={<Radio size={18} />}
+                trend={{ value: 12, isPositive: true, label: 'vs last month' }}
+              />
+            </motion.div>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Active AI Automations"
+                value={totalActiveAI}
+                subValue="Handling customer DMs"
+                icon={<Sparkles size={18} />}
+                variant="ai"
+              />
+            </motion.div>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Needs Attention"
+                value={totalNeedsAttention}
+                subValue={
+                  totalNeedsAttention > 0
+                    ? 'Token re-auth or alert'
+                    : 'All accounts healthy'
+                }
+                icon={<AlertTriangle size={18} />}
+                variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
+              />
+            </motion.div>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Available Platforms"
+                value={totalAvailable}
+                subValue="Integrations ready"
+                icon={<Layers size={18} />}
+              />
+            </motion.div>
+          </>
+        )}
+      </motion.div>
 
       {/* ─── Filter Bar ──────────────────────────────────────────────────── */}
       <FilterBar
@@ -704,6 +736,6 @@ export default function ChannelsPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

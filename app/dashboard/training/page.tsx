@@ -1,5 +1,8 @@
 'use client'
 
+import { motion } from 'framer-motion'
+import { springs, variants } from '../../../lib/motion'
+
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Bot, TrendingUp, AlertTriangle, MessageSquare,
@@ -234,7 +237,13 @@ export default function TrainingDashboard() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6 page-enter"
+      variants={variants.page}
+      initial="hidden"
+      animate="visible"
+      transition={springs.smooth}
+    >
       {/* Page Header */}
       <PageHeader
         title="Training & AI Performance"
@@ -504,6 +513,6 @@ export default function TrainingDashboard() {
           </div>
         </>
       ) : null}
-    </div>
+    </motion.div>
   )
 }

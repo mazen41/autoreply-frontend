@@ -1,7 +1,9 @@
 'use client'
 
 import React from 'react'
+import { motion } from 'framer-motion'
 import Button, { ButtonProps } from './Button'
+import { variants, springs } from '../../lib/motion'
 
 export interface EmptyStateProps {
   icon?: React.ReactNode | React.ComponentType<{ size?: number; className?: string }>
@@ -37,17 +39,21 @@ export default function EmptyState({
     : icon
 
   return (
-    <div
+    <motion.div
+      variants={variants.fadeUp}
+      initial="hidden"
+      animate="visible"
+      transition={springs.standard}
       className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl border border-dashed border-border/80 bg-surface-elevated/20 max-w-lg mx-auto ${className}`}
     >
       {renderedIcon ? (
-        <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center text-text-secondary mb-4 shadow-sm relative group">
+        <div className="w-16 h-16 rounded-2xl bg-surface-elevated border border-border/60 flex items-center justify-center text-text-secondary mb-5 shadow-sm relative group">
           {renderedIcon}
         </div>
       ) : (
-        <div className="w-12 h-12 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center text-text-tertiary mb-4">
+        <div className="w-16 h-16 rounded-2xl bg-surface-elevated border border-border/60 flex items-center justify-center text-text-tertiary mb-5 shadow-sm">
           <svg
-            className="w-6 h-6"
+            className="w-7 h-7"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -93,6 +99,6 @@ export default function EmptyState({
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

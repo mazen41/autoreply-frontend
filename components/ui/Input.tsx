@@ -6,9 +6,13 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   label?: string
   error?: string
   helperText?: string
+  /** Left icon node */
   icon?: React.ReactNode
+  /** Right icon node (ignored when onClear is active and value is non-empty) */
   iconRight?: React.ReactNode
+  /** Keyboard shortcut hint shown in the label row */
   shortcut?: string
+  /** When provided, a clear (×) button is shown whenever value is non-empty */
   onClear?: () => void
 }
 
@@ -32,6 +36,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const generatedId = React.useId()
   const inputId = id || generatedId
 
+  const hasRightSlot = !!(onClear && value) || !!iconRight || !!shortcut
+
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
@@ -44,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             {props.required && <span className="text-error ml-1">*</span>}
           </span>
           {shortcut && (
-            <kbd className="text-[10px] text-text-tertiary bg-surface-elevated px-1.5 py-0.5 rounded border border-border">
+            <kbd className="text-[10px] text-text-tertiary bg-surface-elevated px-1.5 py-0.5 rounded border border-border font-sans">
               {shortcut}
             </kbd>
           )}
@@ -52,6 +58,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       )}
 
       <div className="relative flex items-center w-full">
+        {/* Left icon */}
         {icon && (
           <div className="absolute left-3 flex items-center pointer-events-none text-text-tertiary">
             {icon}
@@ -63,52 +70,59 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           disabled={disabled}
           value={value}
-          className={`h-9 w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
-            icon ? 'pl-9' : 'pl-3'
-          } ${iconRight || onClear || shortcut ? 'pr-9' : 'pr-3'} ${
+          className={[
+            'h-9 w-full',
+            'bg-surface-elevated text-text-primary text-sm',
+            'rounded-lg border border-border',
+            'placeholder:text-text-tertiary',
+            'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30',
+            'hover:border-border-hover',
+            'transition-all duration-150',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
+            icon ? 'pl-9' : 'pl-3',
+            hasRightSlot ? 'pr-9' : 'pr-3',
             error
-              ? 'border-error focus:border-error focus:ring-error/20'
-              : 'hover:border-border-hover'
-          } ${className}`}
+              ? 'border-error focus:border-error focus:ring-error/20 hover:border-error'
+              : '',
+            className,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-invalid={!!error}
+          aria-describedby={
+            error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
+          }
           {...props}
         />
 
-        {onClear && value && (
+        {/* Clear button — takes priority over iconRight */}
+        {onClear && value ? (
           <button
             type="button"
             onClick={onClear}
-            className="absolute right-2.5 p-1 rounded hover:bg-surface-overlay text-text-tertiary hover:text-text-primary transition-colors"
+            className="absolute right-2.5 p-1 rounded hover:bg-surface-overlay text-text-tertiary hover:text-text-primary transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand/40"
             tabIndex={-1}
+            aria-label="Clear"
           >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        )}
-
-        {!onClear && iconRight && (
-          <div className="absolute right-3 flex items-center text-text-tertiary">
+        ) : iconRight ? (
+          <div className="absolute right-3 flex items-center pointer-events-none text-text-tertiary">
             {iconRight}
           </div>
-        )}
+        ) : null}
       </div>
 
       {error ? (
-        <p className="text-xs text-error font-medium" role="alert">
+        <p id={`${inputId}-error`} className="text-xs text-error font-medium" role="alert">
           {error}
         </p>
       ) : helperText ? (
-        <p className="text-xs text-text-tertiary">{helperText}</p>
+        <p id={`${inputId}-helper`} className="text-xs text-text-tertiary">
+          {helperText}
+        </p>
       ) : null}
     </div>
   )
@@ -143,20 +157,39 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         ref={ref}
         id={textareaId}
         disabled={disabled}
-        className={`w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border p-3 placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all duration-150 resize-y min-h-[90px] disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={[
+          'w-full',
+          'bg-surface-elevated text-text-primary text-sm',
+          'rounded-lg border border-border',
+          'p-3',
+          'placeholder:text-text-tertiary',
+          'focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30',
+          'hover:border-border-hover',
+          'transition-all duration-150',
+          'resize-y min-h-[90px]',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
           error
-            ? 'border-error focus:border-error focus:ring-error/20'
-            : 'hover:border-border-hover'
-        } ${className}`}
+            ? 'border-error focus:border-error focus:ring-error/20 hover:border-error'
+            : '',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        aria-invalid={!!error}
+        aria-describedby={
+          error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined
+        }
         {...props}
       />
 
       {error ? (
-        <p className="text-xs text-error font-medium" role="alert">
+        <p id={`${textareaId}-error`} className="text-xs text-error font-medium" role="alert">
           {error}
         </p>
       ) : helperText ? (
-        <p className="text-xs text-text-tertiary">{helperText}</p>
+        <p id={`${textareaId}-helper`} className="text-xs text-text-tertiary">
+          {helperText}
+        </p>
       ) : null}
     </div>
   )

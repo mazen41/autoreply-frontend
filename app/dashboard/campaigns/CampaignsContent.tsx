@@ -37,6 +37,9 @@ import Select from '../../../components/ui/Select'
 import Modal from '../../../components/ui/Modal'
 import FilterBar from '../../../components/ui/FilterBar'
 import EmptyState from '../../../components/ui/EmptyState'
+import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
+import { motion } from 'framer-motion'
+import { springs, variants } from '../../../lib/motion'
 import toast from 'react-hot-toast'
 
 type CampaignType = 'bulk' | 'email' | 'social' | 'comment' | 'cart' | 'other'
@@ -263,9 +266,12 @@ export default function CampaignsContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
-        <span className="text-xs text-text-tertiary">Loading campaign broadcasts...</span>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <MetricCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }
@@ -347,7 +353,13 @@ export default function CampaignsContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6 page-enter"
+      variants={variants.page}
+      initial="hidden"
+      animate="visible"
+      transition={springs.smooth}
+    >
       <PageHeader
         title="Marketing & Broadcast Campaigns"
         description="Launch targeted mass message broadcasts, flash sales alerts, and cart recovery waves directly to customer WhatsApp and direct message inboxes."
@@ -368,33 +380,46 @@ export default function CampaignsContent() {
       />
 
       {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Campaigns"
-          value={stats.total}
-          subValue={`${stats.sent} dispatched`}
-          icon={<Megaphone size={18} />}
-        />
-        <MetricCard
-          label="Audience Reach"
-          value={stats.totalReach.toLocaleString()}
-          subValue="Direct messages delivered"
-          icon={<Users size={18} />}
-          variant="ai"
-        />
-        <MetricCard
-          label="In-Flight Waves"
-          value={stats.sending}
-          subValue={stats.sending > 0 ? 'Actively streaming replies' : 'All waves delivered'}
-          icon={<Send size={18} />}
-        />
-        <MetricCard
-          label="Avg Read Rate"
-          value="84.2%"
-          trend={{ value: 6.1, isPositive: true }}
-          icon={<Eye size={18} />}
-        />
-      </div>
+      <motion.div
+        className="grid grid-cols-1 sm:grid-cols-4 gap-4"
+        variants={variants.staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          <MetricCard
+            label="Total Campaigns"
+            value={stats.total}
+            subValue={`${stats.sent} dispatched`}
+            icon={<Megaphone size={18} />}
+          />
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          <MetricCard
+            label="Audience Reach"
+            value={stats.totalReach.toLocaleString()}
+            subValue="Direct messages delivered"
+            icon={<Users size={18} />}
+            variant="ai"
+          />
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          <MetricCard
+            label="In-Flight Waves"
+            value={stats.sending}
+            subValue={stats.sending > 0 ? 'Actively streaming replies' : 'All waves delivered'}
+            icon={<Send size={18} />}
+          />
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          <MetricCard
+            label="Avg Read Rate"
+            value="84.2%"
+            trend={{ value: 6.1, isPositive: true }}
+            icon={<Eye size={18} />}
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Filter and Search Bar */}
       <FilterBar
@@ -622,6 +647,6 @@ export default function CampaignsContent() {
           </div>
         </div>
       </Modal>
-    </div>
+    </motion.div>
   )
 }

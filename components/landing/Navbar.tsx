@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import { useAuth } from '../../lib/AuthContext'
+import { springs } from '../../lib/motion'
 import { Sun, Moon } from 'lucide-react'
 
 const NAV_LINKS = [
@@ -20,6 +22,7 @@ export default function Navbar() {
   const { user } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
@@ -46,26 +49,41 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            <Image
-              src="/icons/logo_icon.png"
-              alt="Logo"
-              width={38}
-              height={38}
-              className="object-contain transition-transform duration-200 group-hover:scale-105"
-              priority
-            />
+            <motion.div whileHover={{ scale: 1.05 }} transition={springs.snap}>
+              <Image
+                src="/icons/logo_icon.png"
+                alt="Logo"
+                width={38}
+                height={38}
+                className="object-contain"
+                priority
+              />
+            </motion.div>
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div
+            className="hidden md:flex items-center gap-8"
+            onMouseLeave={() => setHoveredLink(null)}
+          >
             {NAV_LINKS.map(({ labelKey, href }) => (
-              <a
+              <motion.a
                 key={href}
                 href={href}
-                className="text-sm font-medium relative group text-text-secondary hover:text-accent-secondary after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-accent-secondary after:group-hover:w-full after:transition-all after:duration-300"
+                className="text-sm font-medium relative text-text-secondary hover:text-accent-secondary transition-colors duration-200"
+                whileHover={{ y: -1 }}
+                transition={springs.snap}
+                onMouseEnter={() => setHoveredLink(href)}
               >
                 {linkLabels[labelKey]}
-              </a>
+                {hoveredLink === href && (
+                  <motion.div
+                    layoutId="nav-underline"
+                    className="absolute -bottom-0.5 left-0 right-0 h-px bg-accent-secondary"
+                    transition={springs.snap}
+                  />
+                )}
+              </motion.a>
             ))}
           </div>
 
@@ -93,17 +111,27 @@ export default function Navbar() {
             </button>
 
             {user ? (
-              <Link href="/dashboard" className="px-5 py-2 rounded-xl text-xs font-bold btn-primary">
+              <motion.a
+                href="/dashboard"
+                className="px-5 py-2 rounded-xl text-xs font-bold btn-primary"
+                whileHover={{ scale: 1.02 }}
+                transition={springs.snap}
+              >
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}
-              </Link>
+              </motion.a>
             ) : (
               <>
                 <Link href="/login" className="text-text-secondary hover:text-accent-secondary transition-colors duration-200 text-xs font-medium px-2 py-1">
                   {t.nav.login}
                 </Link>
-                <Link href="/register" className="px-5 py-2 rounded-xl text-xs font-bold btn-lime">
+                <motion.a
+                  href="/register"
+                  className="px-5 py-2 rounded-xl text-xs font-bold btn-lime btn-primary"
+                  whileHover={{ scale: 1.02 }}
+                  transition={springs.snap}
+                >
                   {t.nav.startFree}
-                </Link>
+                </motion.a>
               </>
             )}
           </div>
@@ -118,42 +146,51 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden py-4 space-y-2 border-t border-border bg-surface">
-            {NAV_LINKS.map(({ labelKey, href }) => (
-              <a
-                key={href}
-                href={href}
-                className="block py-2.5 px-3 text-sm font-medium rounded-lg text-text-secondary hover:text-accent-secondary"
-                onClick={() => setMobileOpen(false)}
-              >
-                {linkLabels[labelKey]}
-              </a>
-            ))}
-            <div className="flex gap-2 px-3 pt-3">
-              <button onClick={toggleTheme} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-              <button onClick={toggleLang} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
-                {lang === 'ar' ? 'EN' : 'ع'}
-              </button>
-              {user ? (
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-primary">
-                  {isRTL ? 'لوحة التحكم' : 'Dashboard'}
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-accent-secondary">
-                    {t.nav.login}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              key="mobile-menu"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={springs.standard}
+              className="md:hidden py-4 space-y-2 border-t border-border bg-surface"
+            >
+              {NAV_LINKS.map(({ labelKey, href }) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="block py-2.5 px-3 text-sm font-medium rounded-lg text-text-secondary hover:text-accent-secondary"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {linkLabels[labelKey]}
+                </a>
+              ))}
+              <div className="flex gap-2 px-3 pt-3">
+                <button onClick={toggleTheme} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
+                  {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+                <button onClick={toggleLang} className="text-xs px-3 py-2 rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary">
+                  {lang === 'ar' ? 'EN' : 'ع'}
+                </button>
+                {user ? (
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-primary">
+                    {isRTL ? 'لوحة التحكم' : 'Dashboard'}
                   </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-lime">
-                    {t.nav.startFree}
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:text-accent-secondary">
+                      {t.nav.login}
+                    </Link>
+                    <Link href="/register" onClick={() => setMobileOpen(false)} className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold btn-lime">
+                      {t.nav.startFree}
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   )

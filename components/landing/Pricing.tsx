@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
+import { variants, springs } from '../../lib/motion'
 
 interface Package {
   id: number
@@ -30,22 +31,11 @@ function getToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current; if (!el) return
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) el.classList.add('visible') }, { threshold: 0.1 })
-    obs.observe(el); return () => obs.disconnect()
-  }, [])
-  return ref
-}
-
 export default function Pricing() {
   const { t, isRTL } = useLang()
   const [annual, setAnnual] = useState(false)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
-  const sectionRef = useReveal()
 
   useEffect(() => {
     fetchPackages()
@@ -80,14 +70,21 @@ export default function Pricing() {
   return (
     <section id="pricing" className="py-24 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div ref={sectionRef} className="reveal text-center mb-4">
+        <motion.div
+          variants={variants.fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-60px' }}
+          transition={springs.standard}
+          className="text-center mb-4"
+        >
           <h2
             className={`text-3xl sm:text-4xl font-black ${isRTL ? 'font-arabic' : ''}`}
             style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
           >
             {t.pricing.title}
           </h2>
-        </div>
+        </motion.div>
 
         {/* Toggle */}
         <div className="flex items-center justify-center gap-4 mb-12">
@@ -114,8 +111,14 @@ export default function Pricing() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
-          {packages.map((pkg, i) => (
+        <motion.div
+          variants={variants.staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-start"
+        >
+          {packages.map((pkg) => (
             <PricingCard
               key={pkg.id}
               pkg={pkg}
@@ -123,26 +126,23 @@ export default function Pricing() {
               annual={annual}
               isRTL={isRTL}
               t={t}
-              delay={i * 0.08}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
 
 function PricingCard({
-  pkg, price, annual, isRTL, t, delay,
+  pkg, price, annual, isRTL, t,
 }: {
   pkg: Package
   price: number
   annual: boolean
   isRTL: boolean
   t: { pricing: { monthly: string; mostPopular: string; startFree: string } }
-  delay: number
 }) {
-  const ref = useReveal()
   const name = isRTL ? pkg.name_ar : pkg.name
   const description = isRTL ? pkg.description_ar : pkg.description
   const rawFeatures = isRTL ? pkg.features_ar : pkg.features
@@ -152,40 +152,31 @@ function PricingCard({
 
   if (pkg.is_popular) {
     return (
-      <div
-        ref={ref}
-        className="reveal relative rounded-2xl p-[2px] flex flex-col"
+      <motion.div
+        variants={variants.fadeUp}
+        whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
+        className="relative rounded-2xl p-[2px] flex flex-col border border-brand/40 bg-brand/5"
         style={{
           background: 'conic-gradient(from var(--angle, 0deg), var(--accent), var(--accent-end), var(--accent))',
           animation: 'rotateBorder 3s linear infinite',
           transform: 'scale(1.03)',
-          animationDelay: `${delay}s`,
         }}
       >
         {/* Badge */}
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
           <span
-            className="reveal text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap bg-accent accent-shadow-lg text-on-accent"
+            className="text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap bg-accent accent-shadow-lg text-on-accent"
           >
             {t.pricing.mostPopular}
           </span>
         </div>
 
         <div
-          className="reveal Card rounded-2xl flex flex-col h-full p-6 mouse-hover-hover"
+          className="Card rounded-2xl flex flex-col h-full p-6 mouse-hover-hover"
           style={{
             background: 'var(--surface)',
             border: '1px solid var(--border)',
             boxShadow: '0 4px 16px var(--shadow-sm)',
-            transition: 'box-shadow var(--duration-fast) var(--ease-premium), transform var(--duration-fast) var(--ease-premium)',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 8px 30px var(--shadow-md)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 16px var(--shadow-sm)';
           }}
         >
           <CardInner
@@ -200,28 +191,19 @@ function PricingCard({
             pkg={pkg}
           />
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div
-      ref={ref}
-      className="reveal Card rounded-2xl p-6 flex flex-col mouse-hover-hover"
+    <motion.div
+      variants={variants.fadeUp}
+      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
+      className="Card rounded-2xl p-6 flex flex-col mouse-hover-hover"
       style={{
         background: 'var(--surface)',
         border: '1px solid var(--border)',
         boxShadow: '0 4px 16px var(--shadow-sm)',
-        transition: 'box-shadow var(--duration-fast) var(--ease-premium), transform var(--duration-fast) var(--ease-premium)',
-        animationDelay: `${delay}s`,
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = 'scale(1.02)';
-        e.currentTarget.style.boxShadow = '0 8px 30px var(--shadow-md)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = 'scale(1)';
-        e.currentTarget.style.boxShadow = '0 4px 16px var(--shadow-sm)';
       }}
     >
       <CardInner
@@ -235,7 +217,7 @@ function PricingCard({
         popular={false}
         pkg={pkg}
       />
-    </div>
+    </motion.div>
   )
 }
 

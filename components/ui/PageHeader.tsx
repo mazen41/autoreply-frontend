@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 
 export interface BreadcrumbItem {
   label: string
@@ -29,20 +31,17 @@ export default function PageHeader({
   className = '',
 }: PageHeaderProps) {
   return (
-    <div className={`space-y-4 mb-6 ${className}`}>
+    <div className={`mb-6 ${className}`}>
       {/* Breadcrumbs */}
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-text-tertiary">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] text-text-muted mb-3">
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={crumb.label}>
-              {idx > 0 && <span>/</span>}
+              {idx > 0 && <ChevronRight size={11} className="text-text-disabled" />}
               {crumb.href ? (
-                <a
-                  href={crumb.href}
-                  className="hover:text-text-primary transition-colors"
-                >
+                <Link href={crumb.href} className="hover:text-text-secondary transition-colors">
                   {crumb.label}
-                </a>
+                </Link>
               ) : (
                 <span className="text-text-secondary font-medium">{crumb.label}</span>
               )}
@@ -51,33 +50,36 @@ export default function PageHeader({
         </nav>
       )}
 
-      {/* Title & Actions Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary">
-              {title}
-            </h1>
-            {badge}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        {/* Left: title + description */}
+        <div className="flex items-start gap-3">
+          {/* Brand accent line */}
+          <div className="w-1 h-full min-h-[36px] rounded-full bg-brand/60 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary leading-tight">
+                {title}
+              </h1>
+              {badge}
+            </div>
+            {description && (
+              <p className="text-[13px] text-text-secondary leading-relaxed max-w-2xl">
+                {description}
+              </p>
+            )}
           </div>
-          {description && (
-            <p className="text-xs sm:text-sm text-text-secondary max-w-2xl leading-relaxed">
-              {description}
-            </p>
-          )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Right: actions */}
         {(primaryAction || secondaryActions) && (
-          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+          <div className="flex items-center gap-2 shrink-0 self-start">
             {secondaryActions}
             {primaryAction}
           </div>
         )}
       </div>
 
-      {/* Optional sub-header filter bar or stats slot */}
-      {children && <div className="pt-2">{children}</div>}
+      {children && <div className="mt-4">{children}</div>}
     </div>
   )
 }
