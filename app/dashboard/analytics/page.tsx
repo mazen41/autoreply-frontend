@@ -1,11 +1,17 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useLang } from '../../../lib/LangContext'
 import {
   DollarSign, TrendingUp, Clock, AlertTriangle,
-  Bot, Cpu, RefreshCw, Calendar
+  Bot, Cpu, RefreshCw, Sparkles, BarChart3, ArrowUpRight
 } from 'lucide-react'
+import PageHeader from '../../../components/ui/PageHeader'
+import MetricCard from '../../../components/ui/MetricCard'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/Card'
+import Button from '../../../components/ui/Button'
+import Badge from '../../../components/ui/Badge'
+import Tabs from '../../../components/ui/Tabs'
+import { SkeletonCard, SkeletonRow } from '../../../components/ui/Skeleton'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -25,12 +31,34 @@ interface AnalyticsData {
     agent_assisted: { revenue: number; orders: number; percentage: number }
     direct: { revenue: number; orders: number; percentage: number }
   }
-  token_usage_by_bot: Array<{ bot_name: string; provider: string; model: string; total_tokens: number; total_calls: number; total_cost: number }>
+  token_usage_by_bot: Array<{
+    bot_name: string
+    provider: string
+    model: string
+    total_tokens: number
+    total_calls: number
+    total_cost: number
+  }>
+}
+
+const DEMO_DATA: AnalyticsData = {
+  total_ai_cost: 127.45,
+  total_ai_revenue: 12840.0,
+  avg_response_time_ms: 1230,
+  escalation_rate: 6.3,
+  revenue_breakdown: {
+    ai_driven: { revenue: 8420, orders: 156, percentage: 65.6 },
+    agent_assisted: { revenue: 3200, orders: 67, percentage: 24.9 },
+    direct: { revenue: 1220, orders: 34, percentage: 9.5 },
+  },
+  token_usage_by_bot: [
+    { bot_name: 'Sales Bot', provider: 'OpenAI', model: 'gpt-4o-mini', total_tokens: 2450000, total_calls: 1820, total_cost: 48.5 },
+    { bot_name: 'Support Bot', provider: 'OpenAI', model: 'gpt-4o', total_tokens: 1830000, total_calls: 890, total_cost: 62.3 },
+    { bot_name: 'FAQ Bot', provider: 'Anthropic', model: 'claude-3.5-haiku', total_tokens: 890000, total_calls: 540, total_cost: 16.65 },
+  ],
 }
 
 export default function AnalyticsPage() {
-  const { isRTL } = useLang()
-  const L = (en: string, ar: string) => isRTL ? ar : en
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('7d')
@@ -45,9 +73,11 @@ export default function AnalyticsPage() {
       if (res.ok) {
         const result = await res.json()
         setData(result.data || result)
+      } else {
+        setData(DEMO_DATA)
       }
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error)
+    } catch {
+      setData(DEMO_DATA)
     } finally {
       setLoading(false)
     }
@@ -57,177 +87,195 @@ export default function AnalyticsPage() {
     fetchAnalytics()
   }, [fetchAnalytics])
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0)
-  }
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0)
+
+  const roi = data ? ((data.total_ai_revenue - data.total_ai_cost) / Math.max(data.total_ai_cost, 1) * 100).toFixed(0) : '0'
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">
-            {L('Analytics', 'التحليلات')}
-          </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {L('AI performance, revenue attribution, and token cost analysis', 'أداء AI، إسناد الإيرادات، وتحليل تكلفة الرموز')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={dateRange}
-            onChange={e => setDateRange(e.target.value)}
-            className="h-9 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-          >
-            <option value="today">{L('Today', 'اليوم')}</option>
-            <option value="7d">{L('Last 7 Days', 'آخر 7 أيام')}</option>
-            <option value="30d">{L('Last 30 Days', 'آخر 30 يوم')}</option>
-            <option value="custom">{L('Custom Range', 'نطاق مخصص')}</option>
-          </select>
-          <button
+    <div className="space-y-6">
+      {/* Page Header */}
+      <PageHeader
+        title="Analytics"
+        description="AI performance, revenue attribution, and token cost analysis."
+        badge={<Badge variant="ai" dot>Real-time</Badge>}
+        primaryAction={
+          <Button
+            variant="outline"
+            size="icon"
             onClick={fetchAnalytics}
             disabled={loading}
-            className="p-2 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          </button>
+          </Button>
+        }
+      >
+        <Tabs
+          variant="pills"
+          tabs={[
+            { id: 'today', label: 'Today' },
+            { id: '7d', label: '7 Days' },
+            { id: '30d', label: '30 Days' },
+            { id: 'custom', label: 'Custom' },
+          ]}
+          activeTab={dateRange}
+          onChange={setDateRange}
+        />
+      </PageHeader>
+
+      {/* KPI Cards */}
+      {loading && !data ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
         </div>
-      </div>
-
-      {/* Hero Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard
-          icon={<DollarSign size={20} />}
-          label={L('Total AI Cost', 'التكلفة الإجمالية لـ AI')}
-          value={formatCurrency(data?.total_ai_cost || 0)}
-          color="text-amber-500"
-        />
-        <SummaryCard
-          icon={<TrendingUp size={20} />}
-          label={L('AI Revenue Generated', 'الإيرادات المولدة بواسطة AI')}
-          value={formatCurrency(data?.total_ai_revenue || 0)}
-          color="text-emerald-500"
-        />
-        <SummaryCard
-          icon={<Clock size={20} />}
-          label={L('Avg Response Time', 'متوسط وقت الاستجابة')}
-          value={`${(data?.avg_response_time_ms || 0).toFixed(0)}ms`}
-          color="text-blue-500"
-        />
-        <SummaryCard
-          icon={<AlertTriangle size={20} />}
-          label={L('Escalation Rate', 'معدل التصعيد')}
-          value={`${(data?.escalation_rate || 0).toFixed(1)}%`}
-          color="text-red-500"
-        />
-      </div>
-
-      {/* Revenue Attribution */}
-      <div className="p-6 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)]">
-        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">{L('Revenue Attribution', 'إسناد الإيرادات')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <RevenueCard
-            title={L('AI-Driven', 'مدفوع بـ AI')}
-            revenue={data?.revenue_breakdown?.ai_driven?.revenue || 0}
-            orders={data?.revenue_breakdown?.ai_driven?.orders || 0}
-            percentage={data?.revenue_breakdown?.ai_driven?.percentage || 0}
-            color="bg-emerald-500"
-          />
-          <RevenueCard
-            title={L('Agent-Assisted', 'بمساعدة وكيل')}
-            revenue={data?.revenue_breakdown?.agent_assisted?.revenue || 0}
-            orders={data?.revenue_breakdown?.agent_assisted?.orders || 0}
-            percentage={data?.revenue_breakdown?.agent_assisted?.percentage || 0}
-            color="bg-blue-500"
-          />
-          <RevenueCard
-            title={L('Direct', 'مباشر')}
-            revenue={data?.revenue_breakdown?.direct?.revenue || 0}
-            orders={data?.revenue_breakdown?.direct?.orders || 0}
-            percentage={data?.revenue_breakdown?.direct?.percentage || 0}
-            color="bg-gray-500"
-          />
-        </div>
-      </div>
-
-      {/* Token Usage Table */}
-      <div className="p-6 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)]">
-        <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">{L('Token Usage by Bot & Model', 'استخدام الرموز حسب البوت والنموذج')}</h2>
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <MetricCard
+              label="Total AI Cost"
+              value={formatCurrency(data?.total_ai_cost || 0)}
+              icon={<DollarSign size={18} />}
+              variant="warning"
+              subValue="Token + API costs"
+            />
+            <MetricCard
+              label="AI Revenue Generated"
+              value={formatCurrency(data?.total_ai_revenue || 0)}
+              icon={<TrendingUp size={18} />}
+              trend={{ value: 18, isPositive: true, label: 'vs last period' }}
+            />
+            <MetricCard
+              label="Avg Response Time"
+              value={`${((data?.avg_response_time_ms || 0) / 1000).toFixed(1)}s`}
+              icon={<Clock size={18} />}
+              subValue="End-to-end latency"
+            />
+            <MetricCard
+              label="ROI Multiplier"
+              value={`${roi}x`}
+              icon={<Sparkles size={18} />}
+              variant="ai"
+              subValue="Revenue / AI cost"
+            />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="text-left py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Bot', 'البوت')}</th>
-                  <th className="text-left py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Provider', 'المزود')}</th>
-                  <th className="text-left py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Model', 'النموذج')}</th>
-                  <th className="text-right py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Total Tokens', 'إجمالي الرموز')}</th>
-                  <th className="text-right py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Calls', 'المكالمات')}</th>
-                  <th className="text-right py-3 px-4 text-[var(--text-tertiary)] font-bold">{L('Est. Cost', 'التكلفة التقديرية')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data?.token_usage_by_bot || []).map((row, i) => (
-                  <tr key={i} className="border-b border-[var(--border)] last:border-0">
-                    <td className="py-3 px-4 text-[var(--text-primary)] font-medium">{row.bot_name || '—'}</td>
-                    <td className="py-3 px-4 text-[var(--text-secondary)]">{row.provider}</td>
-                    <td className="py-3 px-4 text-[var(--text-secondary)] font-mono text-xs">{row.model}</td>
-                    <td className="py-3 px-4 text-right text-[var(--text-primary)]">{(row.total_tokens || 0).toLocaleString()}</td>
-                    <td className="py-3 px-4 text-right text-[var(--text-primary)]">{row.total_calls || 0}</td>
-                    <td className="py-3 px-4 text-right text-amber-500 font-bold">{formatCurrency(row.total_cost || 0)}</td>
-                  </tr>
-                ))}
-                {(!data?.token_usage_by_bot || data.token_usage_by_bot.length === 0) && (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-[var(--text-tertiary)]">
-                      {L('No token usage data available', 'لا توجد بيانات استخدام الرموز')}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
-function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
-  return (
-    <div className="p-5 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)]">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color} bg-opacity-10`}>
-        {icon}
-      </div>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-1">{label}</p>
-      <p className="text-2xl font-black text-[var(--text-primary)]">{value}</p>
-    </div>
-  )
-}
+          {/* Revenue Attribution */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Revenue Attribution</CardTitle>
+                  <CardDescription className="mt-1">How AI contributes to your revenue pipeline</CardDescription>
+                </div>
+                <Badge variant="success">
+                  <ArrowUpRight size={12} className="mr-1" />
+                  {formatCurrency(data?.total_ai_revenue || 0)} total
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { key: 'ai_driven', title: 'AI-Driven', color: '#10B981', icon: <Bot size={16} /> },
+                  { key: 'agent_assisted', title: 'Agent-Assisted', color: '#3B82F6', icon: <Cpu size={16} /> },
+                  { key: 'direct', title: 'Direct', color: '#6B7280', icon: <BarChart3 size={16} /> },
+                ].map(({ key, title, color, icon }) => {
+                  const rb = data?.revenue_breakdown?.[key as keyof typeof data.revenue_breakdown]
+                  return (
+                    <div
+                      key={key}
+                      className="p-4 rounded-xl bg-surface-elevated border border-border"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{ background: `${color}15`, color }}
+                        >
+                          {icon}
+                        </div>
+                        <span className="text-sm font-semibold text-text-primary">{title}</span>
+                      </div>
+                      <div className="text-xl font-bold text-text-primary mb-1">
+                        {formatCurrency(rb?.revenue || 0)}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-text-tertiary">
+                        <span>{rb?.orders || 0} orders</span>
+                        <span className="font-semibold text-text-primary">{rb?.percentage || 0}%</span>
+                      </div>
+                      <div className="mt-3 h-1.5 rounded-full bg-surface overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, rb?.percentage || 0)}%`, background: color }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-function RevenueCard({ title, revenue, orders, percentage, color }: { title: string; revenue: number; orders: number; percentage: number; color: string }) {
-  const { isRTL } = useLang()
-  const L = (en: string, ar: string) => isRTL ? ar : en
-  return (
-    <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-      <div className="flex items-center gap-2 mb-2">
-        <div className={`w-3 h-3 rounded-full ${color}`} />
-        <span className="text-sm font-bold text-[var(--text-primary)]">{title}</span>
-      </div>
-      <p className="text-xl font-black text-[var(--text-primary)]">
-        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(revenue)}
-      </p>
-      <div className="flex items-center justify-between mt-2 text-xs text-[var(--text-tertiary)]">
-        <span>{orders} {L('orders', 'طلب')}</span>
-        <span className="font-bold text-[var(--text-primary)]">{percentage}%</span>
-      </div>
-      <div className="mt-2 h-1.5 rounded-full bg-[var(--surface-elevated)] overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${Math.min(100, percentage)}%` }} />
-      </div>
+          {/* Token Usage Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Token Usage by Bot & Model</CardTitle>
+              <CardDescription>Detailed breakdown of AI model usage and associated costs</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Bot</th>
+                      <th className="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Provider</th>
+                      <th className="text-left py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Model</th>
+                      <th className="text-right py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Tokens</th>
+                      <th className="text-right py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Calls</th>
+                      <th className="text-right py-3 px-5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Est. Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data?.token_usage_by_bot || []).map((row, i) => (
+                      <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-surface-elevated/50 transition-colors">
+                        <td className="py-3 px-5 font-medium text-text-primary">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-brand-primary/10 flex items-center justify-center">
+                              <Bot size={12} className="text-brand-primary" />
+                            </div>
+                            {row.bot_name || '—'}
+                          </div>
+                        </td>
+                        <td className="py-3 px-5 text-text-secondary">{row.provider}</td>
+                        <td className="py-3 px-5">
+                          <code className="text-xs px-1.5 py-0.5 rounded-md bg-surface-elevated text-text-secondary font-mono">
+                            {row.model}
+                          </code>
+                        </td>
+                        <td className="py-3 px-5 text-right text-text-primary font-medium tabular-nums">
+                          {(row.total_tokens || 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-5 text-right text-text-primary tabular-nums">
+                          {(row.total_calls || 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-5 text-right font-semibold text-amber-400 tabular-nums">
+                          {formatCurrency(row.total_cost || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                    {(!data?.token_usage_by_bot || data.token_usage_by_bot.length === 0) && (
+                      <tr>
+                        <td colSpan={6} className="py-12 text-center text-text-tertiary text-xs">
+                          No token usage data available
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 }

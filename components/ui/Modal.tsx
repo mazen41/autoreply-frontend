@@ -2,85 +2,120 @@
 
 import React, { useEffect } from 'react'
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean
   onClose: () => void
+  title?: React.ReactNode
+  description?: React.ReactNode
   children: React.ReactNode
-  title?: string
-  maxWidth?: number | string
+  footer?: React.ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+  className?: string
 }
 
-export default function Modal({ isOpen, onClose, children, title, maxWidth = 560 }: ModalProps) {
-  // Close on Escape key
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
+  size = 'md',
+  className = '',
+}: ModalProps) {
   useEffect(() => {
     if (!isOpen) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, onClose])
 
-  // Prevent body scroll when open
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [isOpen])
 
   if (!isOpen) return null
 
+  const sizeStyles = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    full: 'max-w-[96vw]',
+  }
+
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 50,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '16px',
-      }}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(2px)',
-        }}
+        aria-hidden="true"
       />
 
-      {/* Panel */}
+      {/* Dialog Window */}
       <div
-        style={{
-          position: 'relative', zIndex: 10,
-          width: '100%', maxWidth,
-          maxHeight: '90vh', overflowY: 'auto',
-          borderRadius: 16,
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
-        }}
+        role="dialog"
+        aria-modal="true"
+        className={`relative w-full ${sizeStyles[size]} bg-surface-overlay border border-border rounded-2xl shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
       >
-        {title && (
-          <div
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 20px',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {title}
-            </h2>
+        {(title || description) && (
+          <div className="px-6 pt-5 pb-4 border-b border-border/60 flex items-start justify-between gap-4">
+            <div>
+              {title && (
+                <h3 className="text-base font-semibold text-text-primary tracking-tight">
+                  {title}
+                </h3>
+              )}
+              {description && (
+                <p className="text-xs text-text-secondary mt-1 leading-relaxed">
+                  {description}
+                </p>
+              )}
+            </div>
+
             <button
+              type="button"
               onClick={onClose}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--text-secondary)', fontSize: 18, lineHeight: 1,
-                padding: '4px 6px', borderRadius: 6,
-              }}
+              className="text-text-tertiary hover:text-text-primary p-1 rounded-lg hover:bg-surface-elevated transition-colors"
+              aria-label="Close dialog"
             >
-              ✕
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
         )}
-        {children}
+
+        <div className="p-6 max-h-[calc(85vh-140px)] overflow-y-auto">
+          {children}
+        </div>
+
+        {footer && (
+          <div className="px-6 py-4 bg-surface-elevated/40 border-t border-border/60 flex items-center justify-end gap-2.5">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   )

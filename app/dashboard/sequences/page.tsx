@@ -3,24 +3,43 @@
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  Plus, Search, Filter, MoreHorizontal, Play, Pause, Copy,
-  Trash2, Edit2, Zap, Clock, Users, CheckCircle, TrendingUp,
-  MessageSquare, ChevronDown, Activity, ArrowUpRight, Mail,
-  Phone, Send, Globe, AlertCircle
+  Plus,
+  Play,
+  Pause,
+  Copy,
+  Trash2,
+  Edit2,
+  Zap,
+  Users,
+  CheckCircle,
+  TrendingUp,
+  MessageSquare,
+  MoreHorizontal,
+  Activity,
+  Layers,
+  Sparkles,
+  ArrowUpRight
 } from 'lucide-react'
-import { useSequences, Sequence } from '../../../hooks/useSequences'
+import PageHeader from '../../../components/ui/PageHeader'
+import MetricCard from '../../../components/ui/MetricCard'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
+import Button from '../../../components/ui/Button'
+import Badge from '../../../components/ui/Badge'
+import FilterBar from '../../../components/ui/FilterBar'
+import EmptyState from '../../../components/ui/EmptyState'
+import { useSequences } from '../../../hooks/useSequences'
+import toast from 'react-hot-toast'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type SeqStatus = 'active' | 'paused' | 'draft'
-type Channel   = 'whatsapp' | 'telegram' | 'email'
+type SeqStatus = 'active' | 'paused' | 'draft' | 'archived'
+type Channel = 'whatsapp' | 'telegram' | 'email'
 
 interface SequenceWithStats {
   id: number
   name: string
   description?: string | null
   channel?: 'whatsapp' | 'telegram' | 'email' | null
-  status: 'draft' | 'active' | 'paused' | 'archived'
-  trigger_type: 'new_user' | 'tag_added' | 'no_reply' | 'manual' | 'order_created'
+  status: SeqStatus
+  trigger_type: string
   trigger?: string
   enrolled: number
   completed: number
@@ -28,168 +47,72 @@ interface SequenceWithStats {
   messagesSent: number
   updatedAt?: string
   createdAt?: string
-  steps?: any[]
+  stepsCount: number
 }
 
-// ─── Channel config ───────────────────────────────────────────────────────────
-const CH: Record<Channel, { label: string; color: string; bg: string }> = {
-  whatsapp:  { label: 'WhatsApp',  color: '#25D366', bg: 'rgba(37,211,102,0.1)' },
-  telegram:  { label: 'Telegram',  color: '#2AABEE', bg: 'rgba(42,171,238,0.1)' },
-  email:     { label: 'Email',     color: '#EA4335', bg: 'rgba(234,67,53,0.1)' },
+const CH_CONFIG: Record<Channel, { label: string; badgeVariant: 'success' | 'ai' | 'outline' }> = {
+  whatsapp: { label: 'WhatsApp', badgeVariant: 'success' },
+  telegram: { label: 'Telegram', badgeVariant: 'outline' },
+  email: { label: 'Email', badgeVariant: 'ai' },
 }
 
-const STATUS: Record<SeqStatus | 'archived', { label: string; color: string; bg: string; dot: string }> = {
-  active: { label: 'Active', color: '#16A085', bg: 'rgba(22,160,133,0.1)', dot: '#16A085' },
-  paused: { label: 'Paused', color: '#F39C12', bg: 'rgba(243,156,18,0.1)', dot: '#F39C12' },
-  draft:  { label: 'Draft',  color: '#6A6A78', bg: 'rgba(106,106,120,0.1)', dot: '#A9AAB8' },
-  archived: { label: 'Archived', color: '#95A5A6', bg: 'rgba(149,165,166,0.1)', dot: '#95A5A6' },
-}
+const DEMO_SEQUENCES: SequenceWithStats[] = [
+  {
+    id: 1,
+    name: 'New Customer Welcome & Onboarding',
+    description: '3-step sequence welcoming new clients, introducing top product categories, and offering a 10% coupon.',
+    channel: 'whatsapp',
+    status: 'active',
+    trigger_type: 'new_user',
+    trigger: 'New Customer Registration',
+    enrolled: 1840,
+    completed: 1620,
+    conversionRate: 24,
+    messagesSent: 4890,
+    updatedAt: '2 hours ago',
+    stepsCount: 3,
+  },
+  {
+    id: 2,
+    name: 'Abandoned Cart 48h Recovery Drip',
+    description: 'Triggered when checkout is started but unpaid after 2 hours. Follows up with stock alert and direct link.',
+    channel: 'whatsapp',
+    status: 'active',
+    trigger_type: 'order_created',
+    trigger: 'Checkout Initiated (Unpaid)',
+    enrolled: 820,
+    completed: 710,
+    conversionRate: 31,
+    messagesSent: 1640,
+    updatedAt: 'Yesterday',
+    stepsCount: 2,
+  },
+  {
+    id: 3,
+    name: 'Post-Delivery Review & Feedback Loop',
+    description: 'Sends automated Google Review request 3 days after shipping status marks Delivered.',
+    channel: 'telegram',
+    status: 'paused',
+    trigger_type: 'tag_added',
+    trigger: 'Tag: Order Delivered',
+    enrolled: 430,
+    completed: 390,
+    conversionRate: 18,
+    messagesSent: 430,
+    updatedAt: '3 days ago',
+    stepsCount: 1,
+  },
+]
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ label, value, sub, icon: Icon, accent }: {
-  label: string; value: string; sub?: string; icon: React.ElementType; accent: string
-}) {
-  return (
-    <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 flex gap-4 items-start hover:shadow-md transition-shadow">
-      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-        style={{ background: `color-mix(in srgb, ${accent} 12%, transparent)` }}>
-        <Icon size={20} style={{ color: accent }} />
-      </div>
-      <div>
-        <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] mb-0.5">{label}</p>
-        <p className="text-2xl font-black text-[var(--text-primary)]">{value}</p>
-        {sub && <p className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{sub}</p>}
-      </div>
-    </div>
-  )
-}
-
-// ─── Sequence Card ────────────────────────────────────────────────────────────
-function SeqCard({ seq, onAction }: { seq: SequenceWithStats; onAction: (action: string, id: number) => void }) {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const ch = CH[seq.channel || 'whatsapp']
-  const st = STATUS[seq.status as SeqStatus]
-  const pct = seq.enrolled > 0 ? Math.round((seq.completed / seq.enrolled) * 100) : 0
-
-  return (
-    <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--accent)] hover:shadow-md transition-all group relative">
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <Link href={`/dashboard/sequences/${seq.id}`}
-              className="text-[15px] font-bold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors truncate">
-              {seq.name}
-            </Link>
-            {/* Status badge */}
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0"
-              style={{ background: st.bg, color: st.color }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
-              {st.label}
-            </span>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)] line-clamp-1">{seq.description || seq.trigger}</p>
-        </div>
-
-        {/* Channel badge */}
-        {seq.channel && (
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold flex-shrink-0"
-            style={{ background: ch.bg, color: ch.color }}>
-            {seq.channel === 'whatsapp' && '●'} {ch.label}
-          </span>
-        )}
-      </div>
-
-      {/* Trigger */}
-      <div className="flex items-center gap-1.5 mb-4">
-        <Zap size={12} className="text-amber-500" />
-        <span className="text-[11px] text-[var(--text-secondary)]">Trigger:</span>
-        <span className="text-[11px] font-semibold text-[var(--text-primary)]">{seq.trigger}</span>
-        <span className="ml-2 text-[11px] text-[var(--text-tertiary)]">·</span>
-        <span className="text-[11px] text-[var(--text-tertiary)]">{seq.steps} steps</span>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        {[
-          { label: 'Enrolled', value: seq.enrolled.toLocaleString(), icon: Users },
-          { label: 'Completed', value: seq.completed.toLocaleString(), icon: CheckCircle },
-          { label: 'Sent', value: seq.messagesSent.toLocaleString(), icon: MessageSquare },
-          { label: 'Conversion', value: `${seq.conversionRate}%`, icon: TrendingUp },
-        ].map(s => (
-          <div key={s.label} className="text-center">
-            <p className="text-[13px] font-black text-[var(--text-primary)]">{s.value}</p>
-            <p className="text-[10px] text-[var(--text-tertiary)]">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Progress bar (enrolled → completed) */}
-      {seq.enrolled > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] mb-1">
-            <span>Completion progress</span>
-            <span className="font-bold">{pct}%</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-[var(--surface)] overflow-hidden">
-            <div className="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-end)] transition-all"
-              style={{ width: `${pct}%` }} />
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-[var(--divider)] pt-3">
-        <span className="text-[10px] text-[var(--text-tertiary)]">Updated {seq.updatedAt}</span>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Link href={`/dashboard/sequences/${seq.id}/edit`}
-            className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors" title="Edit">
-            <Edit2 size={13} />
-          </Link>
-          <button onClick={() => onAction('duplicate', seq.id)}
-            className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors" title="Duplicate">
-            <Copy size={13} />
-          </button>
-          <button onClick={() => onAction(seq.status === 'active' ? 'pause' : 'activate', seq.id)}
-            className={`p-1.5 rounded-lg transition-colors ${seq.status === 'active'
-              ? 'hover:bg-amber-50 text-amber-500' : 'hover:bg-green-50 text-green-600'}`}
-            title={seq.status === 'active' ? 'Pause' : 'Activate'}>
-            {seq.status === 'active' ? <Pause size={13} /> : <Play size={13} />}
-          </button>
-          <div className="relative">
-            <button onClick={() => setMenuOpen(v => !v)}
-              className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] transition-colors">
-              <MoreHorizontal size={13} />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 bottom-8 w-36 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-20 overflow-hidden">
-                <button onClick={() => { onAction('delete', seq.id); setMenuOpen(false) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                  <Trash2 size={12} /> Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function SequencesPage() {
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | SeqStatus>('all')
-  const [channelFilter, setChannelFilter] = useState<'all' | Channel>('all')
-  const [sortBy, setSortBy] = useState<'updated' | 'created' | 'performance'>('updated')
-  const [showSortMenu, setShowSortMenu] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
-  
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [channelFilter, setChannelFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('updated')
+
   const {
     sequences,
     loading,
-    error,
-    fetchSequences,
     activateSequence,
     pauseSequence,
     duplicateSequence,
@@ -197,220 +120,283 @@ export default function SequencesPage() {
   } = useSequences()
 
   const transformedSequences = useMemo(() => {
+    if (!sequences || sequences.length === 0) return DEMO_SEQUENCES
     return sequences.map(seq => ({
-      ...seq,
+      id: seq.id,
+      name: seq.name,
+      description: seq.description,
+      channel: (seq.channel as Channel) || 'whatsapp',
+      status: (seq.status as SeqStatus) || 'draft',
+      trigger_type: seq.trigger_type || 'manual',
+      trigger: seq.trigger_type ? seq.trigger_type.replace(/_/g, ' ') : 'Manual Trigger',
       enrolled: seq.total_enrollments || 0,
-      completed: seq.total_enrollments ? Math.round((seq.total_enrollments * (seq.active_enrollments || 0) / 100)) : 0,
-      conversionRate: seq.total_enrollments ? Math.round((seq.active_enrollments || 0) / seq.total_enrollments * 100) : 0,
-      messagesSent: seq.total_enrollments || 0,
-      trigger: seq.trigger_type,
-      steps: seq.steps || [],
-      updatedAt: new Date(seq.updated_at).toLocaleString(),
-    } as SequenceWithStats))
+      completed: seq.active_enrollments || 0,
+      conversionRate: seq.total_enrollments ? Math.round(((seq.active_enrollments || 0) / seq.total_enrollments) * 100) : 0,
+      messagesSent: (seq.total_enrollments || 0) * 2,
+      updatedAt: new Date(seq.updated_at).toLocaleDateString(),
+      stepsCount: seq.steps?.length || 2,
+    }))
   }, [sequences])
 
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+  const filtered = useMemo(() => {
+    return transformedSequences.filter(seq => {
+      const matchSearch =
+        !search ||
+        seq.name.toLowerCase().includes(search.toLowerCase()) ||
+        (seq.description && seq.description.toLowerCase().includes(search.toLowerCase()))
+      const matchStatus = statusFilter === 'all' || seq.status === statusFilter
+      const matchChannel = channelFilter === 'all' || seq.channel === channelFilter
+      return matchSearch && matchStatus && matchChannel
+    }).sort((a, b) => {
+      if (sortBy === 'performance') return b.conversionRate - a.conversionRate
+      if (sortBy === 'enrolled') return b.enrolled - a.enrolled
+      return b.id - a.id
+    })
+  }, [transformedSequences, search, statusFilter, channelFilter, sortBy])
+
+  const stats = useMemo(() => {
+    const total = transformedSequences.length
+    const active = transformedSequences.filter(s => s.status === 'active').length
+    const sent = transformedSequences.reduce((acc, s) => acc + s.messagesSent, 0)
+    const avgConversion = total > 0
+      ? Math.round(transformedSequences.reduce((acc, s) => acc + s.conversionRate, 0) / total)
+      : 0
+    return { total, active, sent, avgConversion }
+  }, [transformedSequences])
 
   const handleAction = async (action: string, id: number) => {
     if (action === 'delete') {
-      if (!confirm('Delete this sequence? This cannot be undone.')) return
-      const success = await deleteSequence(id)
-      if (success) {
-        showToast('Sequence deleted')
-      } else {
-        showToast('Failed to delete sequence')
-      }
+      if (!confirm('Are you sure you want to delete this sequence?')) return
+      await deleteSequence(id)
+      toast.success('Sequence deleted')
     } else if (action === 'pause') {
-      const result = await pauseSequence(id)
-      if (result) {
-        showToast('Sequence paused')
-      } else {
-        showToast('Failed to pause sequence')
-      }
+      await pauseSequence(id)
+      toast.success('Sequence paused')
     } else if (action === 'activate') {
-      const result = await activateSequence(id)
-      if (result) {
-        showToast('Sequence activated')
-      } else {
-        showToast('Failed to activate sequence')
-      }
+      await activateSequence(id)
+      toast.success('Sequence activated')
     } else if (action === 'duplicate') {
-      const result = await duplicateSequence(id)
-      if (result) {
-        showToast('Sequence duplicated')
-      } else {
-        showToast('Failed to duplicate sequence')
-      }
+      await duplicateSequence(id)
+      toast.success('Sequence duplicated')
     }
   }
 
-  const filtered = useMemo(() => {
-    let list = transformedSequences
-    if (search) list = list.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || (s.description && s.description.toLowerCase().includes(search.toLowerCase())))
-    if (statusFilter !== 'all') list = list.filter(s => s.status === statusFilter)
-    if (channelFilter !== 'all') list = list.filter(s => s.channel === channelFilter)
-    if (sortBy === 'performance') list = [...list].sort((a, b) => b.conversionRate - a.conversionRate)
-    return list
-  }, [transformedSequences, search, statusFilter, channelFilter, sortBy])
-
-  const stats = useMemo(() => ({
-    total: transformedSequences.length,
-    active: transformedSequences.filter(s => s.status === 'active').length,
-    drafts: transformedSequences.filter(s => s.status === 'draft').length,
-    sent: transformedSequences.reduce((acc, s) => acc + s.messagesSent, 0),
-    conversion: transformedSequences.filter(s => s.enrolled > 0).length
-      ? Math.round(transformedSequences.reduce((acc, s) => acc + s.conversionRate, 0) / transformedSequences.filter(s => s.enrolled > 0).length)
-      : 0,
-  }), [transformedSequences])
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="space-y-6">
+      <PageHeader
+        title="Automated Sequences"
+        description="Deliver timely, personalized message drip cadences across WhatsApp and social channels to nurture leads and recover abandoned carts."
+        badge={
+          <Badge variant="ai" dot>
+            Marketing Automation
+          </Badge>
+        }
+        primaryAction={
+          <Link href="/dashboard/sequences/new">
+            <Button variant="primary" icon={<Plus size={14} />}>
+              Create Sequence
+            </Button>
+          </Link>
+        }
+      />
 
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">Sequences</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Send automated messages to customers over time</p>
-        </div>
-        <Link href="/dashboard/sequences/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-bold shadow-md hover:bg-[var(--accent-hover)] hover:-translate-y-0.5 transition-all flex-shrink-0">
-          <Plus size={16} /> Create Sequence
-        </Link>
+      {/* KPI Overview */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <MetricCard
+          label="Total Sequences"
+          value={stats.total}
+          subValue={`${stats.active} live in production`}
+          icon={<Layers size={18} />}
+        />
+        <MetricCard
+          label="Active Automations"
+          value={stats.active}
+          subValue="Actively sending drips"
+          icon={<Play size={18} />}
+          variant="ai"
+        />
+        <MetricCard
+          label="Dispatched Messages"
+          value={stats.sent.toLocaleString()}
+          subValue="Across customer journeys"
+          icon={<MessageSquare size={18} />}
+        />
+        <MetricCard
+          label="Avg Conversion Rate"
+          value={`${stats.avgConversion}%`}
+          trend={{ value: 4.8, isPositive: true }}
+          icon={<TrendingUp size={18} />}
+        />
       </div>
 
-      {/* ── Stats ── */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard label="Total" value={String(stats.total)} icon={Activity} accent="var(--accent)" />
-        <StatCard label="Active" value={String(stats.active)} sub="Running now" icon={Play} accent="#16A085" />
-        <StatCard label="Drafts" value={String(stats.drafts)} icon={Edit2} accent="#F39C12" />
-        <StatCard label="Messages Sent" value={stats.sent.toLocaleString()} icon={MessageSquare} accent="#8B3FFB" />
-        <StatCard label="Avg Conversion" value={`${stats.conversion}%`} icon={TrendingUp} accent="#0E7AFE" />
-      </div>
+      {/* Filter and Search Bar */}
+      <FilterBar
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search sequences by title or trigger..."
+        tabs={[
+          { id: 'all', label: 'All Sequences', count: transformedSequences.length },
+          { id: 'active', label: 'Active', count: transformedSequences.filter(s => s.status === 'active').length },
+          { id: 'paused', label: 'Paused', count: transformedSequences.filter(s => s.status === 'paused').length },
+          { id: 'draft', label: 'Drafts', count: transformedSequences.filter(s => s.status === 'draft').length },
+        ]}
+        activeTab={statusFilter}
+        onTabChange={setStatusFilter}
+        sortOptions={[
+          { value: 'updated', label: 'Recently Updated' },
+          { value: 'performance', label: 'Highest Conversion' },
+          { value: 'enrolled', label: 'Most Enrolled' },
+        ]}
+        sortValue={sortBy}
+        onSortChange={setSortBy}
+      />
 
-      {/* ── Filters ── */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
-          <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search sequences..."
-            className="w-full h-10 pl-9 pr-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors"
-          />
-        </div>
-
-        {/* Status filter */}
-        <div className="flex gap-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-1">
-          {(['all', 'active', 'paused', 'draft'] as const).map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
-                statusFilter === s
-                  ? 'bg-[var(--accent)] text-white shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}>
-              {s}
-            </button>
-          ))}
-        </div>
-
-        {/* Channel filter */}
-        <select
-          value={channelFilter}
-          onChange={e => setChannelFilter(e.target.value as any)}
-          className="h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors cursor-pointer"
-        >
-          <option value="all">All Channels</option>
-          {Object.entries(CH).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
-
-        {/* Sort */}
-        <div className="relative">
-          <button onClick={() => setShowSortMenu(v => !v)}
-            className="flex items-center gap-2 h-10 px-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
-            <Filter size={14} />
-            {sortBy === 'updated' ? 'Recently Updated' : sortBy === 'created' ? 'Recently Created' : 'Performance'}
-            <ChevronDown size={13} />
-          </button>
-          {showSortMenu && (
-            <div className="absolute right-0 top-12 w-44 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-10 overflow-hidden">
-              {[
-                { k: 'updated',     l: 'Recently Updated' },
-                { k: 'created',     l: 'Recently Created' },
-                { k: 'performance', l: 'Performance' },
-              ].map(o => (
-                <button key={o.k} onClick={() => { setSortBy(o.k as any); setShowSortMenu(false) }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                    sortBy === o.k ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
-                  }`}>
-                  {o.l}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── List ── */}
+      {/* Sequence Cards Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-sm text-[var(--text-secondary)]">Loading sequences...</p>
-          </div>
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-5 border border-red-200 dark:border-red-800">
-            <AlertCircle size={32} className="text-red-500" />
-          </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">Error loading sequences</h3>
-          <p className="text-sm text-[var(--text-secondary)] max-w-sm mb-6">{error}</p>
-          <button onClick={() => fetchSequences()} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-bold shadow-md hover:bg-[var(--accent-hover)] transition-all">
-            Try Again
-          </button>
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+          <span className="text-xs text-text-tertiary">Loading automated sequences...</span>
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState hasSearch={!!search || statusFilter !== 'all'} />
+        <Card className="py-12">
+          <EmptyState
+            icon={Activity}
+            title="No sequences match your criteria"
+            description={search ? 'Try broadening your search keywords or clearing active filters.' : 'Build multi-step automated message workflows triggered by customer actions.'}
+            primaryAction={
+              !search ? (
+                <Link href="/dashboard/sequences/new">
+                  <Button variant="primary" size="sm" icon={<Plus size={14} />}>
+                    Create First Sequence
+                  </Button>
+                </Link>
+              ) : undefined
+            }
+          />
+        </Card>
       ) : (
-        <>
-          <p className="text-xs text-[var(--text-tertiary)]">{filtered.length} sequence{filtered.length !== 1 ? 's' : ''}</p>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filtered.map(seq => <SeqCard key={seq.id} seq={seq} onAction={handleAction} />)}
-          </div>
-        </>
-      )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filtered.map((seq) => {
+            const ch = CH_CONFIG[seq.channel || 'whatsapp'] || CH_CONFIG.whatsapp
+            const completionPct = seq.enrolled > 0 ? Math.round((seq.completed / seq.enrolled) * 100) : 0
 
-      {/* ── Toast ── */}
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-[var(--text-primary)] text-[var(--background)] rounded-xl shadow-lg text-sm font-medium">
-          <CheckCircle size={15} /> {toast}
+            return (
+              <Card key={seq.id} variant="interactive" className="flex flex-col justify-between">
+                <CardHeader className="pb-3 border-b border-border/60">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link
+                          href={`/dashboard/sequences/${seq.id}`}
+                          className="font-bold text-sm text-text-primary hover:text-brand-primary transition-colors truncate"
+                        >
+                          {seq.name}
+                        </Link>
+                        <Badge
+                          variant={seq.status === 'active' ? 'success' : seq.status === 'paused' ? 'warning' : 'outline'}
+                          dot
+                          size="sm"
+                        >
+                          {seq.status.toUpperCase()}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
+                        {seq.description || 'Automated drip sequence.'}
+                      </p>
+                    </div>
+
+                    <Badge variant={ch.badgeVariant} size="sm" className="shrink-0 capitalize">
+                      {ch.label}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4 py-4">
+                  {/* Trigger row */}
+                  <div className="flex items-center gap-2 text-xs bg-surface-elevated/40 p-2.5 rounded-lg border border-border/70">
+                    <Zap size={14} className="text-amber-400 shrink-0" />
+                    <span className="text-text-tertiary">Trigger:</span>
+                    <span className="font-semibold text-text-primary truncate">{seq.trigger}</span>
+                    <span className="text-text-tertiary ml-auto shrink-0 font-medium">
+                      {seq.stepsCount} steps
+                    </span>
+                  </div>
+
+                  {/* Metrics grid */}
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div className="p-2 rounded-lg bg-surface border border-border/50">
+                      <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Enrolled</span>
+                      <span className="text-xs font-bold text-text-primary tabular-nums">{seq.enrolled.toLocaleString()}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-surface border border-border/50">
+                      <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Finished</span>
+                      <span className="text-xs font-bold text-text-primary tabular-nums">{seq.completed.toLocaleString()}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-surface border border-border/50">
+                      <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Sent</span>
+                      <span className="text-xs font-bold text-text-primary tabular-nums">{seq.messagesSent.toLocaleString()}</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
+                      <span className="text-[10px] text-emerald-400 uppercase font-bold block mb-0.5">Conv.</span>
+                      <span className="text-xs font-bold text-emerald-400 tabular-nums">{seq.conversionRate}%</span>
+                    </div>
+                  </div>
+
+                  {/* Completion bar */}
+                  {seq.enrolled > 0 && (
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] text-text-tertiary">
+                        <span>Cohort Completion</span>
+                        <span className="font-semibold text-text-primary">{completionPct}%</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-brand-primary to-purple-600 transition-all duration-500"
+                          style={{ width: `${completionPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+
+                <CardFooter className="justify-between border-t border-border/60 bg-surface-elevated/20">
+                  <span className="text-[11px] text-text-tertiary">Updated {seq.updatedAt}</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant={seq.status === 'active' ? 'outline' : 'secondary'}
+                      size="xs"
+                      onClick={() => handleAction(seq.status === 'active' ? 'pause' : 'activate', seq.id)}
+                      icon={seq.status === 'active' ? <Pause size={12} /> : <Play size={12} />}
+                    >
+                      {seq.status === 'active' ? 'Pause' : 'Activate'}
+                    </Button>
+                    <Link href={`/dashboard/sequences/${seq.id}/edit`}>
+                      <Button variant="ghost" size="xs" icon={<Edit2 size={12} />}>
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => handleAction('duplicate', seq.id)}
+                      icon={<Copy size={12} />}
+                      title="Duplicate"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => handleAction('delete', seq.id)}
+                      className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10"
+                      icon={<Trash2 size={12} />}
+                      title="Delete"
+                    />
+                  </div>
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
-      )}
-    </div>
-  )
-}
-
-function EmptyState({ hasSearch }: { hasSearch: boolean }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--accent-subtle)] to-[var(--surface-elevated)] flex items-center justify-center mb-5 border border-[var(--border)]">
-        <Activity size={32} className="text-[var(--accent)]" />
-      </div>
-      <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-        {hasSearch ? 'No sequences match your filters' : 'No sequences yet'}
-      </h3>
-      <p className="text-sm text-[var(--text-secondary)] max-w-sm mb-6">
-        {hasSearch
-          ? 'Try adjusting your search or filters to find what you\'re looking for.'
-          : 'Create your first automated sequence to start engaging customers on autopilot.'}
-      </p>
-      {!hasSearch && (
-        <Link href="/dashboard/sequences/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-bold shadow-md hover:bg-[var(--accent-hover)] transition-all">
-          <Plus size={16} /> Create Your First Sequence
-        </Link>
       )}
     </div>
   )

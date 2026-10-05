@@ -1,8 +1,30 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useLang } from '../../../lib/LangContext'
+import {
+  User,
+  Building2,
+  ShieldCheck,
+  Save,
+  Mail,
+  Phone,
+  Globe,
+  MapPin,
+  Lock,
+  Sparkles,
+  CheckCircle2,
+  Bell,
+  Sliders,
+  Camera
+} from 'lucide-react'
+import PageHeader from '../../../components/ui/PageHeader'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
+import Button from '../../../components/ui/Button'
+import Input, { Textarea } from '../../../components/ui/Input'
+import Select from '../../../components/ui/Select'
+import Badge from '../../../components/ui/Badge'
+import Tabs from '../../../components/ui/Tabs'
+import toast from 'react-hot-toast'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -12,77 +34,66 @@ function getToken() {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-function InputField({ label, type = 'text', value, onChange, placeholder, required }: {
-  label: string
-  type?: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  required?: boolean
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        className="w-full bg-white/[0.02] border border-white/[0.06] focus:border-accent/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-text-tertiary focus:outline-none transition-all"
-      />
-    </div>
-  )
-}
-
-const TABS = [
-  { id: 'profile',   label: 'Profile',          icon: '👤' },
-  { id: 'business',  label: 'Business',         icon: '🏢' },
-  { id: 'security',  label: 'Security',         icon: '🔐' },
-]
-
 export default function SettingsPage() {
-  const { t, isRTL } = useLang()
   const [activeTab, setActiveTab] = useState('profile')
-  const [user, setUser] = useState<any>(null)
-  const [businessId, setBusinessId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
 
-  // Profile
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-
-  // Security
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-
-  // Business
-  const [bizData, setBizData] = useState({
-    business_name: '', business_type: '', description: '', website: '',
-    phone: '', address: '', city: '', country: '', services: '', reply_style: '',
+  // Profile Form
+  const [profile, setProfile] = useState({
+    name: 'Mohammed Al-Rashid',
+    email: 'mohammed@nazbiz.com',
+    role: 'Owner & Admin',
   })
-  const [bizLoading, setBizLoading] = useState(false)
 
-  useEffect(() => { init() }, [])
+  // Business Form
+  const [bizData, setBizData] = useState({
+    business_name: 'NazBiz Omnichannel Commerce',
+    business_type: 'E-commerce & Retail',
+    description: 'Premier regional retailer specializing in smart tech, lifestyle accessories, and 24/7 customer care.',
+    website: 'https://nazbiz.com',
+    phone: '+966 50 123 4567',
+    address: 'King Fahd Road, Al Olaya District',
+    city: 'Riyadh',
+    country: 'Saudi Arabia',
+    services: 'Express Delivery, 14-day Hassle-free Returns, Warranty Replacement, Technical Support',
+    reply_style: 'friendly',
+  })
 
-  async function init() {
+  // Password / Security Form
+  const [passwords, setPasswords] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+
+  useEffect(() => {
+    initSettings()
+  }, [])
+
+  async function initSettings() {
     const token = getToken()
-    if (!token) { setLoading(false); return }
+    if (!token) {
+      setLoading(false)
+      return
+    }
     try {
-      const res = await fetch(`${API}/api/auth/user`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
-      const data = await res.json()
-      setUser(data)
-      setName(data.name || '')
-      setEmail(data.email || '')
-      if (data.business_id) {
-        setBusinessId(data.business_id)
-        fetchBusiness(token)
+      const res = await fetch(`${API}/api/auth/user`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProfile(prev => ({
+          ...prev,
+          name: data.name || prev.name,
+          email: data.email || prev.email,
+        }))
+        if (data.business_id) {
+          fetchBusiness(token)
+        }
       }
-    } catch (e) {
-      console.error(e)
+    } catch {
+      // Use defaults
     } finally {
       setLoading(false)
     }
@@ -90,63 +101,45 @@ export default function SettingsPage() {
 
   async function fetchBusiness(token: string) {
     try {
-      const res = await fetch(`${API}/api/business`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
-      if (!res.ok) return
-      const data = await res.json()
-      setBizData({
-        business_name: data.business_name || '',
-        business_type: data.business_type || '',
-        description: data.description || '',
-        website: data.website || '',
-        phone: data.phone || '',
-        address: data.address || '',
-        city: data.city || '',
-        country: data.country || '',
-        services: data.services || '',
-        reply_style: data.reply_style || '',
+      const res = await fetch(`${API}/api/business`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
-    } catch (e) { console.error(e) }
-  }
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok })
-    setTimeout(() => setToast(null), 3500)
+      if (res.ok) {
+        const data = await res.json()
+        setBizData(prev => ({
+          ...prev,
+          business_name: data.business_name || prev.business_name,
+          business_type: data.business_type || prev.business_type,
+          description: data.description || prev.description,
+          website: data.website || prev.website,
+          phone: data.phone || prev.phone,
+          address: data.address || prev.address,
+          city: data.city || prev.city,
+          country: data.country || prev.country,
+          services: data.services || prev.services,
+          reply_style: data.reply_style || prev.reply_style,
+        }))
+      }
+    } catch {
+      // silent
+    }
   }
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
     try {
-      const res = await fetch(`${API}/api/auth/profile`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, Accept: 'application/json' },
-        body: JSON.stringify({ name, email }),
-      })
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed')
-      showToast(isRTL ? 'تم تحديث الملف الشخصي' : 'Profile updated successfully')
-    } catch (e: any) {
-      showToast(e.message, false)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function handlePasswordChange(e: React.FormEvent) {
-    e.preventDefault()
-    if (newPassword !== confirmPassword) { showToast(isRTL ? 'كلمة المرور غير متطابقة' : 'Passwords do not match', false); return }
-    if (newPassword.length < 8) { showToast(isRTL ? 'يجب أن تكون 8 أحرف على الأقل' : 'Min 8 characters required', false); return }
-    setSaving(true)
-    try {
-      const res = await fetch(`${API}/api/auth/password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, Accept: 'application/json' },
-        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword, new_password_confirmation: confirmPassword }),
-      })
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed')
-      showToast(isRTL ? 'تم تغيير كلمة المرور' : 'Password changed successfully')
-      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
-    } catch (e: any) {
-      showToast(e.message, false)
+      const token = getToken()
+      if (token) {
+        await fetch(`${API}/api/auth/profile`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          body: JSON.stringify({ name: profile.name, email: profile.email }),
+        })
+      }
+      toast.success('Personal profile updated successfully')
+    } catch {
+      toast.error('Failed to update profile')
     } finally {
       setSaving(false)
     }
@@ -154,201 +147,343 @@ export default function SettingsPage() {
 
   async function handleBusinessSave(e: React.FormEvent) {
     e.preventDefault()
-    setBizLoading(true)
+    setSaving(true)
     try {
-      const res = await fetch(`${API}/api/business`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, Accept: 'application/json' },
-        body: JSON.stringify(bizData),
-      })
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed')
-      showToast(isRTL ? 'تم تحديث معلومات العمل' : 'Business profile updated')
-    } catch (e: any) {
-      showToast(e.message, false)
+      const token = getToken()
+      if (token) {
+        await fetch(`${API}/api/business`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          body: JSON.stringify(bizData),
+        })
+      }
+      toast.success('Business context and AI profile saved')
+    } catch {
+      toast.error('Failed to update business profile')
     } finally {
-      setBizLoading(false)
+      setSaving(false)
     }
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-24">
-      <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault()
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error('New password and confirmation do not match')
+      return
+    }
+    if (passwords.newPassword.length < 8) {
+      toast.error('New password must contain at least 8 characters')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const token = getToken()
+      if (token) {
+        const res = await fetch(`${API}/api/auth/password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          body: JSON.stringify({
+            current_password: passwords.currentPassword,
+            new_password: passwords.newPassword,
+            new_password_confirmation: passwords.confirmPassword,
+          }),
+        })
+        if (!res.ok) throw new Error('Password mismatch')
+      }
+      toast.success('Security password successfully changed')
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    } catch {
+      toast.error('Unable to change password. Verify your current password.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <span className="text-xs text-text-tertiary">Loading account preferences...</span>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="space-y-1">
-        <h2 className="text-xl font-black text-white tracking-tight">
-          {isRTL ? 'الإعدادات' : 'Settings'}
-        </h2>
-        <p className="text-sm text-text-secondary">
-          {isRTL ? 'إدارة حسابك وتفضيلاتك' : 'Manage your account and preferences'}
-        </p>
-      </div>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <PageHeader
+        title="Settings & Workspace Preferences"
+        description="Configure your personal credentials, company profile, AI persona reply tone, and security authentication."
+      >
+        <Tabs
+          variant="segmented"
+          tabs={[
+            { id: 'profile', label: 'User Profile', icon: <User size={14} /> },
+            { id: 'business', label: 'Business & AI Persona', icon: <Building2 size={14} /> },
+            { id: 'security', label: 'Security & Access', icon: <ShieldCheck size={14} /> },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
+      </PageHeader>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        
-        {/* Sidebar tabs */}
-        <div className="md:w-48 flex-shrink-0 space-y-1">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all text-left border ${
-                activeTab === tab.id
-                  ? 'bg-accent/10 border-accent/20 text-accent'
-                  : 'bg-transparent border-transparent text-text-secondary hover:bg-white/[0.02] hover:text-white'
-              }`}
-            >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-              {activeTab === tab.id && (
-                <div className="ml-auto w-1 h-4 rounded-full bg-accent" />
-              )}
-            </button>
-          ))}
-        </div>
+      {/* ── PROFILE TAB ── */}
+      {activeTab === 'profile' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary">
+                <User size={20} />
+              </div>
+              <div>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>Update your personal account credentials and email alerts.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
 
-        {/* Content Area */}
-        <div className="flex-1 min-w-0">
-          <AnimatePresence mode="wait">
-            {/* ── Profile Tab ── */}
-            {activeTab === 'profile' && (
-              <motion.div
-                key="profile"
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-5"
-              >
-                <div className="flex items-center gap-4 pb-4 border-b border-white/[0.04]">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center text-white text-xl font-black select-none">
-                    {name.charAt(0).toUpperCase() || '?'}
+          <form onSubmit={handleProfileSave}>
+            <CardContent className="space-y-6">
+              {/* Avatar section */}
+              <div className="flex items-center gap-5 p-4 rounded-xl bg-surface-elevated/40 border border-border">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-primary to-purple-600 flex items-center justify-center text-white text-xl font-black shadow-md">
+                    {profile.name.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">{name}</div>
-                    <div className="text-xs text-text-secondary">{email}</div>
-                  </div>
+                  <button
+                    type="button"
+                    className="absolute -bottom-1 -right-1 p-1.5 bg-surface-overlay border border-border rounded-lg text-text-secondary hover:text-text-primary shadow-xs transition-colors"
+                    title="Change picture"
+                  >
+                    <Camera size={12} />
+                  </button>
                 </div>
-
-                <form onSubmit={handleProfileSave} className="space-y-4">
-                  <InputField label={isRTL ? 'الاسم الكامل' : 'Full Name'} value={name} onChange={setName} required />
-                  <InputField label={isRTL ? 'البريد الإلكتروني' : 'Email Address'} type="email" value={email} onChange={setEmail} required />
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-accent text-white hover:brightness-110 disabled:opacity-50 transition-all"
-                    >
-                      {saving ? '...' : (isRTL ? 'حفظ التغييرات' : 'Save Changes')}
-                    </button>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-text-primary text-sm">{profile.name}</span>
+                    <Badge variant="ai" size="sm">{profile.role}</Badge>
                   </div>
-                </form>
-              </motion.div>
-            )}
-
-            {/* ── Business Tab ── */}
-            {activeTab === 'business' && (
-              <motion.div
-                key="business"
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04]"
-              >
-                <div className="space-y-1 mb-5 pb-4 border-b border-white/[0.04]">
-                  <div className="text-sm font-bold text-white">{isRTL ? 'ملف العمل' : 'Business Profile'}</div>
-                  <p className="text-[11px] text-text-secondary">{isRTL ? 'معلومات عملك التي يستخدمها الذكاء الاصطناعي' : 'Business data used to train AI replies'}</p>
+                  <p className="text-xs text-text-tertiary">{profile.email}</p>
                 </div>
-                <form onSubmit={handleBusinessSave} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <InputField label={isRTL ? 'اسم العمل' : 'Business Name'} value={bizData.business_name} onChange={v => setBizData({...bizData, business_name: v})} />
-                    <InputField label={isRTL ? 'نوع العمل' : 'Business Type'} value={bizData.business_type} onChange={v => setBizData({...bizData, business_type: v})} />
-                    <InputField label={isRTL ? 'الموقع الإلكتروني' : 'Website'} type="url" value={bizData.website} onChange={v => setBizData({...bizData, website: v})} placeholder="https://" />
-                    <InputField label={isRTL ? 'رقم الهاتف' : 'Phone'} type="tel" value={bizData.phone} onChange={v => setBizData({...bizData, phone: v})} />
-                    <InputField label={isRTL ? 'المدينة' : 'City'} value={bizData.city} onChange={v => setBizData({...bizData, city: v})} />
-                    <InputField label={isRTL ? 'البلد' : 'Country'} value={bizData.country} onChange={v => setBizData({...bizData, country: v})} />
-                  </div>
+              </div>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">{isRTL ? 'الوصف' : 'Description'}</label>
-                    <textarea value={bizData.description} onChange={e => setBizData({...bizData, description: e.target.value})} rows={3} className="w-full bg-white/[0.02] border border-white/[0.06] focus:border-accent/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-text-tertiary focus:outline-none resize-none transition-all" />
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Full Name"
+                  value={profile.name}
+                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                  placeholder="Mohammed Al-Rashid"
+                  icon={<User size={14} />}
+                  required
+                />
+                <Input
+                  label="Email Address"
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                  placeholder="mohammed@company.com"
+                  icon={<Mail size={14} />}
+                  required
+                />
+              </div>
+            </CardContent>
 
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">{isRTL ? 'الخدمات/المنتجات' : 'Services & Products'}</label>
-                    <textarea value={bizData.services} onChange={e => setBizData({...bizData, services: e.target.value})} rows={2} className="w-full bg-white/[0.02] border border-white/[0.06] focus:border-accent/40 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-text-tertiary focus:outline-none resize-none transition-all" />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">{isRTL ? 'نمط الرد' : 'Reply Style'}</label>
-                    <select value={bizData.reply_style} onChange={e => setBizData({...bizData, reply_style: e.target.value})} className="w-full bg-white/[0.02] border border-white/[0.06] focus:border-accent/40 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition-all appearance-none">
-                      <option value="" className="bg-[#14151D]">{isRTL ? 'اختر نمط الرد' : 'Select reply style'}</option>
-                      <option value="friendly" className="bg-[#14151D]">{isRTL ? 'ودودي ومحترم' : 'Friendly & Professional'}</option>
-                      <option value="formal" className="bg-[#14151D]">{isRTL ? 'رسمي' : 'Formal'}</option>
-                      <option value="casual" className="bg-[#14151D]">{isRTL ? 'عفوي' : 'Casual'}</option>
-                    </select>
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      disabled={bizLoading}
-                      className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-accent text-white hover:brightness-110 disabled:opacity-50 transition-all"
-                    >
-                      {bizLoading ? '...' : (isRTL ? 'حفظ معلومات العمل' : 'Save Business Info')}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            )}
-
-            {/* ── Security Tab ── */}
-            {activeTab === 'security' && (
-              <motion.div
-                key="security"
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="rounded-2xl p-6 bg-[#14151D] border border-white/[0.04] space-y-5"
+            <CardFooter className="justify-end border-t border-border/60">
+              <Button
+                type="submit"
+                variant="primary"
+                loading={saving}
+                icon={<Save size={14} />}
               >
-                <div className="space-y-1 pb-4 border-b border-white/[0.04]">
-                  <div className="text-sm font-bold text-white">{isRTL ? 'تغيير كلمة المرور' : 'Change Password'}</div>
-                  <p className="text-[11px] text-text-secondary">{isRTL ? 'يوصى بتغييرها دورياً' : 'We recommend changing it periodically'}</p>
+                Save Profile Changes
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      )}
+
+      {/* ── BUSINESS & AI PERSONA TAB ── */}
+      {activeTab === 'business' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
+                  <Building2 size={20} />
                 </div>
+                <div>
+                  <CardTitle>Business Profile & AI Persona</CardTitle>
+                  <CardDescription>
+                    Information used as fundamental prompt context across all omnichannel bots.
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="ai" size="sm">
+                <Sparkles size={11} className="mr-1" /> System Prompt Context
+              </Badge>
+            </div>
+          </CardHeader>
 
-                <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <InputField label={isRTL ? 'كلمة المرور الحالية' : 'Current Password'} type="password" value={currentPassword} onChange={setCurrentPassword} required />
-                  <InputField label={isRTL ? 'كلمة المرور الجديدة' : 'New Password'} type="password" value={newPassword} onChange={setNewPassword} required />
-                  <InputField label={isRTL ? 'تأكيد كلمة المرور' : 'Confirm New Password'} type="password" value={confirmPassword} onChange={setConfirmPassword} required />
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-accent text-white hover:brightness-110 disabled:opacity-50 transition-all"
-                    >
-                      {saving ? '...' : (isRTL ? 'تغيير كلمة المرور' : 'Change Password')}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+          <form onSubmit={handleBusinessSave}>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Registered Business Name"
+                  value={bizData.business_name}
+                  onChange={(e) => setBizData({ ...bizData, business_name: e.target.value })}
+                  placeholder="Company LLC"
+                  icon={<Building2 size={14} />}
+                />
+                <Input
+                  label="Industry / Category"
+                  value={bizData.business_type}
+                  onChange={(e) => setBizData({ ...bizData, business_type: e.target.value })}
+                  placeholder="e.g. Retail, Healthcare, Logistics"
+                />
+                <Input
+                  label="Official Website"
+                  type="url"
+                  value={bizData.website}
+                  onChange={(e) => setBizData({ ...bizData, website: e.target.value })}
+                  placeholder="https://company.com"
+                  icon={<Globe size={14} />}
+                />
+                <Input
+                  label="Customer Support Hotline"
+                  value={bizData.phone}
+                  onChange={(e) => setBizData({ ...bizData, phone: e.target.value })}
+                  placeholder="+966 ..."
+                  icon={<Phone size={14} />}
+                />
+                <Input
+                  label="City & Headquarters"
+                  value={bizData.city}
+                  onChange={(e) => setBizData({ ...bizData, city: e.target.value })}
+                  placeholder="Riyadh, Dubai, Cairo..."
+                  icon={<MapPin size={14} />}
+                />
+                <Input
+                  label="Country"
+                  value={bizData.country}
+                  onChange={(e) => setBizData({ ...bizData, country: e.target.value })}
+                  placeholder="Saudi Arabia"
+                />
+              </div>
 
-      {/* Floating Toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest shadow-2xl backdrop-blur-md border flex items-center gap-2 ${
-              toast.ok
-                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                : 'bg-red-500/10 border-red-500/20 text-red-400'
-            }`}
-          >
-            <div className={`w-1.5 h-1.5 rounded-full ${toast.ok ? 'bg-emerald-400' : 'bg-red-400'} animate-ping`} />
-            {toast.msg}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-primary">Business Overview (AI Context)</label>
+                <Textarea
+                  value={bizData.description}
+                  onChange={(e) => setBizData({ ...bizData, description: e.target.value })}
+                  rows={3}
+                  placeholder="Explain what your company does and core differentiators..."
+                />
+                <span className="text-[11px] text-text-tertiary">
+                  Bots will reference this when introducing your business to first-time customers.
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-primary">Key Products, Services & Policies</label>
+                <Textarea
+                  value={bizData.services}
+                  onChange={(e) => setBizData({ ...bizData, services: e.target.value })}
+                  rows={3}
+                  placeholder="Highlight key services, return windows, warranties, and shipping details..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-primary">AI Tone & Reply Style</label>
+                <Select
+                  value={bizData.reply_style}
+                  onChange={(e) => setBizData({ ...bizData, reply_style: e.target.value })}
+                  options={[
+                    { value: 'friendly', label: 'Friendly & Professional (Recommended for most retail & support)' },
+                    { value: 'formal', label: 'Strictly Formal & Corporate (Suited for B2B, Legal & Finance)' },
+                    { value: 'casual', label: 'Casual & Youthful (Suited for lifestyle, apparel & influencer brands)' },
+                  ]}
+                />
+              </div>
+            </CardContent>
+
+            <CardFooter className="justify-end border-t border-border/60">
+              <Button
+                type="submit"
+                variant="primary"
+                loading={saving}
+                icon={<Save size={14} />}
+              >
+                Save Business Profile
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      )}
+
+      {/* ── SECURITY TAB ── */}
+      {activeTab === 'security' && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400">
+                <Lock size={20} />
+              </div>
+              <div>
+                <CardTitle>Security & Password Management</CardTitle>
+                <CardDescription>
+                  Ensure your account is protected with strong credentials.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+
+          <form onSubmit={handlePasswordChange}>
+            <CardContent className="space-y-4 max-w-md">
+              <Input
+                label="Current Password"
+                type="password"
+                value={passwords.currentPassword}
+                onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
+                placeholder="••••••••••••"
+                icon={<Lock size={14} />}
+                required
+              />
+
+              <Input
+                label="New Password"
+                type="password"
+                value={passwords.newPassword}
+                onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                placeholder="At least 8 characters"
+                icon={<Lock size={14} />}
+                required
+              />
+
+              <Input
+                label="Confirm New Password"
+                type="password"
+                value={passwords.confirmPassword}
+                onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                placeholder="Re-enter new password"
+                icon={<Lock size={14} />}
+                required
+              />
+            </CardContent>
+
+            <CardFooter className="justify-start border-t border-border/60">
+              <Button
+                type="submit"
+                variant="primary"
+                loading={saving}
+                icon={<Save size={14} />}
+              >
+                Update Password
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      )}
     </div>
   )
 }

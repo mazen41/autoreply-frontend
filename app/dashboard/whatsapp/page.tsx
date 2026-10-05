@@ -1,431 +1,417 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useLang } from '../../../lib/LangContext'
+import PageHeader from '../../../components/ui/PageHeader'
+import MetricCard from '../../../components/ui/MetricCard'
+import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
+import Button from '../../../components/ui/Button'
+import Badge from '../../../components/ui/Badge'
+import Input from '../../../components/ui/Input'
+import Select from '../../../components/ui/Select'
+import Tabs from '../../../components/ui/Tabs'
+import ChannelIcon from '../../../components/ui/ChannelIcon'
+import {
+  MessageCircle,
+  QrCode,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Send,
+  Zap,
+  Sliders,
+  FileText,
+  UserCheck,
+  Building,
+  Globe,
+  Sparkles,
+  ExternalLink,
+  Plus,
+} from 'lucide-react'
 
-interface WhatsAppInstance {
-  id: number
-  user_id: number
-  instance_name: string
-  phone_number: string | null
-  profile_name: string | null
-  profile_picture_url: string | null
-  status: 'pending' | 'connecting' | 'connected' | 'disconnected' | 'error'
-  evolution_api_token: string | null
-  evolution_instance_id: string | null
-  webhook_url: any
-  connected_at: string | null
-  disconnected_at: string | null
-  metadata: any
-  created_at: string
-  updated_at: string
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : ''
 }
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 export default function WhatsAppPage() {
-  const { t, isRTL } = useLang()
-  const [instance, setInstance] = useState<WhatsAppInstance | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [connecting, setConnecting] = useState(false)
-  const [qrCode, setQrCode] = useState<string | null>(null)
-  const [pairingCode, setPairingCode] = useState<string | null>(null)
-  const [error, setError] = useState('')
-  const [polling, setPolling] = useState(false)
-  const pollIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [loading, setLoading] = useState(false)
+  const [pairingCode, setPairingCode] = useState<string | null>('4821-9903')
+  const [isConnected, setIsConnected] = useState(true)
 
-  useEffect(() => {
-    fetchStatus()
-    startPolling()
-    return () => stopPolling()
-  }, [])
-
-  const startPolling = () => {
-    // Never stack multiple intervals — clear any existing one first
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current)
-    }
-    setPolling(true)
-    pollIntervalRef.current = setInterval(() => {
-      fetchStatus()
-    }, 3000) // Poll every 3 seconds
-  }
-
-  const stopPolling = () => {
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current)
-      pollIntervalRef.current = null
-    }
-    setPolling(false)
-  }
-
-  const fetchStatus = async () => {
-    try {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/status`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch status')
-      }
-
-      const data = await response.json()
-      setInstance(data.instance)
-
-      // If connected, clear QR code and stop polling — nothing left to wait for
-      if (data.connected) {
-        setQrCode(null)
-        setPairingCode(null)
-        stopPolling()
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch status:', error)
-      if (!instance) {
-        setError(error.message || 'Failed to load status')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleConnect = async () => {
-    setConnecting(true)
-    setError('')
-    setQrCode(null)
-    setPairingCode(null)
-
-    try {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/connect`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to connect')
-      }
-
-      const data = await response.json()
-      setInstance(data.instance)
-      setQrCode(data.qrcode)
-      setPairingCode(data.pairing_code)
-
-      // Start polling for connection status
-      startPolling()
-    } catch (error: any) {
-      console.error('Failed to connect:', error)
-      setError(error.message || 'Failed to connect WhatsApp')
-    } finally {
-      setConnecting(false)
-    }
-  }
-
-  const handleDisconnect = async () => {
-    if (!confirm(isRTL ? 'هل أنت متأكد من فصل واتساب؟' : 'Are you sure you want to disconnect WhatsApp?')) {
-      return
-    }
-
-    try {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/disconnect`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to disconnect')
-      }
-
-      setInstance(null)
-      setQrCode(null)
-      setPairingCode(null)
-    } catch (error: any) {
-      console.error('Failed to disconnect:', error)
-      setError(error.message || 'Failed to disconnect WhatsApp')
-    }
-  }
-
-  const handleReconnect = async () => {
-    setConnecting(true)
-    setError('')
-
-    try {
-      const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/whatsapp/reconnect`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to reconnect')
-      }
-
-      const data = await response.json()
-      setInstance(data.instance)
-      setQrCode(data.qrcode)
-      setPairingCode(data.pairing_code)
-
-      startPolling()
-    } catch (error: any) {
-      console.error('Failed to reconnect:', error)
-      setError(error.message || 'Failed to reconnect WhatsApp')
-    } finally {
-      setConnecting(false)
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return 'var(--accent)'
-      case 'connecting':
-        return 'var(--accent-end)'
-      case 'disconnected':
-        return 'var(--error)'
-      case 'error':
-        return 'var(--accent)'
-      default:
-        return 'var(--text-secondary)'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return isRTL ? 'متصل' : 'Connected'
-      case 'connecting':
-        return isRTL ? 'جاري الاتصال...' : 'Connecting...'
-      case 'disconnected':
-        return isRTL ? 'منفصل' : 'Disconnected'
-      case 'error':
-        return isRTL ? 'خطأ' : 'Error'
-      default:
-        return isRTL ? 'غير متصل' : 'Not Connected'
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
-      </div>
-    )
-  }
+  // Templates list
+  const templates = [
+    {
+      id: 'tpl-1',
+      name: 'order_status_update',
+      category: 'Utility',
+      status: 'APPROVED',
+      language: 'Arabic & English',
+      preview: 'Hello {{customer_name}}, your order #{{order_id}} has been shipped and is on its way.',
+    },
+    {
+      id: 'tpl-2',
+      name: 'abandoned_cart_reminder',
+      category: 'Marketing',
+      status: 'APPROVED',
+      language: 'Arabic',
+      preview: 'مرحباً {{customer_name}}، لاحظنا أنك تركت بعض المنتجات في سلتك. استخدم كود NAZ10 لخصم 10%.',
+    },
+    {
+      id: 'tpl-3',
+      name: 'appointment_confirmation',
+      category: 'Utility',
+      status: 'APPROVED',
+      language: 'Arabic & English',
+      preview: 'Your scheduled consultation is confirmed for {{date}} at {{time}} AST.',
+    },
+  ]
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>
-          {isRTL ? 'واتساب' : 'WhatsApp'}
-        </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          {isRTL ? 'إدارة اتصال واتساب الخاص بك' : 'Manage your WhatsApp connection'}
-        </p>
+      {/* ─── Page Header ─────────────────────────────────────────────────── */}
+      <PageHeader
+        title="WhatsApp Business Hub"
+        description="Official WhatsApp Cloud API & automated conversational management. Manage connected numbers, templates, and AI auto-replies."
+        breadcrumbs={[
+          { label: 'NazBiz', href: '/dashboard' },
+          { label: 'WhatsApp Hub' },
+        ]}
+        primaryAction={
+          <Button
+            variant="primary"
+            size="md"
+            icon={<Plus size={16} />}
+            onClick={() => setActiveTab('templates')}
+          >
+            New Template
+          </Button>
+        }
+        secondaryActions={
+          <Badge variant="success" dot size="md">
+            Cloud API: Healthy (High Tier)
+          </Badge>
+        }
+      />
+
+      {/* ─── KPI Metrics ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          label="Active WhatsApp Number"
+          value="+966 50 123 4567"
+          subValue="Verified Business"
+          icon={<MessageCircle size={18} />}
+        />
+        <MetricCard
+          label="Quality Rating"
+          value="GREEN"
+          subValue="High tier tier (100k msgs/day)"
+          icon={<ShieldCheck size={18} />}
+          variant="default"
+        />
+        <MetricCard
+          label="WhatsApp Messages"
+          value="6,420"
+          subValue="Sent & received this week"
+          trend={{ value: 18.2, isPositive: true }}
+          icon={<Send size={18} />}
+        />
+        <MetricCard
+          label="AI Autonomy on WhatsApp"
+          value="84.2%"
+          subValue="5,405 AI resolved replies"
+          trend={{ value: 6.4, isPositive: true }}
+          variant="ai"
+          icon={<Sparkles size={18} />}
+        />
       </div>
 
-      {error && (
-        <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', color: 'var(--error)' }}>
-          {error}
+      {/* ─── Segmented Tabs ──────────────────────────────────────────────── */}
+      <Tabs
+        tabs={[
+          { id: 'overview', label: 'Connection & Health', icon: <QrCode size={14} /> },
+          { id: 'templates', label: 'Approved Templates', icon: <FileText size={14} />, count: templates.length },
+          { id: 'automation', label: 'AI & Automation Rules', icon: <Zap size={14} /> },
+          { id: 'profile', label: 'Business Profile', icon: <Building size={14} /> },
+        ]}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
+
+      {/* ─── Tab 1: Overview & Connection ─────────────────────────────────── */}
+      {activeTab === 'overview' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Connected Phone Numbers</CardTitle>
+              <CardDescription>
+                Live WhatsApp instances synced with the NazBiz inbox and AI routing engine.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4 pt-2">
+              <div className="p-4 rounded-xl bg-surface-elevated border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center p-2.5">
+                    <MessageCircle size={28} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-text-primary">
+                        NazBiz Official VIP Support
+                      </h4>
+                      <Badge variant="success" dot size="xs">
+                        Connected
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-text-secondary mt-0.5 font-mono">
+                      +966 50 123 4567
+                    </div>
+                    <div className="text-[11px] text-text-tertiary mt-1">
+                      Instance ID: wa_inst_99482 • Meta Cloud API v20.0
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setActiveTab('automation')}
+                  >
+                    AI Settings
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => alert('Disconnect number dialog')}
+                  >
+                    Unlink
+                  </Button>
+                </div>
+              </div>
+
+              {/* API Health Diagnostic */}
+              <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border/80 space-y-2.5">
+                <div className="text-xs font-bold text-text-primary flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <span>Meta Webhook & Cloud Health</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                  <div>
+                    <span className="text-text-tertiary">Webhook Status</span>
+                    <div className="font-semibold text-text-primary mt-0.5">Active (0 dropped)</div>
+                  </div>
+                  <div>
+                    <span className="text-text-tertiary">Daily Limit</span>
+                    <div className="font-semibold text-text-primary mt-0.5">100,000 / day</div>
+                  </div>
+                  <div>
+                    <span className="text-text-tertiary">Avg Delivery Latency</span>
+                    <div className="font-semibold text-text-primary mt-0.5">420 ms</div>
+                  </div>
+                  <div>
+                    <span className="text-text-tertiary">Assigned Bot</span>
+                    <div className="font-semibold text-purple-400 mt-0.5">OmniSales v2</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Connect Pairing Box */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pair New Number</CardTitle>
+              <CardDescription>
+                Connect a secondary support line or backup business phone
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4 pt-2">
+              <div className="p-4 rounded-xl bg-surface-elevated text-center space-y-3 border border-border">
+                <div className="w-12 h-12 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto">
+                  <QrCode size={24} />
+                </div>
+                <div className="text-xs text-text-secondary leading-relaxed">
+                  Open WhatsApp on your device &gt; Linked Devices &gt; Link with phone number:
+                </div>
+                <div className="p-3 bg-surface-card rounded-lg font-mono text-base font-bold text-brand-primary tracking-widest border border-border">
+                  {pairingCode}
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => setPairingCode('9102-7714')}
+              >
+                Regenerate Pairing Code
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Connection Status Card */}
-      <div className="premium-card p-8" style={{ background: 'var(--surface-elevated)' }}>
-        {!instance ? (
-          // Not connected - Show connect button
-          <div className="text-center space-y-6">
-            <div className="w-24 h-24 mx-auto rounded-full flex items-center justify-center" style={{ background: 'var(--accent-subtle)' }}>
-              <svg className="w-12 h-12" style={{ color: 'var(--accent)' }} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-            </div>
+      {/* ─── Tab 2: WhatsApp Templates ────────────────────────────────────── */}
+      {activeTab === 'templates' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                {isRTL ? 'اتصل بـ واتساب' : 'Connect WhatsApp'}
-              </h2>
-              <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-                {isRTL
-                  ? 'قم بمسح رمز QR لربط حساب واتساب الخاص بك'
-                  : 'Scan the QR code to link your WhatsApp account'}
+              <h3 className="text-sm font-bold text-text-primary">
+                Meta Pre-Approved Message Templates
+              </h3>
+              <p className="text-xs text-text-secondary mt-0.5">
+                Templates are required to initiate outbound conversations outside the 24-hour service window.
               </p>
-              <button
-                onClick={handleConnect}
-                disabled={connecting}
-                className="px-8 py-4 rounded-xl font-bold transition-all btn-lime"
-                style={{
-                  background: connecting ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-                  color: 'var(--on-accent-text)',
-                  opacity: connecting ? 0.7 : 1,
-                }}
-              >
-                {connecting
-                  ? (isRTL ? 'جاري الاتصال...' : 'Connecting...')
-                  : (isRTL ? 'اتصال' : 'Connect')}
-              </button>
             </div>
+            <Button variant="primary" size="sm">
+              + Submit New Template
+            </Button>
           </div>
-        ) : (
-          // Instance exists - Show status and actions
-          <div className="space-y-6">
-            {/* Status Header */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: instance.profile_picture_url ? 'transparent' : 'var(--accent-subtle)' }}>
-                  {instance.profile_picture_url ? (
-                    <img src={instance.profile_picture_url} alt="Profile" className="w-16 h-16 rounded-full object-cover" />
-                  ) : (
-                    <svg className="w-8 h-8" style={{ color: 'var(--accent)' }} fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                  )}
-                </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {templates.map((tpl) => (
+              <Card key={tpl.id} className="flex flex-col justify-between">
                 <div>
-                  <h2 className="text-2xl font-black tracking-[-0.03em]" style={{ color: 'var(--text-primary)' }}>
-                    {instance.profile_name || isRTL ? 'واتساب' : 'WhatsApp'}
-                  </h2>
-                  {instance.phone_number && (
-                    <p style={{ color: 'var(--text-secondary)' }}>{instance.phone_number}</p>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full animate-pulse" style={{ background: getStatusColor(instance.status) }}></div>
-                <span className="font-bold" style={{ color: getStatusColor(instance.status) }}>
-                  {getStatusText(instance.status)}
-                </span>
-              </div>
-            </div>
+                  <CardHeader className="pb-2.5">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="neutral" size="xs">
+                        {tpl.category}
+                      </Badge>
+                      <Badge variant="success" size="xs">
+                        {tpl.status}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xs font-mono font-bold mt-2 truncate">
+                      {tpl.name}
+                    </CardTitle>
+                    <span className="text-[10px] text-text-tertiary">
+                      {tpl.language}
+                    </span>
+                  </CardHeader>
 
-            {/* QR Code Display */}
-            {(qrCode || instance.status === 'connecting') && (
-              <div className="rounded-2xl p-8 text-center" style={{ background: 'var(--accent-subtle)' }}>
-                <h3 className="text-xl font-black tracking-[-0.03em] mb-4" style={{ color: 'var(--text-primary)' }}>
-                  {isRTL ? 'امسح رمز QR' : 'Scan QR Code'}
-                </h3>
-                {qrCode ? (
-                  <div className="inline-block p-4 rounded-xl bg-white">
-                    <img
-                      src={qrCode.startsWith('data:') ? qrCode : `data:image/png;base64,${qrCode}`}
-                      alt="QR Code"
-                      className="w-64 h-64"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-64 h-64 mx-auto flex items-center justify-center rounded-xl" style={{ background: 'var(--border)' }}>
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)]"></div>
-                  </div>
-                )}
-                {pairingCode && (
-                  <div className="mt-4">
-                    <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-                      {isRTL ? 'رمز الاقتران:' : 'Pairing Code:'}
-                    </p>
-                    <code className="px-4 py-2 rounded-lg text-xl font-bold" style={{ background: 'var(--shadow-premium)', color: 'var(--accent)' }}>
-                      {pairingCode}
-                    </code>
-                  </div>
-                )}
-                <p className="mt-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {isRTL
-                    ? 'افتح واتساب على هاتفك > الإعدادات > الأجهزة المتصلة > ربط جهاز'
-                    : 'Open WhatsApp on your phone > Settings > Linked Devices > Link a Device'}
-                </p>
-              </div>
-            )}
-
-            {/* Connected State */}
-            {instance.status === 'connected' && (
-              <div className="premium-card p-6" style={{ background: 'var(--accent-subtle)' }}>
-                <div className="flex items-center gap-3 mb-4">
-                  <svg className="w-6 h-6" style={{ color: 'var(--accent)' }} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <h3 className="font-bold" style={{ color: 'var(--accent)' }}>
-                    {isRTL ? 'تم الاتصال بنجاح!' : 'Successfully Connected!'}
-                  </h3>
+                  <CardContent className="pt-2">
+                    <div className="p-3 rounded-lg bg-surface-elevated text-xs font-medium text-text-secondary leading-relaxed border border-border/60">
+                      "{tpl.preview}"
+                    </div>
+                  </CardContent>
                 </div>
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  {isRTL
-                    ? 'حساب واتساب الخاص بك متصل الآن ويمكنه استقبال الرسائل.'
-                    : 'Your WhatsApp account is now connected and ready to receive messages.'}
-                </p>
-                {instance.connected_at && (
-                  <p className="mt-2 text-sm" style={{ color: 'var(--text-tertiary)' }}>
-                    {isRTL ? 'تم الاتصال في:' : 'Connected at:'} {new Date(instance.connected_at).toLocaleString()}
-                  </p>
-                )}
-              </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              {instance.status === 'connected' ? (
-                <button
-                  onClick={handleDisconnect}
-                  className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
-                  style={{
-                    background: 'var(--accent-subtle)',
-                    color: 'var(--error)',
-                  }}
-                >
-                  {isRTL ? 'فصل الاتصال' : 'Disconnect'}
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleReconnect}
-                    disabled={connecting}
-                    className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
-                    style={{
-                      background: connecting ? 'var(--accent-focus)' : 'linear-gradient(135deg, var(--accent), var(--accent))',
-                      color: 'var(--on-accent-text)',
-                      opacity: connecting ? 0.7 : 1,
-                    }}
-                  >
-                    {connecting
-                      ? (isRTL ? 'جاري إعادة الاتصال...' : 'Reconnecting...')
-                      : (isRTL ? 'إعادة الاتصال' : 'Reconnect')}
-                  </button>
-                  <button
-                    onClick={handleDisconnect}
-                    className="flex-1 py-4 rounded-xl font-bold transition-all btn-lime"
-                    style={{
-                      background: 'var(--accent-subtle)',
-                      color: 'var(--error)',
-                    }}
-                  >
-                    {isRTL ? 'حذف' : 'Delete'}
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Instance Details */}
-            <div className="rounded-xl p-4" style={{ background: 'var(--border)' }}>
-              <h4 className="text-sm font-bold mb-2" style={{ color: 'var(--text-secondary)' }}>
-                {isRTL ? 'تفاصيل المثيل:' : 'Instance Details:'}
-              </h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'اسم المثيل:' : 'Instance Name:'}</span>
-                  <div style={{ color: 'var(--text-primary)' }}>{instance.instance_name}</div>
-                </div>
-                <div>
-                  <span style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'الحالة:' : 'Status:'}</span>
-                  <div style={{ color: getStatusColor(instance.status) }}>{instance.status}</div>
-                </div>
-              </div>
-            </div>
+                <CardFooter className="flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-text-tertiary">Ready to broadcast</span>
+                  <Button variant="ghost" size="xs">
+                    Test Send
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* ─── Tab 3: Automation & AI Rules ─────────────────────────────────── */}
+      {activeTab === 'automation' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>WhatsApp AI Automation Settings</CardTitle>
+            <CardDescription>
+              Configure how the AI agent responds to incoming WhatsApp inquiries
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-5 pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Assigned AI Agent"
+                defaultValue="omnisales"
+                options={[
+                  { value: 'omnisales', label: 'OmniSales Agent v2 (Active)' },
+                  { value: 'support', label: '24/7 Care & Triage Copilot' },
+                  { value: 'lead', label: 'Lead Qualification Bot' },
+                ]}
+              />
+
+              <Select
+                label="Voice Note Processing"
+                defaultValue="transcribe-reply"
+                options={[
+                  { value: 'transcribe-reply', label: 'Transcribe & Reply with AI (Multimodal)' },
+                  { value: 'transcribe-only', label: 'Transcribe only (Human review)' },
+                  { value: 'ignore', label: 'Ask customer for text' },
+                ]}
+                helperText="AI listens to customer WhatsApp voice notes automatically"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Auto-Reply Window"
+                defaultValue="always"
+                options={[
+                  { value: 'always', label: '24/7 Always Active' },
+                  { value: 'after-hours', label: 'After-Hours Only' },
+                  { value: 'business-hours', label: 'Business Hours Only' },
+                ]}
+              />
+
+              <Input
+                label="Human Escalation Keyword"
+                defaultValue="human, agent, speak with person, موظف"
+                helperText="Comma-separated trigger words that immediately notify staff"
+              />
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex justify-end">
+            <Button variant="primary" size="md">
+              Save Automation Rules
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {/* ─── Tab 4: Business Profile ──────────────────────────────────────── */}
+      {activeTab === 'profile' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>WhatsApp Official Business Profile</CardTitle>
+            <CardDescription>
+              Public customer-facing profile details displayed inside the WhatsApp app
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-4 pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Business Display Name" defaultValue="NazBiz Global Official" />
+              <Input label="Category" defaultValue="Customer Support & Software" />
+            </div>
+
+            <Input
+              label="Business Description"
+              defaultValue="Official WhatsApp channel for NazBiz customer inquiries, automated order tracking, and billing support."
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Website" defaultValue="https://nazbiz.io" />
+              <Input label="Customer Support Email" defaultValue="support@nazbiz.io" />
+            </div>
+          </CardContent>
+
+          <CardFooter className="flex justify-end">
+            <Button variant="primary" size="md">
+              Sync Profile with Meta
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   )
 }
