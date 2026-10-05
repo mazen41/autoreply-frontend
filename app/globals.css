@@ -742,3 +742,351 @@ body {
   * { border-color: var(--border); }
   a, button, input, textarea, select { outline-color: var(--accent-focus); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NazBiz — Motion, Polish & Premium Feel Layer
+   Added: 2026-10. Do NOT edit inline — all values here are intentional.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Radius system (extended) ────────────────────────────────────────────── */
+:root {
+  --radius-2xl: 20px;
+  /* Message bubble tails */
+  --bubble-radius: 12px 12px 12px 3px;   /* customer: bottom-left small */
+  --bubble-radius-agent: 12px 12px 3px 12px; /* agent: bottom-right small */
+}
+
+/* ─── Focus ring — premium, accessible ────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+  transition: outline-offset 100ms ease;
+}
+
+/* ─── Shimmer skeleton animation ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface) 25%,
+    var(--surface-elevated) 50%,
+    var(--surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+/* ─── AI Thinking dots (CSS fallback for non-motion environments) ──────────── */
+@keyframes aiDot {
+  0%, 80%, 100% { transform: translateY(0);  opacity: 0.4; }
+  40%           { transform: translateY(-5px); opacity: 1; }
+}
+
+.ai-dot-1 { animation: aiDot 0.7s ease-in-out infinite; }
+.ai-dot-2 { animation: aiDot 0.7s ease-in-out 0.15s infinite; }
+.ai-dot-3 { animation: aiDot 0.7s ease-in-out 0.30s infinite; }
+
+/* ─── AI status pulse ─────────────────────────────────────────────────────── */
+@keyframes aiPulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.4; }
+}
+.ai-pulse { animation: aiPulse 2s ease-in-out infinite; }
+
+/* ─── Global interaction defaults ─────────────────────────────────────────── */
+
+/* Every button: hardware-accelerated, no layout-affecting transitions */
+button {
+  transition: color 150ms ease, background-color 150ms ease, opacity 150ms ease;
+}
+
+/* Every input/select/textarea: brand border on focus */
+input, select, textarea {
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 15%, transparent);
+}
+
+/* ─── Conversation list item — left-border hover accent ───────────────────── */
+.conv-item {
+  position: relative;
+  transition: background-color 120ms ease;
+}
+.conv-item::before {
+  content: '';
+  position: absolute;
+  inset-block: 4px;
+  left: 0;
+  width: 2px;
+  background: var(--brand);
+  border-radius: 0 2px 2px 0;
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.conv-item:hover::before,
+.conv-item[data-active="true"]::before {
+  transform: scaleY(1);
+}
+
+/* ─── Message bubble polish ────────────────────────────────────────────────── */
+.msg-bubble-customer {
+  border-radius: var(--bubble-radius);
+}
+.msg-bubble-agent {
+  border-radius: var(--bubble-radius-agent);
+}
+
+/* ─── Primary button glow on hover ────────────────────────────────────────── */
+.btn-primary:hover {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+/* ─── Destructive button glow on hover ────────────────────────────────────── */
+.btn-destructive:hover {
+  box-shadow: 0 0 14px color-mix(in srgb, var(--error) 30%, transparent);
+}
+
+/* ─── Card hover lift ──────────────────────────────────────────────────────── */
+.card-interactive {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── Icon hover ring (icon-only buttons) ─────────────────────────────────── */
+.icon-btn {
+  border-radius: var(--radius-md);
+  transition: background-color 120ms ease, transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.icon-btn:hover {
+  background-color: var(--surface-elevated);
+  transform: scale(1.08);
+}
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* ─── Avatar hover ring ────────────────────────────────────────────────────── */
+.avatar-interactive {
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+.avatar-interactive:hover {
+  box-shadow: 0 0 0 2px var(--brand);
+  transform: scale(1.05);
+}
+
+/* ─── Nav item slide-up on hover ───────────────────────────────────────────── */
+.nav-icon {
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), color 150ms ease;
+}
+.nav-item:hover .nav-icon {
+  transform: scale(1.1) translateY(-1px);
+}
+
+/* ─── Send button fly micro-animation ─────────────────────────────────────── */
+@keyframes sendFly {
+  0%   { transform: translateX(0) scale(1);    opacity: 1; }
+  40%  { transform: translateX(6px) scale(0.9); opacity: 0.6; }
+  60%  { transform: translateX(0) scale(1.05);  opacity: 1; }
+  100% { transform: translateX(0) scale(1);    opacity: 1; }
+}
+.send-fly { animation: sendFly 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ─── Refresh spin ─────────────────────────────────────────────────────────── */
+.spin-loading {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Settings gear hover ──────────────────────────────────────────────────── */
+.gear-hover {
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gear-hover:hover { transform: rotate(45deg); }
+
+/* ─── Trash shake hover ─────────────────────────────────────────────────────── */
+@keyframes trashShake {
+  0%, 100% { transform: rotate(0);  }
+  20%       { transform: rotate(-6deg); }
+  40%       { transform: rotate(6deg); }
+  60%       { transform: rotate(-4deg); }
+  80%       { transform: rotate(4deg); }
+}
+.trash-hover:hover { animation: trashShake 0.35s ease; color: var(--error); }
+
+/* ─── Plus→X rotate on hover ───────────────────────────────────────────────── */
+.plus-hover {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.plus-hover:hover { transform: rotate(45deg); }
+
+/* ─── Copy success pop ─────────────────────────────────────────────────────── */
+@keyframes copyPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.copy-pop { animation: copyPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─── Toggle / Switch spring (CSS complement to JS physics) ───────────────── */
+.toggle-thumb {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Badge scale bounce on new notification ──────────────────────────────── */
+@keyframes badgePop {
+  0%   { transform: scale(0.6); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.badge-enter { animation: badgePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ─── Bell notification shake ──────────────────────────────────────────────── */
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0); transform-origin: top center; }
+  10%       { transform: rotate(14deg); }
+  20%       { transform: rotate(-12deg); }
+  30%       { transform: rotate(10deg); }
+  40%       { transform: rotate(-8deg); }
+  50%       { transform: rotate(6deg); }
+  60%       { transform: rotate(-4deg); }
+  70%       { transform: rotate(2deg); }
+}
+.bell-ring { animation: bellRing 0.7s ease; }
+
+/* ─── SVG checkmark draw animation ────────────────────────────────────────── */
+.check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkDraw 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes checkDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ─── Dropdown/menu standard enter/exit ────────────────────────────────────── */
+.menu-enter {
+  animation: menuEnter 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.menu-exit {
+  animation: menuExit 130ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes menuEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes menuExit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.96) translateY(-6px); }
+}
+
+/* ─── Modal enter/exit ──────────────────────────────────────────────────────── */
+.modal-enter {
+  animation: modalEnter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.modal-exit {
+  animation: modalExit 160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modalExit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.97) translateY(8px); }
+}
+
+/* ─── Toast enter/exit ──────────────────────────────────────────────────────── */
+.toast-enter {
+  animation: toastEnter 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.toast-exit {
+  animation: toastExit 200ms ease both;
+}
+@keyframes toastEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toastExit {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: scale(0.9) translateX(16px); }
+}
+
+/* ─── Drawer (right) enter/exit ────────────────────────────────────────────── */
+.drawer-enter { animation: drawerEnter 280ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.drawer-exit  { animation: drawerExit  200ms cubic-bezier(0.4, 0, 1, 1) both; }
+@keyframes drawerEnter {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes drawerExit {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+/* ─── Page route transition ─────────────────────────────────────────────────── */
+.page-enter {
+  animation: pageEnter 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Stagger list (CSS complement) ────────────────────────────────────────── */
+.stagger-item {
+  animation: fadeUp 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-item:nth-child(1)  { animation-delay:  0ms; }
+.stagger-item:nth-child(2)  { animation-delay: 40ms; }
+.stagger-item:nth-child(3)  { animation-delay: 80ms; }
+.stagger-item:nth-child(4)  { animation-delay:120ms; }
+.stagger-item:nth-child(5)  { animation-delay:160ms; }
+.stagger-item:nth-child(6)  { animation-delay:200ms; }
+.stagger-item:nth-child(7)  { animation-delay:240ms; }
+.stagger-item:nth-child(8)  { animation-delay:280ms; }
+.stagger-item:nth-child(9)  { animation-delay:300ms; }
+.stagger-item:nth-child(10) { animation-delay:300ms; }
+/* Beyond 10 items: no delay — avoid janky scroll animations */
+
+/* ─── Validation shake ─────────────────────────────────────────────────────── */
+.input-shake {
+  animation: inputShake 0.45s ease;
+}
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* ─── Number flow transitions ────────────────────────────────────────────── */
+number-flow-react::part(digit) {
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Reduce motion (must come last to override everything) ──────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton { animation: none; background: var(--surface-elevated); }
+}

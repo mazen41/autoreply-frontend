@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { springs, variants } from '../../lib/motion'
 import {
   Paperclip, Mic, Smile, Type, Send, Zap, Clock, X, FileText,
   Image as ImageIcon, Video, StopCircle, Lock
@@ -215,53 +217,76 @@ export default function ChatComposer({
           {/* AI Tools Dropdown */}
           {!isInternal && !isRecording && (
             <div className="relative">
-              <button 
+              <motion.button
                 onClick={() => setShowAIOptions(!showAIOptions)}
-                className="p-2 rounded-lg hover:bg-surface text-brand transition-colors"
+                className="p-2 rounded-lg hover:bg-surface text-brand"
                 title={L('AI Tools', 'أدوات الذكاء الاصطناعي')}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.93 }}
+                transition={springs.snap}
               >
                 <Zap size={18} />
-              </button>
-              
-              {showAIOptions && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs">
-                  {[
-                    { label: L('Generate Reply', 'توليد رد'), action: () => { setText('AI Draft: We can certainly help with that...'); setShowAIOptions(false) } },
-                    { label: L('Improve Writing', 'تحسين الكتابة'), action: () => { setShowAIOptions(false) } },
-                    { label: L('Make Professional', 'جعله احترافياً'), action: () => { setShowAIOptions(false) } },
-                    { label: L('Translate to Arabic', 'ترجمة للعربية'), action: () => { setShowAIOptions(false) } },
-                  ].map(opt => (
-                    <button key={opt.label} onClick={opt.action} className="w-full text-left px-3 py-2 hover:bg-surface text-text-primary">
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              </motion.button>
+
+              <AnimatePresence>
+                {showAIOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96, y: -8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: -8 }}
+                    transition={springs.standard}
+                    className="absolute bottom-full right-0 mb-2 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs"
+                  >
+                    {[
+                      { label: L('Generate Reply', 'توليد رد'), action: () => { setText('AI Draft: We can certainly help with that...'); setShowAIOptions(false) } },
+                      { label: L('Improve Writing', 'تحسين الكتابة'), action: () => { setShowAIOptions(false) } },
+                      { label: L('Make Professional', 'جعله احترافياً'), action: () => { setShowAIOptions(false) } },
+                      { label: L('Translate to Arabic', 'ترجمة للعربية'), action: () => { setShowAIOptions(false) } },
+                    ].map(opt => (
+                      <button key={opt.label} onClick={opt.action} className="w-full text-left px-3 py-2 hover:bg-surface text-text-primary transition-colors">
+                        {opt.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
-          <button 
+          {/* Send button — spring physics + subtle fly animation */}
+          <motion.button
             onClick={handleSend}
             disabled={disabled || sending || (!text.trim() && !attachment && !isRecording)}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
-              sending 
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              sending
                 ? 'bg-surface text-text-tertiary cursor-wait'
                 : text.trim() || attachment
-                  ? isInternal 
-                    ? 'bg-warning text-white shadow-xs hover:bg-warning' 
-                    : 'bg-brand text-brand-text font-bold shadow-xs hover:bg-brand-hover'
+                  ? isInternal
+                    ? 'bg-warning text-white shadow-xs hover:bg-warning'
+                    : 'bg-brand text-brand-text font-bold shadow-xs btn-primary'
                   : 'bg-surface text-text-tertiary'
             }`}
+            whileHover={
+              (text.trim() || attachment) && !sending && !disabled
+                ? { scale: 1.05, y: -1 }
+                : {}
+            }
+            whileTap={
+              (text.trim() || attachment) && !sending && !disabled
+                ? { scale: 0.92 }
+                : {}
+            }
+            transition={springs.snap}
           >
             {sending ? (
               <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : (
               <Send size={18} className={isRTL ? 'rotate-180 -ml-1' : 'ml-1'} />
             )}
-          </button>
+          </motion.button>
         </div>
       </div>
-      
+
       {/* Footer text */}
       <div className="flex justify-between items-center px-2 mt-2">
         <span className="text-[10px] text-text-tertiary">

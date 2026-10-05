@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
+import NumberFlow from '@number-flow/react'
+import { springs, variants } from '../../lib/motion'
 import PageHeader from '../../components/ui/PageHeader'
 import MetricCard from '../../components/ui/MetricCard'
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card'
@@ -9,6 +12,7 @@ import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import Avatar from '../../components/ui/Avatar'
 import ChannelIcon from '../../components/ui/ChannelIcon'
+import { MetricCardSkeleton } from '../../components/ui/Skeleton'
 import {
   MessageSquare,
   Sparkles,
@@ -245,48 +249,73 @@ export default function DashboardPage() {
       />
 
       {/* ─── Top-Level KPIs Row ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
-        <MetricCard
-          label="Total Conversations"
-          value={stats?.total_conversations ? stats.total_conversations.toLocaleString() : '14,820'}
-          subValue="Across 4 channels"
-          trend={{ value: 14.2, isPositive: true }}
-          icon={<MessageSquare size={18} />}
-        />
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4"
+        variants={variants.staggerContainer}
+        initial="hidden"
+        animate="visible"
+      >
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCardSkeleton />
+            </motion.div>
+          ))
+        ) : (
+          <>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Total Conversations"
+                value={stats?.total_conversations ? stats.total_conversations.toLocaleString() : '14,820'}
+                subValue="Across 4 channels"
+                trend={{ value: 14.2, isPositive: true }}
+                icon={<MessageSquare size={18} />}
+              />
+            </motion.div>
 
-        <MetricCard
-          label="AI Autonomy Rate"
-          value={`${stats?.ai_resolved_rate || 78.4}%`}
-          subValue="Resolved without human"
-          trend={{ value: 5.1, isPositive: true }}
-          variant="ai"
-          icon={<Sparkles size={18} />}
-        />
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="AI Autonomy Rate"
+                value={`${stats?.ai_resolved_rate || 78.4}%`}
+                subValue="Resolved without human"
+                trend={{ value: 5.1, isPositive: true }}
+                variant="ai"
+                icon={<Sparkles size={18} />}
+              />
+            </motion.div>
 
-        <MetricCard
-          label="Avg Response Time"
-          value={stats?.avg_response_time || '1.2s'}
-          subValue="Human avg: 4m 12s"
-          trend={{ value: 35.0, isPositive: true, label: 'faster' }}
-          icon={<Clock size={18} />}
-        />
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Avg Response Time"
+                value={stats?.avg_response_time || '1.2s'}
+                subValue="Human avg: 4m 12s"
+                trend={{ value: 35.0, isPositive: true, label: 'faster' }}
+                icon={<Clock size={18} />}
+              />
+            </motion.div>
 
-        <MetricCard
-          label="Active Contacts"
-          value={stats?.active_customers ? stats.active_customers.toLocaleString() : '6,240'}
-          subValue="+420 new this week"
-          trend={{ value: 8.4, isPositive: true }}
-          icon={<Users size={18} />}
-        />
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Active Contacts"
+                value={stats?.active_customers ? stats.active_customers.toLocaleString() : '6,240'}
+                subValue="+420 new this week"
+                trend={{ value: 8.4, isPositive: true }}
+                icon={<Users size={18} />}
+              />
+            </motion.div>
 
-        <MetricCard
-          label="Conversion Rate"
-          value={`${stats?.conversion_rate || 14.8}%`}
-          subValue="Inquiries to orders"
-          trend={{ value: 2.3, isPositive: true }}
-          icon={<TrendingUp size={18} />}
-        />
-      </div>
+            <motion.div variants={variants.fadeUp} transition={springs.standard}>
+              <MetricCard
+                label="Conversion Rate"
+                value={`${stats?.conversion_rate || 14.8}%`}
+                subValue="Inquiries to orders"
+                trend={{ value: 2.3, isPositive: true }}
+                icon={<TrendingUp size={18} />}
+              />
+            </motion.div>
+          </>
+        )}
+      </motion.div>
 
       {/* ─── Main Grid: Charts & Performance ─────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

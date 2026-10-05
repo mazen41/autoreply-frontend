@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { springs } from '../../lib/motion'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'ai' | 'subtle'
@@ -20,16 +22,18 @@ export default function Button({
   iconRight,
   className = '',
   children,
+  onClick,
   ...props
 }: ButtonProps) {
+  const shouldReduceMotion = useReducedMotion()
   const isDisabled = disabled || loading
 
   const baseStyles =
-    'relative inline-flex items-center justify-center font-medium select-none transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed active:scale-[0.98]'
+    'relative inline-flex items-center justify-center font-medium select-none outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed'
 
-  const variantStyles = {
+  const variantStyles: Record<string, string> = {
     primary:
-      'bg-brand text-brand-text border border-brand/20 hover:bg-brand-hover font-semibold shadow-xs active:bg-brand-dark',
+      'bg-brand text-brand-text border border-brand/20 hover:bg-brand-hover font-semibold shadow-xs btn-primary',
     secondary:
       'bg-surface-elevated text-text-primary border border-border hover:bg-surface-hover hover:border-border-hover shadow-xs',
     outline:
@@ -37,26 +41,39 @@ export default function Button({
     ghost:
       'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-elevated border border-transparent',
     destructive:
-      'bg-error/15 text-error border border-error/30 hover:bg-error hover:text-white shadow-xs active:bg-error',
+      'bg-error/15 text-error border border-error/30 hover:bg-error hover:text-white shadow-xs btn-destructive',
     ai:
       'bg-brand/10 text-brand border border-brand/25 hover:bg-brand/15 hover:border-brand/40 font-medium',
     subtle:
-      'bg-brand/10 text-brand border border-brand/20 hover:bg-brand/15 active:bg-brand/20',
+      'bg-brand/10 text-brand border border-brand/20 hover:bg-brand/15',
   }
 
-  const sizeStyles = {
-    xs: 'h-7 px-2.5 text-xs gap-1.5 rounded-md font-semibold',
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-    md: 'h-9 px-4 text-sm gap-2 rounded-lg',
-    lg: 'h-10 px-5 text-sm gap-2.5 rounded-xl font-semibold',
+  const sizeStyles: Record<string, string> = {
+    xs:   'h-7 px-2.5 text-xs gap-1.5 rounded-md font-semibold',
+    sm:   'h-8 px-3 text-xs gap-1.5 rounded-lg',
+    md:   'h-9 px-4 text-sm gap-2 rounded-lg',
+    lg:   'h-10 px-5 text-sm gap-2.5 rounded-xl font-semibold',
     icon: 'h-9 w-9 p-0 rounded-lg',
   }
 
+  // Ghost buttons don't lift — they just tint
+  const isGhost = variant === 'ghost'
+
+  const motionProps = shouldReduceMotion || isDisabled ? {} : {
+    whileHover: isGhost
+      ? { scale: 1 }
+      : { scale: 1.02, y: -1 },
+    whileTap: { scale: 0.97 },
+    transition: springs.snap,
+  }
+
   return (
-    <button
+    <motion.button
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       disabled={isDisabled}
-      {...props}
+      onClick={onClick}
+      {...(motionProps as any)}
+      {...(props as any)}
     >
       {loading ? (
         <svg
@@ -65,14 +82,7 @@ export default function Button({
           fill="none"
           viewBox="0 0 24 24"
         >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="3"
-          />
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
           <path
             className="opacity-75"
             fill="currentColor"
@@ -88,6 +98,6 @@ export default function Button({
       {!loading && iconRight && (
         <span className="shrink-0 flex items-center">{iconRight}</span>
       )}
-    </button>
+    </motion.button>
   )
 }

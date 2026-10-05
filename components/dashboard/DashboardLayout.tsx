@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { springs, variants } from '../../lib/motion'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
@@ -360,46 +362,57 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all group ${
+                    className={`relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium group nav-item ${
                       collapsed ? 'justify-center px-0' : ''
                     } ${
                       isActive
-                        ? 'bg-brand/5 text-brand font-semibold'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/70'
+                        ? 'text-brand font-semibold'
+                        : 'text-text-secondary hover:text-text-primary'
                     }`}
+                    style={{ transition: 'color 150ms ease' }}
                   >
-                    {/* Active Accent Bar */}
+                    {/* Magic Move active indicator — slides between items */}
                     {isActive && (
-                      <span
-                        className={`absolute top-1.5 bottom-1.5 w-1 rounded-full bg-brand ${
-                          isRTL ? 'right-0' : 'left-0'
+                      <motion.span
+                        layoutId="sidebar-active-indicator"
+                        className={`absolute inset-0 rounded-lg bg-brand/5 ${
+                          isRTL ? 'border-r-2 border-r-brand' : 'border-l-2 border-l-brand'
                         }`}
+                        transition={springs.standard}
                       />
                     )}
 
-                    <Icon
-                      size={18}
-                      className={`shrink-0 transition-colors ${
-                        isActive
-                          ? 'text-brand'
-                          : 'text-text-tertiary group-hover:text-text-primary'
-                      }`}
-                    />
+                    <motion.span
+                      className="relative z-10 shrink-0 nav-icon"
+                      whileHover={{ scale: 1.1, y: -1 }}
+                      transition={springs.snap}
+                    >
+                      <Icon
+                        size={18}
+                        className={isActive ? 'text-brand' : 'text-text-tertiary group-hover:text-text-primary transition-colors'}
+                      />
+                    </motion.span>
 
                     {!collapsed && (
                       <>
-                        <span className="truncate flex-1">{label}</span>
-                        {item.badge !== undefined && (
-                          <span
-                            className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold leading-tight ${
-                              item.badgeVariant === 'ai'
-                                ? 'bg-brand/10 text-brand border border-brand/20'
-                                : 'bg-surface-card border border-border text-text-secondary'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
+                        <span className="relative z-10 truncate flex-1">{label}</span>
+                        <AnimatePresence>
+                          {item.badge !== undefined && (
+                            <motion.span
+                              initial={{ scale: 0.5, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.5, opacity: 0 }}
+                              transition={springs.bouncy}
+                              className={`relative z-10 text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-tight ${
+                                item.badgeVariant === 'ai'
+                                  ? 'bg-brand/10 text-brand border border-brand/20'
+                                  : 'bg-surface-card border border-border text-text-secondary'
+                              }`}
+                            >
+                              {item.badge}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </>
                     )}
                   </Link>

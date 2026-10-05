@@ -1,9 +1,12 @@
 'use client'
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ApiConversation, ApiBot } from '../../hooks/useInbox'
 import ConversationCard from './ConversationCard'
+import { ConversationItemSkeleton } from '../ui/Skeleton'
+import { springs, variants } from '../../lib/motion'
 import {
   Search, X, SlidersHorizontal, RefreshCw, Inbox, Bot, User,
   AlertTriangle, Clock, CheckCircle, MessageSquare, Filter, ChevronDown
@@ -283,18 +286,9 @@ export default function ConversationList({
       {/* Virtual list */}
       <div ref={parentRef} className="flex-1 overflow-y-auto overflow-x-hidden" style={{ contain: 'strict' }}>
         {loading && sorted.length === 0 ? (
-          <div className="space-y-0">
+          <div>
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-start gap-2.5 px-3 py-3 border-b border-divider animate-pulse">
-                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex-shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <div className="flex justify-between">
-                    <div className="h-3 bg-surface-elevated rounded w-2/5" />
-                    <div className="h-2 bg-surface-elevated rounded w-1/6" />
-                  </div>
-                  <div className="h-2.5 bg-surface-elevated rounded w-4/5" />
-                </div>
-              </div>
+              <ConversationItemSkeleton key={i} />
             ))}
           </div>
         ) : sorted.length === 0 ? (
