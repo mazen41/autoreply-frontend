@@ -86,7 +86,7 @@ export default function MessageTimeline({
       <div className="flex-1 overflow-hidden p-6 space-y-6 bg-background flex flex-col justify-end">
         {[1, 2, 3].map(i => (
           <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-            <div className={`w-64 h-16 rounded-2xl animate-pulse ${i % 2 === 0 ? 'bg-accent-subtle' : 'bg-surface-elevated'}`} />
+            <div className={`w-64 h-16 rounded-2xl animate-pulse ${i % 2 === 0 ? 'bg-brand/10' : 'bg-surface-elevated'}`} />
           </div>
         ))}
       </div>

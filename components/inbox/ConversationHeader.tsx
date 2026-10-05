@@ -53,7 +53,7 @@ export default function ConversationHeader({
 
   const aiState = requires_human ? 'escalated' : conv.ai_enabled ? 'active' : 'paused'
   const aiStateConfig = {
-    active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-accent-subtle',  text: 'text-accent',   dot: 'bg-accent' },
+    active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-brand/10',  text: 'text-brand',   dot: 'bg-brand' },
     paused:    { label: L('AI Paused', 'AI متوقف'),     bg: 'bg-surface-elevated', text: 'text-text-secondary', dot: 'bg-text-tertiary' },
     escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-error dark:bg-error/20', text: 'text-error',           dot: 'bg-error' },
   }[aiState]
@@ -94,7 +94,7 @@ export default function ConversationHeader({
             </span>
             {conv.bot?.name && (
               <div className="relative flex items-center">
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-accent flex items-center gap-1">
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-brand/10 border border-brand/30/20 text-brand flex items-center gap-1">
                   <Bot size={10} />
                   {conv.bot.name}
                 </span>
@@ -103,7 +103,7 @@ export default function ConversationHeader({
                     <button
                       onClick={() => setBotDropdownOpen(v => !v)}
                       disabled={isUpdatingBot}
-                      className="ml-1 p-0.5 rounded hover:bg-surface-elevated text-text-tertiary hover:text-accent transition-colors disabled:opacity-50"
+                      className="ml-1 p-0.5 rounded hover:bg-surface-elevated text-text-tertiary hover:text-brand transition-colors disabled:opacity-50"
                       title={isRTL ? 'تغيير البوت' : 'Switch Bot'}
                     >
                       {isUpdatingBot ? <Loader2 size={10} className="animate-spin" /> : <ChevronDown size={10} />}
@@ -113,7 +113,7 @@ export default function ConversationHeader({
                         <button
                           onClick={() => { onBotChange(null); setBotDropdownOpen(false) }}
                           className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                            !conv.bot_id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
+                            !conv.bot_id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                           }`}
                         >
                           {isRTL ? 'بدون بوت' : 'No Bot'}
@@ -123,7 +123,7 @@ export default function ConversationHeader({
                             key={bot.id}
                             onClick={() => { onBotChange(bot.id); setBotDropdownOpen(false) }}
                             className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                              conv.bot_id === bot.id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
+                              conv.bot_id === bot.id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -208,7 +208,7 @@ export default function ConversationHeader({
               <button
                 onClick={() => { onAgentChange(null); setAgentDropdownOpen(false) }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  !conv.assigned_agent_id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
+                  !conv.assigned_agent_id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                 }`}
               >
                 {L('Unassigned', 'غير معين')}
@@ -218,7 +218,7 @@ export default function ConversationHeader({
                   key={agent.id}
                   onClick={() => { onAgentChange(agent.id); setAgentDropdownOpen(false) }}
                   className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-1.5 ${
-                    conv.assigned_agent_id === agent.id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
+                    conv.assigned_agent_id === agent.id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   <User size={11} />

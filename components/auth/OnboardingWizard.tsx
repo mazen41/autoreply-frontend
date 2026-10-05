@@ -54,10 +54,10 @@ const REPLY_STYLES = [
 const CHANNELS = [
   { id: 'whatsapp', icon: '💬', label: 'WhatsApp',        color: '#25D366', note: '' },
   { id: 'salla',    icon: '🛍️', label: 'Salla',           color: '#00B4D8', note: '' },
-  { id: 'gmail',    icon: '📧', label: 'Gmail',           color: 'var(--accent)', note: '' },
-  { id: 'instagram',icon: '📸', label: 'Instagram',       color: 'var(--accent)', note: '' },
-  { id: 'facebook', icon: '🔵', label: 'Facebook',        color: 'var(--accent)', note: '' },
-  { id: 'reviews',  icon: '⭐', label: 'Google Reviews',  color: 'var(--accent)', note: '' },
+  { id: 'gmail',    icon: '📧', label: 'Gmail',           color: 'var(--brand)', note: '' },
+  { id: 'instagram',icon: '📸', label: 'Instagram',       color: 'var(--brand)', note: '' },
+  { id: 'facebook', icon: '🔵', label: 'Facebook',        color: 'var(--brand)', note: '' },
+  { id: 'reviews',  icon: '⭐', label: 'Google Reviews',  color: 'var(--brand)', note: '' },
 ]
 
 const COUNTRIES = ['السعودية','الإمارات','مصر','الكويت','البحرين','قطر','الأردن','المغرب','تونس','Other']
@@ -75,7 +75,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
       <div className="h-1 rounded-full w-full bg-white/[0.05] overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: 'linear-gradient(90deg, #0E7AFE, #8B3FFB)' }}
+          style={{ background: 'var(--brand)' }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as any }}
         />
@@ -89,11 +89,11 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
                 width: i + 1 <= step ? 8 : 5,
                 height: i + 1 <= step ? 8 : 5,
                 background: i + 1 < step
-                  ? '#8B3FFB'
+                  ? 'var(--brand)'
                   : i + 1 === step
-                    ? '#0E7AFE'
+                    ? 'var(--brand)'
                     : 'rgba(255,255,255,0.08)',
-                boxShadow: i + 1 === step ? '0 0 8px rgba(14,122,254,0.5)' : 'none',
+                boxShadow: i + 1 === step ? '0 0 8px rgba(0,232,122,0.5)' : 'none',
               }}
             />
           </div>
@@ -124,17 +124,17 @@ function Step1({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               onClick={() => setData({ ...data, businessType: type.id })}
               className="flex flex-col items-center gap-2.5 p-5 rounded-2xl text-center transition-all duration-200"
               style={{
-                background: selected ? 'var(--accent-subtle)' : 'var(--surface)',
-                border: `2px solid ${selected ? 'var(--accent-focus)' : 'var(--border)'}`,
-                boxShadow: selected ? '0 0 24px var(--accent-subtle)' : 'none',
+                background: selected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
+                border: `2px solid ${selected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                boxShadow: selected ? '0 0 24px rgba(0,232,122,0.1)' : 'none',
               }}>
               <span style={{ fontSize: 32 }}>{type.icon}</span>
-              <span className="text-sm font-bold leading-tight" style={{ color: selected ? 'var(--accent)' : 'var(--text-secondary)' }}>
+              <span className="text-sm font-bold leading-tight" style={{ color: selected ? 'var(--brand)' : 'var(--text-secondary)' }}>
                 {isRTL ? type.ar : type.en}
               </span>
               {selected && (
                 <div className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ background: 'var(--accent)' }}>
+                  style={{ background: 'var(--brand)' }}>
                   <span style={{ color: 'var(--text-primary)', fontSize: 11, fontWeight: 900 }}>✓</span>
                 </div>
               )}
@@ -155,8 +155,8 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     outline: 'none',
   }
   const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
-    e.currentTarget.style.borderColor = 'var(--accent-focus)'
-    e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
+    e.currentTarget.style.borderColor = 'rgba(0,232,122,0.2)'
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,232,122,0.1)'
   }
   const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     e.currentTarget.style.borderColor = 'var(--border)'
@@ -250,9 +250,9 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 <button key={day.id} type="button" onClick={() => toggleDay(day.id)}
                   className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200"
                   style={{
-                    background: on ? 'var(--accent-subtle)' : 'var(--surface)',
-                    border: `1px solid ${on ? 'var(--accent-focus)' : 'var(--border)'}`,
-                    color: on ? 'var(--accent)' : 'var(--text-tertiary)',
+                    background: on ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
+                    border: `1px solid ${on ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                    color: on ? 'var(--brand)' : 'var(--text-tertiary)',
                   }}>
                   {isRTL ? day.ar : day.en}
                 </button>
@@ -310,8 +310,8 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     resize: 'none' as const,
   }
   const taFocus = (e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = 'var(--accent-focus)'
-    e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
+    e.currentTarget.style.borderColor = 'rgba(0,232,122,0.2)'
+    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,232,122,0.1)'
   }
   const taBlur = (e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     e.currentTarget.style.borderColor = 'var(--border)'
@@ -330,7 +330,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       <div className="space-y-5">
         {/* Services */}
         <div>
-          <label className="block text-sm font-bold mb-1" style={{ color: 'var(--accent)' }}>
+          <label className="block text-sm font-bold mb-1" style={{ color: 'var(--brand)' }}>
             {isRTL ? '📋 خدماتك أو منتجاتك' : '📋 Your Services / Products'}
           </label>
           <p className="text-[11px] mb-2" style={{ color: 'var(--text-tertiary)' }}>
@@ -349,7 +349,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
         <div>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <label className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
+              <label className="text-sm font-bold" style={{ color: 'var(--brand)' }}>
                 {isRTL ? '❓ الأسئلة الشائعة' : '❓ Frequently Asked Questions'}
               </label>
               <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
@@ -358,7 +358,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             </div>
             <button type="button" onClick={addFaq}
               className="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-200"
-              style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+              style={{ background: 'rgba(0,232,122,0.1)', color: 'var(--brand)', border: '1px solid rgba(0,232,122,0.2)' }}>
               + {isRTL ? 'إضافة' : 'Add'}
             </button>
           </div>
@@ -368,7 +368,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <button type="button" onClick={() => removeFaq(i)}
                   className="absolute text-[11px] transition-colors"
-                  style={{ top: 10, [isRTL ? 'left' : 'right']: 10, color: 'var(--accent-focus)' }}>
+                  style={{ top: 10, [isRTL ? 'left' : 'right']: 10, color: 'rgba(0,232,122,0.2)' }}>
                   ✕
                 </button>
                 <input type="text"
@@ -392,7 +392,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             {data.faqs.length === 0 && (
               <button type="button" onClick={addFaq}
                 className="w-full py-4 rounded-xl text-sm border-dashed transition-all duration-200"
-                style={{ border: '2px dashed var(--accent-focus)', color: 'var(--text-tertiary)', background: 'transparent' }}>
+                style={{ border: '2px dashed rgba(0,232,122,0.2)', color: 'var(--text-tertiary)', background: 'transparent' }}>
                 + {isRTL ? 'أضف سؤالاً وإجابة' : 'Add a question and answer'}
               </button>
             )}
@@ -401,7 +401,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
         {/* Reply style */}
         <div>
-          <label className="block text-sm font-bold mb-2" style={{ color: 'var(--accent)' }}>
+          <label className="block text-sm font-bold mb-2" style={{ color: 'var(--brand)' }}>
             {isRTL ? '💬 أسلوب الرد المطلوب' : '💬 Reply Style'}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -412,9 +412,9 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                   onClick={() => setData({ ...data, replyStyle: style.id })}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-start transition-all duration-200"
                   style={{
-                    background: selected ? 'var(--accent-subtle)' : 'var(--surface)',
-                    border: `1px solid ${selected ? 'var(--accent-focus)' : 'var(--border)'}`,
-                    color: selected ? 'var(--accent)' : 'var(--text-secondary)',
+                    background: selected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
+                    border: `1px solid ${selected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                    color: selected ? 'var(--brand)' : 'var(--text-secondary)',
                   }}>
                   <span style={{ fontSize: 18 }}>{style.icon}</span>
                   <span className="font-semibold">{isRTL ? style.ar : style.en}</span>
@@ -427,7 +427,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
         {/* Knowledge file upload */}
         <div>
-          <label className="block text-sm font-bold mb-2" style={{ color: 'var(--accent)' }}>
+          <label className="block text-sm font-bold mb-2" style={{ color: 'var(--brand)' }}>
             {isRTL ? '📎 رفع ملف معرفة (اختياري)' : '📎 Upload Knowledge File (Optional)'}
           </label>
           <p className="text-[11px] mb-2" style={{ color: 'var(--text-tertiary)' }}>
@@ -562,8 +562,8 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
       {/* Recommended */}
       <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
-        style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
-        <span style={{ color: 'var(--accent)', fontSize: 13 }}>💡</span>
+        style={{ background: 'rgba(0,232,122,0.1)', border: '1px solid rgba(0,232,122,0.2)' }}>
+        <span style={{ color: 'var(--brand)', fontSize: 13 }}>💡</span>
         <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'نوصي بربط WhatsApp أو Salla' : 'We recommend WhatsApp or Salla'}
         </span>
@@ -579,8 +579,8 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               transition={{ delay: i * 0.08 }}
               className="flex items-center justify-between p-4 rounded-2xl transition-all duration-200"
               style={{
-                background: connected ? 'var(--accent-subtle)' : 'var(--surface)',
-                border: `1px solid ${connected ? 'var(--accent-focus)' : 'var(--border)'}`,
+                background: connected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
+                border: `1px solid ${connected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
               }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
@@ -590,7 +590,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 <div>
                   <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{ch.label}</div>
                   {connected && (
-                    <div className="text-[11px] font-bold" style={{ color: 'var(--accent)' }}>
+                    <div className="text-[11px] font-bold" style={{ color: 'var(--brand)' }}>
                       ✓ {isRTL ? 'تم الربط' : 'Connected'}
                     </div>
                   )}
@@ -599,7 +599,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
               {connected ? (
                 <div className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                  style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
+                  style={{ background: 'rgba(0,232,122,0.1)', color: 'var(--brand)', border: '1px solid rgba(0,232,122,0.2)' }}>
                   ✓ {isRTL ? 'مربوط' : 'Connected'}
                 </div>
               ) : (
@@ -642,8 +642,8 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       )}
 
       {/* Skip */}
-      <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
-        <p className="text-xs" style={{ color: 'var(--accent)' }}>
+      <div className="p-4 rounded-xl" style={{ background: 'rgba(0,232,122,0.1)', border: '1px solid rgba(0,232,122,0.2)' }}>
+        <p className="text-xs" style={{ color: 'var(--brand)' }}>
           ⚠️ {isRTL
             ? 'يمكنك تخطي هذه الخطوة الآن وربط قناة لاحقاً من لوحة التحكم، لكن لن يعمل البوت حتى ذلك الحين.'
             : 'You can skip this step and connect a channel later from the dashboard, but the bot won\'t work until then.'}
@@ -666,7 +666,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-        style={{ background: 'var(--accent-subtle)', border: '3px solid var(--accent-focus)', boxShadow: '0 0 40px var(--accent-focus)' }}>
+        style={{ background: 'rgba(0,232,122,0.1)', border: '3px solid rgba(0,232,122,0.2)', boxShadow: '0 0 40px rgba(0,232,122,0.2)' }}>
         <motion.span
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           transition={{ delay: 0.3, type: 'spring', stiffness: 300 }}
@@ -679,7 +679,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
           className="absolute rounded-full pointer-events-none"
           style={{
             width: 80 + i * 40, height: 80 + i * 40,
-            border: '1px solid var(--accent-focus)',
+            border: '1px solid rgba(0,232,122,0.2)',
             left: '50%', top: 80,
             transform: 'translate(-50%,-50%)',
           }}
@@ -698,8 +698,8 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
 
         {/* Summary */}
         <div className="glass rounded-2xl p-5 mb-6 text-start"
-          style={{ background: 'var(--surface)', border: '1px solid var(--accent-subtle)' }}>
-          <div className="text-[10px] font-bold tracking-widest mb-3 text-center" style={{ color: 'var(--accent)' }}>
+          style={{ background: 'var(--surface)', border: '1px solid rgba(0,232,122,0.1)' }}>
+          <div className="text-[10px] font-bold tracking-widest mb-3 text-center" style={{ color: 'var(--brand)' }}>
             {isRTL ? 'ملخص الإعداد' : 'SETUP SUMMARY'}
           </div>
           {[
@@ -718,7 +718,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
 
         <motion.button onClick={onGo}
           className="w-full py-4 rounded-xl font-black text-base mb-4"
-          style={{ background: 'var(--accent)', color: 'var(--text-primary)' }}
+          style={{ background: 'var(--brand)', color: 'var(--text-primary)' }}
           whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}>
           {isRTL ? 'اذهب إلى لوحة التحكم ←' : 'Go to Dashboard →'}
         </motion.button>
@@ -910,14 +910,14 @@ export default function OnboardingWizard() {
     <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-[#04061A] relative overflow-hidden">
       {/* Deep background glows */}
       <div className="fixed -top-24 -right-24 w-72 h-72 rounded-full bg-accent/[0.06] blur-3xl pointer-events-none" />
-      <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[#8B3FFB]/[0.06] blur-3xl pointer-events-none" />
+      <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[var(--brand)]/[0.06] blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-xl relative z-10">
 
         {/* Top bar: logo + step badge */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[#8B3FFB] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[var(--brand)] flex items-center justify-center">
               <span className="text-white text-xs font-black">N</span>
             </div>
             <span className="text-sm font-black text-white tracking-tight">NazBiz</span>
@@ -932,7 +932,7 @@ export default function OnboardingWizard() {
         {/* Main card */}
         <div className="rounded-3xl p-7 bg-[#0C0E1E] border border-white/[0.06] shadow-2xl shadow-black/40 relative overflow-hidden">
           {/* inner subtle gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-[#8B3FFB]/[0.02] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-[var(--brand)]/[0.02] pointer-events-none" />
 
           <div className="relative">
             {step <= 4 && <ProgressBar step={step} total={4} />}
@@ -982,7 +982,7 @@ export default function OnboardingWizard() {
                   className="flex-1 py-3.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
                   style={{
                     background: canProceed()
-                      ? 'linear-gradient(135deg, #0E7AFE, #8B3FFB)'
+                      ? 'linear-gradient(135deg, var(--brand), var(--brand))'
                       : 'rgba(255,255,255,0.04)',
                     color: canProceed() ? '#fff' : 'rgba(255,255,255,0.2)',
                     cursor: canProceed() ? 'pointer' : 'not-allowed',

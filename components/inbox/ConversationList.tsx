@@ -112,7 +112,7 @@ export default function ConversationList({
             key={t.key}
             onClick={() => { setActiveTab(t.key); onToggleCollapse?.() }}
             title={t.label}
-            className={`p-2 rounded-lg transition-colors ${activeTab === t.key ? 'bg-accent-subtle text-accent' : 'text-text-tertiary hover:bg-surface-elevated'}`}
+            className={`p-2 rounded-lg transition-colors ${activeTab === t.key ? 'bg-brand/10 text-brand' : 'text-text-tertiary hover:bg-surface-elevated'}`}
           >
             <t.icon size={14} />
           </button>
@@ -122,7 +122,7 @@ export default function ConversationList({
   }
 
   return (
-    <div className="flex flex-col h-full bg-surface border-r border-border" style={{ width: 320 }}>
+    <div className="flex flex-col h-full w-full bg-surface border-r border-border">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-sm font-black text-text-primary">{L('Inbox', 'الرسائل')}</h2>
@@ -133,11 +133,11 @@ export default function ConversationList({
             className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary disabled:opacity-40 transition-colors"
             title="Refresh"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin text-accent' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin text-brand' : ''} />
           </button>
           <button
             onClick={() => setShowFilters(v => !v)}
-            className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-accent-subtle text-accent' : 'hover:bg-surface-elevated text-text-secondary'}`}
+            className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-brand/10 text-brand' : 'hover:bg-surface-elevated text-text-secondary'}`}
             title="Filters"
           >
             <SlidersHorizontal size={14} />
@@ -159,7 +159,7 @@ export default function ConversationList({
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={L('Search conversations...', 'بحث في المحادثات...')}
-            className="w-full h-8 bg-surface-elevated border border-border rounded-lg pl-7 pr-7 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent transition-colors"
+            className="w-full h-8 bg-surface-elevated border border-border rounded-lg pl-7 pr-7 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand/30 transition-colors"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary">
@@ -180,7 +180,7 @@ export default function ConversationList({
                   key={ch}
                   onClick={() => setChannelFilter(v => v === ch ? '' : ch)}
                   className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md transition-colors ${
-                    channelFilter === ch ? 'bg-accent text-white' : 'bg-border text-text-secondary hover:bg-accent-subtle hover:text-accent'
+                    channelFilter === ch ? 'bg-brand text-white' : 'bg-border text-text-secondary hover:bg-brand/10 hover:text-brand'
                   }`}
                 >
                   {ch}
@@ -195,7 +195,7 @@ export default function ConversationList({
               <select
                 value={channelIdFilter}
                 onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-accent"
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-brand/30"
               >
                 <option value="">All Accounts</option>
                 {channels.map(ch => (
@@ -213,7 +213,7 @@ export default function ConversationList({
               <select
                 value={botFilter}
                 onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-accent"
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-brand/30"
               >
                 <option value="">All Bots</option>
                 {bots.map(bot => (
@@ -223,7 +223,7 @@ export default function ConversationList({
             </div>
           )}
           {(channelFilter || channelIdFilter !== '' || botFilter !== '') && (
-            <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-accent hover:underline flex items-center gap-1">
+            <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-brand hover:underline flex items-center gap-1">
               <X size={10} /> Clear filters
             </button>
           )}
@@ -238,7 +238,7 @@ export default function ConversationList({
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold whitespace-nowrap rounded-t-lg border border-transparent transition-all flex-shrink-0 ${
               activeTab === tab.key
-                ? 'text-accent border-b-2 border-b-accent bg-accent-subtle'
+                ? 'text-brand border-b-2 border-b-accent bg-brand/10'
                 : 'text-text-tertiary hover:text-text-secondary'
             }`}
           >
@@ -269,7 +269,7 @@ export default function ConversationList({
                   key={opt.key}
                   onClick={() => { setSortBy(opt.key); setShowSortMenu(false) }}
                   className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                    sortBy === opt.key ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
+                    sortBy === opt.key ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   {opt.label}

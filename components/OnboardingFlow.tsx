@@ -75,22 +75,22 @@ export default function OnboardingFlow() {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 p-8">
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-2xl max-w-2xl w-full mx-4 p-8">
         <div className="flex justify-between items-start mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-6 h-6 text-warning" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-bold text-text-primary">
                 Welcome to Naz!
               </h2>
             </div>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-text-secondary">
               Let's get you set up in a few simple steps
             </p>
           </div>
           <button
             onClick={skipOnboarding}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            className="text-text-tertiary hover:text-text-primary"
           >
             <X className="w-6 h-6" />
           </button>
@@ -98,11 +98,11 @@ export default function OnboardingFlow() {
 
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
+          <div className="flex justify-between text-sm text-text-secondary mb-2">
             <span>Setup Progress</span>
             <span>{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-surface-secondary rounded-full h-2">
             <div
               className="bg-info h-2 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -118,14 +118,14 @@ export default function OnboardingFlow() {
               className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
                 step.completed
                   ? 'border-success bg-success dark:bg-success/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-info dark:hover:border-info'
+                  : 'border-border hover:border-info dark:hover:border-info'
               }`}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   step.completed
                     ? 'bg-success text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                    : 'bg-surface-secondary text-text-secondary'
                 }`}
               >
                 {step.completed ? (
@@ -135,8 +135,8 @@ export default function OnboardingFlow() {
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{step.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{step.description}</p>
+                <h3 className="font-semibold text-text-primary">{step.name}</h3>
+                <p className="text-sm text-text-secondary">{step.description}</p>
               </div>
               {!step.completed && (
                 <button
@@ -152,10 +152,10 @@ export default function OnboardingFlow() {
         </div>
 
         {/* Skip Button */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-8 pt-6 border-t border-border">
           <button
             onClick={skipOnboarding}
-            className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-sm"
+            className="text-text-secondary hover:text-text-primary text-sm"
           >
             Skip onboarding for now
           </button>

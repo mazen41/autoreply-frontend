@@ -145,7 +145,7 @@ export default function ChatComposer({
       <div className={`relative flex items-end gap-2 p-2 rounded-xl border transition-colors ${
         isInternal 
           ? 'bg-warning/50 dark:bg-warning/20 border-warning dark:border-warning/50 focus-within:border-warning' 
-          : 'bg-surface-elevated border-border focus-within:border-accent'
+          : 'bg-surface-elevated border-border focus-within:border-brand/30'
       }`}>
         
         {/* Left Actions */}

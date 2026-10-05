@@ -647,7 +647,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* ─── Page Workspace Content ────────────────────────────────────────── */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className={`flex-1 w-full mx-auto flex flex-col ${pathname === '/dashboard/inbox' ? 'p-0 max-w-none h-[calc(100vh-3.5rem)]' : 'p-4 sm:p-6 lg:p-8 max-w-7xl'}`}>
           {children}
         </main>
       </div>
