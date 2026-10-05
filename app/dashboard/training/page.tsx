@@ -120,7 +120,7 @@ function ChannelBadge({ channel, count, total }: { channel: string; count: numbe
     telegram: '#0088cc',
     gmail: '#EA4335',
   }
-  const bg = colors[channel.toLowerCase()] || 'var(--brand-primary)'
+  const bg = colors[channel.toLowerCase()] || 'var(--brand)'
 
   return (
     <div className="flex items-center gap-3">
@@ -299,10 +299,10 @@ export default function TrainingDashboard() {
         <>
           {/* Empty data banner */}
           {stats.total_ai_messages === 0 && (
-            <Card className="p-4 border-blue-500/20 bg-blue-500/5">
+            <Card className="p-4 border-info/20 bg-info/5">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10 shrink-0">
-                  <Bot size={16} className="text-blue-400" />
+                <div className="p-2 rounded-lg bg-info/10 shrink-0">
+                  <Bot size={16} className="text-info" />
                 </div>
                 <div>
                   <h4 className="text-xs font-semibold text-text-primary mb-0.5">No AI data yet</h4>
@@ -354,13 +354,13 @@ export default function TrainingDashboard() {
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <TrendingUp size={16} className="text-brand-primary" />
+                      <TrendingUp size={16} className="text-brand" />
                       <CardTitle>Intent Analysis</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {Object.keys(stats.intent_breakdown).length > 0 ? (
-                      <BreakdownBars data={stats.intent_breakdown} color="var(--brand-primary)" />
+                      <BreakdownBars data={stats.intent_breakdown} color="var(--brand)" />
                     ) : (
                       <div className="flex flex-col items-center py-8 text-text-tertiary">
                         <BarChart3 size={24} className="mb-2 opacity-40" />
@@ -394,7 +394,7 @@ export default function TrainingDashboard() {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <MessageCircle size={16} className="text-brand-primary" />
+                    <MessageCircle size={16} className="text-brand" />
                     <CardTitle>Customer Feedback Hub</CardTitle>
                   </div>
                 </CardHeader>
@@ -408,15 +408,15 @@ export default function TrainingDashboard() {
                       </div>
                       <div className="text-[11px] text-text-tertiary mt-1">{stats.feedback_total} ratings</div>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
-                      <ThumbsUp size={18} className="text-emerald-400 mx-auto mb-1.5" />
-                      <div className="text-xl font-bold text-emerald-400">{fmt(stats.feedback_positive)}</div>
-                      <div className="text-[11px] text-emerald-400/70 mt-0.5">Positive</div>
+                    <div className="text-center p-4 rounded-xl bg-success/5 border border-success/15">
+                      <ThumbsUp size={18} className="text-success mx-auto mb-1.5" />
+                      <div className="text-xl font-bold text-success">{fmt(stats.feedback_positive)}</div>
+                      <div className="text-[11px] text-success/70 mt-0.5">Positive</div>
                     </div>
-                    <div className="text-center p-4 rounded-xl bg-rose-500/5 border border-rose-500/15">
-                      <ThumbsDown size={18} className="text-rose-400 mx-auto mb-1.5" />
-                      <div className="text-xl font-bold text-rose-400">{fmt(stats.feedback_negative)}</div>
-                      <div className="text-[11px] text-rose-400/70 mt-0.5">Negative</div>
+                    <div className="text-center p-4 rounded-xl bg-error/5 border border-error/15">
+                      <ThumbsDown size={18} className="text-error mx-auto mb-1.5" />
+                      <div className="text-xl font-bold text-error">{fmt(stats.feedback_negative)}</div>
+                      <div className="text-[11px] text-error/70 mt-0.5">Negative</div>
                     </div>
                   </div>
 
@@ -492,11 +492,11 @@ export default function TrainingDashboard() {
               </Card>
 
               {/* AI Tip */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 p-5 text-white">
+              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-brand to-brand p-5 text-white">
                 <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-bl-full" />
                 <BrainCircuit size={20} className="mb-3 opacity-80" />
                 <h3 className="text-sm font-semibold mb-2">AI Tip of the Day</h3>
-                <p className="text-xs text-indigo-100 leading-relaxed">
+                <p className="text-xs text-brand leading-relaxed">
                   To lower your escalation rate, review negative feedback and add the corrected answers to your Business FAQs.
                 </p>
               </div>

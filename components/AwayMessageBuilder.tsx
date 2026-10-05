@@ -85,7 +85,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Clock className="w-6 h-6 text-blue-600" />
+          <Clock className="w-6 h-6 text-info" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Business Hours & Away Messages
           </h2>
@@ -93,7 +93,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
         <button
           onClick={saveSettings}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-info text-white rounded-lg hover:bg-info disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {loading ? 'Saving...' : 'Save Settings'}
@@ -118,7 +118,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
               onChange={(e) => setEnabled(e.target.checked)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-info dark:peer-focus:ring-info rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-info" />
           </div>
         </label>
       </div>
@@ -132,7 +132,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="We're currently closed. We'll get back to you during business hours."
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-info dark:bg-gray-700 dark:text-white"
           rows={3}
         />
       </div>
@@ -145,7 +145,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
         <select
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-info dark:bg-gray-700 dark:text-white"
         >
           <option value="UTC">UTC</option>
           <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
@@ -196,7 +196,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
                     newHours[hour.day].active = e.target.checked;
                     setHours(newHours);
                   }}
-                  className="w-4 h-4 text-blue-600 rounded"
+                  className="w-4 h-4 text-info rounded"
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-300">Active</span>
               </label>

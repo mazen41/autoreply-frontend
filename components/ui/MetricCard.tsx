@@ -13,7 +13,7 @@ export interface MetricCardProps {
     label?: string
   }
   icon?: React.ReactNode
-  variant?: 'default' | 'ai' | 'warning'
+  variant?: 'default' | 'ai' | 'warning' | 'hero'
   onClick?: () => void
   className?: string
 }
@@ -29,24 +29,38 @@ export default function MetricCard({
   className = '',
 }: MetricCardProps) {
   const isInteractive = !!onClick
+  const isHero = variant === 'hero'
+  const isAI = variant === 'ai'
+  const isWarning = variant === 'warning'
+
+  // Hero: left-accent bar instead of full-green card — stays within 1-3% brand rule
+  const heroAccent = isHero ? 'border-l-2 border-l-brand' : ''
+
+  const iconVariantClass = isHero
+    ? 'bg-brand/10 text-brand border-brand/20'
+    : isAI
+    ? 'bg-brand/10 text-brand border-brand/20'
+    : isWarning
+    ? 'bg-warning/10 text-warning border-warning/20'
+    : 'bg-surface-elevated text-text-secondary border-border'
 
   return (
     <Card
       variant={isInteractive ? 'interactive' : 'default'}
       onClick={onClick}
-      className={`p-5 flex flex-col justify-between ${className}`}
+      className={`p-5 flex flex-col justify-between ${heroAccent} ${className}`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
-        <span className="text-xs font-medium text-text-secondary">{label}</span>
+        <span
+          className={`text-xs font-semibold ${
+            isHero ? 'text-brand uppercase tracking-wider text-[11px]' : 'text-text-secondary'
+          }`}
+        >
+          {label}
+        </span>
         {icon && (
           <div
-            className={`p-2 rounded-lg shrink-0 border ${
-              variant === 'ai'
-                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                : variant === 'warning'
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                : 'bg-surface-elevated text-text-secondary border-border'
-            }`}
+            className={`p-2 rounded-lg shrink-0 border ${iconVariantClass}`}
           >
             {icon}
           </div>
@@ -54,17 +68,21 @@ export default function MetricCard({
       </div>
 
       <div className="space-y-1">
-        <div className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
+        <div
+          className={`text-2xl sm:text-3xl font-bold tracking-tight ${
+            isHero ? 'text-text-primary' : 'text-text-primary'
+          }`}
+        >
           {value}
         </div>
 
         <div className="flex items-center gap-2 pt-0.5 flex-wrap">
           {trend && (
             <span
-              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${
+              className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded-md ${
                 trend.isPositive !== false
-                  ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'bg-rose-500/10 text-rose-400'
+                  ? 'bg-success/10 text-success'
+                  : 'bg-error/10 text-error'
               }`}
             >
               <svg
@@ -85,10 +103,10 @@ export default function MetricCard({
           )}
 
           {subValue && (
-            <span className="text-xs text-text-tertiary">{subValue}</span>
+            <span className="text-xs text-text-muted">{subValue}</span>
           )}
           {trend?.label && (
-            <span className="text-xs text-text-tertiary">{trend.label}</span>
+            <span className="text-xs text-text-muted">{trend.label}</span>
           )}
         </div>
       </div>

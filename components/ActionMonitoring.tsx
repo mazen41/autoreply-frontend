@@ -31,11 +31,11 @@ export default function ActionMonitoring({ businessId }: { businessId: number })
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'executed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-5 h-5 text-success" />;
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-600" />;
+        return <XCircle className="w-5 h-5 text-error" />;
       case 'pending':
-        return <Clock className="w-5 h-5 text-yellow-600" />;
+        return <Clock className="w-5 h-5 text-warning" />;
       default:
         return <AlertCircle className="w-5 h-5 text-gray-600" />;
     }
@@ -60,7 +60,7 @@ export default function ActionMonitoring({ businessId }: { businessId: number })
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Bot className="w-6 h-6 text-purple-600" />
+          <Bot className="w-6 h-6 text-brand" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             AI Action Monitoring
           </h2>
@@ -102,17 +102,17 @@ export default function ActionMonitoring({ businessId }: { businessId: number })
                       </pre>
                     </div>
                     {action.result && (
-                      <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded text-sm">
-                        <div className="font-medium text-green-800 dark:text-green-200 mb-1">Result:</div>
-                        <pre className="text-xs text-green-700 dark:text-green-300 overflow-x-auto">
+                      <div className="mt-2 p-3 bg-success dark:bg-success/20 rounded text-sm">
+                        <div className="font-medium text-success dark:text-success mb-1">Result:</div>
+                        <pre className="text-xs text-success dark:text-success overflow-x-auto">
                           {JSON.stringify(action.result, null, 2)}
                         </pre>
                       </div>
                     )}
                     {action.error_message && (
-                      <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded text-sm">
-                        <div className="font-medium text-red-800 dark:text-red-200 mb-1">Error:</div>
-                        <p className="text-red-700 dark:text-red-300">{action.error_message}</p>
+                      <div className="mt-2 p-3 bg-error dark:bg-error/20 rounded text-sm">
+                        <div className="font-medium text-error dark:text-error mb-1">Error:</div>
+                        <p className="text-error dark:text-error">{action.error_message}</p>
                       </div>
                     )}
                     <div className="mt-2 text-xs text-gray-400">

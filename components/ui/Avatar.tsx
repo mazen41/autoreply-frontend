@@ -30,21 +30,21 @@ export default function Avatar({
   }
 
   const statusColors = {
-    online: 'bg-emerald-500',
+    online: 'bg-success',
     offline: 'bg-slate-400',
-    busy: 'bg-amber-500',
-    ai: 'bg-purple-500',
+    busy: 'bg-warning',
+    ai: 'bg-brand',
   }
 
   const initial = (name || 'U').charAt(0).toUpperCase()
 
   // Generate deterministic gradient background based on name
   const gradients = [
-    'from-blue-600 to-indigo-600',
-    'from-emerald-600 to-teal-600',
-    'from-purple-600 to-pink-600',
-    'from-amber-600 to-orange-600',
-    'from-cyan-600 to-blue-600',
+    'from-info to-brand',
+    'from-success to-success',
+    'from-brand to-brand',
+    'from-warning to-warning',
+    'from-brand to-info',
   ]
   const charCode = (name || 'U').charCodeAt(0)
   const gradient = gradients[charCode % gradients.length]

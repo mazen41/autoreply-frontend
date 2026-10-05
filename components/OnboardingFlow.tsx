@@ -79,7 +79,7 @@ export default function OnboardingFlow() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-6 h-6 text-yellow-500" />
+              <Sparkles className="w-6 h-6 text-warning" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Welcome to Naz!
               </h2>
@@ -104,7 +104,7 @@ export default function OnboardingFlow() {
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              className="bg-info h-2 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -117,14 +117,14 @@ export default function OnboardingFlow() {
               key={step.id}
               className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
                 step.completed
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+                  ? 'border-success bg-success dark:bg-success/20'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-info dark:hover:border-info'
               }`}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   step.completed
-                    ? 'bg-green-500 text-white'
+                    ? 'bg-success text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                 }`}
               >
@@ -141,7 +141,7 @@ export default function OnboardingFlow() {
               {!step.completed && (
                 <button
                   onClick={() => completeStep(step.id)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-info text-white rounded-lg hover:bg-info transition-colors flex items-center gap-2"
                 >
                   Complete
                   <ChevronRight className="w-4 h-4" />

@@ -290,8 +290,8 @@ export default function AIKnowledgeContent() {
       {activeTab === 'documents' && (
         <div className="space-y-4">
           {/* Upload Dropzone */}
-          <div className="p-8 border-2 border-dashed border-border hover:border-brand-primary/50 bg-surface-elevated/30 rounded-2xl text-center space-y-3 transition-colors">
-            <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto">
+          <div className="p-8 border-2 border-dashed border-border hover:border-brand/50 bg-surface-elevated/30 rounded-2xl text-center space-y-3 transition-colors">
+            <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mx-auto">
               <UploadCloud size={24} />
             </div>
             <div>
@@ -332,7 +332,7 @@ export default function AIKnowledgeContent() {
                     className="p-4 flex items-center justify-between gap-4 hover:bg-surface-elevated/40 transition-colors"
                   >
                     <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0">
+                      <div className="p-2.5 rounded-xl bg-brand/10 text-brand border border-brand/20 shrink-0">
                         <FileText size={18} />
                       </div>
                       <div className="min-w-0">
@@ -352,7 +352,7 @@ export default function AIKnowledgeContent() {
                       <button
                         type="button"
                         onClick={() => handleDeleteFile(file.id)}
-                        className="p-1.5 rounded-lg text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
                         title="Delete file"
                       >
                         <Trash2 size={15} />
@@ -392,7 +392,7 @@ export default function AIKnowledgeContent() {
                   value={newFaqA}
                   onChange={(e) => setNewFaqA(e.target.value)}
                   placeholder="e.g. Yes, we deliver to UAE within 3-4 days via DHL Express..."
-                  className="w-full min-h-[80px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand-primary"
+                  className="w-full min-h-[80px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand"
                 />
               </div>
             </CardContent>
@@ -410,7 +410,7 @@ export default function AIKnowledgeContent() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1.5">
                     <div className="text-xs font-bold text-text-primary flex items-center gap-2">
-                      <span className="text-brand-primary font-mono">Q:</span>
+                      <span className="text-brand font-mono">Q:</span>
                       <span>{faq.question}</span>
                     </div>
                     <div className="text-xs text-text-secondary leading-relaxed pl-5">
@@ -420,7 +420,7 @@ export default function AIKnowledgeContent() {
                   <button
                     type="button"
                     onClick={() => setFaqs((prev) => prev.filter((_, i) => i !== idx))}
-                    className="p-1 rounded text-text-tertiary hover:text-rose-400 transition-colors"
+                    className="p-1 rounded text-text-tertiary hover:text-error transition-colors"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -448,7 +448,7 @@ export default function AIKnowledgeContent() {
               <textarea
                 value={aiInstructions}
                 onChange={(e) => setAiInstructions(e.target.value)}
-                className="w-full min-h-[160px] p-4 text-xs font-mono bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand-primary leading-relaxed"
+                className="w-full min-h-[160px] p-4 text-xs font-mono bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand leading-relaxed"
                 placeholder="Write system instructions for the AI..."
               />
             </div>
@@ -512,7 +512,7 @@ export default function AIKnowledgeContent() {
             {testResponse && (
               <div className="p-5 rounded-2xl bg-surface-elevated border border-border space-y-3 animate-in fade-in">
                 <div className="text-xs font-bold text-text-primary flex items-center gap-2">
-                  <Sparkles size={16} className="text-purple-400" />
+                  <Sparkles size={16} className="text-brand" />
                   <span>Synthesized AI Answer:</span>
                 </div>
                 <p className="text-xs text-text-secondary leading-relaxed bg-surface-card p-3 rounded-xl border border-border">
@@ -528,7 +528,7 @@ export default function AIKnowledgeContent() {
                       {testSources.map((src, i) => (
                         <span
                           key={i}
-                          className="text-[10px] px-2 py-0.5 rounded-md bg-brand-primary/10 text-brand-primary border border-brand-primary/20 font-mono"
+                          className="text-[10px] px-2 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/20 font-mono"
                         >
                           {src}
                         </span>

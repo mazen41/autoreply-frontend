@@ -127,7 +127,7 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
       className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-[11px] font-semibold transition-colors ${
         isOutgoing
           ? 'border-white/25 bg-white/10 text-white hover:bg-white/20'
-          : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          : 'border-border bg-surface text-text-secondary hover:text-text-primary'
       }`}
     >
       <Download size={14} />
@@ -139,7 +139,7 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
     return (
       <div className="space-y-2">
         <a href={inlineUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-black/5 bg-black/5">
-          {loading && <div className="flex h-36 w-64 max-w-full items-center justify-center text-[var(--text-secondary)]"><Loader2 className="h-5 w-5 animate-spin" /></div>}
+          {loading && <div className="flex h-36 w-64 max-w-full items-center justify-center text-text-secondary"><Loader2 className="h-5 w-5 animate-spin" /></div>}
           <img
             src={inlineUrl}
             alt={name}
@@ -177,10 +177,10 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
 
   return (
     <div className={`flex w-[min(21rem,76vw)] items-center gap-3 rounded-xl border p-3 ${
-      isOutgoing ? 'border-white/20 bg-white/10' : 'border-[var(--border)] bg-[var(--surface-elevated)]'
+      isOutgoing ? 'border-white/20 bg-white/10' : 'border-border bg-surface-elevated'
     }`}>
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-        isOutgoing ? 'bg-white/15 text-white' : 'bg-accent/10 text-accent'
+        isOutgoing ? 'bg-white/15 text-white' : 'bg-brand/10 text-brand'
       }`}>
         {previewError ? <AlertCircle className="h-5 w-5" /> : <AttachmentIcon kind={kind} />}
       </div>
@@ -190,7 +190,7 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {kind === 'pdf' && (
-          <a href={inlineUrl} target="_blank" rel="noreferrer" title="Open PDF" aria-label={`Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isOutgoing ? 'border-white/25 bg-white/10 text-white' : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]'}`}>
+          <a href={inlineUrl} target="_blank" rel="noreferrer" title="Open PDF" aria-label={`Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isOutgoing ? 'border-white/25 bg-white/10 text-white' : 'border-border bg-surface text-text-secondary'}`}>
             <ExternalLink size={14} />
           </a>
         )}
@@ -276,10 +276,10 @@ const MessageBubble = memo(function MessageBubble({
   }, [isRTL, msg.content, msg.file_name])
 
   const statusIndicator = () => {
-    if (msg.status === 'delivered') return <CheckCheck size={12} className="text-emerald-400" />
-    if (msg.status === 'sent' || msg.status === 'manual') return <Check size={12} className="text-[var(--text-tertiary)]" />
-    if (isFailed) return <XCircle size={12} className="text-rose-400" />
-    if (isPending) return <Loader2 size={12} className="animate-spin text-[var(--text-tertiary)]" />
+    if (msg.status === 'delivered') return <CheckCheck size={12} className="text-success" />
+    if (msg.status === 'sent' || msg.status === 'manual') return <Check size={12} className="text-text-tertiary" />
+    if (isFailed) return <XCircle size={12} className="text-error" />
+    if (isPending) return <Loader2 size={12} className="animate-spin text-text-tertiary" />
     return null
   }
 
@@ -294,18 +294,18 @@ const MessageBubble = memo(function MessageBubble({
 
     return (
       <div className="my-4 w-full">
-        <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-          <div className="flex flex-col gap-2 border-b border-[var(--divider)] bg-[var(--surface-elevated)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+          <div className="flex flex-col gap-2 border-b border-divider bg-surface-elevated px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-xs font-bold text-accent">{senderName.charAt(0).toUpperCase()}</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-xs font-bold text-brand">{senderName.charAt(0).toUpperCase()}</div>
               <div>
-                <div className="text-sm font-bold text-[var(--text-primary)]">{senderName}</div>
-                <div className="mt-0.5 text-xs text-[var(--text-secondary)]">{isIn ? 'to me' : 'from me'}</div>
+                <div className="text-sm font-bold text-text-primary">{senderName}</div>
+                <div className="mt-0.5 text-xs text-text-secondary">{isIn ? 'to me' : 'from me'}</div>
               </div>
             </div>
-            <div className="text-xs text-[var(--text-secondary)]">{formattedDate}</div>
+            <div className="text-xs text-text-secondary">{formattedDate}</div>
           </div>
-          <div className="p-5 text-sm leading-6 text-[var(--text-primary)]">
+          <div className="p-5 text-sm leading-6 text-text-primary">
             {subject && <div className="mb-3 font-bold">{subject}</div>}
             {sanitizedHtml ? <EmailIframe content={sanitizedHtml} /> : <div className="whitespace-pre-wrap break-words">{msg.content}</div>}
           </div>
@@ -315,19 +315,19 @@ const MessageBubble = memo(function MessageBubble({
   }
 
   const bubbleTone = isIn
-    ? 'border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-primary)]'
+    ? 'border-border bg-surface-elevated text-text-primary'
     : msg.is_ai
-      ? 'border-accent/20 bg-accent text-white'
-      : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)]'
+      ? 'border-brand/25 bg-brand/10 text-text-primary'
+      : 'border-brand/30 bg-brand text-brand-text font-medium'
 
   return (
     <div className={`group flex w-full ${isIn ? 'justify-start' : 'justify-end'}`}>
       <div className={`flex max-w-[min(76%,42rem)] items-end gap-2 ${isIn ? 'flex-row' : 'flex-row-reverse'} sm:max-w-[min(72%,44rem)]`}>
         <div className="relative min-w-0">
-          <div className={`inline-block w-fit max-w-full rounded-2xl border px-3.5 py-2.5 text-[14px] leading-[1.58] shadow-sm ${bubbleTone} ${isIn ? 'rounded-bl-md' : 'rounded-br-md'}`}>
+          <div className={`inline-block w-fit max-w-full rounded-2xl border px-3.5 py-2.5 text-[14px] leading-[1.58] shadow-xs ${bubbleTone} ${isIn ? 'rounded-bl-md' : 'rounded-br-md'}`}>
             {msg.is_ai && (
-              <div className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold uppercase text-current opacity-75">
-                <Bot size={12} /> AI drafted
+              <div className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-brand/80 tracking-wider">
+                <Bot size={12} /> AI generated
               </div>
             )}
             {hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn && msg.is_ai} />}
@@ -340,27 +340,27 @@ const MessageBubble = memo(function MessageBubble({
               </div>
             )}
             {isFailed && (
-              <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-400">
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-error">
                 <AlertCircle size={13} /> Failed to send
               </div>
             )}
           </div>
 
-          <div className={`mt-1 flex items-center gap-2 text-[11px] text-[var(--text-secondary)] ${isIn ? 'justify-start' : 'justify-end'}`}>
+          <div className={`mt-1 flex items-center gap-2 text-[11px] text-text-secondary ${isIn ? 'justify-start' : 'justify-end'}`}>
             <span>{formatMsgTime(msg.created_at)}</span>
             {!isIn && statusIndicator()}
             {msg.is_ai && onSubmitFeedback && (
               <div className="ml-1 flex items-center gap-0.5">
                 <button
                   onClick={() => onSubmitFeedback(msg.id, 'positive')}
-                  className="w-5 h-5 flex items-center justify-center rounded text-[var(--text-tertiary)] hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                  className="w-5 h-5 flex items-center justify-center rounded text-text-tertiary hover:text-brand hover:bg-brand/10 transition-colors"
                   title="Helpful"
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                 </button>
                 <button
                   onClick={() => onSubmitFeedback(msg.id, 'negative')}
-                  className="w-5 h-5 flex items-center justify-center rounded text-[var(--text-tertiary)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                  className="w-5 h-5 flex items-center justify-center rounded text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
                   title="Not helpful"
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/></svg>
@@ -371,17 +371,17 @@ const MessageBubble = memo(function MessageBubble({
 
           {/* Inline AI Correction Panel */}
           {showCorrection && msg.is_ai && !isIn && (
-            <div className="mt-2 w-full max-w-[min(76%,42rem)] rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50 dark:bg-indigo-900/20 p-3 shadow-md">
+            <div className="mt-2 w-full max-w-[min(76%,42rem)] rounded-xl border border-brand/25 bg-surface-elevated p-3 shadow-md">
               {correctionSubmitted ? (
-                <div className="flex items-center gap-2 py-2 text-emerald-600 dark:text-emerald-400">
+                <div className="flex items-center gap-2 py-2 text-brand">
                   <CheckCircle2 size={16} />
                   <span className="text-sm font-semibold">Correction submitted for review!</span>
                 </div>
               ) : (
                 <>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wide">Correct this AI reply</span>
-                    <button onClick={() => { setShowCorrection(false); setCorrectionText('') }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <span className="text-xs font-bold text-brand uppercase tracking-wide">Correct this AI reply</span>
+                    <button onClick={() => { setShowCorrection(false); setCorrectionText('') }} className="text-text-tertiary hover:text-text-primary">
                       <X size={14} />
                     </button>
                   </div>
@@ -390,13 +390,13 @@ const MessageBubble = memo(function MessageBubble({
                     onChange={e => setCorrectionText(e.target.value)}
                     placeholder="Write the correct response the AI should have given..."
                     rows={3}
-                    className="w-full resize-none rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand"
                   />
                   <div className="mt-2 flex items-center gap-2">
                     <select
                       value={learningType}
                       onChange={e => setLearningType(e.target.value as 'knowledge' | 'faq' | 'tone')}
-                      className="flex-1 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-900 px-2 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      className="flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs font-medium text-text-secondary focus:outline-none focus:border-brand"
                     >
                       <option value="knowledge">Knowledge base</option>
                       <option value="faq">FAQ answer</option>
@@ -405,7 +405,7 @@ const MessageBubble = memo(function MessageBubble({
                     <button
                       onClick={handleSubmitCorrection}
                       disabled={!correctionText.trim() || submittingCorrection}
-                      className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-text hover:bg-brand-hover disabled:opacity-50 transition-colors"
                     >
                       {submittingCorrection ? <Loader2 size={12} className="animate-spin" /> : <SendHorizonal size={12} />}
                       {submittingCorrection ? 'Submitting...' : 'Submit'}
@@ -419,14 +419,14 @@ const MessageBubble = memo(function MessageBubble({
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
           {msg.content && (
-            <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="Copy message" aria-label="Copy message">
+            <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title="Copy message" aria-label="Copy message">
               <Copy size={14} />
             </button>
           )}
           {msg.is_ai && !isIn && onCorrectAI && (
             <button
               onClick={() => setShowCorrection(v => !v)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 hover:bg-indigo-100 dark:hover:bg-indigo-800/40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-brand hover:bg-brand/10"
               title="Correct this AI reply (trains the AI)"
               aria-label="Correct AI reply"
             >
@@ -434,12 +434,12 @@ const MessageBubble = memo(function MessageBubble({
             </button>
           )}
           {isFailed && (
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-rose-400" title="Retry send" aria-label="Retry send">
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-error" title="Retry send" aria-label="Retry send">
               <RefreshCw size={14} />
             </button>
           )}
           {canReact && (
-            <button onClick={() => onReact?.(msg.id, '❤')} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]" title="React" aria-label="React">
+            <button onClick={() => onReact?.(msg.id, '❤')} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title="React" aria-label="React">
               <MessageCircle size={14} />
             </button>
           )}

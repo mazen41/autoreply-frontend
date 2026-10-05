@@ -23,31 +23,31 @@ export default function Badge({
     default:
       'bg-surface-elevated text-text-secondary border-border hover:border-border-hover',
     brand:
-      'bg-brand-primary/10 text-brand-primary border-brand-primary/20',
+      'bg-brand/10 text-brand border-brand/25',
     ai:
-      'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-sm shadow-purple-500/5',
+      'bg-brand/10 text-brand border-brand/25 shadow-xs shadow-brand/5',
     success:
-      'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      'bg-success/10 text-success border-success/20',
     warning:
-      'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      'bg-warning/10 text-warning border-warning/20',
     error:
-      'bg-rose-500/10 text-rose-400 border-rose-500/20',
+      'bg-error/10 text-error border-error/20',
     info:
-      'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      'bg-info/10 text-info border-info/20',
     neutral:
-      'bg-white/[0.04] text-text-tertiary border-white/[0.08]',
+      'bg-surface text-text-tertiary border-border',
     outline:
       'bg-transparent text-text-secondary border-border hover:border-border-hover',
   }
 
   const dotColors = {
     default: 'bg-text-tertiary',
-    brand: 'bg-brand-primary',
-    ai: 'bg-purple-400',
-    success: 'bg-emerald-400',
-    warning: 'bg-amber-400',
-    error: 'bg-rose-400',
-    info: 'bg-cyan-400',
+    brand: 'bg-brand',
+    ai: 'bg-brand',
+    success: 'bg-success',
+    warning: 'bg-warning',
+    error: 'bg-error',
+    info: 'bg-info',
     neutral: 'bg-text-tertiary',
     outline: 'bg-text-tertiary',
   }

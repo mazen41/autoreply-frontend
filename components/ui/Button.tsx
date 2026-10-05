@@ -25,23 +25,23 @@ export default function Button({
   const isDisabled = disabled || loading
 
   const baseStyles =
-    'relative inline-flex items-center justify-center font-medium select-none transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 focus-visible:ring-offset-1 disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed active:scale-[0.98]'
+    'relative inline-flex items-center justify-center font-medium select-none transition-all duration-150 ease-out outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-1 disabled:opacity-45 disabled:pointer-events-none disabled:cursor-not-allowed active:scale-[0.98]'
 
   const variantStyles = {
     primary:
-      'bg-brand-primary text-white border border-transparent hover:bg-brand-hover shadow-sm hover:shadow active:bg-blue-700',
+      'bg-brand text-brand-text border border-brand/20 hover:bg-brand-hover font-semibold shadow-xs active:bg-brand-dark',
     secondary:
-      'bg-surface-elevated text-text-primary border border-border hover:bg-surface-overlay hover:border-border-hover shadow-sm',
+      'bg-surface-elevated text-text-primary border border-border hover:bg-surface-hover hover:border-border-hover shadow-xs',
     outline:
       'bg-transparent text-text-primary border border-border hover:bg-surface-elevated hover:border-border-hover',
     ghost:
       'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-elevated border border-transparent',
     destructive:
-      'bg-error text-white border border-transparent hover:bg-red-600 shadow-sm active:bg-red-700',
+      'bg-error/15 text-error border border-error/30 hover:bg-error hover:text-white shadow-xs active:bg-error',
     ai:
-      'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white border border-indigo-400/20 hover:brightness-110 shadow-sm hover:shadow-indigo-500/20 active:opacity-90',
+      'bg-brand/10 text-brand border border-brand/25 hover:bg-brand/15 hover:border-brand/40 font-medium',
     subtle:
-      'bg-brand-primary/10 text-brand-primary border border-brand-primary/20 hover:bg-brand-primary/15 active:bg-brand-primary/20',
+      'bg-brand/10 text-brand border border-brand/20 hover:bg-brand/15 active:bg-brand/20',
   }
 
   const sizeStyles = {

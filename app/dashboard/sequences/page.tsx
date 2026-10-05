@@ -254,7 +254,7 @@ export default function SequencesPage() {
       {/* Sequence Cards Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
           <span className="text-xs text-text-tertiary">Loading automated sequences...</span>
         </div>
       ) : filtered.length === 0 ? (
@@ -288,7 +288,7 @@ export default function SequencesPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/dashboard/sequences/${seq.id}`}
-                          className="font-bold text-sm text-text-primary hover:text-brand-primary transition-colors truncate"
+                          className="font-bold text-sm text-text-primary hover:text-brand transition-colors truncate"
                         >
                           {seq.name}
                         </Link>
@@ -314,7 +314,7 @@ export default function SequencesPage() {
                 <CardContent className="space-y-4 py-4">
                   {/* Trigger row */}
                   <div className="flex items-center gap-2 text-xs bg-surface-elevated/40 p-2.5 rounded-lg border border-border/70">
-                    <Zap size={14} className="text-amber-400 shrink-0" />
+                    <Zap size={14} className="text-warning shrink-0" />
                     <span className="text-text-tertiary">Trigger:</span>
                     <span className="font-semibold text-text-primary truncate">{seq.trigger}</span>
                     <span className="text-text-tertiary ml-auto shrink-0 font-medium">
@@ -336,9 +336,9 @@ export default function SequencesPage() {
                       <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Sent</span>
                       <span className="text-xs font-bold text-text-primary tabular-nums">{seq.messagesSent.toLocaleString()}</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/15">
-                      <span className="text-[10px] text-emerald-400 uppercase font-bold block mb-0.5">Conv.</span>
-                      <span className="text-xs font-bold text-emerald-400 tabular-nums">{seq.conversionRate}%</span>
+                    <div className="p-2 rounded-lg bg-success/5 border border-success/15">
+                      <span className="text-[10px] text-success uppercase font-bold block mb-0.5">Conv.</span>
+                      <span className="text-xs font-bold text-success tabular-nums">{seq.conversionRate}%</span>
                     </div>
                   </div>
 
@@ -351,7 +351,7 @@ export default function SequencesPage() {
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-brand-primary to-purple-600 transition-all duration-500"
+                          className="h-full rounded-full bg-gradient-to-r from-brand to-brand transition-all duration-500"
                           style={{ width: `${completionPct}%` }}
                         />
                       </div>
@@ -387,7 +387,7 @@ export default function SequencesPage() {
                       variant="ghost"
                       size="xs"
                       onClick={() => handleAction('delete', seq.id)}
-                      className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10"
+                      className="text-text-tertiary hover:text-error hover:bg-error/10"
                       icon={<Trash2 size={12} />}
                       title="Delete"
                     />

@@ -478,7 +478,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                               }}
                               className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
                                 isPrimary
-                                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                                  ? 'bg-warning/20 text-warning border-warning/40'
                                   : 'bg-surface-elevated text-text-tertiary border-border hover:text-text-primary'
                               }`}
                             >
@@ -558,7 +558,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                                 type="button"
                                 onClick={() => toggleFileAssignment(file.id, ch.id)}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
-                                  isAssigned ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-surface-elevated text-text-secondary border-border'
+                                  isAssigned ? 'bg-success text-white border-success' : 'bg-surface-elevated text-text-secondary border-border'
                                 }`}
                               >
                                 {isAssigned ? `✓ ${ch.page_name || ch.type}` : `+ ${ch.page_name || ch.type}`}

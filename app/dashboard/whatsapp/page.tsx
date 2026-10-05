@@ -156,7 +156,7 @@ export default function WhatsAppPage() {
             <CardContent className="space-y-4 pt-2">
               <div className="p-4 rounded-xl bg-surface-elevated border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center p-2.5">
+                  <div className="w-12 h-12 rounded-xl bg-success/10 border border-success/20 text-success flex items-center justify-center p-2.5">
                     <MessageCircle size={28} />
                   </div>
                   <div>
@@ -200,7 +200,7 @@ export default function WhatsAppPage() {
               {/* API Health Diagnostic */}
               <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border/80 space-y-2.5">
                 <div className="text-xs font-bold text-text-primary flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-emerald-400" />
+                  <CheckCircle2 size={16} className="text-success" />
                   <span>Meta Webhook & Cloud Health</span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
@@ -218,7 +218,7 @@ export default function WhatsAppPage() {
                   </div>
                   <div>
                     <span className="text-text-tertiary">Assigned Bot</span>
-                    <div className="font-semibold text-purple-400 mt-0.5">OmniSales v2</div>
+                    <div className="font-semibold text-brand mt-0.5">OmniSales v2</div>
                   </div>
                 </div>
               </div>
@@ -236,13 +236,13 @@ export default function WhatsAppPage() {
 
             <CardContent className="space-y-4 pt-2">
               <div className="p-4 rounded-xl bg-surface-elevated text-center space-y-3 border border-border">
-                <div className="w-12 h-12 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center mx-auto">
                   <QrCode size={24} />
                 </div>
                 <div className="text-xs text-text-secondary leading-relaxed">
                   Open WhatsApp on your device &gt; Linked Devices &gt; Link with phone number:
                 </div>
-                <div className="p-3 bg-surface-card rounded-lg font-mono text-base font-bold text-brand-primary tracking-widest border border-border">
+                <div className="p-3 bg-surface-card rounded-lg font-mono text-base font-bold text-brand tracking-widest border border-border">
                   {pairingCode}
                 </div>
               </div>

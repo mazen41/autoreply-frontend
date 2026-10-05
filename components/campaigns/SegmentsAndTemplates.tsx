@@ -198,13 +198,13 @@ export default function SegmentsAndTemplates() {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[var(--border)]">
+      <div className="flex gap-2 border-b border-border">
         <button
           onClick={() => setActiveTab('segments')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${
             activeTab === 'segments'
-              ? 'border-[var(--accent)] text-[var(--accent)]'
-              : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
           <Users size={14} /> {L('Segments', 'الشرائح')}
@@ -213,8 +213,8 @@ export default function SegmentsAndTemplates() {
           onClick={() => setActiveTab('templates')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-colors ${
             activeTab === 'templates'
-              ? 'border-[var(--accent)] text-[var(--accent)]'
-              : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
           }`}
         >
           <FileText size={14} /> {L('Templates', 'القوالب')}
@@ -225,23 +225,23 @@ export default function SegmentsAndTemplates() {
       {activeTab === 'segments' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">{L('Audience Segments', 'شرائح الجمهور')}</h3>
+            <h3 className="text-lg font-bold text-text-primary">{L('Audience Segments', 'شرائح الجمهور')}</h3>
             <button
               onClick={() => setShowSegmentForm(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent)] text-white hover:brightness-110 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-white hover:brightness-110 transition-all"
             >
               <Plus size={12} /> {L('New Segment', 'شريحة جديدة')}
             </button>
           </div>
 
           {showSegmentForm && (
-            <div className="p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] space-y-3">
+            <div className="p-4 rounded-xl bg-surface-elevated border border-border space-y-3">
               <input
                 type="text"
                 value={segmentName}
                 onChange={e => setSegmentName(e.target.value)}
                 placeholder={L('Segment name', 'اسم الشريحة')}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
               />
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -249,40 +249,40 @@ export default function SegmentsAndTemplates() {
                   value={segmentTags}
                   onChange={e => setSegmentTags(e.target.value)}
                   placeholder={L('Tags (comma separated)', 'العلامات (مفصولة بفواصل)')}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 />
                 <input
                   type="number"
                   value={segmentMinSpent}
                   onChange={e => setSegmentMinSpent(e.target.value)}
                   placeholder={L('Min spent', 'الحد الأدنى للإنفاق')}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 />
                 <input
                   type="number"
                   value={segmentLastOrderDays}
                   onChange={e => setSegmentLastOrderDays(e.target.value)}
                   placeholder={L('Last order within days', 'آخر طلب خلال أيام')}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 />
                 <input
                   type="number"
                   value={segmentMinOrders}
                   onChange={e => setSegmentMinOrders(e.target.value)}
                   placeholder={L('Min orders', 'الحد الأدنى للطلبات')}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={saveSegment}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent)] text-white hover:brightness-110 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-white hover:brightness-110 transition-all"
                 >
                   <Save size={12} /> {L('Save', 'حفظ')}
                 </button>
                 <button
                   onClick={() => { setShowSegmentForm(false); setEditingSegment(null) }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border text-text-secondary hover:bg-surface transition-all"
                 >
                   <X size={12} /> {L('Cancel', 'إلغاء')}
                 </button>
@@ -292,18 +292,18 @@ export default function SegmentsAndTemplates() {
 
           <div className="space-y-2">
             {segments.map(segment => (
-              <div key={segment.id} className="p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+              <div key={segment.id} className="p-4 rounded-xl bg-surface-elevated border border-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-bold text-[var(--text-primary)]">{segment.name}</h4>
+                    <h4 className="text-sm font-bold text-text-primary">{segment.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       {segment.rules?.tags?.map(tag => (
-                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-subtle)] text-[var(--accent)] font-bold">
+                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-accent-subtle text-accent font-bold">
                           {tag}
                         </span>
                       ))}
                       {segment.rules?.min_spent && (
-                        <span className="text-[10px] text-[var(--text-tertiary)]">
+                        <span className="text-[10px] text-text-tertiary">
                           {L('Min spent:', 'الحد الأدنى:')} ${segment.rules.min_spent}
                         </span>
                       )}
@@ -320,13 +320,13 @@ export default function SegmentsAndTemplates() {
                         setSegmentMinOrders(segment.rules?.min_orders?.toString() || '')
                         setShowSegmentForm(true)
                       }}
-                      className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-surface text-text-secondary hover:text-accent transition-colors"
                     >
                       <Edit2 size={12} />
                     </button>
                     <button
                       onClick={() => deleteSegment(segment.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-error/10 text-text-secondary hover:text-error transition-colors"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -335,7 +335,7 @@ export default function SegmentsAndTemplates() {
               </div>
             ))}
             {segments.length === 0 && !showSegmentForm && (
-              <p className="text-center py-8 text-[var(--text-tertiary)] text-sm">
+              <p className="text-center py-8 text-text-tertiary text-sm">
                 {L('No segments created yet', 'لم يتم إنشاء شرائح بعد')}
               </p>
             )}
@@ -347,29 +347,29 @@ export default function SegmentsAndTemplates() {
       {activeTab === 'templates' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">{L('Campaign Templates', 'قوالب الحملات')}</h3>
+            <h3 className="text-lg font-bold text-text-primary">{L('Campaign Templates', 'قوالب الحملات')}</h3>
             <button
               onClick={() => setShowTemplateForm(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent)] text-white hover:brightness-110 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-white hover:brightness-110 transition-all"
             >
               <Plus size={12} /> {L('New Template', 'قالب جديد')}
             </button>
           </div>
 
           {showTemplateForm && (
-            <div className="p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] space-y-3">
+            <div className="p-4 rounded-xl bg-surface-elevated border border-border space-y-3">
               <input
                 type="text"
                 value={templateTitle}
                 onChange={e => setTemplateTitle(e.target.value)}
                 placeholder={L('Template title', 'عنوان القالب')}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
               />
               <div className="grid grid-cols-2 gap-3">
                 <select
                   value={templateChannel}
                   onChange={e => setTemplateChannel(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 >
                   <option value="whatsapp">WhatsApp</option>
                   <option value="email">Email</option>
@@ -378,7 +378,7 @@ export default function SegmentsAndTemplates() {
                 <select
                   value={templateCategory}
                   onChange={e => setTemplateCategory(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                 >
                   <option value="general">{L('General', 'عام')}</option>
                   <option value="abandoned_cart">{L('Abandoned Cart', 'سلة متروكة')}</option>
@@ -391,18 +391,18 @@ export default function SegmentsAndTemplates() {
                 onChange={e => setTemplateBody(e.target.value)}
                 placeholder={L('Template body...', 'نص القالب...')}
                 rows={4}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent resize-none"
               />
               <div className="flex gap-2">
                 <button
                   onClick={saveTemplate}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent)] text-white hover:brightness-110 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-white hover:brightness-110 transition-all"
                 >
                   <Save size={12} /> {L('Save', 'حفظ')}
                 </button>
                 <button
                   onClick={() => { setShowTemplateForm(false); setEditingTemplate(null) }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border text-text-secondary hover:bg-surface transition-all"
                 >
                   <X size={12} /> {L('Cancel', 'إلغاء')}
                 </button>
@@ -412,9 +412,9 @@ export default function SegmentsAndTemplates() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {templates.map(template => (
-              <div key={template.id} className="p-4 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+              <div key={template.id} className="p-4 rounded-xl bg-surface-elevated border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-bold text-[var(--text-primary)]">{template.title}</h4>
+                  <h4 className="text-sm font-bold text-text-primary">{template.title}</h4>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => {
@@ -425,31 +425,31 @@ export default function SegmentsAndTemplates() {
                         setTemplateCategory(template.category)
                         setShowTemplateForm(true)
                       }}
-                      className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-surface text-text-secondary hover:text-accent transition-colors"
                     >
                       <Edit2 size={12} />
                     </button>
                     <button
                       onClick={() => deleteTemplate(template.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-error/10 text-text-secondary hover:text-error transition-colors"
                     >
                       <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] line-clamp-2">{template.body}</p>
+                <p className="text-xs text-text-secondary line-clamp-2">{template.body}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--text-tertiary)] font-bold uppercase">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface text-text-tertiary font-bold uppercase">
                     {template.channel_type}
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-subtle)] text-[var(--accent)] font-bold">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent-subtle text-accent font-bold">
                     {template.category}
                   </span>
                 </div>
               </div>
             ))}
             {templates.length === 0 && !showTemplateForm && (
-              <p className="text-center py-8 text-[var(--text-tertiary)] text-sm col-span-2">
+              <p className="text-center py-8 text-text-tertiary text-sm col-span-2">
                 {L('No templates created yet', 'لم يتم إنشاء قوالب بعد')}
               </p>
             )}

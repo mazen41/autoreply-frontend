@@ -56,7 +56,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {/* Conversation Statistics */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <MessageSquare className="w-6 h-6 text-blue-600" />
+          <MessageSquare className="w-6 h-6 text-info" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Conversations
           </h2>
@@ -69,13 +69,13 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
             <div className="text-sm text-gray-500">Total</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-info">
               {dashboardData?.conversations?.new || 0}
             </div>
             <div className="text-sm text-gray-500">New</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-success">
               {dashboardData?.conversations?.open || 0}
             </div>
             <div className="text-sm text-gray-500">Open</div>
@@ -106,7 +106,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {/* AI Statistics */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-6 h-6 text-purple-600" />
+          <TrendingUp className="w-6 h-6 text-brand" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             AI Performance
           </h2>
@@ -119,19 +119,19 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
             <div className="text-sm text-gray-500">AI Conversations</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">
+            <div className="text-3xl font-bold text-brand">
               {dashboardData?.ai?.ai_responses || 0}
             </div>
             <div className="text-sm text-gray-500">AI Responses</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-3xl font-bold text-info">
               {dashboardData?.ai?.escalated_conversations || 0}
             </div>
             <div className="text-sm text-gray-500">Escalated</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-3xl font-bold text-success">
               {Math.round(dashboardData?.ai?.ai_success_rate || 0)}%
             </div>
             <div className="text-sm text-gray-500">Success Rate</div>
@@ -143,7 +143,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {dashboardData?.agents && dashboardData.agents.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-6 h-6 text-orange-600" />
+            <Clock className="w-6 h-6 text-warning" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Agent Performance
             </h2>
@@ -173,7 +173,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {dashboardData?.channels && dashboardData.channels.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-6 h-6 text-green-600" />
+            <TrendingUp className="w-6 h-6 text-success" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Channels
             </h2>
@@ -203,7 +203,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {dashboardData?.ecommerce && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-6 h-6 text-blue-600" />
+            <TrendingUp className="w-6 h-6 text-info" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               E-commerce
             </h2>
@@ -216,13 +216,13 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
               <div className="text-sm text-gray-500">Products</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-success">
                 {dashboardData.ecommerce.active_products || 0}
               </div>
               <div className="text-sm text-gray-500">Active</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-info">
                 {dashboardData.ecommerce.recovered_carts || 0}
               </div>
               <div className="text-sm text-gray-500">Recovered Carts</div>
@@ -235,7 +235,7 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
       {dashboardData?.workflows && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-6 h-6 text-purple-600" />
+            <TrendingUp className="w-6 h-6 text-brand" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Workflows
             </h2>
@@ -248,19 +248,19 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
               <div className="text-sm text-gray-500">Total</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-success">
                 {dashboardData.workflows.active_workflows || 0}
               </div>
               <div className="text-sm text-gray-500">Active</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-info">
                 {dashboardData.workflows.total_executions || 0}
               </div>
               <div className="text-sm text-gray-500">Executions</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-success">
                 {Math.round(dashboardData.workflows.success_rate || 0)}%
               </div>
               <div className="text-sm text-gray-500">Success Rate</div>

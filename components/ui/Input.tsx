@@ -63,7 +63,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           id={inputId}
           disabled={disabled}
           value={value}
-          className={`h-9 w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border placeholder:text-text-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`h-9 w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
             icon ? 'pl-9' : 'pl-3'
           } ${iconRight || onClear || shortcut ? 'pr-9' : 'pr-3'} ${
             error
@@ -143,7 +143,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
         ref={ref}
         id={textareaId}
         disabled={disabled}
-        className={`w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border p-3 placeholder:text-text-tertiary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 transition-all duration-150 resize-y min-h-[90px] disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border p-3 placeholder:text-text-tertiary focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all duration-150 resize-y min-h-[90px] disabled:opacity-50 disabled:cursor-not-allowed ${
           error
             ? 'border-error focus:border-error focus:ring-error/20'
             : 'hover:border-border-hover'

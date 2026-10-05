@@ -67,7 +67,7 @@ export default function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full ${sizeStyles[size]} bg-surface-overlay border border-border rounded-2xl shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
+        className={`relative w-full ${sizeStyles[size]} bg-surface-overlay border border-border rounded-2xl shadow-lg overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
       >
         {(title || description) && (
           <div className="px-6 pt-5 pb-4 border-b border-border/60 flex items-start justify-between gap-4">

@@ -193,7 +193,7 @@ export default function ChannelConnectWizard({
       {/* ─── Wizard Header & Steps Stepper ─────────────────────────────── */}
       <div className="px-6 py-4 bg-surface-elevated/40 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center font-bold text-xs">
             {step}
           </div>
           <div>
@@ -219,9 +219,9 @@ export default function ChannelConnectWizard({
               key={i}
               className={`h-1.5 rounded-full transition-all duration-200 ${
                 i === step
-                  ? 'w-6 bg-brand-primary'
+                  ? 'w-6 bg-brand'
                   : i < step
-                  ? 'w-2 bg-emerald-500'
+                  ? 'w-2 bg-success'
                   : 'w-2 bg-border'
               }`}
             />
@@ -248,7 +248,7 @@ export default function ChannelConnectWizard({
                   onClick={() => setActiveCategory(cat.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors shrink-0 ${
                     activeCategory === cat.id
-                      ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary font-semibold'
+                      ? 'bg-brand/10 border-brand/30 text-brand font-semibold'
                       : 'bg-surface-elevated border-border text-text-secondary hover:text-text-primary'
                   }`}
                 >
@@ -273,7 +273,7 @@ export default function ChannelConnectWizard({
                 key={ch.id}
                 type="button"
                 onClick={() => handleSelectChannel(ch)}
-                className="p-4 rounded-xl border border-border bg-surface-elevated/40 hover:bg-surface-elevated hover:border-brand-primary/40 text-left transition-all duration-150 flex flex-col justify-between group active:scale-[0.99] shadow-xs"
+                className="p-4 rounded-xl border border-border bg-surface-elevated/40 hover:bg-surface-elevated hover:border-brand/40 text-left transition-all duration-150 flex flex-col justify-between group active:scale-[0.99] shadow-xs"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2.5">
@@ -291,7 +291,7 @@ export default function ChannelConnectWizard({
                       </Badge>
                     )}
                   </div>
-                  <h4 className="text-xs font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+                  <h4 className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
                     {ch.name}
                   </h4>
                   <p className="text-[11px] text-text-tertiary mt-1 line-clamp-2 leading-relaxed">
@@ -299,7 +299,7 @@ export default function ChannelConnectWizard({
                   </p>
                 </div>
 
-                <div className="pt-3 mt-3 border-t border-border/50 flex items-center justify-between text-[11px] font-semibold text-brand-primary">
+                <div className="pt-3 mt-3 border-t border-border/50 flex items-center justify-between text-[11px] font-semibold text-brand">
                   <span>Connect</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -333,31 +333,31 @@ export default function ChannelConnectWizard({
 
           <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border space-y-3">
             <div className="text-xs font-semibold text-text-primary flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-brand-primary" />
+              <ShieldCheck className="w-4 h-4 text-brand" />
               <span>Permissions NazBiz will request:</span>
             </div>
             <ul className="space-y-2 text-xs text-text-secondary">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                 <span>Receive incoming direct messages and comments in real-time</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                 <span>Dispatch automated replies via configured AI bots & workflows</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                 <span>Sync customer names, contact info, and conversation history</span>
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                 <span>Assign conversation tags and sentiment classifications</span>
               </li>
             </ul>
           </div>
 
           {/* Security Guarantee */}
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs">
             <Lock className="w-4 h-4 shrink-0" />
             <span>
               Enterprise grade 256-bit encryption. Your credentials and customer data remain strictly private and GDPR-compliant.
@@ -415,7 +415,7 @@ export default function ChannelConnectWizard({
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold text-text-primary flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-brand" />
                   <span>Enable AI Auto-Reply immediately</span>
                 </div>
                 <div className="text-[11px] text-text-tertiary">
@@ -426,7 +426,7 @@ export default function ChannelConnectWizard({
                 type="checkbox"
                 checked={aiEnabled}
                 onChange={(e) => setAiEnabled(e.target.checked)}
-                className="w-4 h-4 accent-brand-primary cursor-pointer"
+                className="w-4 h-4 accent-brand cursor-pointer"
               />
             </div>
           </div>
@@ -474,7 +474,7 @@ export default function ChannelConnectWizard({
       {/* ─── Step 4: Connection Success ───────────────────────────────── */}
       {step === 4 && (
         <div className="p-8 text-center space-y-5">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
+          <div className="w-16 h-16 rounded-2xl bg-success/10 border border-success/20 text-success flex items-center justify-center mx-auto shadow-lg shadow-success/10">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 

@@ -133,7 +133,7 @@ export default function GuidedTours() {
       <div className="fixed bottom-4 left-4 z-50">
         <button
           onClick={() => startTour(Object.keys(tours)[0])}
-          className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 shadow-lg"
+          className="flex items-center gap-2 px-4 py-2 bg-warning text-white rounded-lg hover:bg-warning shadow-lg"
         >
           <Lightbulb className="w-4 h-4" />
           Take a Tour
@@ -180,14 +180,14 @@ export default function GuidedTours() {
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full ${
-                  index === currentStep ? 'bg-blue-600' : 'bg-gray-300'
+                  index === currentStep ? 'bg-info' : 'bg-gray-300'
                 }`}
               />
             ))}
           </div>
           <button
             onClick={nextStep}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-info text-white rounded-lg hover:bg-info"
           >
             {currentStep === currentTour.steps.length - 1 ? 'Complete' : 'Next'}
             <ArrowRight className="w-4 h-4" />

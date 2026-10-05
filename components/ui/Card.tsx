@@ -19,7 +19,7 @@ export function Card({
     elevated:
       'bg-surface-elevated border-border shadow-md',
     interactive:
-      'bg-surface-card border-border/80 hover:border-brand-primary/40 hover:bg-surface-elevated/80 hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.995]',
+      'bg-surface-card border-border hover:border-brand/35 hover:bg-surface-elevated hover:shadow-xs transition-all duration-150 cursor-pointer active:scale-[0.995]',
     bordered:
       'bg-transparent border-border',
   }

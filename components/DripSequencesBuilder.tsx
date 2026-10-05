@@ -87,14 +87,14 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Layers className="w-6 h-6 text-indigo-600" />
+          <Layers className="w-6 h-6 text-brand" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Drip Sequences
           </h2>
         </div>
         <button
           onClick={() => setShowBuilder(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand"
         >
           <Plus className="w-4 h-4" />
           New Sequence
@@ -178,7 +178,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
               <button
                 onClick={createSequence}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Create Sequence'}
               </button>
@@ -205,7 +205,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
                   </span>
                   <span>{sequence.steps?.length || 0} steps</span>
                   {sequence.is_active ? (
-                    <span className="text-green-600">Active</span>
+                    <span className="text-success">Active</span>
                   ) : (
                     <span className="text-gray-400">Inactive</span>
                   )}
@@ -213,7 +213,7 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
               </div>
               <button
                 onClick={() => deleteSequence(sequence.id)}
-                className="p-2 text-red-600 hover:bg-red-50 rounded"
+                className="p-2 text-error hover:bg-error rounded"
                 title="Delete"
               >
                 <Trash2 className="w-4 h-4" />

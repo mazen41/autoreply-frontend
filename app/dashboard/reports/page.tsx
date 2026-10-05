@@ -25,7 +25,7 @@ function getToken() {
 }
 
 // ─── Mini Sparkline ───────────────────────────────────────────────────────────
-function Sparkline({ data, color = 'var(--brand-primary)' }: { data: number[]; color?: string }) {
+function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
   if (!data || data.length < 2) return null
   const max = Math.max(...data, 1)
   const w = 400, h = 60
@@ -204,7 +204,7 @@ export default function ReportsPage() {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <Sparkline data={dailyData} color="var(--brand-primary)" />
+              <Sparkline data={dailyData} color="var(--brand)" />
             </CardContent>
           </Card>
         </div>
@@ -228,7 +228,7 @@ export default function ReportsPage() {
                     </div>
                     <div className="h-1 bg-surface-elevated rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-brand-primary transition-all duration-500"
+                        className="h-full rounded-full bg-brand transition-all duration-500"
                         style={{ width: `${ch.pct || ch.percentage || 0}%` }}
                       />
                     </div>

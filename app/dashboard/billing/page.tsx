@@ -174,7 +174,7 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading billing overview...</span>
       </div>
     )
@@ -263,7 +263,7 @@ export default function BillingPage() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-text-primary flex items-center gap-1.5">
-                      <Bot size={13} className="text-brand-primary" /> AI Replies Automated
+                      <Bot size={13} className="text-brand" /> AI Replies Automated
                     </span>
                     <span className="font-semibold text-text-primary">
                       {usedReplies.toLocaleString()}{' '}
@@ -272,7 +272,7 @@ export default function BillingPage() {
                   </div>
                   <div className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden border border-border/60">
                     <div
-                      className="h-full rounded-full bg-brand-primary transition-all duration-500"
+                      className="h-full rounded-full bg-brand transition-all duration-500"
                       style={{ width: `${Math.min(100, (usedReplies / pkg.ai_replies_limit) * 100)}%` }}
                     />
                   </div>
@@ -282,7 +282,7 @@ export default function BillingPage() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-text-primary flex items-center gap-1.5">
-                      <Layers size={13} className="text-purple-400" /> Connected Channel Accounts
+                      <Layers size={13} className="text-brand" /> Connected Channel Accounts
                     </span>
                     <span className="font-semibold text-text-primary">
                       {usedChannels} <span className="text-text-tertiary font-normal">/ {pkg.channels_limit} slots</span>
@@ -290,7 +290,7 @@ export default function BillingPage() {
                   </div>
                   <div className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden border border-border/60">
                     <div
-                      className="h-full rounded-full bg-purple-500 transition-all duration-500"
+                      className="h-full rounded-full bg-brand transition-all duration-500"
                       style={{ width: `${Math.min(100, (usedChannels / pkg.channels_limit) * 100)}%` }}
                     />
                   </div>
@@ -305,7 +305,7 @@ export default function BillingPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {pkg.features.map((feat, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs text-text-secondary">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                      <CheckCircle2 size={14} className="text-success shrink-0" />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -323,7 +323,7 @@ export default function BillingPage() {
                   size="sm"
                   onClick={handleCancel}
                   loading={cancelling}
-                  className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10 text-xs"
+                  className="text-text-tertiary hover:text-error hover:bg-error/10 text-xs"
                 >
                   Cancel Subscription
                 </Button>
@@ -377,15 +377,15 @@ export default function BillingPage() {
               <CardDescription>Primary card charged for renewals</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
-              <div className="p-4 rounded-xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/20 text-white space-y-4 shadow-md">
+              <div className="p-4 rounded-xl bg-gradient-to-tr from-slate-900 via-brand to-slate-900 border border-brand/20 text-white space-y-4 shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-indigo-300 font-bold uppercase tracking-wider">Corporate Visa</span>
-                  <CreditCard size={20} className="text-indigo-400" />
+                  <span className="font-mono text-xs text-brand font-bold uppercase tracking-wider">Corporate Visa</span>
+                  <CreditCard size={20} className="text-brand" />
                 </div>
                 <div className="font-mono text-base tracking-widest">
                   •••• •••• •••• 4242
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-indigo-200/80">
+                <div className="flex items-center justify-between text-[11px] text-brand/80">
                   <span>Mohammed Al-Rashid</span>
                   <span>Exp 09/28</span>
                 </div>
@@ -398,9 +398,9 @@ export default function BillingPage() {
           </Card>
 
           {/* Enterprise Support Callout */}
-          <Card className="bg-gradient-to-br from-brand-primary/10 via-surface to-purple-500/5 border-brand-primary/20">
+          <Card className="bg-gradient-to-br from-brand/10 via-surface to-brand/5 border-brand/20">
             <CardHeader className="pb-2">
-              <div className="flex items-center gap-2 text-brand-primary">
+              <div className="flex items-center gap-2 text-brand">
                 <Sparkles size={16} />
                 <CardTitle className="text-sm">Need Custom SLA or Volume?</CardTitle>
               </div>

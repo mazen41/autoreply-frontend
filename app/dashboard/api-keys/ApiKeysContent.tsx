@@ -249,7 +249,7 @@ export default function ApiKeysContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading API credentials...</span>
       </div>
     )
@@ -316,7 +316,7 @@ export default function ApiKeysContent() {
               href="https://docs.nazbiz.com/api"
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-brand-primary hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-brand hover:underline flex items-center gap-1 font-medium"
             >
               Developer API Docs <ExternalLink size={12} />
             </a>
@@ -376,7 +376,7 @@ export default function ApiKeysContent() {
                           className="p-1.5 rounded-md hover:bg-surface-elevated text-text-tertiary hover:text-text-primary transition-colors"
                           title="Copy Token"
                         >
-                          {isCopied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                          {isCopied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                         </button>
                       </div>
 
@@ -387,7 +387,7 @@ export default function ApiKeysContent() {
                           Created {new Date(apiKey.created_at).toLocaleDateString()}
                         </span>
                         {apiKey.last_used_at ? (
-                          <span className="flex items-center gap-1 text-emerald-400/90">
+                          <span className="flex items-center gap-1 text-success/90">
                             <Clock size={12} />
                             Last used {new Date(apiKey.last_used_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
@@ -395,7 +395,7 @@ export default function ApiKeysContent() {
                           <span className="text-text-tertiary">Never used</span>
                         )}
                         {apiKey.expires_at && (
-                          <span className="text-amber-400/90 flex items-center gap-1">
+                          <span className="text-warning/90 flex items-center gap-1">
                             <AlertTriangle size={12} />
                             Expires {new Date(apiKey.expires_at).toLocaleDateString()}
                           </span>
@@ -429,7 +429,7 @@ export default function ApiKeysContent() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRevoke(apiKey.id)}
-                        className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10"
+                        className="text-text-tertiary hover:text-error hover:bg-error/10"
                         icon={<Trash2 size={14} />}
                       >
                         Revoke
@@ -455,8 +455,8 @@ export default function ApiKeysContent() {
       >
         {newKey ? (
           <div className="space-y-5 p-6">
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 space-y-1">
-              <div className="font-bold flex items-center gap-1.5 text-amber-200">
+            <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 text-xs text-warning space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-warning">
                 <AlertTriangle size={14} /> Please save this secret key immediately
               </div>
               <p>For your security, we will never show you this token again. Store it securely in your environment variables.</p>
@@ -465,14 +465,14 @@ export default function ApiKeysContent() {
             <div className="space-y-2">
               <label className="text-xs font-semibold text-text-primary">Secret Token</label>
               <div className="flex items-center gap-2 p-2 rounded-xl bg-surface border border-border">
-                <code className="flex-1 font-mono text-xs text-emerald-400 px-2 break-all select-all">
+                <code className="flex-1 font-mono text-xs text-success px-2 break-all select-all">
                   {newKey}
                 </code>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => copyToClipboard(newKey, 'modal-key')}
-                  icon={copiedId === 'modal-key' ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                  icon={copiedId === 'modal-key' ? <Check size={14} className="text-success" /> : <Copy size={14} />}
                 >
                   {copiedId === 'modal-key' ? 'Copied!' : 'Copy'}
                 </Button>
@@ -506,7 +506,7 @@ export default function ApiKeysContent() {
             <div className="space-y-3">
               <label className="text-xs font-semibold text-text-primary flex items-center justify-between">
                 <span>Permission Scopes *</span>
-                <span className="text-[11px] text-brand-primary font-normal">{form.scopes.length} selected</span>
+                <span className="text-[11px] text-brand font-normal">{form.scopes.length} selected</span>
               </label>
 
               <div className="space-y-4">
@@ -524,7 +524,7 @@ export default function ApiKeysContent() {
                             onClick={() => toggleScope(s.id)}
                             className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                               isChecked
-                                ? 'bg-brand-primary/10 border-brand-primary/40 text-text-primary'
+                                ? 'bg-brand/10 border-brand/40 text-text-primary'
                                 : 'bg-surface-elevated/40 border-border text-text-secondary hover:border-border-hover'
                             }`}
                           >
@@ -534,7 +534,7 @@ export default function ApiKeysContent() {
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => {}} // handled by parent div
-                                className="rounded border-border accent-brand-primary cursor-pointer"
+                                className="rounded border-border accent-brand cursor-pointer"
                               />
                             </div>
                             <span className="text-[11px] text-text-tertiary block leading-snug">

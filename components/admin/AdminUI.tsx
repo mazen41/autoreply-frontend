@@ -30,7 +30,7 @@ export function Panel({ children, className = '', motionKey }: { children: React
 }
 
 export function StatCard({ label, value, detail, trend, icon, tone = 'slate' }: { label: string; value: string | number; detail?: string; trend?: string; icon?: React.ReactNode; tone?: 'emerald' | 'cyan' | 'violet' | 'amber' | 'rose' | 'slate' }) {
-  const gradient = { emerald: 'from-[var(--accent)]/50 to-white/50', cyan: 'from-[var(--accent)]/50 to-white/50', violet: 'from-[var(--accent)]/50 to-white', amber: 'from-[var(--accent)]/40 to-white/50', rose: 'from-[var(--accent)]/50 to-white/50', slate: 'from-[var(--accent)] to-white' }[tone]
+  const gradient = { emerald: 'from-accent/50 to-white/50', cyan: 'from-accent/50 to-white/50', violet: 'from-accent/50 to-white', amber: 'from-accent/40 to-white/50', rose: 'from-accent/50 to-white/50', slate: 'from-accent to-white' }[tone]
   const trendClass = { emerald: 'text-white/60 dark:text-white/30', cyan: 'text-white/60 dark:text-white/30', violet: 'text-white/60 dark:text-white/30', amber: 'text-white/60 dark:text-white/30', rose: 'text-white/60 dark:text-white/30', slate: 'text-white/70 dark:text-white/70' }[tone]
   return (
     <Panel className="relative overflow-hidden p-5">
@@ -48,7 +48,7 @@ export function StatCard({ label, value, detail, trend, icon, tone = 'slate' }: 
 }
 
 export function Badge({ children, tone = 'slate' }: { children: React.ReactNode; tone?: 'emerald' | 'cyan' | 'violet' | 'amber' | 'rose' | 'slate' }) {
-  const classes = { emerald: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-[var(--accent)]/20', cyan: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-[var(--accent)]/20', violet: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-[var(--accent)]/20', amber: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-[var(--accent)]/20', rose: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-[var(--accent)]/20', slate: 'bg-white/5 text-white/70 ring-slate-200 dark:bg-white/8 dark:text-white/70 dark:ring-white/10' }[tone]
+  const classes = { emerald: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-accent/20', cyan: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-accent/20', violet: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-accent/20', amber: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-accent/20', rose: 'bg-white/50 text-white/70 ring-white/10 dark:bg-white/40 dark:text-white/20 dark:ring-accent/20', slate: 'bg-white/5 text-white/70 ring-slate-200 dark:bg-white/8 dark:text-white/70 dark:ring-white/10' }[tone]
   return <span className={clsx('inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1', classes)}>{children}</span>
 }
 
@@ -61,7 +61,7 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
   return <label className="block"><span className="mb-2 block text-sm font-bold text-white/70 dark:text-white/70">{label}</span>{children}{hint && <span className="mt-2 block text-xs leading-5 text-white/70 dark:text-white/70">{hint}</span>}</label>
 }
 
-export const inputClass = 'w-full rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-white/70 outline-none transition placeholder:text-white/70 focus:border-white/40 focus:ring-4 focus:ring-[var(--accent)]/15 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/70'
+export const inputClass = 'w-full rounded-xl border border-white/10 bg-white px-4 py-3 text-sm text-white/70 outline-none transition placeholder:text-white/70 focus:border-white/40 focus:ring-4 focus:ring-accent/15 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/70'
 
 export function SkeletonRows({ rows = 5 }: { rows?: number }) {
   return <div className="space-y-3">{Array.from({ length: rows }).map((_, index) => <div key={index} className="skeleton" style={{ height: '3.5rem' }} />)}</div>

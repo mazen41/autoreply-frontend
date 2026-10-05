@@ -91,22 +91,22 @@ export default function NotificationCenter() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'new_message':
-        return <MessageSquare className="w-5 h-5 text-blue-500" />;
+        return <MessageSquare className="w-5 h-5 text-info" />;
       case 'new_assignment':
-        return <ArrowUpRight className="w-5 h-5 text-purple-500" />;
+        return <ArrowUpRight className="w-5 h-5 text-brand" />;
       case 'failed_message':
-        return <AlertCircle className="w-5 h-5 text-red-500" />;
+        return <AlertCircle className="w-5 h-5 text-error" />;
       case 'overage_alert':
       case 'payment_failed':
-        return <CreditCard className="w-5 h-5 text-orange-500" />;
+        return <CreditCard className="w-5 h-5 text-warning" />;
       case 'csat_negative':
-        return <ThumbsDown className="w-5 h-5 text-red-500" />;
+        return <ThumbsDown className="w-5 h-5 text-error" />;
       case 'escalation':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+        return <AlertCircle className="w-5 h-5 text-warning" />;
       case 'campaign_sent':
-        return <Send className="w-5 h-5 text-green-500" />;
+        return <Send className="w-5 h-5 text-success" />;
       case 'sequence_completed':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
+        return <CheckCircle className="w-5 h-5 text-success" />;
       default:
         return <Bell className="w-5 h-5 text-gray-500" />;
     }
@@ -145,7 +145,7 @@ export default function NotificationCenter() {
       >
         <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute top-0 right-0 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -159,7 +159,7 @@ export default function NotificationCenter() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-info hover:text-info"
                 >
                   Mark all read
                 </button>
@@ -183,7 +183,7 @@ export default function NotificationCenter() {
                 <div
                   key={notification.id}
                   className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${
-                    !notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    !notification.is_read ? 'bg-info dark:bg-info/20' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -203,7 +203,7 @@ export default function NotificationCenter() {
                       {!notification.is_read && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="text-info hover:text-info"
                           title="Mark as read"
                         >
                           <Check className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default function NotificationCenter() {
                       )}
                       <button
                         onClick={() => deleteNotification(notification.id)}
-                        className="text-gray-400 hover:text-red-500"
+                        className="text-gray-400 hover:text-error"
                         title="Delete"
                       >
                         <X className="w-4 h-4" />
@@ -221,7 +221,7 @@ export default function NotificationCenter() {
                   {notification.action_url && (
                     <a
                       href={notification.action_url}
-                      className="mt-2 text-sm text-blue-600 hover:text-blue-700 inline-block"
+                      className="mt-2 text-sm text-info hover:text-info inline-block"
                     >
                       View →
                     </a>

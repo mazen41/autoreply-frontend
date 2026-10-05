@@ -104,14 +104,14 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <Link className="w-6 h-6 text-blue-600" />
+          <Link className="w-6 h-6 text-info" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Webhooks & Integrations
           </h2>
         </div>
         <button
           onClick={() => setShowBuilder(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-info text-white rounded-lg hover:bg-info"
         >
           <Plus className="w-4 h-4" />
           Add Webhook
@@ -159,7 +159,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
                           });
                         }
                       }}
-                      className="w-4 h-4 text-blue-600 rounded"
+                      className="w-4 h-4 text-info rounded"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">{event}</span>
                   </label>
@@ -182,7 +182,7 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
               <button
                 onClick={createWebhook}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-info text-white rounded-lg hover:bg-info disabled:opacity-50"
               >
                 {loading ? 'Creating...' : 'Add Webhook'}
               </button>
@@ -203,12 +203,12 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Globe className="w-4 h-4 text-blue-600" />
+                  <Globe className="w-4 h-4 text-info" />
                   <code className="text-sm text-gray-900 dark:text-white">{webhook.url}</code>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {webhook.events.map((event: string) => (
-                    <span key={event} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded">
+                    <span key={event} className="px-2 py-1 bg-info dark:bg-info text-info dark:text-info text-xs rounded">
                       {event}
                     </span>
                   ))}
@@ -224,14 +224,14 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
               <div className="flex gap-2">
                 <button
                   onClick={() => testWebhook(webhook.id)}
-                  className="p-2 text-green-600 hover:bg-green-50 rounded"
+                  className="p-2 text-success hover:bg-success rounded"
                   title="Test Webhook"
                 >
                   <TestTube className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => deleteWebhook(webhook.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded"
+                  className="p-2 text-error hover:bg-error rounded"
                   title="Delete"
                 >
                   <Trash2 className="w-4 h-4" />

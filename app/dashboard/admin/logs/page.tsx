@@ -67,9 +67,9 @@ export default function SystemLogsPage() {
   }, [autoRefresh, fetchLogs])
 
   const levelColors: Record<string, string> = {
-    ERROR: 'text-red-500 bg-red-500/10',
-    WARNING: 'text-amber-500 bg-amber-500/10',
-    INFO: 'text-blue-500 bg-blue-500/10',
+    ERROR: 'text-error bg-error/10',
+    WARNING: 'text-warning bg-warning/10',
+    INFO: 'text-info bg-info/10',
     DEBUG: 'text-gray-500 bg-gray-500/10',
   }
 

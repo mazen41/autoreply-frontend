@@ -73,7 +73,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {/* Live indicator */}
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full surface-elevated border">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+              <div className="w-1.5 h-1.5 rounded-full bg-success" aria-hidden="true" />
               <span className="text-xs font-medium text-text-secondary">{isRTL ? 'مباشر' : 'Live'}</span>
             </div>
 

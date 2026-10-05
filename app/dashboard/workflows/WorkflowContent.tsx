@@ -267,7 +267,7 @@ export default function WorkflowContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading workflow automations...</span>
       </div>
     )
@@ -350,7 +350,7 @@ export default function WorkflowContent() {
                       </div>
                     )}
                     {item.error_message && (
-                      <div className="text-rose-400 bg-rose-500/10 p-2.5 rounded-lg border border-rose-500/20">
+                      <div className="text-error bg-error/10 p-2.5 rounded-lg border border-error/20">
                         {item.error_message}
                       </div>
                     )}
@@ -477,7 +477,7 @@ export default function WorkflowContent() {
                   {/* Flow Diagram Chips */}
                   <div className="flex items-center gap-2 flex-wrap text-xs pt-1">
                     {/* Trigger */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-300 font-medium">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-warning/10 border border-warning/20 text-warning font-medium">
                       <Zap size={12} />
                       <span className="capitalize">{workflow.trigger.type.replace(/_/g, ' ')}</span>
                     </div>
@@ -485,7 +485,7 @@ export default function WorkflowContent() {
                     <ArrowRight size={13} className="text-text-tertiary" />
 
                     {/* Conditions */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-300 font-medium">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-info/10 border border-info/20 text-info font-medium">
                       <Sliders size={12} />
                       <span>{workflow.conditions.length} condition{workflow.conditions.length === 1 ? '' : 's'}</span>
                     </div>
@@ -493,7 +493,7 @@ export default function WorkflowContent() {
                     <ArrowRight size={13} className="text-text-tertiary" />
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 font-medium">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand/10 border border-brand/20 text-brand font-medium">
                       <GitFork size={12} />
                       <span>{workflow.actions.length} action{workflow.actions.length === 1 ? '' : 's'}</span>
                     </div>
@@ -549,7 +549,7 @@ export default function WorkflowContent() {
                     variant="ghost"
                     size="xs"
                     onClick={() => handleDelete(workflow.id)}
-                    className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10"
+                    className="text-text-tertiary hover:text-error hover:bg-error/10"
                     icon={<Trash2 size={12} />}
                     title="Delete"
                   />
@@ -669,8 +669,8 @@ function WorkflowBuilder({
         </div>
 
         {/* 1. TRIGGER SECTION */}
-        <div className="p-5 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-4">
-          <div className="flex items-center gap-2 text-amber-400">
+        <div className="p-5 rounded-xl bg-warning/5 border border-warning/20 space-y-4">
+          <div className="flex items-center gap-2 text-warning">
             <Zap size={16} />
             <h4 className="text-xs font-bold uppercase tracking-wider">Step 1: When Trigger Event Occurs</h4>
           </div>
@@ -697,9 +697,9 @@ function WorkflowBuilder({
         </div>
 
         {/* 2. CONDITIONS SECTION */}
-        <div className="p-5 rounded-xl bg-blue-500/5 border border-blue-500/20 space-y-4">
+        <div className="p-5 rounded-xl bg-info/5 border border-info/20 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-blue-400">
+            <div className="flex items-center gap-2 text-info">
               <Sliders size={16} />
               <h4 className="text-xs font-bold uppercase tracking-wider">Step 2: Filter by Conditions (Optional)</h4>
             </div>
@@ -758,7 +758,7 @@ function WorkflowBuilder({
                     variant="ghost"
                     size="icon"
                     onClick={() => setConditions(conditions.filter((_, i) => i !== idx))}
-                    className="text-text-tertiary hover:text-rose-400"
+                    className="text-text-tertiary hover:text-error"
                   >
                     <Trash2 size={13} />
                   </Button>
@@ -769,9 +769,9 @@ function WorkflowBuilder({
         </div>
 
         {/* 3. ACTIONS SECTION */}
-        <div className="p-5 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-4">
+        <div className="p-5 rounded-xl bg-brand/5 border border-brand/20 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-purple-400">
+            <div className="flex items-center gap-2 text-brand">
               <GitFork size={16} />
               <h4 className="text-xs font-bold uppercase tracking-wider">Step 3: Execute Actions</h4>
             </div>
@@ -789,7 +789,7 @@ function WorkflowBuilder({
                     variant="ghost"
                     size="xs"
                     onClick={() => setActions(actions.filter((_, i) => i !== idx))}
-                    className="text-text-tertiary hover:text-rose-400"
+                    className="text-text-tertiary hover:text-error"
                   >
                     Remove
                   </Button>

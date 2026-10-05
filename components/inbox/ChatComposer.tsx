@@ -121,21 +121,21 @@ export default function ChatComposer({
   }
 
   return (
-    <div className={`border-t border-[var(--border)] bg-[var(--surface)] p-3 transition-colors ${isInternal ? 'bg-amber-50/50 dark:bg-amber-950/20' : ''}`}>
+    <div className={`border-t border-border bg-surface p-3 transition-colors ${isInternal ? 'bg-warning/50 dark:bg-warning/20' : ''}`}>
       
       {/* Attachment Preview */}
       {attachment && (
-        <div className="flex items-center gap-3 p-2 mb-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg w-max">
-          <div className="w-10 h-10 rounded bg-[var(--surface)] flex items-center justify-center text-[var(--text-secondary)]">
+        <div className="flex items-center gap-3 p-2 mb-3 bg-surface-elevated border border-border rounded-lg w-max">
+          <div className="w-10 h-10 rounded bg-surface flex items-center justify-center text-text-secondary">
             {attachment.type.startsWith('image/') ? <ImageIcon size={20} /> :
              attachment.type.startsWith('video/') ? <Video size={20} /> :
              <FileText size={20} />}
           </div>
           <div>
-            <div className="text-xs font-bold text-[var(--text-primary)] truncate max-w-[200px]">{attachment.name}</div>
-            <div className="text-[10px] text-[var(--text-tertiary)]">{(attachment.size / 1024).toFixed(1)} KB</div>
+            <div className="text-xs font-bold text-text-primary truncate max-w-[200px]">{attachment.name}</div>
+            <div className="text-[10px] text-text-tertiary">{(attachment.size / 1024).toFixed(1)} KB</div>
           </div>
-          <button onClick={() => setAttachment(null)} className="p-1 rounded-full hover:bg-[var(--surface)] ml-2">
+          <button onClick={() => setAttachment(null)} className="p-1 rounded-full hover:bg-surface ml-2">
             <X size={14} />
           </button>
         </div>
@@ -144,19 +144,19 @@ export default function ChatComposer({
       {/* Main Composer Area */}
       <div className={`relative flex items-end gap-2 p-2 rounded-xl border transition-colors ${
         isInternal 
-          ? 'bg-amber-100/50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50 focus-within:border-amber-400' 
-          : 'bg-[var(--surface-elevated)] border-[var(--border)] focus-within:border-[var(--accent)]'
+          ? 'bg-warning/50 dark:bg-warning/20 border-warning dark:border-warning/50 focus-within:border-warning' 
+          : 'bg-surface-elevated border-border focus-within:border-accent'
       }`}>
         
         {/* Left Actions */}
         <div className="flex items-center gap-1 mb-1">
-          <label className="p-2 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] cursor-pointer transition-colors" title={L('Attach file', 'إرفاق ملف')}>
+          <label className="p-2 rounded-lg hover:bg-surface text-text-secondary cursor-pointer transition-colors" title={L('Attach file', 'إرفاق ملف')}>
             <Paperclip size={18} />
             <input type="file" className="hidden" onChange={handleFileSelect} />
           </label>
           
           <button 
-            className={`p-2 rounded-lg hover:bg-[var(--surface)] transition-colors ${isInternal ? 'text-amber-600 bg-amber-200/50' : 'text-[var(--text-secondary)]'}`}
+            className={`p-2 rounded-lg hover:bg-surface transition-colors ${isInternal ? 'text-warning bg-warning/50' : 'text-text-secondary'}`}
             onClick={() => setIsInternal(!isInternal)}
             title={L('Internal Note (Not visible to customer)', 'ملاحظة داخلية (غير مرئية للعميل)')}
           >
@@ -167,7 +167,7 @@ export default function ChatComposer({
         {/* Input Area */}
         <div className="flex-1 relative min-h-[40px] flex items-center">
           {isRecording ? (
-            <div className="flex items-center gap-3 w-full px-2 text-rose-500 animate-pulse">
+            <div className="flex items-center gap-3 w-full px-2 text-error animate-pulse">
               <Mic size={18} />
               <span className="font-mono font-bold">{formatTime(recordingTime)}</span>
               <span className="text-xs">{L('Recording...', 'جاري التسجيل...')}</span>
@@ -183,7 +183,7 @@ export default function ChatComposer({
                 ? L('Type an internal note (type @ to tag someone)...', 'اكتب ملاحظة داخلية (اكتب @ للإشارة لشخص)...')
                 : L('Type your message... (Shift+Enter for new line)', 'اكتب رسالتك... (Shift+Enter لسطر جديد)')
               }
-              className="w-full bg-transparent border-none outline-none resize-none max-h-[150px] py-2 px-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] disabled:opacity-50"
+              className="w-full bg-transparent border-none outline-none resize-none max-h-[150px] py-2 px-2 text-sm text-text-primary placeholder-text-tertiary disabled:opacity-50"
               rows={1}
               dir="auto"
             />
@@ -195,7 +195,7 @@ export default function ChatComposer({
           {!isRecording && !text && !attachment && !isInternal && (
             <button 
               onClick={startRecording}
-              className="p-2 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] transition-colors"
+              className="p-2 rounded-lg hover:bg-surface text-text-secondary transition-colors"
               title={L('Voice note', 'رسالة صوتية')}
             >
               <Mic size={18} />
@@ -205,7 +205,7 @@ export default function ChatComposer({
           {isRecording && (
             <button 
               onClick={stopRecording}
-              className="p-2 rounded-lg hover:bg-[var(--surface)] text-rose-500 transition-colors"
+              className="p-2 rounded-lg hover:bg-surface text-error transition-colors"
               title={L('Stop recording', 'إيقاف التسجيل')}
             >
               <StopCircle size={18} />
@@ -217,21 +217,21 @@ export default function ChatComposer({
             <div className="relative">
               <button 
                 onClick={() => setShowAIOptions(!showAIOptions)}
-                className="p-2 rounded-lg hover:bg-[var(--surface)] text-indigo-500 transition-colors"
+                className="p-2 rounded-lg hover:bg-surface text-brand transition-colors"
                 title={L('AI Tools', 'أدوات الذكاء الاصطناعي')}
               >
                 <Zap size={18} />
               </button>
               
               {showAIOptions && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden text-xs">
+                <div className="absolute bottom-full right-0 mb-2 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs">
                   {[
                     { label: L('Generate Reply', 'توليد رد'), action: () => { setText('AI Draft: We can certainly help with that...'); setShowAIOptions(false) } },
                     { label: L('Improve Writing', 'تحسين الكتابة'), action: () => { setShowAIOptions(false) } },
                     { label: L('Make Professional', 'جعله احترافياً'), action: () => { setShowAIOptions(false) } },
                     { label: L('Translate to Arabic', 'ترجمة للعربية'), action: () => { setShowAIOptions(false) } },
                   ].map(opt => (
-                    <button key={opt.label} onClick={opt.action} className="w-full text-left px-3 py-2 hover:bg-[var(--surface)] text-[var(--text-primary)]">
+                    <button key={opt.label} onClick={opt.action} className="w-full text-left px-3 py-2 hover:bg-surface text-text-primary">
                       {opt.label}
                     </button>
                   ))}
@@ -245,12 +245,12 @@ export default function ChatComposer({
             disabled={disabled || sending || (!text.trim() && !attachment && !isRecording)}
             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
               sending 
-                ? 'bg-[var(--surface)] text-[var(--text-tertiary)] cursor-wait'
+                ? 'bg-surface text-text-tertiary cursor-wait'
                 : text.trim() || attachment
                   ? isInternal 
-                    ? 'bg-amber-500 text-white shadow-md hover:bg-amber-600 hover:-translate-y-0.5' 
-                    : 'bg-[var(--accent)] text-white shadow-md hover:bg-[var(--accent-hover)] hover:-translate-y-0.5'
-                  : 'bg-[var(--surface)] text-[var(--text-tertiary)]'
+                    ? 'bg-warning text-white shadow-xs hover:bg-warning' 
+                    : 'bg-brand text-brand-text font-bold shadow-xs hover:bg-brand-hover'
+                  : 'bg-surface text-text-tertiary'
             }`}
           >
             {sending ? (
@@ -264,10 +264,10 @@ export default function ChatComposer({
       
       {/* Footer text */}
       <div className="flex justify-between items-center px-2 mt-2">
-        <span className="text-[10px] text-[var(--text-tertiary)]">
+        <span className="text-[10px] text-text-tertiary">
           {isInternal ? L('Internal notes are highlighted in yellow and only visible to your team.', 'الملاحظات الداخلية مظللة باللون الأصفر ومرئية لفريقك فقط.') : ''}
         </span>
-        <span className="text-[10px] text-[var(--text-tertiary)] flex items-center gap-1">
+        <span className="text-[10px] text-text-tertiary flex items-center gap-1">
           <Type size={10} /> ⌘K {L('for commands', 'للأوامر')}
         </span>
       </div>

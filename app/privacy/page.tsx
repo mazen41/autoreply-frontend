@@ -26,7 +26,7 @@ export default function PrivacyPage() {
       sections: [
         {
           id: 'intro',
-          icon: <ShieldCheck className="w-5 h-5 text-indigo-400" />,
+          icon: <ShieldCheck className="w-5 h-5 text-brand" />,
           title: '1. Introduction',
           content: `Naz Biz ("Naz Autoreply", "we", "our", "the platform") is an enterprise AI automation platform designed to manage and automate multi-channel customer communications. This privacy policy explains what data we collect, how it is encrypted and processed, and your rights regarding your information.`
         },
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
         },
         {
           id: 'data-use',
-          icon: <Sparkles className="w-5 h-5 text-blue-400" />,
+          icon: <Sparkles className="w-5 h-5 text-info" />,
           title: '3. Data Processing & Usage Rules',
           intro: 'Your data is strictly processed to fulfill service requirements:',
           items: [
@@ -104,7 +104,7 @@ export default function PrivacyPage() {
       sections: [
         {
           id: 'intro',
-          icon: <ShieldCheck className="w-5 h-5 text-indigo-400" />,
+          icon: <ShieldCheck className="w-5 h-5 text-brand" />,
           title: '1. مقدمة',
           content: `تعتبر منصة ناز بيز ("Naz Autoreply"، "نحن"، "المنصة") منظومة متكاملة لأتمتة خدمة العملاء وإدارة المراسلات عبر القنوات المتعددة بالذكاء الاصطناعي. توضح هذه السياسة البيانات التي نجمعها، وكيفية معالجتها وتشفيرها، وحقوقك المتعلقة بمعلوماتك.`
         },
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
         },
         {
           id: 'data-use',
-          icon: <Sparkles className="w-5 h-5 text-blue-400" />,
+          icon: <Sparkles className="w-5 h-5 text-info" />,
           title: '3. قواعد معالجة البيانات واستخدامها',
           intro: 'تُعالج بياناتك حصرياً لتشغيل وخدمة نشاطك التجاري:',
           items: [
@@ -182,11 +182,11 @@ export default function PrivacyPage() {
       <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-slate-950/80">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand via-purple-600 to-brand flex items-center justify-center shadow-lg shadow-brand/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-black tracking-tight text-white">
-              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Biz</span>
+              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400">Biz</span>
             </span>
           </Link>
 
@@ -210,10 +210,10 @@ export default function PrivacyPage() {
       </nav>
 
       {/* Hero Header */}
-      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-indigo-950/30 via-slate-950 to-slate-950 text-center">
+      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/30 via-slate-950 to-slate-950 text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-xs font-semibold mb-6">
-            <ShieldCheck className="w-4 h-4 text-indigo-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand/30 bg-brand/10 text-brand text-xs font-semibold mb-6">
+            <ShieldCheck className="w-4 h-4 text-brand" />
             {c.badge}
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 text-white">
@@ -234,7 +234,7 @@ export default function PrivacyPage() {
           {c.sections.map((sec, idx) => (
             <div
               key={sec.id || idx}
-              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-indigo-500/30 transition-all shadow-xl shadow-black/20"
+              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-brand/30 transition-all shadow-xl shadow-black/20"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
@@ -261,7 +261,7 @@ export default function PrivacyPage() {
                 <ul className="space-y-3 mt-3">
                   {sec.items.map((item, itemIdx) => (
                     <li key={itemIdx} className="flex items-start gap-3 text-sm sm:text-base text-slate-300">
-                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}
@@ -272,7 +272,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* Footer Contact */}
-        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-indigo-950/20 via-purple-950/20 to-slate-900/50">
+        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-brand/20 via-purple-950/20 to-slate-900/50">
           <p className="text-sm font-medium text-slate-300">
             {c.contactUs}
           </p>

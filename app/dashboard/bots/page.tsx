@@ -304,7 +304,7 @@ export default function BotsPage() {
               onClick={() => setActiveTab('playground')}
               className={`px-3 py-1 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                 activeTab === 'playground'
-                  ? 'bg-surface-overlay text-brand-primary shadow-xs'
+                  ? 'bg-surface-overlay text-brand shadow-xs'
                   : 'text-text-tertiary hover:text-text-primary'
               }`}
             >
@@ -351,13 +351,13 @@ export default function BotsPage() {
           {bots.map((bot) => (
             <Card
               key={bot.id}
-              className="flex flex-col justify-between hover:border-brand-primary/40 transition-all shadow-xs"
+              className="flex flex-col justify-between hover:border-brand/40 transition-all shadow-xs"
             >
               <div>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 text-brand flex items-center justify-center shrink-0">
                         <Bot size={22} />
                       </div>
                       <div>
@@ -375,7 +375,7 @@ export default function BotsPage() {
                       onClick={() => handleToggleStatus(bot.id)}
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-colors ${
                         bot.status === 'active'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          ? 'bg-success/10 text-success border-success/20'
                           : 'bg-white/[0.04] text-text-tertiary border-border'
                       }`}
                     >
@@ -465,7 +465,7 @@ export default function BotsPage() {
           <Card className="lg:col-span-2 flex flex-col h-[560px]">
             <CardHeader className="flex flex-row items-center justify-between pb-3 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                <div className="p-2 rounded-xl bg-brand/10 text-brand">
                   <Sparkles size={18} />
                 </div>
                 <div>
@@ -510,8 +510,8 @@ export default function BotsPage() {
                     <div
                       className={`p-3.5 rounded-2xl max-w-md text-xs leading-relaxed ${
                         msg.role === 'customer'
-                          ? 'bg-brand-primary text-white rounded-tr-xs'
-                          : 'bg-surface-elevated border border-border text-text-primary rounded-tl-xs shadow-xs'
+                          ? 'bg-brand text-brand-text rounded-tr-xs'
+                          : 'bg-surface-elevated border border-border text-text-primary rounded-tl-xs shadow-sm'
                       }`}
                     >
                       {msg.text}
@@ -524,7 +524,7 @@ export default function BotsPage() {
                           {msg.sources.map((src, sIdx) => (
                             <span
                               key={sIdx}
-                              className="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                              className="text-[9px] px-1.5 py-0.5 rounded bg-info/10 text-info border border-info/20"
                             >
                               {src}
                             </span>
@@ -538,7 +538,7 @@ export default function BotsPage() {
 
               {isBotThinking && (
                 <div className="flex items-center gap-2 p-3 bg-surface-elevated rounded-2xl border border-border w-36">
-                  <div className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+                  <div className="w-2 h-2 rounded-full bg-brand animate-ping" />
                   <span className="text-xs text-text-tertiary">Agent thinking...</span>
                 </div>
               )}
@@ -603,7 +603,7 @@ export default function BotsPage() {
                   min="50"
                   max="95"
                   defaultValue="80"
-                  className="w-full accent-brand-primary"
+                  className="w-full accent-brand"
                 />
                 <p className="text-[11px] text-text-tertiary">
                   Responses scoring below this confidence trigger human handoff.
@@ -612,7 +612,7 @@ export default function BotsPage() {
 
               <div className="p-3 rounded-xl bg-surface-elevated border border-border space-y-1.5 text-xs text-text-secondary">
                 <div className="font-semibold text-text-primary flex items-center gap-1.5">
-                  <ShieldCheck size={14} className="text-emerald-400" />
+                  <ShieldCheck size={14} className="text-success" />
                   <span>Grounding Strictness: ON</span>
                 </div>
                 <p className="text-[11px] leading-relaxed">
@@ -669,7 +669,7 @@ export default function BotsPage() {
               value={botFormPrompt}
               onChange={(e) => setBotFormPrompt(e.target.value)}
               placeholder="You are an expert customer care agent for NazBiz. Greet kindly, understand the user's intent, and offer clear answers..."
-              className="w-full min-h-[120px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand-primary"
+              className="w-full min-h-[120px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand"
             />
           </div>
 

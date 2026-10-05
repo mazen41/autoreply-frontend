@@ -42,7 +42,6 @@ export default function EmptyState({
     >
       {renderedIcon ? (
         <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center text-text-secondary mb-4 shadow-sm relative group">
-          <div className="absolute inset-0 bg-brand-primary/5 rounded-2xl blur-md -z-10 group-hover:bg-brand-primary/10 transition-colors" />
           {renderedIcon}
         </div>
       ) : (

@@ -301,12 +301,12 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5 text-text-secondary">
-                <span className="w-2.5 h-2.5 rounded-sm bg-brand-primary" />
-                <span>Total</span>
+                <span className="w-2.5 h-2.5 rounded-sm bg-surface-secondary border border-border" />
+                <span>Total Inbound</span>
               </div>
               <div className="flex items-center gap-1.5 text-text-secondary">
-                <span className="w-2.5 h-2.5 rounded-sm bg-purple-500" />
-                <span>AI Handled</span>
+                <span className="w-2.5 h-2.5 rounded-sm bg-brand" />
+                <span className="text-text-primary font-medium">AI Autonomous</span>
               </div>
             </div>
           </CardHeader>
@@ -325,20 +325,20 @@ export default function DashboardPage() {
                     <div className="w-full max-w-[42px] flex items-end justify-center gap-1 h-full">
                       {/* Total Bar */}
                       <div
-                        className="w-1/2 bg-brand-primary/20 hover:bg-brand-primary/30 rounded-t-md transition-all relative group/bar"
+                        className="w-1/2 bg-surface-elevated border border-border/80 hover:bg-surface-hover rounded-t-md transition-all relative group/bar"
                         style={{ height: `${totalPct}%` }}
                       >
-                        <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-text-primary px-1.5 py-0.5 rounded border border-border shadow pointer-events-none transition-opacity">
+                        <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-text-primary px-1.5 py-0.5 rounded border border-border shadow-xs pointer-events-none transition-opacity">
                           {d.total}
                         </div>
                       </div>
 
                       {/* AI Resolved Bar */}
                       <div
-                        className="w-1/2 bg-purple-500 hover:bg-purple-400 rounded-t-md transition-all relative group/bar"
+                        className="w-1/2 bg-brand hover:bg-brand-hover rounded-t-md transition-all relative group/bar"
                         style={{ height: `${aiPct}%` }}
                       >
-                        <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-purple-300 px-1.5 py-0.5 rounded border border-border shadow pointer-events-none transition-opacity">
+                        <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-brand px-1.5 py-0.5 rounded border border-border shadow-xs pointer-events-none transition-opacity">
                           {d.ai}
                         </div>
                       </div>
@@ -368,7 +368,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="text-xs text-text-tertiary">Avg CSAT Rating</div>
-                <div className="text-sm font-bold text-emerald-400 mt-0.5">
+                <div className="text-sm font-bold text-success mt-0.5">
                   4.89 / 5.0 ★
                 </div>
               </div>
@@ -395,9 +395,9 @@ export default function DashboardPage() {
 
             <CardContent className="space-y-3 pt-3">
               {/* Item 1: Escalation */}
-              <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-1.5">
+              <div className="p-3 rounded-xl bg-warning/5 border border-warning/20 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-warning">
                     <AlertTriangle size={14} />
                     <span>Human Escalation</span>
                   </div>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
               <div className="p-3 rounded-xl bg-surface-elevated/70 border border-border space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                    <Radio size={14} className="text-brand-primary" />
+                    <Radio size={14} className="text-brand" />
                     <span>Gmail OAuth Token Expiring</span>
                   </div>
                   <span className="text-[10px] text-text-tertiary">3 days left</span>
@@ -573,9 +573,9 @@ export default function DashboardPage() {
             ))}
 
             {/* Quick Automation Launch Banner */}
-            <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-brand-primary/10 to-ai-accent/10 border border-brand-primary/20 space-y-2">
+            <div className="mt-4 p-3.5 rounded-xl bg-brand/5 border border-brand/15 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-text-primary">
-                <Zap size={14} className="text-brand-primary" />
+                <Zap size={14} className="text-brand" />
                 <span>Deploy Broadcast Campaign</span>
               </div>
               <p className="text-[11px] text-text-secondary leading-relaxed">

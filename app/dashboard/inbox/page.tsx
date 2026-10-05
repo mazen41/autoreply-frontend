@@ -133,7 +133,7 @@ export default function InboxPage() {
   }, [])
 
   return (
-    <div className="flex w-full h-full bg-[var(--background)] overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="flex w-full h-full bg-background overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       
       {/* ── Left Panel: List ── */}
       {!leftCollapsed && (
@@ -152,10 +152,10 @@ export default function InboxPage() {
         />
       )}
       {leftCollapsed && (
-        <div className="flex flex-col items-center py-3 w-14 border-r border-[var(--border)] bg-[var(--surface)] flex-shrink-0">
+        <div className="flex flex-col items-center py-3 w-14 border-r border-border bg-surface flex-shrink-0">
           <button 
             onClick={() => setLeftCollapsed(false)}
-            className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)]"
+            className="p-2 rounded-lg hover:bg-surface-elevated text-text-secondary transition-colors"
             title={isRTL ? 'توسيع القائمة' : 'Expand list'}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
@@ -164,7 +164,7 @@ export default function InboxPage() {
       )}
 
       {/* ── Center Panel: Chat ── */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[var(--background)]">
+      <div className="flex-1 flex flex-col min-w-0 bg-background">
         {selectedConv ? (
           <>
             <ConversationHeader
@@ -219,9 +219,9 @@ export default function InboxPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-[var(--text-tertiary)] bg-[var(--surface)]">
+          <div className="flex-1 flex flex-col items-center justify-center text-text-tertiary bg-surface">
             <svg className="w-16 h-16 mb-4 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <p className="text-sm">{isRTL ? 'حدد محادثة للبدء' : 'Select a conversation to start'}</p>
+            <p className="text-sm font-medium">{isRTL ? 'حدد محادثة للبدء' : 'Select a conversation to start'}</p>
           </div>
         )}
       </div>

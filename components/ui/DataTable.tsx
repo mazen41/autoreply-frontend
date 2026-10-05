@@ -61,7 +61,7 @@ export default function DataTable<T>({
                 <tr key={i} className="animate-pulse">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3.5">
-                      <div className="h-4 bg-white/[0.06] rounded w-3/4" />
+                      <div className="h-4 bg-surface-elevated rounded w-3/4" />
                     </td>
                   ))}
                 </tr>

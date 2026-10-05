@@ -103,8 +103,8 @@ export default function ConversationList({
 
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center py-3 gap-2 w-14 border-r border-[var(--border)] bg-[var(--surface)] h-full">
-        <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)]">
+      <div className="flex flex-col items-center py-3 gap-2 w-14 border-r border-border bg-surface h-full">
+        <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-surface-elevated text-text-secondary">
           <Inbox size={18} />
         </button>
         {TABS.map(t => (
@@ -112,7 +112,7 @@ export default function ConversationList({
             key={t.key}
             onClick={() => { setActiveTab(t.key); onToggleCollapse?.() }}
             title={t.label}
-            className={`p-2 rounded-lg transition-colors ${activeTab === t.key ? 'bg-[var(--accent-subtle)] text-[var(--accent)]' : 'text-[var(--text-tertiary)] hover:bg-[var(--surface-elevated)]'}`}
+            className={`p-2 rounded-lg transition-colors ${activeTab === t.key ? 'bg-accent-subtle text-accent' : 'text-text-tertiary hover:bg-surface-elevated'}`}
           >
             <t.icon size={14} />
           </button>
@@ -122,28 +122,28 @@ export default function ConversationList({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[var(--surface)] border-r border-[var(--border)]" style={{ width: 320 }}>
+    <div className="flex flex-col h-full bg-surface border-r border-border" style={{ width: 320 }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-        <h2 className="text-sm font-black text-[var(--text-primary)]">{L('Inbox', 'الرسائل')}</h2>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-sm font-black text-text-primary">{L('Inbox', 'الرسائل')}</h2>
         <div className="flex items-center gap-1.5">
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] disabled:opacity-40 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary disabled:opacity-40 transition-colors"
             title="Refresh"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin text-[var(--accent)]' : ''} />
+            <RefreshCw size={14} className={loading ? 'animate-spin text-accent' : ''} />
           </button>
           <button
             onClick={() => setShowFilters(v => !v)}
-            className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-[var(--accent-subtle)] text-[var(--accent)]' : 'hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)]'}`}
+            className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-accent-subtle text-accent' : 'hover:bg-surface-elevated text-text-secondary'}`}
             title="Filters"
           >
             <SlidersHorizontal size={14} />
           </button>
           {onToggleCollapse && (
-            <button onClick={onToggleCollapse} className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)]" title="Collapse">
+            <button onClick={onToggleCollapse} className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary" title="Collapse">
               <ChevronDown size={14} className="rotate-90" />
             </button>
           )}
@@ -151,18 +151,18 @@ export default function ConversationList({
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-[var(--border)]">
+      <div className="px-3 py-2 border-b border-border">
         <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] pointer-events-none" />
+          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
           <input
             type="search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={L('Search conversations...', 'بحث في المحادثات...')}
-            className="w-full h-8 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-lg pl-7 pr-7 text-xs text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[var(--accent)] transition-colors"
+            className="w-full h-8 bg-surface-elevated border border-border rounded-lg pl-7 pr-7 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent transition-colors"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]">
+            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary">
               <X size={12} />
             </button>
           )}
@@ -171,16 +171,16 @@ export default function ConversationList({
 
       {/* Filter strip */}
       {showFilters && (
-        <div className="px-3 py-2 border-b border-[var(--border)] bg-[var(--surface-elevated)] space-y-2">
+        <div className="px-3 py-2 border-b border-border bg-surface-elevated space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-bold uppercase text-[var(--text-tertiary)] tracking-wide">Channel</span>
+            <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Channel</span>
             <div className="flex gap-1 flex-wrap">
               {CHANNEL_OPTIONS.map(ch => (
                 <button
                   key={ch}
                   onClick={() => setChannelFilter(v => v === ch ? '' : ch)}
                   className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md transition-colors ${
-                    channelFilter === ch ? 'bg-[var(--accent)] text-white' : 'bg-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--accent-subtle)] hover:text-[var(--accent)]'
+                    channelFilter === ch ? 'bg-accent text-white' : 'bg-border text-text-secondary hover:bg-accent-subtle hover:text-accent'
                   }`}
                 >
                   {ch}
@@ -191,11 +191,11 @@ export default function ConversationList({
           {/* Channel account filter */}
           {channels.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase text-[var(--text-tertiary)] tracking-wide">Account</span>
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Account</span>
               <select
                 value={channelIdFilter}
                 onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-accent"
               >
                 <option value="">All Accounts</option>
                 {channels.map(ch => (
@@ -209,11 +209,11 @@ export default function ConversationList({
           {/* Bot filter */}
           {bots.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase text-[var(--text-tertiary)] tracking-wide">Bot</span>
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Bot</span>
               <select
                 value={botFilter}
                 onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-accent"
               >
                 <option value="">All Bots</option>
                 {bots.map(bot => (
@@ -223,7 +223,7 @@ export default function ConversationList({
             </div>
           )}
           {(channelFilter || channelIdFilter !== '' || botFilter !== '') && (
-            <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-[var(--accent)] hover:underline flex items-center gap-1">
+            <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-accent hover:underline flex items-center gap-1">
               <X size={10} /> Clear filters
             </button>
           )}
@@ -231,15 +231,15 @@ export default function ConversationList({
       )}
 
       {/* Tabs */}
-      <div className="flex overflow-x-auto scrollbar-none border-b border-[var(--border)] px-1 pt-1 gap-0.5" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex overflow-x-auto scrollbar-none border-b border-border px-1 pt-1 gap-0.5" style={{ scrollbarWidth: 'none' }}>
         {TABS.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold whitespace-nowrap rounded-t-lg border border-transparent transition-all flex-shrink-0 ${
               activeTab === tab.key
-                ? 'text-[var(--accent)] border-b-2 border-b-[var(--accent)] bg-[var(--accent-subtle)]'
-                : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+                ? 'text-accent border-b-2 border-b-accent bg-accent-subtle'
+                : 'text-text-tertiary hover:text-text-secondary'
             }`}
           >
             <tab.icon size={11} />
@@ -249,27 +249,27 @@ export default function ConversationList({
       </div>
 
       {/* Sort + count */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--divider)]">
-        <span className="text-[10px] text-[var(--text-tertiary)] font-medium">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-divider">
+        <span className="text-[10px] text-text-tertiary font-medium">
           {sorted.length} {L('conversations', 'محادثة')}
         </span>
         <div className="relative">
           <button
             onClick={() => setShowSortMenu(v => !v)}
-            className="flex items-center gap-1 text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center gap-1 text-[10px] text-text-secondary hover:text-text-primary transition-colors"
           >
             <Filter size={10} />
             {SORT_OPTIONS.find(s => s.key === sortBy)?.label}
             <ChevronDown size={10} />
           </button>
           {showSortMenu && (
-            <div className="absolute right-0 top-full mt-1 w-36 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 w-36 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.key}
                   onClick={() => { setSortBy(opt.key); setShowSortMenu(false) }}
                   className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                    sortBy === opt.key ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                    sortBy === opt.key ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   {opt.label}
@@ -285,25 +285,25 @@ export default function ConversationList({
         {loading && sorted.length === 0 ? (
           <div className="space-y-0">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-start gap-2.5 px-3 py-3 border-b border-[var(--divider)] animate-pulse">
-                <div className="w-9 h-9 rounded-xl bg-[var(--surface-elevated)] flex-shrink-0" />
+              <div key={i} className="flex items-start gap-2.5 px-3 py-3 border-b border-divider animate-pulse">
+                <div className="w-9 h-9 rounded-xl bg-surface-elevated flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between">
-                    <div className="h-3 bg-[var(--surface-elevated)] rounded w-2/5" />
-                    <div className="h-2 bg-[var(--surface-elevated)] rounded w-1/6" />
+                    <div className="h-3 bg-surface-elevated rounded w-2/5" />
+                    <div className="h-2 bg-surface-elevated rounded w-1/6" />
                   </div>
-                  <div className="h-2.5 bg-[var(--surface-elevated)] rounded w-4/5" />
+                  <div className="h-2.5 bg-surface-elevated rounded w-4/5" />
                 </div>
               </div>
             ))}
           </div>
         ) : sorted.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-16 px-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--surface-elevated)] flex items-center justify-center mb-3">
-              <MessageSquare size={20} className="text-[var(--text-tertiary)]" />
+            <div className="w-12 h-12 rounded-2xl bg-surface-elevated flex items-center justify-center mb-3">
+              <MessageSquare size={20} className="text-text-tertiary" />
             </div>
-            <p className="text-sm font-semibold text-[var(--text-secondary)] mb-1">{L('No conversations', 'لا توجد محادثات')}</p>
-            <p className="text-xs text-[var(--text-tertiary)]">{search ? L('Try a different search', 'جرب بحثاً آخر') : L('Conversations will appear here', 'ستظهر المحادثات هنا')}</p>
+            <p className="text-sm font-semibold text-text-secondary mb-1">{L('No conversations', 'لا توجد محادثات')}</p>
+            <p className="text-xs text-text-tertiary">{search ? L('Try a different search', 'جرب بحثاً آخر') : L('Conversations will appear here', 'ستظهر المحادثات هنا')}</p>
           </div>
         ) : (
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>

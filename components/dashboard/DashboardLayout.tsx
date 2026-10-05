@@ -224,11 +224,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-primary to-ai-accent flex items-center justify-center shadow-lg shadow-brand-primary/20 animate-pulse">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 rounded-xl bg-surface-secondary border border-border flex items-center justify-center shadow-xs">
+            <Sparkles className="w-5 h-5 text-brand" />
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary tracking-wider uppercase">
-            <div className="w-2 h-2 rounded-full bg-brand-primary animate-ping" />
+            <div className="w-2 h-2 rounded-full bg-brand animate-ping" />
             Loading NazBiz...
           </div>
         </div>
@@ -268,14 +268,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setWorkspaceMenuOpen((v) => !v)}
               className="flex items-center gap-2.5 w-full p-1.5 -mx-1 rounded-xl hover:bg-surface-elevated transition-colors text-left group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-primary via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-brand text-brand-text flex items-center justify-center font-black text-sm shadow-xs shrink-0">
                 N
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-text-primary truncate flex items-center gap-1.5">
                   <span>NazBiz Global</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-brand-primary/10 text-brand-primary font-semibold">
-                    Pro
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-brand/10 text-brand font-bold border border-brand/20">
+                    PRO
                   </span>
                 </div>
                 <div className="text-[10px] text-text-tertiary truncate">
@@ -289,10 +289,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 type="button"
                 onClick={() => setCollapsed(false)}
-                className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-primary to-ai-accent flex items-center justify-center text-white shadow-xs hover:scale-105 transition-transform"
+                className="w-9 h-9 rounded-lg bg-brand text-brand-text flex items-center justify-center font-bold text-xs shadow-xs hover:bg-brand-hover transition-colors"
                 title="Expand sidebar"
               >
-                <Sparkles className="w-4 h-4" />
+                N
               </button>
             </div>
           )}
@@ -305,10 +305,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <button
                 type="button"
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-brand-primary/10 text-brand-primary text-xs font-semibold"
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-brand/10 text-brand text-xs font-semibold"
               >
                 <div className="flex items-center gap-2 truncate">
-                  <div className="w-5 h-5 rounded bg-brand-primary text-white text-[10px] flex items-center justify-center font-bold">
+                  <div className="w-5 h-5 rounded bg-brand text-brand-text text-[10px] flex items-center justify-center font-bold">
                     N
                   </div>
                   <span className="truncate">NazBiz Global</span>
@@ -364,14 +364,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       collapsed ? 'justify-center px-0' : ''
                     } ${
                       isActive
-                        ? 'bg-brand-primary/10 text-brand-primary font-semibold'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
+                        ? 'bg-brand/5 text-brand font-semibold'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/70'
                     }`}
                   >
                     {/* Active Accent Bar */}
                     {isActive && (
                       <span
-                        className={`absolute top-1.5 bottom-1.5 w-1 rounded-full bg-brand-primary ${
+                        className={`absolute top-1.5 bottom-1.5 w-1 rounded-full bg-brand ${
                           isRTL ? 'right-0' : 'left-0'
                         }`}
                       />
@@ -381,7 +381,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       size={18}
                       className={`shrink-0 transition-colors ${
                         isActive
-                          ? 'text-brand-primary'
+                          ? 'text-brand'
                           : 'text-text-tertiary group-hover:text-text-primary'
                       }`}
                     />
@@ -393,8 +393,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           <span
                             className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold leading-tight ${
                               item.badgeVariant === 'ai'
-                                ? 'bg-purple-500/15 text-purple-400'
-                                : 'bg-brand-primary/15 text-brand-primary'
+                                ? 'bg-brand/10 text-brand border border-brand/20'
+                                : 'bg-surface-card border border-border text-text-secondary'
                             }`}
                           >
                             {item.badge}
@@ -435,11 +435,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   collapsed ? 'justify-center px-0' : ''
                 } ${
                   isActive
-                    ? 'bg-brand-primary/10 text-brand-primary font-semibold'
+                    ? 'bg-brand/10 text-brand font-semibold'
                     : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
                 }`}
               >
-                <Icon size={18} className="shrink-0 text-text-tertiary" />
+                <Icon size={18} className={`shrink-0 transition-colors ${isActive ? 'text-brand' : 'text-text-tertiary group-hover:text-text-primary'}`} />
                 {!collapsed && <span className="truncate">{label}</span>}
               </Link>
             )
@@ -617,13 +617,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Right: AI Status Pill, Language, Theme, Notifications */}
           <div className="flex items-center gap-2.5">
             {/* AI Status Badge */}
-            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold select-none shadow-xs">
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-elevated border border-border text-text-secondary text-xs font-medium select-none shadow-xs">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
               </span>
-              <span className="text-[11px] tracking-wide">AI Copilot Online</span>
-              <span className="text-[10px] text-purple-400/70 border-l border-purple-500/20 pl-2">
+              <span className="text-[11px] text-text-primary font-semibold tracking-wide">AI Copilot</span>
+              <span className="text-[10px] text-text-tertiary border-l border-border pl-2">
                 1.2s avg
               </span>
             </div>
@@ -668,7 +668,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="relative w-full max-w-lg bg-surface-overlay border border-border rounded-2xl shadow-2xl p-6 z-10 animate-in zoom-in-95">
             <div className="flex items-center justify-between pb-4 border-b border-border/80">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-brand-primary/10 text-brand-primary">
+                <div className="p-2 rounded-xl bg-brand/10 text-brand">
                   <HelpCircle size={20} />
                 </div>
                 <div>
@@ -693,14 +693,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border transition-colors group"
               >
                 <div>
-                  <div className="text-xs font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+                  <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
                     Official Documentation
                   </div>
                   <div className="text-[11px] text-text-tertiary">
                     API references, Webhooks, and Omnichannel guides
                   </div>
                 </div>
-                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand-primary" />
+                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand" />
               </a>
 
               <a
@@ -709,14 +709,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border transition-colors group"
               >
                 <div>
-                  <div className="text-xs font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+                  <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
                     Channel Setup Walkthrough
                   </div>
                   <div className="text-[11px] text-text-tertiary">
                     Step-by-step guides for Instagram, WhatsApp & Salla
                   </div>
                 </div>
-                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand-primary" />
+                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand" />
               </a>
             </div>
 
@@ -725,7 +725,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 type="button"
                 onClick={() => setHelpModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg bg-brand-primary text-white font-semibold text-xs hover:bg-brand-hover"
+                className="px-3 py-1.5 rounded-lg bg-brand text-brand-text font-semibold text-xs hover:bg-brand-hover"
               >
                 Close
               </button>

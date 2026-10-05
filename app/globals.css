@@ -5,130 +5,160 @@
 
 /* ─── Design tokens ───────────────────────────────────────────────────────── */
 :root {
-  --background: #F8FAFC;
+  /* ─── Light Theme (Deliberately designed, clean, warm neutral) ─── */
+  --background: #F7F8F7;
   --surface: #FFFFFF;
-  --surface-elevated: #F1F5F9;
+  --surface-secondary: #F1F3F2;
+  --surface-elevated: #FFFFFF;
+  --surface-hover: #EEF1EF;
   --surface-card: #FFFFFF;
   --surface-overlay: #FFFFFF;
-  --border: rgba(15, 23, 42, 0.08);
-  --border-subtle: rgba(15, 23, 42, 0.04);
-  --border-hover: rgba(15, 23, 42, 0.16);
-  --divider: rgba(15, 23, 42, 0.05);
-  
-  /* Brand & AI */
-  --brand-primary: #2563EB;
-  --brand-hover: #1D4ED8;
-  --accent: #2563EB;
-  --accent-end: #7C3AED;
-  --accent-hover: #1D4ED8;
-  --accent-subtle: rgba(37, 99, 235, 0.08);
-  --accent-focus: rgba(37, 99, 235, 0.25);
-  --ai-accent: #8B5CF6;
-  --ai-subtle: rgba(139, 92, 246, 0.10);
-  
+
+  --border: #E1E5E2;
+  --border-strong: #D4D9D6;
+  --border-subtle: #EDF0EE;
+  --border-hover: #CBD0CD;
+  --divider: #E5E9E6;
+
+  /* Brand: Electric Green signature */
+  --brand: #00B85C;
+  --brand-hover: #009F50;
+  --brand-dark: #008A45;
+  --brand-primary: #00B85C;
+  --brand-text: #FFFFFF;
+  --accent: #00B85C;
+  --accent-end: #008A45;
+  --accent-hover: #009F50;
+  --accent-subtle: rgba(0, 184, 92, 0.08);
+  --accent-focus: rgba(0, 184, 92, 0.22);
+  --ai-accent: #00B85C;
+  --ai-subtle: rgba(0, 184, 92, 0.08);
+
   /* Text */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #94A3B8;
-  
+  --text-primary: #111412;
+  --text-secondary: #555C58;
+  --text-muted: #737A76;
+  --text-tertiary: #737A76;
+  --text-disabled: #A1A8A4;
+
   /* Feedback */
-  --success: #10B981;
-  --success-subtle: rgba(16, 185, 129, 0.12);
+  --success: #00B85C;
+  --success-subtle: rgba(0, 184, 92, 0.12);
   --warning: #F59E0B;
   --warning-subtle: rgba(245, 158, 11, 0.12);
   --error: #EF4444;
   --error-subtle: rgba(239, 68, 68, 0.12);
-  --info: #06B6D4;
-  --info-subtle: rgba(6, 182, 212, 0.12);
-  
-  --primary: #2563EB;
+  --info: #0284C7;
+  --info-subtle: rgba(2, 132, 199, 0.12);
+
+  --primary: #00B85C;
   --on-accent-text: #FFFFFF;
-  --accent-secondary: #06B6D4;
-  --accent-secondary-subtle: rgba(6, 182, 212, 0.08);
-  --accent-secondary-hover: #0891B2;
-  --accent-teal: #10B981;
-  --accent-teal-subtle: rgba(16, 185, 129, 0.08);
-  --accent-pink: #EC4899;
-  --accent-pink-subtle: rgba(236, 72, 153, 0.08);
+
+  /* ── Legacy alias tokens (used in older components — do not scatter) ── */
+  --accent-secondary: #00B85C;           /* alias → brand */
+  --accent-secondary-subtle: rgba(0, 184, 92, 0.08); /* alias → accent-subtle */
+  --accent-secondary-hover: #009F50;     /* alias → brand-hover */
+  --accent-pink: #EF4444;                /* alias → error */
+  --accent-pink-subtle: rgba(239, 68, 68, 0.08);     /* alias → error-subtle */
 
   /* Spacing */
   --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
   --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
-  /* Radius */
-  --radius-xs: 4px; --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-xl: 16px;
-  --radius-card: 16px; --radius-full: 9999px;
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.06), 0 2px 6px -1px rgba(0,0,0,0.04);
-  --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 10px -2px rgba(0,0,0,0.04);
-  --shadow-premium: 0 20px 40px -4px rgba(0,0,0,0.10);
+
+  /* Controlled Radius (SaaS hierarchy) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-card: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows (Subtle elevation) */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 3px 8px -1px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg: 0 6px 16px -2px rgba(0,0,0,0.08);
+  --shadow-premium: 0 12px 28px -4px rgba(0,0,0,0.08);
+
   /* Motion */
   --dur-fast: 120ms;
   --dur-normal: 200ms;
   --dur-slow: 350ms;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  /* Legacy aliases */
+
   --duration-fast: 120ms; --duration-normal: 200ms; --duration-slow: 350ms;
   --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
   --input-height: 2.5rem;
   --button-height-sm: 2rem; --button-height-md: 2.5rem; --button-height-lg: 2.75rem;
   --touch-target: 2.75rem;
-  --bg-primary: #F8FAFC;
-  --accent-primary: #2563EB;
+  --bg-primary: #F7F8F7;
+  --accent-primary: #00B85C;
 }
 
 .dark {
-  --background: #090A0F;
-  --surface: #0E1017;
-  --surface-elevated: #151824;
-  --surface-card: #12141E;
-  --surface-overlay: #1A1E2D;
-  --border: rgba(255, 255, 255, 0.08);
+  /* ─── Dark Theme (Near-black #090A0A, layered dark surfaces, electric green #00E87A) ─── */
+  --background: #090A0A;
+  --surface: #101211;
+  --surface-secondary: #141716;
+  --surface-elevated: #181B19;
+  --surface-hover: #1C201E;
+  --surface-card: #121513;
+  --surface-overlay: #1B1E1C;
+
+  --border: #242826;
+  --border-strong: #303532;
   --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-hover: #363D39;
   --divider: rgba(255, 255, 255, 0.05);
-  
-  /* Brand & AI */
-  --brand-primary: #3B82F6;
-  --brand-hover: #2563EB;
-  --accent: #3B82F6;
-  --accent-end: #8B5CF6;
-  --accent-hover: #60A5FA;
-  --accent-subtle: rgba(59, 130, 246, 0.12);
-  --accent-focus: rgba(59, 130, 246, 0.30);
-  --ai-accent: #8B5CF6;
-  --ai-subtle: rgba(139, 92, 246, 0.15);
-  
+
+  /* Brand: Electric Green signature */
+  --brand: #00E87A;
+  --brand-hover: #00FF85;
+  --brand-dark: #00B85C;
+  --brand-primary: #00E87A;
+  --brand-text: #090A0A;
+  --accent: #00E87A;
+  --accent-end: #00B85C;
+  --accent-hover: #00FF85;
+  --accent-subtle: rgba(0, 232, 122, 0.08);
+  --accent-focus: rgba(0, 232, 122, 0.22);
+  --ai-accent: #00E87A;
+  --ai-subtle: rgba(0, 232, 122, 0.10);
+
   /* Text */
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-tertiary: #64748B;
-  
+  --text-primary: #F5F7F6;
+  --text-secondary: #A7ADA9;
+  --text-muted: #737A76;
+  --text-tertiary: #737A76;
+  --text-disabled: #4D5450;
+
   /* Feedback */
-  --success: #10B981;
-  --success-subtle: rgba(16, 185, 129, 0.15);
+  --success: #00E87A;
+  --success-subtle: rgba(0, 232, 122, 0.12);
   --warning: #F59E0B;
   --warning-subtle: rgba(245, 158, 11, 0.15);
   --error: #EF4444;
   --error-subtle: rgba(239, 68, 68, 0.15);
-  --info: #06B6D4;
-  --info-subtle: rgba(6, 182, 212, 0.15);
+  --info: #38BDF8;
+  --info-subtle: rgba(56, 189, 248, 0.15);
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
-  --shadow-premium: 0 16px 50px rgba(0,0,0,0.7);
-  --on-accent-text: #FFFFFF;
-  --accent-secondary: #06B6D4;
-  --accent-secondary-subtle: rgba(6, 182, 212, 0.12);
-  --accent-secondary-hover: #22D3EE;
-  --accent-teal: #10B981;
-  --accent-teal-subtle: rgba(16, 185, 129, 0.12);
-  --accent-pink: #EC4899;
-  --accent-pink-subtle: rgba(236, 72, 153, 0.12);
-  --bg-primary: #090A0F;
-  --accent-primary: #3B82F6;
+  /* Shadows (Subtle, non-muddy surface contrast) */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.6);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.7);
+  --shadow-premium: 0 12px 36px rgba(0,0,0,0.8);
+  --on-accent-text: #090A0A;
+
+  --bg-primary: #090A0A;
+  --accent-primary: #00E87A;
+
+  /* ── Legacy alias tokens (dark theme overrides) ── */
+  --accent-secondary: #00E87A;
+  --accent-secondary-subtle: rgba(0, 232, 122, 0.08);
+  --accent-secondary-hover: #00FF85;
+  --accent-pink: #EF4444;
+  --accent-pink-subtle: rgba(239, 68, 68, 0.10);
 }
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */

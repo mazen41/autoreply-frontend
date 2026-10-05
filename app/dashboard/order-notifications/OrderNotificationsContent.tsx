@@ -182,7 +182,7 @@ export default function OrderNotificationsContent() {
         </div>
         <button
           onClick={() => setConfig({ ...config, enabled: !config.enabled })}
-          className={`w-12 h-6 rounded-full transition-colors ${config.enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+          className={`w-12 h-6 rounded-full transition-colors ${config.enabled ? 'bg-success' : 'bg-gray-300'}`}
         >
           <div className={`w-5 h-5 rounded-full bg-white transition-transform ${config.enabled ? 'translate-x-6' : 'translate-x-1'}`} />
         </button>
@@ -208,7 +208,7 @@ export default function OrderNotificationsContent() {
                   ...config,
                   events: { ...config.events, [event]: !enabled }
                 })}
-                className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-success' : 'bg-gray-300'}`}
               >
                 <div className={`w-4 h-4 rounded-full bg-white transition-transform ${enabled ? 'translate-x-5' : 'translate-x-1'}`} />
               </button>
@@ -237,7 +237,7 @@ export default function OrderNotificationsContent() {
                   ...config,
                   channels: { ...config.channels, [channel]: !enabled }
                 })}
-                className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-success' : 'bg-gray-300'}`}
               >
                 <div className={`w-4 h-4 rounded-full bg-white transition-transform ${enabled ? 'translate-x-5' : 'translate-x-1'}`} />
               </button>
@@ -301,7 +301,7 @@ export default function OrderNotificationsContent() {
                   <span className="text-sm font-medium capitalize" style={{ color: 'var(--text-primary)' }}>
                     {item.event_type.replace('_', ' ')}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded ${item.status === 'sent' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded ${item.status === 'sent' ? 'bg-success/20 text-success' : 'bg-error/20 text-error'}`}>
                     {item.status}
                   </span>
                 </div>

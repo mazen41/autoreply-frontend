@@ -150,7 +150,7 @@ export default function FilterBar({
                 onClick={() => onTabChange(tab.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all shrink-0 select-none ${
                   isActive
-                    ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary font-semibold'
+                    ? 'bg-brand/10 border-brand/25 text-brand font-semibold'
                     : 'bg-surface-elevated border-border text-text-secondary hover:text-text-primary hover:border-border-hover'
                 }`}
               >
@@ -159,7 +159,7 @@ export default function FilterBar({
                   <span
                     className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                       isActive
-                        ? 'bg-brand-primary/20 text-brand-primary'
+                        ? 'bg-brand/20 text-brand'
                         : 'bg-surface text-text-tertiary'
                     }`}
                   >

@@ -123,7 +123,7 @@ export default function ClassificationContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-brand-primary/30 border-t-brand-primary rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
       </div>
     )
   }
@@ -153,8 +153,8 @@ export default function ClassificationContent() {
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center">
-                    <Zap size={18} className="text-brand-primary" />
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center">
+                    <Zap size={18} className="text-brand" />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-text-primary">AI Classification Engine</h3>
@@ -164,7 +164,7 @@ export default function ClassificationContent() {
                 <button
                   onClick={() => setConfig({ ...config, enabled: !config.enabled })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    config.enabled ? 'bg-brand-primary' : 'bg-surface-elevated border border-border'
+                    config.enabled ? 'bg-brand' : 'bg-surface-elevated border border-border'
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform shadow-sm ${
@@ -184,7 +184,7 @@ export default function ClassificationContent() {
             <Card key={key}>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <span className="text-brand-primary">{icon}</span>
+                  <span className="text-brand">{icon}</span>
                   <div>
                     <CardTitle>{label}</CardTitle>
                     <CardDescription className="mt-0.5">{desc}</CardDescription>
@@ -225,7 +225,7 @@ export default function ClassificationContent() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <SlidersHorizontal size={16} className="text-brand-primary" />
+                <SlidersHorizontal size={16} className="text-brand" />
                 <div>
                   <CardTitle>Confidence & Routing</CardTitle>
                   <CardDescription className="mt-0.5">Set the minimum confidence for auto-routing</CardDescription>
@@ -245,7 +245,7 @@ export default function ClassificationContent() {
                   step="0.05"
                   value={config.confidence_threshold}
                   onChange={(e) => setConfig({ ...config, confidence_threshold: parseFloat(e.target.value) })}
-                  className="w-full accent-brand-primary"
+                  className="w-full accent-brand"
                 />
                 <div className="flex justify-between text-[10px] text-text-tertiary mt-1">
                   <span>30% — More matches</span>
@@ -261,7 +261,7 @@ export default function ClassificationContent() {
                 <button
                   onClick={() => setConfig({ ...config, auto_routing_enabled: !config.auto_routing_enabled })}
                   className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                    config.auto_routing_enabled ? 'bg-brand-primary' : 'bg-surface border border-border'
+                    config.auto_routing_enabled ? 'bg-brand' : 'bg-surface border border-border'
                   }`}
                 >
                   <span className={`inline-block h-3 w-3 rounded-full bg-white transition-transform shadow-sm ${
@@ -278,7 +278,7 @@ export default function ClassificationContent() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Send size={16} className="text-brand-primary" />
+                <Send size={16} className="text-brand" />
                 <CardTitle>Test Classification</CardTitle>
               </div>
               <CardDescription>Send a test message to see how AI classifies it</CardDescription>
@@ -289,7 +289,7 @@ export default function ClassificationContent() {
                 onChange={(e) => setTestMessage(e.target.value)}
                 placeholder="Type a sample customer message..."
                 rows={4}
-                className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand-primary/40 resize-none transition-colors"
+                className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-brand/40 resize-none transition-colors"
               />
               <Button
                 className="w-full"
@@ -303,7 +303,7 @@ export default function ClassificationContent() {
             {testResult && (
               <CardFooter className="flex-col items-stretch gap-3">
                 <h4 className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
-                  <CheckCircle size={12} className="text-emerald-400" />
+                  <CheckCircle size={12} className="text-success" />
                   Classification Result
                 </h4>
                 <div className="grid grid-cols-2 gap-2">
@@ -320,9 +320,9 @@ export default function ClassificationContent() {
                   ))}
                 </div>
                 {testResult.suggested_action && (
-                  <div className="p-2.5 rounded-lg bg-brand-primary/5 border border-brand-primary/15">
+                  <div className="p-2.5 rounded-lg bg-brand/5 border border-brand/15">
                     <div className="text-[10px] text-text-tertiary uppercase tracking-wider mb-0.5">Suggested Action</div>
-                    <div className="text-xs font-medium text-brand-primary">{testResult.suggested_action}</div>
+                    <div className="text-xs font-medium text-brand">{testResult.suggested_action}</div>
                   </div>
                 )}
               </CardFooter>

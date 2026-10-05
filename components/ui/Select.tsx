@@ -46,7 +46,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           ref={ref}
           id={selectId}
           disabled={disabled}
-          className={`h-9 w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border appearance-none pr-9 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`h-9 w-full bg-surface-elevated text-text-primary text-sm rounded-lg border border-border appearance-none pr-9 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
             icon ? 'pl-9' : 'pl-3'
           } ${
             error

@@ -203,7 +203,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading account preferences...</span>
       </div>
     )
@@ -232,7 +232,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary">
+              <div className="p-2.5 rounded-xl bg-brand/10 text-brand">
                 <User size={20} />
               </div>
               <div>
@@ -247,7 +247,7 @@ export default function SettingsPage() {
               {/* Avatar section */}
               <div className="flex items-center gap-5 p-4 rounded-xl bg-surface-elevated/40 border border-border">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-primary to-purple-600 flex items-center justify-center text-white text-xl font-black shadow-md">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand to-brand flex items-center justify-center text-white text-xl font-black shadow-md">
                     {profile.name.charAt(0).toUpperCase()}
                   </div>
                   <button
@@ -308,7 +308,7 @@ export default function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
+                <div className="p-2.5 rounded-xl bg-brand/10 text-brand">
                   <Building2 size={20} />
                 </div>
                 <div>
@@ -426,7 +426,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400">
+              <div className="p-2.5 rounded-xl bg-error/10 text-error">
                 <Lock size={20} />
               </div>
               <div>

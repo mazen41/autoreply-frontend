@@ -89,14 +89,14 @@ export default function AcceptInvitationPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-error text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold mb-2">
             {isRTL ? 'دعوة غير صالحة' : 'Invalid Invitation'}
           </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => router.push('/login')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-2 bg-info text-white rounded-lg hover:bg-info"
           >
             {isRTL ? 'العودة لتسجيل الدخول' : 'Back to Login'}
           </button>
@@ -120,7 +120,7 @@ export default function AcceptInvitationPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center mb-6">
-          <div className="text-green-500 text-6xl mb-4">🎉</div>
+          <div className="text-success text-6xl mb-4">🎉</div>
           <h1 className="text-2xl font-bold mb-2">
             {isRTL ? 'دعوة للانضمام إلى فريق' : 'Team Invitation'}
           </h1>
@@ -145,7 +145,7 @@ export default function AcceptInvitationPage() {
           <button
             onClick={handleAccept}
             disabled={processing}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
+            className="w-full px-6 py-3 bg-success text-white rounded-lg hover:bg-success disabled:opacity-50 font-semibold"
           >
             {isRTL ? 'قبول الدعوة' : 'Accept Invitation'}
           </button>

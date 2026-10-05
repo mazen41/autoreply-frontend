@@ -124,11 +124,11 @@ const InboxComposer = memo(function InboxComposer({
   const canAttach = isWhatsApp
 
   return (
-    <div className="p-4 border-t border-[var(--border)] bg-[var(--surface)]">
+    <div className="p-4 border-t border-border bg-surface">
       {/* File Preview */}
       {selectedFile && (
-        <div className="mb-3 p-3 rounded-2xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center overflow-hidden text-accent">
+        <div className="mb-3 p-3 rounded-2xl bg-surface-elevated border border-border flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center overflow-hidden text-accent">
             {mediaTypeFromFile(selectedFile) === 'image' && filePreview ? (
               <img src={filePreview} alt={selectedFile.name} className="w-full h-full object-cover" />
             ) : mediaTypeFromFile(selectedFile) === 'video' ? (
@@ -140,12 +140,12 @@ const InboxComposer = memo(function InboxComposer({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-[var(--text-primary)] truncate">{selectedFile.name}</div>
-            <div className="text-[9px] text-[var(--text-secondary)] mt-0.5">{formatFileSize(selectedFile.size)}</div>
+            <div className="text-xs font-bold text-text-primary truncate">{selectedFile.name}</div>
+            <div className="text-[9px] text-text-secondary mt-0.5">{formatFileSize(selectedFile.size)}</div>
           </div>
           <button 
             onClick={clearSelectedFile} 
-            className="w-8 h-8 rounded-lg bg-[var(--surface)] text-[var(--text-secondary)] hover:text-red-400 flex items-center justify-center"
+            className="w-8 h-8 rounded-lg bg-surface text-text-secondary hover:text-error flex items-center justify-center"
           >
             <Trash2 size={14} />
           </button>
@@ -153,7 +153,7 @@ const InboxComposer = memo(function InboxComposer({
       )}
 
       {/* Composer Input */}
-      <div className="flex items-center gap-2 bg-[var(--surface-elevated)] border border-[var(--border)] focus-within:border-accent/40 rounded-2xl p-2 md:p-1.5 transition-all duration-150" role="toolbar" aria-label="Message composer">
+      <div className="flex items-center gap-2 bg-surface-elevated border border-border focus-within:border-accent/40 rounded-2xl p-2 md:p-1.5 transition-all duration-150" role="toolbar" aria-label="Message composer">
         <input
           ref={fileInputRef}
           type="file"
@@ -165,7 +165,7 @@ const InboxComposer = memo(function InboxComposer({
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || sending || !canAttach}
           aria-label="Attach file"
-          className="p-2 md:p-2.5 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-all duration-150 disabled:opacity-30"
+          className="p-2 md:p-2.5 rounded-xl text-text-secondary hover:text-text-primary hover:bg-surface transition-all duration-150 disabled:opacity-30"
         >
           <Paperclip size={16} />
         </button>
@@ -175,7 +175,7 @@ const InboxComposer = memo(function InboxComposer({
           disabled={disabled || sending || !canAttach}
           aria-label={isRecording ? 'Stop recording' : 'Record voice note'}
           className={`p-2 md:p-2.5 rounded-xl transition-all duration-150 disabled:opacity-30 ${
-            isRecording ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]'
+            isRecording ? 'bg-error/10 text-error border border-error/20' : 'text-text-secondary hover:text-text-primary hover:bg-surface'
           }`}
         >
           {isRecording ? <Pause size={16} /> : <Mic size={16} />}
@@ -189,7 +189,7 @@ const InboxComposer = memo(function InboxComposer({
           placeholder={selectedFile ? 'Add a caption...' : 'Type message...'}
           disabled={disabled || sending}
           aria-label="Message input"
-          className="flex-1 bg-transparent border-none text-xs text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:ring-0 px-2.5"
+          className="flex-1 bg-transparent border-none text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-0 px-2.5"
         />
 
         <button
@@ -198,7 +198,7 @@ const InboxComposer = memo(function InboxComposer({
           aria-label={sending ? 'Sending...' : 'Send message'}
           className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 ${
             sending || disabled || (!text.trim() && !selectedFile)
-              ? 'bg-transparent text-[var(--text-tertiary)]'
+              ? 'bg-transparent text-text-tertiary'
               : 'bg-accent text-white hover:brightness-110'
           }`}
         >

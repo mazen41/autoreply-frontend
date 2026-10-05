@@ -79,12 +79,12 @@ const ConversationListItem = memo(function ConversationListItem({
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') onClick() }}
       aria-selected={active}
       aria-label={`Conversation with ${senderLabel(conv)}${conv.latest_message?.content ? `: ${conv.latest_message.content.slice(0, 50)}` : ''}`}
-      className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 border-b border-[var(--divider)] text-left transition-all duration-150 relative group cursor-pointer ${
+      className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 border-b border-divider text-left transition-all duration-150 relative group cursor-pointer ${
         active
-          ? 'bg-[var(--accent-subtle)]'
+          ? 'bg-accent-subtle'
           : isEscalated
-            ? 'bg-amber-500/5'
-            : 'bg-transparent hover:bg-[var(--surface-elevated)]'
+            ? 'bg-warning/5'
+            : 'bg-transparent hover:bg-surface-elevated'
       }`}
     >
       {/* Active indicator */}
@@ -94,20 +94,20 @@ const ConversationListItem = memo(function ConversationListItem({
 
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="relative flex-shrink-0">
-          <ChannelIcon type={conv.channel.type as any} size={38} className="rounded-xl border border-[var(--border)]" />
+          <ChannelIcon type={conv.channel.type as any} size={38} className="rounded-xl border border-border" />
           
           {/* Status indicator */}
-          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[var(--background)] flex items-center justify-center">
-            <div className={`w-1.5 h-1.5 rounded-full ${isEscalated ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-background flex items-center justify-center">
+            <div className={`w-1.5 h-1.5 rounded-full ${isEscalated ? 'bg-warning' : 'bg-success'}`} />
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-1 mb-0.5">
-            <span className="text-xs font-bold text-[var(--text-primary)] truncate">
+            <span className="text-xs font-bold text-text-primary truncate">
               {senderLabel(conv)}
             </span>
-            <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0">
+            <span className="text-[10px] text-text-secondary flex-shrink-0">
               {formatTimestamp(conv.last_message_at)}
             </span>
           </div>
@@ -118,12 +118,12 @@ const ConversationListItem = memo(function ConversationListItem({
                 {conv.channel.page_name}
               </span>
             )}
-            {isEscalated && <span className="text-[9px] text-amber-400 font-bold uppercase">🔥 Escalated</span>}
+            {isEscalated && <span className="text-[9px] text-warning font-bold uppercase">🔥 Escalated</span>}
             {isAI && <span className="text-[9px] text-accent font-bold uppercase">⚡ AI</span>}
             {conv.category && <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent/15 text-accent">{conv.category}</span>}
           </div>
 
-          <p className="text-xs text-[var(--text-secondary)] truncate">
+          <p className="text-xs text-text-secondary truncate">
             {preview}
           </p>
 
@@ -131,7 +131,7 @@ const ConversationListItem = memo(function ConversationListItem({
           {tags && tags.length > 0 && (
             <div className="flex gap-1 mt-1.5 flex-wrap">
               {tags.slice(0, 2).map(tag => (
-                <span key={tag.id} className="text-[8px] px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-secondary)] border border-[var(--border)]">
+                <span key={tag.id} className="text-[8px] px-1.5 py-0.5 rounded bg-surface-elevated text-text-secondary border border-border">
                   {tag.tag}
                 </span>
               ))}
@@ -145,7 +145,7 @@ const ConversationListItem = memo(function ConversationListItem({
         className={`p-1.5 rounded-lg border text-[10px] font-bold transition-all duration-150 flex-shrink-0 ${
           conv.ai_enabled
             ? 'bg-accent/15 border-accent/30 text-accent hover:bg-accent/25'
-            : 'bg-[var(--surface-elevated)] border-[var(--border)] text-[var(--text-tertiary)] hover:border-[var(--border)] hover:text-[var(--text-secondary)]'
+            : 'bg-surface-elevated border-border text-text-tertiary hover:border-border hover:text-text-secondary'
         }`}
       >
         AI

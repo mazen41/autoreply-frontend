@@ -176,14 +176,14 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
                         onMouseEnter={() => setSelectedIndex(globalIdx)}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-colors ${
                           isSelected
-                            ? 'bg-brand-primary/10 text-brand-primary'
+                            ? 'bg-brand/10 text-brand'
                             : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary'
                         }`}
                       >
                         <div className="min-w-0 pr-2">
                           <div
                             className={`text-xs font-semibold ${
-                              isSelected ? 'text-brand-primary' : 'text-text-primary'
+                              isSelected ? 'text-brand' : 'text-text-primary'
                             }`}
                           >
                             {item.title}

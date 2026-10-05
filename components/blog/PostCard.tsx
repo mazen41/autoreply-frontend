@@ -83,7 +83,7 @@ export default function PostCard({
                 </div>
               )}
               <h2
-                className="font-black mb-3 transition-colors duration-300 group-hover:text-[var(--accent)]"
+                className="font-black mb-3 transition-colors duration-300 group-hover:text-accent"
                 style={{ fontSize: 'clamp(1.4rem,2.4vw,1.9rem)', color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.25 }}
               >
                 {title}
@@ -140,7 +140,7 @@ export default function PostCard({
               </div>
             )}
             <h3
-              className="font-bold mb-2 line-clamp-2 transition-colors duration-300 group-hover:text-[var(--accent)]"
+              className="font-bold mb-2 line-clamp-2 transition-colors duration-300 group-hover:text-accent"
               style={{ color: 'var(--text-primary)', fontSize: '1.05rem', lineHeight: 1.4 }}
             >
               {title}

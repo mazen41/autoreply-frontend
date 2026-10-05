@@ -61,12 +61,12 @@ function getInitials(name: string) {
 }
 
 const GRADIENT_COLORS = [
-  'from-blue-500 to-indigo-600',
-  'from-emerald-500 to-teal-600',
-  'from-violet-500 to-purple-600',
-  'from-amber-500 to-orange-600',
-  'from-rose-500 to-pink-600',
-  'from-cyan-500 to-blue-600',
+  'from-info to-brand',
+  'from-success to-success',
+  'from-brand to-brand',
+  'from-warning to-warning',
+  'from-error to-brand',
+  'from-brand to-info',
 ]
 
 export default function TeamPage() {
@@ -195,7 +195,7 @@ export default function TeamPage() {
         <MetricCard
           label="Online Now"
           value={stats.active}
-          icon={<span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" /></span>}
+          icon={<span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" /><span className="relative inline-flex rounded-full h-3 w-3 bg-success" /></span>}
         />
       </div>
 
@@ -325,7 +325,7 @@ export default function TeamPage() {
                     onClick={() => setInviteRole(role)}
                     className={`flex items-center gap-2 p-3 rounded-lg border text-xs font-medium transition-all ${
                       isSelected
-                        ? 'border-brand-primary/40 bg-brand-primary/5 text-text-primary'
+                        ? 'border-brand/40 bg-brand/5 text-text-primary'
                         : 'border-border bg-surface-elevated text-text-secondary hover:border-border-hover'
                     }`}
                   >

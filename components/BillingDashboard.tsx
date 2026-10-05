@@ -60,14 +60,14 @@ export default function BillingDashboard() {
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <CreditCard className="w-6 h-6 text-blue-600" />
+            <CreditCard className="w-6 h-6 text-info" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Current Plan
             </h2>
           </div>
           <button
             onClick={handleUpgrade}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 px-4 py-2 bg-info text-white rounded-lg hover:bg-info"
           >
             <ArrowUpRight className="w-4 h-4" />
             Upgrade
@@ -90,7 +90,7 @@ export default function BillingDashboard() {
             <div>
               <div className="text-sm text-gray-500">Status</div>
               <div className={`text-lg font-semibold ${
-                subscription.status === 'active' ? 'text-green-600' : 'text-red-600'
+                subscription.status === 'active' ? 'text-success' : 'text-error'
               }`}>
                 {subscription.status}
               </div>
@@ -102,7 +102,7 @@ export default function BillingDashboard() {
       {/* Usage Stats */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-6 h-6 text-purple-600" />
+          <TrendingUp className="w-6 h-6 text-brand" />
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Usage Statistics
           </h2>
@@ -120,7 +120,7 @@ export default function BillingDashboard() {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all ${
-                      isOverLimit ? 'bg-red-500' : isNearLimit ? 'bg-yellow-500' : 'bg-green-500'
+                      isOverLimit ? 'bg-error' : isNearLimit ? 'bg-warning' : 'bg-success'
                     }`}
                     style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                   />
@@ -128,7 +128,7 @@ export default function BillingDashboard() {
               )}
             </div>
             {isNearLimit && !isOverLimit && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-yellow-800 dark:text-yellow-200">
+              <div className="flex items-center gap-2 p-3 bg-warning dark:bg-warning/20 rounded-lg text-warning dark:text-warning">
                 <AlertTriangle className="w-5 h-5" />
                 <span className="text-sm">
                   You're approaching your usage limit. Consider upgrading to avoid service interruption.
@@ -136,7 +136,7 @@ export default function BillingDashboard() {
               </div>
             )}
             {isOverLimit && (
-              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-800 dark:text-red-200">
+              <div className="flex items-center gap-2 p-3 bg-error dark:bg-error/20 rounded-lg text-error dark:text-error">
                 <AlertTriangle className="w-5 h-5" />
                 <span className="text-sm">
                   You've exceeded your usage limit. Additional charges may apply.
@@ -169,9 +169,9 @@ export default function BillingDashboard() {
                     ${overage.amount.toFixed(2)}
                   </div>
                   <div className={`text-sm ${
-                    overage.status === 'billed' ? 'text-green-600' :
-                    overage.status === 'pending' ? 'text-yellow-600' :
-                    'text-red-600'
+                    overage.status === 'billed' ? 'text-success' :
+                    overage.status === 'pending' ? 'text-warning' :
+                    'text-error'
                   }`}>
                     {overage.status}
                   </div>
@@ -184,7 +184,7 @@ export default function BillingDashboard() {
 
       {/* Download Invoice */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-        <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700">
+        <button className="flex items-center gap-2 text-info hover:text-info">
           <Download className="w-5 h-5" />
           Download Latest Invoice
         </button>

@@ -66,10 +66,10 @@ export default function OrdersPage() {
   }, [fetchOrders])
 
   const statusColors: Record<string, string> = {
-    delivered: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400',
-    processing: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
-    pending: 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400',
-    cancelled: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
+    delivered: 'bg-success text-success dark:bg-success/20 dark:text-success',
+    processing: 'bg-info text-info dark:bg-info/20 dark:text-info',
+    pending: 'bg-warning text-warning dark:bg-warning/20 dark:text-warning',
+    cancelled: 'bg-error text-error dark:bg-error/20 dark:text-error',
   }
 
   return (

@@ -83,10 +83,10 @@ export default function MessageTimeline({
 
   if (loading) {
     return (
-      <div className="flex-1 overflow-hidden p-6 space-y-6 bg-[var(--background)] flex flex-col justify-end">
+      <div className="flex-1 overflow-hidden p-6 space-y-6 bg-background flex flex-col justify-end">
         {[1, 2, 3].map(i => (
           <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-            <div className={`w-64 h-16 rounded-2xl animate-pulse ${i % 2 === 0 ? 'bg-[var(--accent-subtle)]' : 'bg-[var(--surface-elevated)]'}`} />
+            <div className={`w-64 h-16 rounded-2xl animate-pulse ${i % 2 === 0 ? 'bg-accent-subtle' : 'bg-surface-elevated'}`} />
           </div>
         ))}
       </div>
@@ -95,14 +95,14 @@ export default function MessageTimeline({
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-6 bg-[var(--background)] flex flex-col items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-4">
-          <MessageBubbleIcon className="w-8 h-8 text-indigo-300" />
+      <div className="flex-1 overflow-y-auto p-6 bg-background flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-full bg-brand dark:bg-brand/20 flex items-center justify-center mb-4">
+          <MessageBubbleIcon className="w-8 h-8 text-brand" />
         </div>
-        <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">
+        <h3 className="text-sm font-bold text-text-primary mb-1">
           {L('Start of conversation', 'بداية المحادثة')}
         </h3>
-        <p className="text-xs text-[var(--text-tertiary)] max-w-[250px]">
+        <p className="text-xs text-text-tertiary max-w-[250px]">
           {L('Send a message to start chatting with this customer.', 'أرسل رسالة لبدء الدردشة مع هذا العميل.')}
         </p>
       </div>
@@ -110,20 +110,20 @@ export default function MessageTimeline({
   }
 
   return (
-    <div className="relative flex-1 min-h-0 bg-[var(--background)]">
+    <div className="relative flex-1 min-h-0 bg-background">
       <div 
         ref={scrollRef}
         onScroll={handleScroll}
-        className="absolute inset-0 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin scrollbar-thumb-[var(--border)] scrollbar-track-transparent"
+        className="absolute inset-0 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
       >
         {grouped.map(group => (
           <div key={group.date} className="space-y-4">
             <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[var(--divider)]" />
-              <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider px-2 py-1 rounded-full bg-[var(--surface)]">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent to-divider" />
+              <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider px-2 py-1 rounded-full bg-surface">
                 {group.date}
               </span>
-              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[var(--divider)]" />
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent to-divider" />
             </div>
             
             <div className="space-y-2">
@@ -149,7 +149,7 @@ export default function MessageTimeline({
       {showScrollDown && (
         <button
           onClick={() => scrollToBottom('smooth')}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] shadow-md flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-all z-10 animate-in fade-in slide-in-from-bottom-4"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-surface-elevated border border-border shadow-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface transition-all z-10 animate-in fade-in slide-in-from-bottom-4"
         >
           <ArrowDown size={14} />
         </button>

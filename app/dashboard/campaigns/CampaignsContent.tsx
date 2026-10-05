@@ -264,7 +264,7 @@ export default function CampaignsContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading campaign broadcasts...</span>
       </div>
     )
@@ -471,14 +471,14 @@ export default function CampaignsContent() {
                     {isSending && (
                       <div className="space-y-1 pt-1 max-w-md">
                         <div className="flex justify-between text-[11px] text-text-tertiary">
-                          <span className="flex items-center gap-1.5 text-brand-primary font-semibold">
+                          <span className="flex items-center gap-1.5 text-brand font-semibold">
                             <RefreshCw size={11} className="animate-spin" /> Dispatching in progress...
                           </span>
                           <span>{pctDelivered}% complete</span>
                         </div>
                         <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-brand-primary transition-all duration-300"
+                            className="h-full rounded-full bg-brand transition-all duration-300"
                             style={{ width: `${pctDelivered}%` }}
                           />
                         </div>
@@ -494,19 +494,19 @@ export default function CampaignsContent() {
                       {camp.delivered_count !== null && (
                         <span className="text-text-tertiary">
                           Delivered:{' '}
-                          <strong className="text-emerald-400">{(camp.delivered_count || 0).toLocaleString()}</strong>
+                          <strong className="text-success">{(camp.delivered_count || 0).toLocaleString()}</strong>
                         </span>
                       )}
                       {camp.opened_count !== null && (
                         <span className="text-text-tertiary">
                           Read:{' '}
-                          <strong className="text-blue-400">{(camp.opened_count || 0).toLocaleString()}</strong>
+                          <strong className="text-info">{(camp.opened_count || 0).toLocaleString()}</strong>
                         </span>
                       )}
                       {camp.clicked_count !== null && (
                         <span className="text-text-tertiary">
                           Engaged:{' '}
-                          <strong className="text-purple-400">{(camp.clicked_count || 0).toLocaleString()}</strong>
+                          <strong className="text-brand">{(camp.clicked_count || 0).toLocaleString()}</strong>
                         </span>
                       )}
                     </div>
@@ -526,7 +526,7 @@ export default function CampaignsContent() {
                       variant="ghost"
                       size="xs"
                       onClick={() => handleDelete(camp.id)}
-                      className="text-text-tertiary hover:text-rose-400 hover:bg-rose-500/10"
+                      className="text-text-tertiary hover:text-error hover:bg-error/10"
                       icon={<Trash2 size={12} />}
                       title="Delete"
                     />

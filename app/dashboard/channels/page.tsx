@@ -691,13 +691,13 @@ export default function ChannelsPage() {
           <div
             className={`px-4 py-3 rounded-xl text-xs font-semibold shadow-xl border flex items-center gap-2.5 backdrop-blur-md ${
               toast.type === 'error'
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
-                : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                ? 'bg-error/15 border-error/30 text-error'
+                : 'bg-success/15 border-success/30 text-success'
             }`}
           >
             <div
               className={`w-2 h-2 rounded-full ${
-                toast.type === 'error' ? 'bg-rose-400' : 'bg-emerald-400'
+                toast.type === 'error' ? 'bg-error' : 'bg-success'
               }`}
             />
             <span>{toast.message}</span>

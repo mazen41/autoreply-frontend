@@ -53,9 +53,9 @@ export default function ConversationHeader({
 
   const aiState = requires_human ? 'escalated' : conv.ai_enabled ? 'active' : 'paused'
   const aiStateConfig = {
-    active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-[var(--accent-subtle)]',  text: 'text-[var(--accent)]',   dot: 'bg-[var(--accent)]' },
-    paused:    { label: L('AI Paused', 'AI متوقف'),     bg: 'bg-[var(--surface-elevated)]', text: 'text-[var(--text-secondary)]', dot: 'bg-[var(--text-tertiary)]' },
-    escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-red-50 dark:bg-red-900/20', text: 'text-red-500',           dot: 'bg-red-500' },
+    active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-accent-subtle',  text: 'text-accent',   dot: 'bg-accent' },
+    paused:    { label: L('AI Paused', 'AI متوقف'),     bg: 'bg-surface-elevated', text: 'text-text-secondary', dot: 'bg-text-tertiary' },
+    escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-error dark:bg-error/20', text: 'text-error',           dot: 'bg-error' },
   }[aiState]
 
   const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -66,11 +66,11 @@ export default function ConversationHeader({
   const currentStatus = statusConfig[conv.status] ?? statusConfig.open
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[var(--border)] bg-[var(--surface)] flex-shrink-0">
+    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-surface flex-shrink-0">
       {/* Panel toggles */}
       <button
         onClick={onToggleLeftPanel}
-        className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] transition-colors flex-shrink-0"
+        className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-tertiary transition-colors flex-shrink-0"
         title={L('Toggle sidebar', 'إخفاء/إظهار القائمة')}
       >
         <PanelLeft size={15} />
@@ -78,12 +78,12 @@ export default function ConversationHeader({
 
       {/* Customer info */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-end)] flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-end flex items-center justify-center text-white text-xs font-black flex-shrink-0">
           {(conv.sender_name?.charAt(0) || '?').toUpperCase()}
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-[var(--text-primary)] truncate">
+            <span className="text-sm font-bold text-text-primary truncate">
               {conv.sender_name || `#${conv.sender_id?.slice(-6)}`}
             </span>
             <span
@@ -103,17 +103,17 @@ export default function ConversationHeader({
                     <button
                       onClick={() => setBotDropdownOpen(v => !v)}
                       disabled={isUpdatingBot}
-                      className="ml-1 p-0.5 rounded hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] hover:text-[var(--accent)] transition-colors disabled:opacity-50"
+                      className="ml-1 p-0.5 rounded hover:bg-surface-elevated text-text-tertiary hover:text-accent transition-colors disabled:opacity-50"
                       title={isRTL ? 'تغيير البوت' : 'Switch Bot'}
                     >
                       {isUpdatingBot ? <Loader2 size={10} className="animate-spin" /> : <ChevronDown size={10} />}
                     </button>
                     {botDropdownOpen && (
-                      <div className="absolute left-0 top-full mt-1 w-44 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+                      <div className="absolute left-0 top-full mt-1 w-44 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
                         <button
                           onClick={() => { onBotChange(null); setBotDropdownOpen(false) }}
                           className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                            !conv.bot_id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                            !conv.bot_id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
                           }`}
                         >
                           {isRTL ? 'بدون بوت' : 'No Bot'}
@@ -123,7 +123,7 @@ export default function ConversationHeader({
                             key={bot.id}
                             onClick={() => { onBotChange(bot.id); setBotDropdownOpen(false) }}
                             className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                              conv.bot_id === bot.id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                              conv.bot_id === bot.id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
                             }`}
                           >
                             <div className="flex items-center gap-1.5">
@@ -140,7 +140,7 @@ export default function ConversationHeader({
             )}
           </div>
           {conv.sender_email && (
-            <p className="text-[10px] text-[var(--text-tertiary)] truncate">{conv.sender_email}</p>
+            <p className="text-[10px] text-text-tertiary truncate">{conv.sender_email}</p>
           )}
         </div>
       </div>
@@ -160,7 +160,7 @@ export default function ConversationHeader({
       <div className="relative flex-shrink-0">
         <button
           onClick={() => setStatusOpen(v => !v)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-border hover:bg-surface-elevated transition-colors"
           style={{ color: currentStatus.color }}
         >
           {currentStatus.icon}
@@ -168,12 +168,12 @@ export default function ConversationHeader({
           <ChevronDown size={11} />
         </button>
         {statusOpen && (
-          <div className="absolute right-0 top-full mt-1 w-36 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 w-36 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
             {Object.entries(statusConfig).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => { onStatusChange(key as any); setStatusOpen(false) }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-[var(--surface)] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-surface transition-colors"
                 style={{ color: cfg.color }}
               >
                 {cfg.icon} {cfg.label}
@@ -189,7 +189,7 @@ export default function ConversationHeader({
           <button
             onClick={() => setAgentDropdownOpen(v => !v)}
             disabled={isUpdatingAgent}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-border hover:bg-surface-elevated transition-colors disabled:opacity-50"
             style={{ color: conv.assigned_agent_id ? 'var(--accent)' : 'var(--text-tertiary)' }}
           >
             {isUpdatingAgent ? (
@@ -204,11 +204,11 @@ export default function ConversationHeader({
             <ChevronDown size={9} />
           </button>
           {agentDropdownOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
               <button
                 onClick={() => { onAgentChange(null); setAgentDropdownOpen(false) }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  !conv.assigned_agent_id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                  !conv.assigned_agent_id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
                 }`}
               >
                 {L('Unassigned', 'غير معين')}
@@ -218,7 +218,7 @@ export default function ConversationHeader({
                   key={agent.id}
                   onClick={() => { onAgentChange(agent.id); setAgentDropdownOpen(false) }}
                   className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-1.5 ${
-                    conv.assigned_agent_id === agent.id ? 'text-[var(--accent)] bg-[var(--accent-subtle)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'
+                    conv.assigned_agent_id === agent.id ? 'text-accent bg-accent-subtle' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >
                   <User size={11} />
@@ -234,12 +234,12 @@ export default function ConversationHeader({
       <div className="relative flex-shrink-0">
         <button
           onClick={() => setActionsOpen(v => !v)}
-          className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary transition-colors"
         >
           <MoreHorizontal size={15} />
         </button>
         {actionsOpen && (
-          <div className="absolute right-0 top-full mt-1 w-44 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 w-44 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
             {[
               { icon: UserPlus,    label: L('Assign',   'تعيين') },
               { icon: ArrowRight,  label: L('Transfer', 'نقل') },
@@ -249,7 +249,7 @@ export default function ConversationHeader({
               <button
                 key={item.label}
                 onClick={() => setActionsOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-text-secondary hover:text-text-primary hover:bg-surface transition-colors"
               >
                 <item.icon size={13} /> {item.label}
               </button>
@@ -261,7 +261,7 @@ export default function ConversationHeader({
       {/* Right panel toggle */}
       <button
         onClick={onToggleRightPanel}
-        className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-tertiary)] transition-colors flex-shrink-0"
+        className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-tertiary transition-colors flex-shrink-0"
         title={L('Toggle customer panel', 'إخفاء/إظهار لوحة العميل')}
       >
         <PanelRight size={15} />

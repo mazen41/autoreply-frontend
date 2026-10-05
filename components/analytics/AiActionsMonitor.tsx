@@ -87,18 +87,18 @@ export default function AiActionsMonitor({ businessId }: { businessId: number })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'executed': return <CheckCircle size={16} className="text-green-500" />
-      case 'failed': return <XCircle size={16} className="text-red-500" />
-      case 'pending': return <Clock size={16} className="text-yellow-500" />
+      case 'executed': return <CheckCircle size={16} className="text-success" />
+      case 'failed': return <XCircle size={16} className="text-error" />
+      case 'pending': return <Clock size={16} className="text-warning" />
       default: return <AlertCircle size={16} className="text-gray-500" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'executed': return 'text-green-500'
-      case 'failed': return 'text-red-500'
-      case 'pending': return 'text-yellow-500'
+      case 'executed': return 'text-success'
+      case 'failed': return 'text-error'
+      case 'pending': return 'text-warning'
       default: return 'text-gray-500'
     }
   }
@@ -138,7 +138,7 @@ export default function AiActionsMonitor({ businessId }: { businessId: number })
 
           <div className="p-4 rounded-xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle size={16} className="text-green-500" />
+              <CheckCircle size={16} className="text-success" />
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'تم التنفيذ' : 'Executed'}
               </span>
@@ -150,7 +150,7 @@ export default function AiActionsMonitor({ businessId }: { businessId: number })
 
           <div className="p-4 rounded-xl" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
             <div className="flex items-center gap-2 mb-2">
-              <XCircle size={16} className="text-red-500" />
+              <XCircle size={16} className="text-error" />
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {isRTL ? 'فشل' : 'Failed'}
               </span>

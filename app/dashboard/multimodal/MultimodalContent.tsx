@@ -167,7 +167,7 @@ export default function MultimodalContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading multimodal configuration...</span>
       </div>
     )
@@ -227,7 +227,7 @@ export default function MultimodalContent() {
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 text-brand flex items-center justify-center shrink-0">
                   <Volume2 size={20} />
                 </div>
                 <div>
@@ -249,7 +249,7 @@ export default function MultimodalContent() {
                   onChange={(e) => setConfig({ ...config, speech_to_text_enabled: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary border border-border"></div>
+                <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border"></div>
               </label>
             </CardHeader>
             <CardContent className="space-y-4 pt-4 border-t border-border/60">
@@ -275,7 +275,7 @@ export default function MultimodalContent() {
                   </span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-success bg-success/10 border border-success/20 p-2.5 rounded-lg">
                   <CheckCircle2 size={14} className="shrink-0" />
                   <span>Native support for Egyptian, Gulf, and North African Arabic dialect voice clips enabled.</span>
                 </div>
@@ -287,7 +287,7 @@ export default function MultimodalContent() {
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-info/10 border border-info/20 text-info flex items-center justify-center shrink-0">
                   <Eye size={20} />
                 </div>
                 <div>
@@ -309,7 +309,7 @@ export default function MultimodalContent() {
                   onChange={(e) => setConfig({ ...config, vision_enabled: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary border border-border"></div>
+                <div className="w-11 h-6 bg-surface-elevated peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border"></div>
               </label>
             </CardHeader>
             <CardContent className="space-y-4 pt-4 border-t border-border/60">
@@ -328,13 +328,13 @@ export default function MultimodalContent() {
               </div>
 
               {config.vision_enabled ? (
-                <div className="flex items-center gap-2 text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 p-2.5 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-info bg-info/10 border border-info/20 p-2.5 rounded-lg">
                   <Sparkles size={14} className="shrink-0" />
                   <span>Images sent by clients will automatically extract bank transfer references and product SKU tags.</span>
                 </div>
               ) : (
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-surface-elevated/50 border border-border text-text-tertiary text-xs">
-                  <AlertCircle size={15} className="shrink-0 mt-0.5 text-amber-400" />
+                  <AlertCircle size={15} className="shrink-0 mt-0.5 text-warning" />
                   <span>
                     Vision disabled: AI will reply with a generic fallback request if the customer provides only a photo.
                   </span>
@@ -348,7 +348,7 @@ export default function MultimodalContent() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-success/10 border border-success/20 text-success flex items-center justify-center shrink-0">
                     <FileText size={20} />
                   </div>
                   <div>
@@ -382,7 +382,7 @@ export default function MultimodalContent() {
             <div>
               <CardHeader>
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                  <div className="p-2 rounded-lg bg-brand/10 text-brand border border-brand/20">
                     <Cpu size={16} />
                   </div>
                   <div>
@@ -394,7 +394,7 @@ export default function MultimodalContent() {
 
               <CardContent className="space-y-4">
                 {/* Upload Box */}
-                <div className="relative border-2 border-dashed border-border rounded-xl p-5 text-center hover:border-brand-primary/40 transition-colors bg-surface-elevated/30">
+                <div className="relative border-2 border-dashed border-border rounded-xl p-5 text-center hover:border-brand/40 transition-colors bg-surface-elevated/30">
                   <input
                     type="file"
                     accept="image/*"
@@ -441,7 +441,7 @@ export default function MultimodalContent() {
                   <div className="space-y-3 p-4 rounded-xl bg-surface-elevated border border-border/80 animate-in fade-in-50 duration-200">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-text-primary flex items-center gap-1.5">
-                        <Sparkles size={13} className="text-brand-primary" /> Vision Output
+                        <Sparkles size={13} className="text-brand" /> Vision Output
                       </span>
                       {testResult.confidence && (
                         <Badge variant="success" size="sm">
@@ -472,7 +472,7 @@ export default function MultimodalContent() {
                     {testResult.detected_intent && (
                       <div className="flex items-center justify-between text-xs pt-2 border-t border-border/60">
                         <span className="text-text-tertiary">Workflow Action:</span>
-                        <span className="font-semibold text-brand-primary font-mono text-[11px]">
+                        <span className="font-semibold text-brand font-mono text-[11px]">
                           {testResult.detected_intent}
                         </span>
                       </div>

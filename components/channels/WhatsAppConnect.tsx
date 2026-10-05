@@ -201,11 +201,11 @@ export default function WhatsAppConnect({
               className="p-4 rounded-2xl flex items-center gap-3"
               style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)' }}
             >
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-full bg-success/20 text-success flex items-center justify-center font-bold">
                 <Check size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold text-emerald-400">
+                <p className="text-xs font-bold text-success">
                   {isRTL ? 'الحساب مربوط وجاهز' : 'Account Connected'}
                 </p>
                 <p className="text-[11px] text-text-secondary">
@@ -238,7 +238,7 @@ export default function WhatsAppConnect({
           <div className="space-y-4 text-center">
             {loading && !qrcode && (
               <div className="py-12 flex flex-col items-center justify-center space-y-3">
-                <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs text-text-secondary">
                   {isRTL ? 'جاري إنشاء جلسة واتساب...' : 'Generating WhatsApp QR code...'}
                 </p>
@@ -296,8 +296,8 @@ export default function WhatsAppConnect({
                   </ol>
                 </div>
 
-                <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-400 font-medium py-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <div className="flex items-center justify-center gap-2 text-[11px] text-success font-medium py-1">
+                  <span className="w-2 h-2 rounded-full bg-success animate-ping" />
                   <span>{isRTL ? 'في انتظار المسح...' : 'Waiting for QR scan...'}</span>
                 </div>
               </div>

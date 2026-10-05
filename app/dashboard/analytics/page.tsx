@@ -239,8 +239,8 @@ export default function AnalyticsPage() {
                       <tr key={i} className="border-b border-border/50 last:border-0 hover:bg-surface-elevated/50 transition-colors">
                         <td className="py-3 px-5 font-medium text-text-primary">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-md bg-brand-primary/10 flex items-center justify-center">
-                              <Bot size={12} className="text-brand-primary" />
+                            <div className="w-6 h-6 rounded-md bg-brand/10 flex items-center justify-center">
+                              <Bot size={12} className="text-brand" />
                             </div>
                             {row.bot_name || '—'}
                           </div>
@@ -257,7 +257,7 @@ export default function AnalyticsPage() {
                         <td className="py-3 px-5 text-right text-text-primary tabular-nums">
                           {(row.total_calls || 0).toLocaleString()}
                         </td>
-                        <td className="py-3 px-5 text-right font-semibold text-amber-400 tabular-nums">
+                        <td className="py-3 px-5 text-right font-semibold text-warning tabular-nums">
                           {formatCurrency(row.total_cost || 0)}
                         </td>
                       </tr>

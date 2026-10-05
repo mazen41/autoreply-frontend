@@ -65,9 +65,9 @@ export default function PusherTest() {
 
   const getStatusColor = () => {
     switch (status) {
-      case 'connected': return 'text-green-500'
-      case 'connecting': return 'text-yellow-500'
-      case 'error': return 'text-red-500'
+      case 'connected': return 'text-success'
+      case 'connecting': return 'text-warning'
+      case 'error': return 'text-error'
       default: return 'text-gray-500'
     }
   }

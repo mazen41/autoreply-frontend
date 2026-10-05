@@ -447,10 +447,10 @@ export default function SequenceEditorPage() {
 
             {/* No Reply Configuration */}
             {triggerType === 'no_reply' && (
-              <div className="p-4 bg-amber-50/70 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl space-y-3">
+              <div className="p-4 bg-warning/70 dark:bg-warning/20 border border-warning dark:border-warning rounded-xl space-y-3">
                 <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-amber-600" />
-                  <span className="text-xs font-bold text-amber-800 dark:text-amber-300">Wait Duration Without Customer Reply</span>
+                  <Clock size={16} className="text-warning" />
+                  <span className="text-xs font-bold text-warning dark:text-warning">Wait Duration Without Customer Reply</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
@@ -458,12 +458,12 @@ export default function SequenceEditorPage() {
                     min="1"
                     value={noReplyHours}
                     onChange={(e) => setNoReplyHours(parseInt(e.target.value) || 1)}
-                    className="w-24 h-10 px-3 text-center font-bold bg-[var(--surface)] border border-amber-300 dark:border-amber-700 rounded-lg text-sm text-[var(--text-primary)] outline-none"
+                    className="w-24 h-10 px-3 text-center font-bold bg-[var(--surface)] border border-warning dark:border-warning rounded-lg text-sm text-[var(--text-primary)] outline-none"
                   />
                   <select
                     value={noReplyUnit}
                     onChange={(e) => setNoReplyUnit(e.target.value as any)}
-                    className="h-10 px-3 bg-[var(--surface)] border border-amber-300 dark:border-amber-700 rounded-lg text-sm font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
+                    className="h-10 px-3 bg-[var(--surface)] border border-warning dark:border-warning rounded-lg text-sm font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
                   >
                     <option value="minutes">Minutes</option>
                     <option value="hours">Hours</option>
@@ -505,19 +505,19 @@ export default function SequenceEditorPage() {
 
           {/* Trigger Header Node */}
           <div className="flex flex-col items-center">
-            <div className="w-full bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+            <div className="w-full bg-gradient-to-r from-warning/10 via-warning/5 to-transparent border border-warning dark:border-warning rounded-2xl p-4 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg">
+                <div className="w-10 h-10 rounded-xl bg-warning text-white flex items-center justify-center font-bold text-lg">
                   ⚡
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">Entry Trigger</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-warning dark:text-warning">Entry Trigger</span>
                   <p className="text-sm font-bold text-[var(--text-primary)]">
                     {TRIGGERS.find(t => t.id === triggerType)?.label || triggerType}
                   </p>
                 </div>
               </div>
-              <span className="text-xs text-amber-600 font-semibold px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+              <span className="text-xs text-warning font-semibold px-2.5 py-1 bg-warning dark:bg-warning/30 rounded-lg">
                 Starts Sequence
               </span>
             </div>
@@ -567,7 +567,7 @@ export default function SequenceEditorPage() {
                       </button>
                       <button
                         onClick={() => deleteStep(step.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-[var(--text-tertiary)] hover:text-red-500"
+                        className="p-1.5 rounded-lg hover:bg-error dark:hover:bg-error/30 text-[var(--text-tertiary)] hover:text-error"
                         title="Delete"
                       >
                         <Trash2 size={14} />
@@ -690,28 +690,28 @@ export default function SequenceEditorPage() {
             <button
               type="button"
               onClick={() => addStep('message')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 text-xs font-bold transition-all border border-blue-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-info/10 text-info hover:bg-info/20 text-xs font-bold transition-all border border-info/20"
             >
               <Plus size={14} /> Send Message
             </button>
             <button
               type="button"
               onClick={() => addStep('delay')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 text-xs font-bold transition-all border border-purple-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand/10 text-brand hover:bg-brand/20 text-xs font-bold transition-all border border-brand/20"
             >
               <Clock size={14} /> Add Wait Delay
             </button>
             <button
               type="button"
               onClick={() => addStep('condition')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-xs font-bold transition-all border border-emerald-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-success/10 text-success hover:bg-success/20 text-xs font-bold transition-all border border-success/20"
             >
               <GitBranch size={14} /> Add Condition
             </button>
             <button
               type="button"
               onClick={() => addStep('action')}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 text-xs font-bold transition-all border border-amber-500/20"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-warning/10 text-warning hover:bg-warning/20 text-xs font-bold transition-all border border-warning/20"
             >
               <Zap size={14} /> Add Action
             </button>
@@ -720,11 +720,11 @@ export default function SequenceEditorPage() {
 
         {/* Validation Errors Alert */}
         {validationErrors.length > 0 && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4 space-y-2">
-            <div className="flex items-center gap-2 text-red-600 font-bold text-sm">
+          <div className="bg-error dark:bg-error/20 border border-error dark:border-error rounded-2xl p-4 space-y-2">
+            <div className="flex items-center gap-2 text-error font-bold text-sm">
               <AlertCircle size={16} /> Please resolve the following issues before saving:
             </div>
-            <ul className="list-disc pl-6 space-y-1 text-xs text-red-500">
+            <ul className="list-disc pl-6 space-y-1 text-xs text-error">
               {validationErrors.map((err, i) => (
                 <li key={i}>{err}</li>
               ))}
@@ -737,7 +737,7 @@ export default function SequenceEditorPage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-[var(--text-primary)] text-[var(--background)] rounded-xl shadow-lg text-sm font-medium animate-in fade-in slide-in-from-bottom-3">
-          <CheckCircle2 size={16} className="text-emerald-400" /> {toastMessage}
+          <CheckCircle2 size={16} className="text-success" /> {toastMessage}
         </div>
       )}
 
@@ -913,11 +913,11 @@ function ConditionEditor({ step, updateStep, availableSteps }: { step: any; upda
       {/* Branching Routes */}
       <div className="pt-3 border-t border-[var(--border)] grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">If Condition is TRUE</label>
+          <label className="block text-[11px] font-bold text-success dark:text-success uppercase mb-1">If Condition is TRUE</label>
           <select
             value={config.on_true || 'continue'}
             onChange={(e) => updateStep(step.id, { condition_config: { ...config, on_true: e.target.value } })}
-            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
+            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-success dark:border-success rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
           >
             <option value="continue">Continue to Next Step</option>
             <option value="stop">Stop Sequence</option>
@@ -936,11 +936,11 @@ function ConditionEditor({ step, updateStep, availableSteps }: { step: any; upda
         </div>
 
         <div>
-          <label className="block text-[11px] font-bold text-rose-500 uppercase mb-1">If Condition is FALSE</label>
+          <label className="block text-[11px] font-bold text-error uppercase mb-1">If Condition is FALSE</label>
           <select
             value={config.on_false || 'stop'}
             onChange={(e) => updateStep(step.id, { condition_config: { ...config, on_false: e.target.value } })}
-            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-rose-300 dark:border-rose-800 rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
+            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-error dark:border-error rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
           >
             <option value="stop">Stop Sequence</option>
             <option value="continue">Continue to Next Step</option>

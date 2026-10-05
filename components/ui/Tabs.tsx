@@ -52,8 +52,8 @@ export default function Tabs({
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                     isActive
-                      ? 'bg-brand-primary/15 text-brand-primary'
-                      : 'bg-white/[0.06] text-text-tertiary'
+                      ? 'bg-brand/15 text-brand'
+                      : 'bg-surface-secondary text-text-tertiary'
                   }`}
                 >
                   {tab.count}
@@ -78,7 +78,7 @@ export default function Tabs({
               onClick={() => onChange(tab.id)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all shrink-0 ${
                 isActive
-                  ? 'bg-brand-primary/10 border-brand-primary/30 text-brand-primary font-semibold'
+                  ? 'bg-brand/10 border-brand/25 text-brand font-semibold'
                   : 'bg-surface-elevated border-border text-text-secondary hover:text-text-primary hover:border-border-hover'
               }`}
             >
@@ -88,7 +88,7 @@ export default function Tabs({
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
                     isActive
-                      ? 'bg-brand-primary/20 text-brand-primary'
+                      ? 'bg-brand/20 text-brand'
                       : 'bg-surface text-text-tertiary'
                   }`}
                 >
@@ -116,7 +116,7 @@ export default function Tabs({
             onClick={() => onChange(tab.id)}
             className={`flex items-center gap-2 pb-2.5 text-xs font-medium border-b-2 transition-all relative shrink-0 ${
               isActive
-                ? 'border-brand-primary text-text-primary font-semibold'
+                ? 'border-brand text-text-primary font-semibold'
                 : 'border-transparent text-text-secondary hover:text-text-primary'
             }`}
           >

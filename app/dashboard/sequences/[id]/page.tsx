@@ -45,10 +45,10 @@ function StepRow({ step, index }: {
   step: StepData; index: number
 }) {
   const colors: Record<string, { border: string; bg: string; icon: string }> = {
-    message:   { border: 'border-blue-100 dark:border-blue-900/30',    bg: 'bg-blue-50/50 dark:bg-blue-900/10',   icon: 'text-blue-500' },
-    delay:     { border: 'border-purple-100 dark:border-purple-900/30', bg: 'bg-purple-50/50 dark:bg-purple-900/10', icon: 'text-purple-500' },
-    condition: { border: 'border-emerald-100 dark:border-emerald-900/30', bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', icon: 'text-emerald-600' },
-    action:    { border: 'border-orange-100 dark:border-orange-900/30', bg: 'bg-orange-50/50 dark:bg-orange-900/10', icon: 'text-orange-600' },
+    message:   { border: 'border-info dark:border-info/30',    bg: 'bg-info/50 dark:bg-info/10',   icon: 'text-info' },
+    delay:     { border: 'border-brand dark:border-brand/30', bg: 'bg-brand/50 dark:bg-brand/10', icon: 'text-brand' },
+    condition: { border: 'border-success dark:border-success/30', bg: 'bg-success/50 dark:bg-success/10', icon: 'text-success' },
+    action:    { border: 'border-warning dark:border-warning/30', bg: 'bg-warning/50 dark:bg-warning/10', icon: 'text-warning' },
   }
   const StepIcon = step.step_type === 'message' ? MessageSquare : step.step_type === 'delay' ? Clock : step.step_type === 'condition' ? GitBranch : Zap
   const c = colors[step.step_type] || colors.message
@@ -190,7 +190,7 @@ export default function SequenceDetailPage() {
             </div>
             <p className="text-sm text-[var(--text-secondary)] mt-1">{sequenceuence.description}</p>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
-              <span className="flex items-center gap-1"><Zap size={11} className="text-amber-500" /> {sequenceuence.trigger_type}</span>
+              <span className="flex items-center gap-1"><Zap size={11} className="text-warning" /> {sequenceuence.trigger_type}</span>
               <span>·</span>
               <span>{steps.length} steps</span>
               <span>·</span>
@@ -205,8 +205,8 @@ export default function SequenceDetailPage() {
             onClick={() => setStatus(s => s === 'active' ? 'paused' : 'active')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
               status === 'active'
-                ? 'border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-800'
-                : 'border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800'
+                ? 'border-warning bg-warning text-warning hover:bg-warning dark:bg-warning/20 dark:border-warning'
+                : 'border-success bg-success text-success hover:bg-success dark:bg-success/20 dark:border-success'
             }`}>
             {status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Activate</>}
           </button>
@@ -228,7 +228,7 @@ export default function SequenceDetailPage() {
                   <RefreshCw size={13} /> Send Test
                 </button>
                 <div className="border-t border-[var(--divider)]" />
-                <button className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                <button className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-error hover:bg-error dark:hover:bg-error/20 transition-colors">
                   <Trash2 size={13} /> Delete
                 </button>
               </div>
@@ -300,7 +300,7 @@ export default function SequenceDetailPage() {
                 <h3 className="text-sm font-bold text-[var(--text-primary)]">Enrollments Over Time</h3>
                 <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Last 14 days</p>
               </div>
-              <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600">
+              <div className="flex items-center gap-1.5 text-sm font-bold text-success">
                 <ArrowUpRight size={14} /> +18% vs last period
               </div>
             </div>

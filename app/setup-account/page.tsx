@@ -134,14 +134,14 @@ export default function SetupAccountPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <div className="text-error text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold mb-2">
             {isRTL ? 'دعوة غير صالحة' : 'Invalid Invitation'}
           </h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => router.push('/login')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-2 bg-info text-white rounded-lg hover:bg-info"
           >
             {isRTL ? 'العودة لتسجيل الدخول' : 'Back to Login'}
           </button>
@@ -154,7 +154,7 @@ export default function SetupAccountPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg">
         <div className="text-center mb-6">
-          <div className="text-green-500 text-6xl mb-4">🚀</div>
+          <div className="text-success text-6xl mb-4">🚀</div>
           <h1 className="text-2xl font-bold mb-2">
             {isRTL ? 'إعداد حسابك' : 'Setup Your Account'}
           </h1>
@@ -165,7 +165,7 @@ export default function SetupAccountPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-error border border-error text-error px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
@@ -180,7 +180,7 @@ export default function SetupAccountPage() {
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'أدخل اسمك الكامل' : 'Enter your full name'}
             />
           </div>
@@ -194,7 +194,7 @@ export default function SetupAccountPage() {
               value={formData.username}
               onChange={(e) => setFormData({...formData, username: e.target.value})}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'اختر اسم مستخدم' : 'Choose a username'}
             />
           </div>
@@ -208,7 +208,7 @@ export default function SetupAccountPage() {
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'اختر كلمة مرور قوية' : 'Choose a strong password'}
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -225,7 +225,7 @@ export default function SetupAccountPage() {
               value={formData.confirmPassword}
               onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'أعد إدخال كلمة المرور' : 'Re-enter password'}
             />
           </div>
@@ -233,7 +233,7 @@ export default function SetupAccountPage() {
           <button
             type="submit"
             disabled={processing}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold"
+            className="w-full px-6 py-3 bg-success text-white rounded-lg hover:bg-success disabled:opacity-50 font-semibold"
           >
             {processing 
               ? (isRTL ? 'جاري إنشاء الحساب...' : 'Creating account...') 
