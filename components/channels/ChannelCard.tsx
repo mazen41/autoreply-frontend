@@ -19,12 +19,19 @@ import {
 
 export interface ChannelInstance {
   id: number
+  type?: string
   page_name?: string
   page_id?: string
   ai_enabled: boolean
-  status?: 'active' | 'warning' | 'error' | 'syncing'
+  status?: 'active' | 'connected' | 'warning' | 'error' | 'syncing'
   status_message?: string
   last_activity?: string
+  integration?: {
+    store_url?: string
+    sync_status?: string
+    sync_counts?: { products?: number; orders?: number; customers?: number }
+    last_synced_at?: string | null
+  }
 }
 
 export interface ChannelDef {
@@ -42,6 +49,7 @@ export interface ChannelCardProps {
   onConnect: () => void
   onToggleAI: (instanceId: number, currentStatus: boolean) => void
   onDisconnect: (instanceId: number) => void
+  onSync?: (instance: ChannelInstance) => void
   onManageSettings?: (instance: ChannelInstance) => void
 }
 
@@ -51,6 +59,7 @@ export default function ChannelCard({
   onConnect,
   onToggleAI,
   onDisconnect,
+  onSync,
   onManageSettings,
 }: ChannelCardProps) {
   const [expanded, setExpanded] = useState(false)
@@ -96,7 +105,7 @@ export default function ChannelCard({
                   : 'var(--border)',
               }}
             >
-              <ChannelIcon type={channel.id as any} size={24} />
+              <ChannelIcon type={channel.id as Parameters<typeof ChannelIcon>[0]['type']} size={24} />
             </div>
 
             <div>
@@ -175,6 +184,12 @@ export default function ChannelCard({
                         ID: {inst.page_id || inst.id}
                         {inst.status_message && ` • ${inst.status_message}`}
                       </div>
+                      {inst.integration && (
+                        <div className="text-[10px] text-text-tertiary mt-1">
+                          {inst.integration.sync_counts?.products ?? 0} products · {inst.integration.sync_counts?.orders ?? 0} orders · {inst.integration.sync_counts?.customers ?? 0} customers
+                          {inst.integration.last_synced_at && ` · Synced ${new Date(inst.integration.last_synced_at).toLocaleString()}`}
+                        </div>
+                      )}
                     </div>
 
                     {/* AI Toggle Button */}
@@ -210,6 +225,16 @@ export default function ChannelCard({
                     </span>
 
                     <div className="flex items-center gap-1">
+                      {onSync && inst.integration && (
+                        <button
+                          type="button"
+                          onClick={() => onSync(inst)}
+                          className="px-2 py-1 rounded text-[10px] font-semibold text-brand hover:bg-brand/10 transition-colors"
+                          title="Sync store data now"
+                        >
+                          Sync now
+                        </button>
+                      )}
                       {onManageSettings && (
                         <button
                           type="button"

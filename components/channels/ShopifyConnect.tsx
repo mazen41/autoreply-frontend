@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Package, RefreshCw, ShieldCheck } from 'lucide-react'
+import { RefreshCw, ShieldCheck, ShoppingBag } from 'lucide-react'
 
-interface WooCommerceConnectProps {
+interface ShopifyConnectProps {
   isConnected: boolean
   channel?: {
     page_id?: string
@@ -14,13 +14,13 @@ interface WooCommerceConnectProps {
       last_synced_at?: string | null
     }
   }
-  onConnect: (data: { store_url: string }) => Promise<void>
+  onConnect: (data: { shop_domain: string }) => Promise<void>
   onDisconnect: () => Promise<void>
   onSync?: () => Promise<void>
 }
 
-export default function WooCommerceConnect({ isConnected, channel, onConnect, onDisconnect, onSync }: WooCommerceConnectProps) {
-  const [storeUrl, setStoreUrl] = useState('')
+export default function ShopifyConnect({ isConnected, channel, onConnect, onDisconnect, onSync }: ShopifyConnectProps) {
+  const [shopDomain, setShopDomain] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -41,17 +41,17 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
   return (
     <div className="p-6 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--accent-subtle)] text-[#96588a]"><Package size={24} /></div>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--accent-subtle)] text-[#96BF48]"><ShoppingBag size={24} /></div>
         <div>
-          <h3 className="font-bold text-lg text-[var(--text-primary)]">WooCommerce</h3>
-          <p className="text-sm text-[var(--text-secondary)]">Connect your store and sync its catalog, customers, and orders.</p>
+          <h3 className="font-bold text-lg text-[var(--text-primary)]">Shopify</h3>
+          <p className="text-sm text-[var(--text-secondary)]">Connect your store to sync products, inventory, customers, and orders.</p>
         </div>
       </div>
 
       {isConnected && channel ? (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2 text-sm text-[var(--text-secondary)]">
-            <div className="font-semibold text-[var(--text-primary)]">✓ WooCommerce connected</div>
+            <div className="font-semibold text-[var(--text-primary)]">✓ Shopify connected</div>
             <div>Store: {channel.integration?.store_url || channel.page_id}</div>
             <div>{counts.products ?? 0} products · {counts.orders ?? 0} orders · {counts.customers ?? 0} customers</div>
             <div>Status: {channel.integration?.sync_status || 'connected'}</div>
@@ -63,14 +63,14 @@ export default function WooCommerceConnect({ isConnected, channel, onConnect, on
           </div>
         </div>
       ) : (
-        <form onSubmit={(event) => { event.preventDefault(); void run(() => onConnect({ store_url: storeUrl })) }} className="space-y-4">
+        <form onSubmit={(event) => { event.preventDefault(); void run(() => onConnect({ shop_domain: shopDomain })) }} className="space-y-4">
           <label className="block text-sm font-semibold text-[var(--text-primary)]">
-            Store URL
-            <input type="url" required value={storeUrl} onChange={(event) => setStoreUrl(event.target.value)} placeholder="https://mystore.com" className="mt-2 w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none" />
+            Shopify store domain
+            <input type="text" required value={shopDomain} onChange={(event) => setShopDomain(event.target.value)} placeholder="mystore.myshopify.com" autoCapitalize="none" autoCorrect="off" className="mt-2 w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none" />
           </label>
-          <div className="text-xs text-[var(--text-secondary)] flex items-start gap-2"><ShieldCheck size={16} className="shrink-0 text-[var(--success)]" />You’ll approve NazBiz’s read/write access on your WooCommerce store. No API keys need to be copied.</div>
+          <div className="text-xs text-[var(--text-secondary)] flex items-start gap-2"><ShieldCheck size={16} className="shrink-0 text-[var(--success)]" />You’ll approve the requested permissions on Shopify. Client credentials and access tokens stay on the server.</div>
           {error && <div className="p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>}
-          <button type="submit" disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50">{loading ? 'Connecting…' : 'Connect WooCommerce'}</button>
+          <button type="submit" disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50">{loading ? 'Connecting…' : 'Connect Shopify'}</button>
         </form>
       )}
       {error && isConnected && <div className="mt-3 p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>}
