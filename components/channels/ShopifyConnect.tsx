@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { RefreshCw, ShieldCheck, ShoppingBag } from 'lucide-react'
+import { RefreshCw, ShieldCheck, ShoppingBag, X } from 'lucide-react'
 
 interface ShopifyConnectProps {
   isConnected: boolean
@@ -20,9 +20,10 @@ interface ShopifyConnectProps {
   onConnect: (data: { shop_domain: string }) => Promise<void>
   onDisconnect: () => Promise<void>
   onSync?: () => Promise<void>
+  onClose: () => void
 }
 
-export default function ShopifyConnect({ isConnected, channel, onConnect, onDisconnect, onSync }: ShopifyConnectProps) {
+export default function ShopifyConnect({ isConnected, channel, onConnect, onDisconnect, onSync, onClose }: ShopifyConnectProps) {
   const [shopDomain, setShopDomain] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,13 +42,16 @@ export default function ShopifyConnect({ isConnected, channel, onConnect, onDisc
   }
 
   const counts = channel?.integration?.sync_counts || {}
+  const needsShopifySetup = error.includes('requires Shopify standalone authorization-code flow')
 
   return (
-    <div className="p-6 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+    <div role="dialog" aria-modal="true" aria-labelledby="shopify-connect-title" className="relative w-full max-w-lg p-6 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] shadow-2xl">
+      <button type="button" aria-label="Close Shopify connection dialog" onClick={onClose} className="absolute right-4 top-4 rounded-lg p-2 text-[var(--text-secondary)] hover:bg-[var(--surface)]"><X size={18} /></button>
       <div className="flex items-center gap-3 mb-5">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[var(--accent-subtle)] text-[#96BF48]"><ShoppingBag size={24} /></div>
         <div>
-          <h3 className="font-bold text-lg text-[var(--text-primary)]">Shopify</h3>
+          <h3 id="shopify-connect-title" className="font-bold text-lg text-[var(--text-primary)]">Shopify</h3>
           <p className="text-sm text-[var(--text-secondary)]">Connect your store to sync products, inventory, customers, and orders.</p>
         </div>
       </div>
@@ -70,19 +74,31 @@ export default function ShopifyConnect({ isConnected, channel, onConnect, onDisc
           </div>
         </div>
       ) : (
-        <form onSubmit={(event) => { event.preventDefault(); void run(() => onConnect({ shop_domain: shopDomain })) }} className="space-y-4">
+        <form onSubmit={(event) => { event.preventDefault(); void run(() => onConnect({ shop_domain: shopDomain.trim() })) }} className="space-y-4">
           {isConnected && <div className="text-sm text-[var(--text-secondary)]">Connect another Shopify store to this workspace.</div>}
           <label className="block text-sm font-semibold text-[var(--text-primary)]">
             Shopify store domain
             <input type="text" required value={shopDomain} onChange={(event) => setShopDomain(event.target.value)} placeholder="mystore.myshopify.com" autoCapitalize="none" autoCorrect="off" className="mt-2 w-full px-4 py-3 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] outline-none" />
           </label>
           <div className="text-xs text-[var(--text-secondary)] flex items-start gap-2"><ShieldCheck size={16} className="shrink-0 text-[var(--success)]" />You’ll approve the requested permissions on Shopify. Client credentials and access tokens stay on the server.</div>
-          {error && <div className="p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>}
+          {error && (needsShopifySetup ? (
+            <div className="p-4 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--text-primary)] space-y-2">
+              <div className="font-semibold text-[var(--error)]">Shopify app setup needs to be updated</div>
+              <p>This connection starts from NazBiz, so Shopify must use its standalone authorization flow.</p>
+              <ol className="list-decimal pl-5 space-y-1">
+                <li>In Shopify app settings, turn off <strong>Embedded app</strong>.</li>
+                <li>Turn on <strong>Legacy install flow</strong>, then deploy the app configuration.</li>
+                <li>On the API server, set <code>SHOPIFY_USE_LEGACY_INSTALL_FLOW=true</code> and clear Laravel’s config cache.</li>
+              </ol>
+              <p>Then return here and connect the store again.</p>
+            </div>
+          ) : <div className="p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>)}
           <button type="submit" disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50">{loading ? 'Connecting…' : 'Connect Shopify'}</button>
           {addingStore && <button type="button" disabled={loading} onClick={() => setAddingStore(false)} className="w-full px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-primary)] text-sm disabled:opacity-50">Back to connected store</button>}
         </form>
       )}
-      {error && isConnected && <div className="mt-3 p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>}
+      {error && isConnected && !needsShopifySetup && <div className="mt-3 p-3 rounded-lg text-sm bg-[var(--error-subtle)] text-[var(--error)]">{error}</div>}
+    </div>
     </div>
   )
 }

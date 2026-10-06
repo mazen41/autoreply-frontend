@@ -814,6 +814,7 @@ export default function ChannelsPage() {
 
       {activeModalChannel?.id === 'shopify' && (
         <ShopifyConnect
+          onClose={() => setActiveModalChannel(null)}
           isConnected={Boolean(apiChannels.find((channel) => channel.type === 'shopify'))}
           channel={apiChannels.find((channel) => channel.type === 'shopify')}
           onConnect={async (data) => {
