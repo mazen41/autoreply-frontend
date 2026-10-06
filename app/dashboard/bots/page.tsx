@@ -10,8 +10,8 @@ import Badge from '../../../components/ui/Badge'
 import Input from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
 import EmptyState from '../../../components/ui/EmptyState'
-import Modal from '../../../components/ui/Modal'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
+import BotWizardModal from '../../../components/bots/BotWizardModal'
 import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
 import { springs, variants } from '../../../lib/motion'
 import {
@@ -82,12 +82,9 @@ export default function BotsPage() {
   ])
   const [isBotThinking, setIsBotThinking] = useState(false)
 
-  // Edit / Create Bot Modal
+  // Create / edit Bot wizard
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingBot, setEditingBot] = useState<BotItem | null>(null)
-  const [botFormName, setBotFormName] = useState('')
-  const [botFormDesc, setBotFormDesc] = useState('')
-  const [botFormPrompt, setBotFormPrompt] = useState('')
 
   const fetchBots = useCallback(async () => {
     setLoading(true)
@@ -154,6 +151,7 @@ export default function BotsPage() {
         const fetched = data.bots || []
         setBots(
           fetched.map((b: any) => ({
+            ...b,
             id: b.id,
             name: b.name,
             description: b.description || 'Omnichannel automated conversational agent',
@@ -215,56 +213,14 @@ export default function BotsPage() {
   }
 
   const handleOpenEdit = (bot?: BotItem) => {
-    if (bot) {
-      setEditingBot(bot)
-      setBotFormName(bot.name)
-      setBotFormDesc(bot.description || '')
-      setBotFormPrompt(bot.prompt || '')
-    } else {
-      setEditingBot(null)
-      setBotFormName('')
-      setBotFormDesc('')
-      setBotFormPrompt('')
-    }
+    setEditingBot(bot || null)
     setEditModalOpen(true)
   }
 
-  const handleSaveBot = () => {
-    if (!botFormName.trim()) return
-    if (editingBot) {
-      setBots((prev) =>
-        prev.map((b) =>
-          b.id === editingBot.id
-            ? {
-                ...b,
-                name: botFormFormSafe(botFormName),
-                description: botFormDesc,
-                prompt: botFormPrompt,
-              }
-            : b
-        )
-      )
-    } else {
-      const newBot: BotItem = {
-        id: Date.now(),
-        name: botFormName,
-        description: botFormDesc || 'New conversational AI agent',
-        status: 'active',
-        model: 'NazGPT 4.5 Turbo',
-        channels: [],
-        knowledge_count: 0,
-        conversations_count: 0,
-        resolution_rate: 100,
-        last_activity: 'Just created',
-        prompt: botFormPrompt,
-      }
-      setBots((prev) => [newBot, ...prev])
-    }
+  const handleBotWizardSaved = () => {
     setEditModalOpen(false)
-  }
-
-  function botFormFormSafe(name: string) {
-    return name.trim()
+    setEditingBot(null)
+    void fetchBots()
   }
 
   const activeBotsCount = bots.filter((b) => b.status === 'active').length
@@ -722,56 +678,16 @@ export default function BotsPage() {
         )}
       </AnimatePresence>
 
-      {/* ─── Bot Edit / Create Modal ─────────────────────────────────────── */}
-      <Modal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        title={editingBot ? `Edit ${editingBot.name}` : 'Create AI Agent'}
-        description="Configure your automated agent's behavior, instructions, and name"
-        size="lg"
-      >
-        <div className="space-y-4 py-2">
-          <Input
-            label="Agent Name"
-            value={botFormName}
-            onChange={(e) => setBotFormName(e.target.value)}
-            placeholder="e.g. VIP Order Booking Agent"
-            required
-          />
-
-          <Input
-            label="Short Description"
-            value={botFormDesc}
-            onChange={(e) => setBotFormDesc(e.target.value)}
-            placeholder="What customer queries does this agent resolve?"
-          />
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-text-secondary">
-              System Instructions &amp; Persona
-            </label>
-            <textarea
-              value={botFormPrompt}
-              onChange={(e) => setBotFormPrompt(e.target.value)}
-              placeholder="You are an expert customer care agent for NazBiz. Greet kindly, understand the user's intent, and offer clear answers..."
-              className="w-full min-h-[120px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border/80">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button variant="primary" size="md" onClick={handleSaveBot}>
-              {editingBot ? 'Save Changes' : 'Create Agent'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      {editModalOpen && (
+        <BotWizardModal
+          bot={editingBot}
+          onClose={() => {
+            setEditModalOpen(false)
+            setEditingBot(null)
+          }}
+          onSaved={handleBotWizardSaved}
+        />
+      )}
     </motion.div>
   )
 }

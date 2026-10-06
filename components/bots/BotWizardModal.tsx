@@ -189,7 +189,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
         selectedChannelIds.includes(channel.id)
         && !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase())
       )
-      await Promise.all(communicationChannels.map(async (channel) => {
+      const routeResults = await Promise.allSettled(communicationChannels.map(async (channel) => {
         const routeRes = await fetch(`${API}/api/channels/${channel.id}`, {
           method: 'PATCH',
           headers: {
@@ -201,10 +201,13 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
             default_ecommerce_connection_id: channelCommerceDefaults[channel.id] ?? null,
           }),
         })
-        if (!routeRes.ok) throw new Error('Could not save one or more channel store routes')
+        return routeRes.ok
       }))
 
       onSaved()
+      if (routeResults.some((result) => result.status === 'rejected' || !result.value)) {
+        alert('The Bot was saved, but one or more channel store routes could not be saved. Edit the Bot to retry those routes.')
+      }
     } catch (err: any) {
       console.error(err)
       alert(err.message || 'Error saving Bot')
