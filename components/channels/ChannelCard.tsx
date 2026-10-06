@@ -31,6 +31,7 @@ export interface ChannelInstance {
     sync_status?: string
     sync_counts?: { products?: number; orders?: number; customers?: number }
     last_synced_at?: string | null
+    sync_error?: string | null
   }
 }
 
@@ -216,11 +217,13 @@ export default function ChannelCard({
                   <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
                     <span className="text-[10px] text-text-tertiary">
                       {accountWarning ? (
-                        <span className="text-warning font-medium">
-                          Token re-auth required
+                        <span className="text-warning font-medium" title={inst.status_message || undefined}>
+                          {inst.status_message || 'Connection needs attention'}
                         </span>
+                      ) : inst.integration?.sync_status === 'syncing' || inst.integration?.sync_status === 'queued' ? (
+                        'Store sync in progress'
                       ) : (
-                        'Syncing in real-time'
+                        'Connected'
                       )}
                     </span>
 

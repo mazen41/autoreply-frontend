@@ -261,15 +261,83 @@ export default function ChannelsPage() {
     fetchChannels()
   }, [fetchChannels])
 
+  const commerceSyncIsActive = apiChannels.some((channel) =>
+    ['queued', 'syncing'].includes(channel.integration?.sync_status || '')
+  )
+
+  useEffect(() => {
+    if (!commerceSyncIsActive) return
+    const timer = setInterval(async () => {
+      const token = getToken()
+      if (!token) return
+      try {
+        const res = await fetch(`${API}/api/channels`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        setApiChannels(Array.isArray(data) ? data : data.data || [])
+      } catch (error) {
+        console.warn('Could not refresh commerce sync status:', error)
+      }
+    }, 2500)
+    return () => clearInterval(timer)
+  }, [commerceSyncIsActive])
+
   // Handle OAuth redirects in URL parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    if (params.get('success')) {
-      showToast('Channel connected successfully!', 'success')
+    const wooState = params.get('connection_state')
+    if (params.get('connection') === 'woocommerce' && wooState) {
+      const approved = params.get('success') !== '0'
+      window.history.replaceState({}, '', window.location.pathname)
+      if (!approved) {
+        showToast('WooCommerce authorization was cancelled.', 'error')
+        return
+      }
+
+      void (async () => {
+        for (let attempt = 0; attempt < 30; attempt++) {
+          try {
+            const res = await fetch(`${API}/api/channels/woocommerce/connection-status?state=${encodeURIComponent(wooState)}`, {
+              headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' },
+            })
+            const result = await res.json()
+            if (result.status === 'connected') {
+              showToast('WooCommerce connected. Store sync has started.', 'success')
+              await fetchChannels()
+              return
+            }
+            if (result.status === 'failed' || result.status === 'expired' || !res.ok) {
+              throw new Error(result.error || 'Could not verify the WooCommerce connection.')
+            }
+          } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Could not verify the WooCommerce connection.', 'error')
+            return
+          }
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+        showToast('WooCommerce authorization returned, but the server has not confirmed the connection yet. Refresh the channel list shortly.', 'error')
+      })()
+    } else if (params.get('success')) {
+      const success = params.get('success')
+      showToast(success === 'shopify_connected'
+        ? 'Shopify connected. Initial store sync has started.'
+        : 'Channel connected successfully!', 'success')
       fetchChannels()
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('error')) {
-      showToast('Channel connection failed. Please try again.', 'error')
+      const errors: Record<string, string> = {
+        shopify_cancelled: 'Shopify authorization was cancelled.',
+        shopify_invalid_callback: 'Shopify returned an invalid authorization response.',
+        shopify_expired_callback: 'Shopify authorization expired. Please connect again.',
+        shopify_invalid_state: 'The Shopify connection request expired. Please connect again.',
+        shopify_authorization_failed: 'Shopify did not authorize the requested access.',
+        shopify_verification_failed: 'The store identity could not be verified.',
+        shopify_connection_failed: 'Could not finish connecting Shopify. Please try again.',
+        shopify_invalid_configuration: 'Shopify integration settings are incomplete.',
+      }
+      showToast(errors[params.get('error') || ''] || 'Channel connection failed. Please try again.', 'error')
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('connect') === 'true') {
       setWizardOpen(true)
@@ -316,20 +384,23 @@ export default function ChannelsPage() {
       return
     }
 
-    setApiChannels((prev) => prev.filter((i) => i.id !== instanceId))
     try {
       const token = getToken()
-      if (token) {
-        await fetch(`${API}/api/channels/${instanceId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        })
+      if (!token) throw new Error('Please sign in again before disconnecting this channel.')
+      const response = await fetch(`${API}/api/channels/${instanceId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      })
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}))
+        throw new Error(result.message || result.error || 'The channel could not be disconnected.')
       }
+      setApiChannels((prev) => prev.filter((i) => i.id !== instanceId))
       showToast('Channel account disconnected', 'success')
-      fetchChannels()
+      await fetchChannels()
     } catch (e) {
       console.error(e)
-      showToast('Disconnect failed', 'error')
+      showToast(e instanceof Error ? e.message : 'Disconnect failed', 'error')
     }
   }
 
@@ -717,6 +788,7 @@ export default function ChannelsPage() {
               headers: {
                 Authorization: `Bearer ${getToken()}`,
                 'Content-Type': 'application/json',
+                Accept: 'application/json',
               },
               body: JSON.stringify(data),
             })
