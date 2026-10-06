@@ -5,7 +5,22 @@ import { RefreshCw, ShieldCheck, ShoppingBag, X } from 'lucide-react'
 
 interface ShopifyConnectProps {
   isConnected: boolean
+  channels?: Array<{
+    id: number
+    page_id?: string
+    integration?: {
+      store_url?: string
+      sync_counts?: { products?: number; orders?: number; customers?: number }
+      sync_status?: string
+      last_synced_at?: string | null
+      sync_error?: string | null
+      sync_warnings?: string[]
+      webhook_status?: string | null
+      webhooks_registered?: number | null
+    }
+  }>
   channel?: {
+    id?: number
     page_id?: string
     integration?: {
       store_url?: string
@@ -19,16 +34,17 @@ interface ShopifyConnectProps {
     }
   }
   onConnect: (data: { shop_domain: string }) => Promise<void>
-  onDisconnect: () => Promise<void>
-  onSync?: () => Promise<void>
+  onDisconnect: (channelId?: number) => Promise<void>
+  onSync?: (channelId?: number) => Promise<void>
   onClose: () => void
 }
 
-export default function ShopifyConnect({ isConnected, channel, onConnect, onDisconnect, onSync, onClose }: ShopifyConnectProps) {
+export default function ShopifyConnect({ isConnected, channels = [], channel, onConnect, onDisconnect, onSync, onClose }: ShopifyConnectProps) {
   const [shopDomain, setShopDomain] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [addingStore, setAddingStore] = useState(false)
+  const [selectedChannelId, setSelectedChannelId] = useState<number | undefined>(channel?.id ?? channels[0]?.id)
 
   const run = async (action: () => Promise<void>) => {
     setLoading(true)
@@ -42,7 +58,8 @@ export default function ShopifyConnect({ isConnected, channel, onConnect, onDisc
     }
   }
 
-  const counts = channel?.integration?.sync_counts || {}
+  const activeChannel = channels.find((item) => item.id === selectedChannelId) || channel || channels[0]
+  const counts = activeChannel?.integration?.sync_counts || {}
   const needsShopifySetup = error.includes('requires Shopify standalone authorization-code flow')
 
   return (
@@ -57,22 +74,29 @@ export default function ShopifyConnect({ isConnected, channel, onConnect, onDisc
         </div>
       </div>
 
-      {isConnected && channel && !addingStore ? (
+      {isConnected && activeChannel && !addingStore ? (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2 text-sm text-[var(--text-secondary)]">
             <div className="font-semibold text-[var(--text-primary)]">✓ Shopify connected</div>
-            <div>Store: {channel.integration?.store_url || channel.page_id}</div>
+            {channels.length > 1 && (
+              <label className="block text-xs">Select store
+                <select value={activeChannel.id} onChange={(event) => setSelectedChannelId(Number(event.target.value))} className="ml-2 rounded border px-2 py-1">
+                  {channels.map((item) => <option key={item.id} value={item.id}>{item.integration?.store_url || item.page_id || `Store #${item.id}`}</option>)}
+                </select>
+              </label>
+            )}
+            <div>Store: {activeChannel.integration?.store_url || activeChannel.page_id}</div>
             <div>{counts.products ?? 0} products · {counts.orders ?? 0} orders · {counts.customers ?? 0} customers</div>
-            <div>Status: {channel.integration?.sync_status || 'connected'}</div>
-            {channel.integration?.last_synced_at && <div>Last synced: {new Date(channel.integration.last_synced_at).toLocaleString()}</div>}
-            {channel.integration?.sync_error && <div className="text-[var(--error)]">Sync error: {channel.integration.sync_error}</div>}
-            {channel.integration?.sync_warnings?.map((warning) => <div key={warning} className="text-amber-600">{warning}</div>)}
-            {channel.integration?.webhook_status && channel.integration.webhook_status !== 'registered' && <div className="text-[var(--error)]">Store updates may not sync automatically ({channel.integration.webhooks_registered ?? 0} webhooks registered).</div>}
+            <div>Status: {activeChannel.integration?.sync_status || 'connected'}</div>
+            {activeChannel.integration?.last_synced_at && <div>Last synced: {new Date(activeChannel.integration.last_synced_at).toLocaleString()}</div>}
+            {activeChannel.integration?.sync_error && <div className="text-[var(--error)]">Sync error: {activeChannel.integration.sync_error}</div>}
+            {activeChannel.integration?.sync_warnings?.map((warning) => <div key={warning} className="text-amber-600">{warning}</div>)}
+            {activeChannel.integration?.webhook_status && activeChannel.integration.webhook_status !== 'registered' && <div className="text-[var(--error)]">Store updates may not sync automatically ({activeChannel.integration.webhooks_registered ?? 0} webhooks registered).</div>}
           </div>
           <div className="flex gap-2">
-            {onSync && <button disabled={loading} onClick={() => run(onSync)} className="flex-1 px-4 py-2 rounded-lg bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50"><span className="inline-flex items-center gap-2"><RefreshCw size={14} />Sync now</span></button>}
+            {onSync && <button disabled={loading} onClick={() => run(() => onSync(activeChannel.id))} className="flex-1 px-4 py-2 rounded-lg bg-[var(--accent)] text-white font-semibold text-sm disabled:opacity-50"><span className="inline-flex items-center gap-2"><RefreshCw size={14} />Sync now</span></button>}
             <button disabled={loading} onClick={() => setAddingStore(true)} className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-primary)] font-semibold text-sm disabled:opacity-50">Add store</button>
-            <button disabled={loading} onClick={() => run(onDisconnect)} className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-primary)] font-semibold text-sm disabled:opacity-50">Disconnect</button>
+            <button disabled={loading} onClick={() => run(() => onDisconnect(activeChannel.id))} className="px-4 py-2 rounded-lg border border-[var(--border)] text-[var(--text-primary)] font-semibold text-sm disabled:opacity-50">Disconnect</button>
           </div>
         </div>
       ) : (

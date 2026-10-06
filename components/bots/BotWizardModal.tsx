@@ -78,6 +78,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [loading, setLoading] = useState(false)
   const [channels, setChannels] = useState<any[]>([])
+  const [channelCommerceDefaults, setChannelCommerceDefaults] = useState<Record<number, number | null>>({})
   const [knowledgeFiles, setKnowledgeFiles] = useState<any[]>([])
 
   // Form State
@@ -88,8 +89,13 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
   const [aiInstructions, setAiInstructions] = useState(bot?.ai_instructions || '')
   const [replyStyle, setReplyStyle] = useState(bot?.reply_style || 'Friendly & Professional')
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(bot?.ai_confidence_threshold ?? 0.80)
-  const [ecommerceChannelId, setEcommerceChannelId] = useState<number | null>(
-    bot?.ecommerce_channel_id || null
+  const [ecommerceConnectionIds, setEcommerceConnectionIds] = useState<number[]>(
+    bot?.ecommerce_connections?.map((connection: any) => connection.id)
+      || (bot?.ecommerce_channel_id ? [bot.ecommerce_channel_id] : [])
+  )
+  const [defaultEcommerceConnectionId, setDefaultEcommerceConnectionId] = useState<number | null>(
+    bot?.ecommerce_connections?.find((connection: any) => connection.pivot?.is_default)?.id
+      || bot?.ecommerce_channel_id || null
   )
   const [selectedChannelIds, setSelectedChannelIds] = useState<number[]>(
     bot?.channels?.map((c: any) => c.id) || []
@@ -117,7 +123,13 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
 
         if (chRes.ok) {
           const chData = await chRes.json()
-          setChannels(Array.isArray(chData) ? chData : chData.data || [])
+          const loadedChannels = Array.isArray(chData) ? chData : chData.data || []
+          setChannels(loadedChannels)
+          setChannelCommerceDefaults(Object.fromEntries(
+            loadedChannels
+              .filter((channel: any) => !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase()))
+              .map((channel: any) => [channel.id, channel.default_ecommerce_connection_id ?? null])
+          ))
         }
 
         if (kRes.ok) {
@@ -148,7 +160,8 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
         ai_instructions: aiInstructions,
         reply_style: replyStyle,
         ai_confidence_threshold: confidenceThreshold,
-        ecommerce_channel_id: ecommerceChannelId,
+        ecommerce_connection_ids: ecommerceConnectionIds,
+        default_ecommerce_connection_id: defaultEcommerceConnectionId,
         channel_ids: selectedChannelIds,
         primary_channel_ids: primaryChannelIds,
         knowledge_assignments: assignments,
@@ -171,6 +184,25 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
         const errData = await res.json()
         throw new Error(errData.message || 'Failed to save Bot')
       }
+
+      const communicationChannels = channels.filter((channel) =>
+        selectedChannelIds.includes(channel.id)
+        && !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase())
+      )
+      await Promise.all(communicationChannels.map(async (channel) => {
+        const routeRes = await fetch(`${API}/api/channels/${channel.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            default_ecommerce_connection_id: channelCommerceDefaults[channel.id] ?? null,
+          }),
+        })
+        if (!routeRes.ok) throw new Error('Could not save one or more channel store routes')
+      }))
 
       onSaved()
     } catch (err: any) {
@@ -394,26 +426,52 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
               {/* E-Commerce Store Binding */}
               <div className="p-4 rounded-2xl border space-y-2" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
                 <label className="block text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
-                  🛒 Reference E-Commerce Store
+                  🛒 Commerce connections
                 </label>
                 <p className="text-[11px] text-text-secondary">
-                  Explicitly bind this Bot to a specific store for checking order status, inventory, and placing orders.
+                  Select every store this Bot can use. The default is used unless a conversation channel has its own store mapping.
                 </p>
-                <select
-                  value={ecommerceChannelId ?? ''}
-                  onChange={(e) => setEcommerceChannelId(e.target.value ? Number(e.target.value) : null)}
-                  className="w-full px-3.5 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-accent"
-                  style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                >
-                  <option value="">None / FAQ Only (No Live Store Integration)</option>
-                  {channels
-                    .filter((c) => ['salla', 'shopify', 'woocommerce'].includes(c.type?.toLowerCase()))
-                    .map((store) => (
-                      <option key={store.id} value={store.id}>
-                        {store.type?.toUpperCase()} — {store.page_name || store.page_id || `Store #${store.id}`}
-                      </option>
-                    ))}
-                </select>
+                {channels.filter((c) => ['salla', 'shopify', 'woocommerce'].includes(c.type?.toLowerCase())).length === 0 ? (
+                  <p className="text-xs text-text-tertiary">No connected commerce stores yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {channels.filter((c) => ['salla', 'shopify', 'woocommerce'].includes(c.type?.toLowerCase())).map((store) => {
+                      const selected = ecommerceConnectionIds.includes(store.id)
+                      return (
+                        <div key={store.id} className="flex items-center justify-between gap-3 rounded-xl border p-3" style={{ borderColor: 'var(--border)' }}>
+                          <label className="flex min-w-0 items-center gap-2 text-xs" style={{ color: 'var(--text-primary)' }}>
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() => {
+                                const next = selected
+                                  ? ecommerceConnectionIds.filter((id) => id !== store.id)
+                                  : [...ecommerceConnectionIds, store.id]
+                                setEcommerceConnectionIds(next)
+                                if (selected && defaultEcommerceConnectionId === store.id) {
+                                  setDefaultEcommerceConnectionId(next[0] ?? null)
+                                } else if (!selected && defaultEcommerceConnectionId === null) {
+                                  setDefaultEcommerceConnectionId(store.id)
+                                }
+                              }}
+                            />
+                            <span className="truncate">{store.type?.toUpperCase()} — {store.page_name || store.page_id || `Store #${store.id}`}</span>
+                          </label>
+                          <label className="flex shrink-0 items-center gap-1.5 text-[10px] text-text-secondary">
+                            <input
+                              type="radio"
+                              name="default-commerce-connection"
+                              checked={selected && defaultEcommerceConnectionId === store.id}
+                              disabled={!selected}
+                              onChange={() => setDefaultEcommerceConnectionId(store.id)}
+                            />
+                            Default
+                          </label>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -485,6 +543,29 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                               {isPrimary ? '★ Primary Responder' : 'Set as Primary'}
                             </button>
                           </div>
+                        )}
+                        {isSelected && !['salla', 'shopify', 'woocommerce'].includes(ch.type?.toLowerCase()) && (
+                          <label className="mt-3 block text-[10px] text-text-secondary">
+                            Default commerce store for this channel
+                            <select
+                              value={channelCommerceDefaults[ch.id] ?? ''}
+                              onChange={(event) => setChannelCommerceDefaults({
+                                ...channelCommerceDefaults,
+                                [ch.id]: event.target.value ? Number(event.target.value) : null,
+                              })}
+                              className="mt-1 w-full rounded-lg border px-2 py-1.5 text-xs"
+                              style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                            >
+                              <option value="">Use Bot default / automatic resolution</option>
+                              {channels
+                                .filter((store) => ecommerceConnectionIds.includes(store.id))
+                                .map((store) => (
+                                  <option key={store.id} value={store.id}>
+                                    {store.type?.toUpperCase()} — {store.page_name || store.page_id || `Store #${store.id}`}
+                                  </option>
+                                ))}
+                            </select>
+                          </label>
                         )}
                       </div>
                     )

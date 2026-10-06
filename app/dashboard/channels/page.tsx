@@ -780,8 +780,8 @@ export default function ChannelsPage() {
       {/* ─── Direct WooCommerce Connect Modal ────────────────────────────── */}
       {activeModalChannel?.id === 'woocommerce' && (
         <WooCommerceConnect
-          isConnected={Boolean(apiChannels.find((channel) => channel.type === 'woocommerce'))}
-          channel={apiChannels.find((channel) => channel.type === 'woocommerce')}
+          isConnected={apiChannels.some((channel) => channel.type === 'woocommerce')}
+          channels={apiChannels.filter((channel) => channel.type === 'woocommerce')}
           onConnect={async (data) => {
             const res = await fetch(`${API}/api/channels/woocommerce/connect`, {
               method: 'POST',
@@ -796,16 +796,16 @@ export default function ChannelsPage() {
             if (!res.ok || !result.authorization_url) throw new Error(result.error || 'Failed to start WooCommerce authorization')
             window.location.assign(result.authorization_url)
           }}
-          onSync={async () => {
-            const channel = apiChannels.find((item) => item.type === 'woocommerce')
+          onSync={async (channelId) => {
+            const channel = apiChannels.find((item) => item.id === channelId && item.type === 'woocommerce')
             if (!channel) return
             const res = await fetch(`${API}/api/channels/woocommerce/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' } })
             if (!res.ok) throw new Error('Could not queue store sync')
             showToast('Store sync started', 'success')
             fetchChannels()
           }}
-          onDisconnect={async () => {
-            const channel = apiChannels.find((item) => item.type === 'woocommerce')
+          onDisconnect={async (channelId) => {
+            const channel = apiChannels.find((item) => item.id === channelId && item.type === 'woocommerce')
             if (channel) await handleDisconnect(channel.id)
             setActiveModalChannel(null)
           }}
@@ -815,8 +815,8 @@ export default function ChannelsPage() {
       {activeModalChannel?.id === 'shopify' && (
         <ShopifyConnect
           onClose={() => setActiveModalChannel(null)}
-          isConnected={Boolean(apiChannels.find((channel) => channel.type === 'shopify'))}
-          channel={apiChannels.find((channel) => channel.type === 'shopify')}
+          isConnected={apiChannels.some((channel) => channel.type === 'shopify')}
+          channels={apiChannels.filter((channel) => channel.type === 'shopify')}
           onConnect={async (data) => {
             const res = await fetch(`${API}/api/channels/shopify/connect`, {
               method: 'POST',
@@ -827,16 +827,16 @@ export default function ChannelsPage() {
             if (!res.ok || !result.authorization_url) throw new Error(result.error || 'Failed to start Shopify authorization')
             window.location.assign(result.authorization_url)
           }}
-          onSync={async () => {
-            const channel = apiChannels.find((item) => item.type === 'shopify')
+          onSync={async (channelId) => {
+            const channel = apiChannels.find((item) => item.id === channelId && item.type === 'shopify')
             if (!channel) return
             const res = await fetch(`${API}/api/channels/shopify/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' } })
             if (!res.ok) throw new Error('Could not queue store sync')
             showToast('Store sync started', 'success')
             fetchChannels()
           }}
-          onDisconnect={async () => {
-            const channel = apiChannels.find((item) => item.type === 'shopify')
+          onDisconnect={async (channelId) => {
+            const channel = apiChannels.find((item) => item.id === channelId && item.type === 'shopify')
             if (channel) await handleDisconnect(channel.id)
             setActiveModalChannel(null)
           }}
