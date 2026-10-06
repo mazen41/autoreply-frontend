@@ -13,6 +13,7 @@ interface ShopifyConnectProps {
       sync_status?: string
       last_synced_at?: string | null
       sync_error?: string | null
+      sync_warnings?: string[]
       webhook_status?: string | null
       webhooks_registered?: number | null
     }
@@ -65,6 +66,7 @@ export default function ShopifyConnect({ isConnected, channel, onConnect, onDisc
             <div>Status: {channel.integration?.sync_status || 'connected'}</div>
             {channel.integration?.last_synced_at && <div>Last synced: {new Date(channel.integration.last_synced_at).toLocaleString()}</div>}
             {channel.integration?.sync_error && <div className="text-[var(--error)]">Sync error: {channel.integration.sync_error}</div>}
+            {channel.integration?.sync_warnings?.map((warning) => <div key={warning} className="text-amber-600">{warning}</div>)}
             {channel.integration?.webhook_status && channel.integration.webhook_status !== 'registered' && <div className="text-[var(--error)]">Store updates may not sync automatically ({channel.integration.webhooks_registered ?? 0} webhooks registered).</div>}
           </div>
           <div className="flex gap-2">
