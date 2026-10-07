@@ -6,6 +6,7 @@ import {
   Search, Filter, RefreshCw, ShoppingBag, Package,
   ExternalLink, ChevronDown, ChevronUp, X
 } from 'lucide-react'
+import Select from '../../../components/ui/Select'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -106,27 +107,31 @@ export default function OrdersPage() {
             className="w-full h-10 pl-9 pr-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors"
           />
         </div>
-        <select
-          value={storeFilter}
-          onChange={e => setStoreFilter(e.target.value)}
-          className="h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors cursor-pointer"
-        >
-          <option value="">{L('All Stores', 'جميع المتاجر')}</option>
-          <option value="salla">Salla</option>
-          <option value="shopify">Shopify</option>
-          <option value="woocommerce">WooCommerce</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          className="h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)] transition-colors cursor-pointer"
-        >
-          <option value="">{L('All Statuses', 'جميع الحالات')}</option>
-          <option value="delivered">{L('Delivered', 'تم التسليم')}</option>
-          <option value="processing">{L('Processing', 'قيد المعالجة')}</option>
-          <option value="pending">{L('Pending', 'معلق')}</option>
-          <option value="cancelled">{L('Cancelled', 'ملغي')}</option>
-        </select>
+        <div className="w-full sm:w-48 shrink-0">
+          <Select
+            value={storeFilter}
+            onChange={e => setStoreFilter(e.target.value)}
+            options={[
+              { value: '', label: L('All Stores', 'جميع المتاجر') },
+              { value: 'salla', label: 'Salla' },
+              { value: 'shopify', label: 'Shopify' },
+              { value: 'woocommerce', label: 'WooCommerce' },
+            ]}
+          />
+        </div>
+        <div className="w-full sm:w-48 shrink-0">
+          <Select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            options={[
+              { value: '', label: L('All Statuses', 'جميع الحالات') },
+              { value: 'delivered', label: L('Delivered', 'تم التسليم') },
+              { value: 'processing', label: L('Processing', 'قيد المعالجة') },
+              { value: 'pending', label: L('Pending', 'معلق') },
+              { value: 'cancelled', label: L('Cancelled', 'ملغي') },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Orders List */}

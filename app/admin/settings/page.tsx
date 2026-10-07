@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { Bot, CheckCircle2, KeyRound, RotateCw, Save, Settings2, ShieldCheck, SlidersHorizontal, Zap } from 'lucide-react'
 import { AdminShell, Badge, Button, Field, PageHeader, Panel, SkeletonRows, inputClass } from '../../../components/admin/AdminUI'
 import { useLang } from '../../../lib/LangContext'
+import Select from '../../../components/ui/Select'
 
 type Provider = 'gemini' | 'claude'
 
@@ -162,7 +163,16 @@ export default function AdminSettingsPage() {
             })}
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label={isRTL ? '?????? ?????????' : 'Fallback provider'}><select className={inputClass} value={formData.ai_fallback_provider} onChange={(e) => update('ai_fallback_provider', e.target.value)}><option value="gemini">Gemini</option><option value="claude">Claude</option></select></Field>
+            <Field label={isRTL ? 'المزود الاحتياطي' : 'Fallback provider'}>
+              <Select
+                value={formData.ai_fallback_provider}
+                onChange={(e) => update('ai_fallback_provider', e.target.value)}
+                options={[
+                  { value: 'gemini', label: 'Google Gemini' },
+                  { value: 'claude', label: 'Anthropic Claude' },
+                ]}
+              />
+            </Field>
             <Field label={isRTL ? '???? ???????' : 'Connection status'}><div className="flex min-h-[46px] items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-bold text-white/70 dark:border-white/10 dark:bg-white/5 dark:text-white/70"><CheckCircle2 size={17} className={primaryConfigured ? 'text-white/50' : 'text-white/50'} />{primaryConfigured ? (isRTL ? '?????? ??????? ????' : 'Primary provider ready') : (isRTL ? '??? ????? API' : 'Add API key')}</div></Field>
           </div>
         </Panel>

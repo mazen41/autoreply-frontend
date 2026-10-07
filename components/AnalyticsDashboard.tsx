@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TrendingUp, MessageSquare, Clock, ThumbsUp, ThumbsDown } from 'lucide-react';
+import Select from './ui/Select';
 
 function authHeaders() {
   const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
@@ -40,17 +41,19 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
     <div className="space-y-6">
       {/* Date Range Selector */}
       <div className="flex items-center gap-4">
-        <select
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-          className="px-4 py-2 rounded-lg border"
-        >
-          <option value="today">Today</option>
-          <option value="yesterday">Yesterday</option>
-          <option value="last_7_days">Last 7 Days</option>
-          <option value="last_30_days">Last 30 Days</option>
-          <option value="this_month">This Month</option>
-        </select>
+        <div className="w-48 shrink-0">
+          <Select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            options={[
+              { value: 'today', label: 'Today' },
+              { value: 'yesterday', label: 'Yesterday' },
+              { value: 'last_7_days', label: 'Last 7 Days' },
+              { value: 'last_30_days', label: 'Last 30 Days' },
+              { value: 'this_month', label: 'This Month' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Conversation Statistics */}

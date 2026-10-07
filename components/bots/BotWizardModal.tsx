@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ChannelIcon from '../ui/ChannelIcon'
 import { XIcon, LightningIcon, PlusIcon, CheckIcon } from '../ui/DashboardIcons'
+import Select from '../ui/Select'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -308,27 +309,22 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                    Status
-                  </label>
-                  <select
+                  <Select
+                    label="Status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-accent"
-                    style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                  >
-                    <option value="active">Active (Processing Live Conversations)</option>
-                    <option value="inactive">Inactive (Paused)</option>
-                  </select>
+                    options={[
+                      { value: 'active', label: 'Active (Processing Live Conversations)' },
+                      { value: 'inactive', label: 'Inactive (Paused)' },
+                    ]}
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                    AI Provider
-                  </label>
-                  <select
+                  <Select
+                    label="AI Provider"
                     value={aiProvider}
                     onChange={(e) => {
                       const newProvider = e.target.value
@@ -336,29 +332,23 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                       const models = AI_PROVIDERS[newProvider]?.models
                       if (models?.length) setAiModel(models[0].value)
                     }}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-accent"
-                    style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                  >
-                    {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
-                      <option key={key} value={key}>{cfg.label}</option>
-                    ))}
-                  </select>
+                    options={Object.entries(AI_PROVIDERS).map(([key, cfg]) => ({
+                      value: key,
+                      label: cfg.label,
+                    }))}
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold mb-1.5" style={{ color: 'var(--text-primary)' }}>
-                    AI Model
-                  </label>
-                  <select
+                  <Select
+                    label="AI Model"
                     value={aiModel}
                     onChange={(e) => setAiModel(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-accent"
-                    style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                  >
-                    {(AI_PROVIDERS[aiProvider]?.models || []).map((m) => (
-                      <option key={m.value} value={m.value}>{m.label}</option>
-                    ))}
-                  </select>
+                    options={(AI_PROVIDERS[aiProvider]?.models || []).map((m) => ({
+                      value: m.value,
+                      label: m.label,
+                    }))}
+                  />
                 </div>
               </div>
 
@@ -548,27 +538,26 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                           </div>
                         )}
                         {isSelected && !['salla', 'shopify', 'woocommerce'].includes(ch.type?.toLowerCase()) && (
-                          <label className="mt-3 block text-[10px] text-text-secondary">
-                            Default commerce store for this channel
-                            <select
-                              value={channelCommerceDefaults[ch.id] ?? ''}
+                          <div className="mt-3">
+                            <Select
+                              size="sm"
+                              label="Default commerce store for this channel"
+                              value={channelCommerceDefaults[ch.id] ? String(channelCommerceDefaults[ch.id]) : ''}
                               onChange={(event) => setChannelCommerceDefaults({
                                 ...channelCommerceDefaults,
                                 [ch.id]: event.target.value ? Number(event.target.value) : null,
                               })}
-                              className="mt-1 w-full rounded-lg border px-2 py-1.5 text-xs"
-                              style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-                            >
-                              <option value="">Use Bot default / automatic resolution</option>
-                              {channels
-                                .filter((store) => ecommerceConnectionIds.includes(store.id))
-                                .map((store) => (
-                                  <option key={store.id} value={store.id}>
-                                    {store.type?.toUpperCase()} — {store.page_name || store.page_id || `Store #${store.id}`}
-                                  </option>
-                                ))}
-                            </select>
-                          </label>
+                              options={[
+                                { value: '', label: 'Use Bot default / automatic resolution' },
+                                ...channels
+                                  .filter((store) => ecommerceConnectionIds.includes(store.id))
+                                  .map((store) => ({
+                                    value: String(store.id),
+                                    label: `${store.type?.toUpperCase()} — ${store.page_name || store.page_id || `Store #${store.id}`}`,
+                                  })),
+                              ]}
+                            />
+                          </div>
                         )}
                       </div>
                     )

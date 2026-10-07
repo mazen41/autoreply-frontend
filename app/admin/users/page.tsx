@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 /* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { Download, Filter, Shield, Trash2, UserCog, Users } from 'lucide-react'
 import { AdminShell, Badge, Button, PageHeader, Panel, SkeletonRows, inputClass } from '../../../components/admin/AdminUI'
 import { useLang } from '../../../lib/LangContext'
+import Select from '../../../components/ui/Select'
 
 type User = {
   id: number
@@ -110,11 +111,17 @@ export default function AdminUsersPage() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row">
             <input className={inputClass} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} placeholder={isRTL ? '???? ?????? ?? ??????' : 'Search by name or email'} />
-            <select className={`${inputClass} sm:max-w-56`} value={filterAdmin} onChange={(e) => { setFilterAdmin(e.target.value); setPage(1) }}>
-              <option value="">{isRTL ? '?? ???????' : 'All roles'}</option>
-              <option value="false">{isRTL ? '????????' : 'Users'}</option>
-              <option value="true">{isRTL ? '???????' : 'Admins'}</option>
-            </select>
+            <div className="w-full sm:w-56 shrink-0">
+              <Select
+                value={filterAdmin}
+                onChange={(e) => { setFilterAdmin(e.target.value); setPage(1) }}
+                options={[
+                  { value: '', label: isRTL ? 'كل الأدوار' : 'All roles' },
+                  { value: 'false', label: isRTL ? 'المستخدمين' : 'Users' },
+                  { value: 'true', label: isRTL ? 'المديرين' : 'Admins' },
+                ]}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-white/70 dark:text-white/70"><Filter size={16} />{isRTL ? '??? ??? ??????' : 'Sorted newest first'}</div>
         </div>

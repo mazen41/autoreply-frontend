@@ -6,6 +6,7 @@ import {
   Plus, Trash2, Edit2, Users, Tag, ShoppingCart,
   Clock, Search, ChevronDown, ChevronUp, X, Save, FileText
 } from 'lucide-react'
+import Select from '../ui/Select'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -366,25 +367,25 @@ export default function SegmentsAndTemplates() {
                 className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
               />
               <div className="grid grid-cols-2 gap-3">
-                <select
+                <Select
                   value={templateChannel}
                   onChange={e => setTemplateChannel(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                >
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="email">Email</option>
-                  <option value="sms">SMS</option>
-                </select>
-                <select
+                  options={[
+                    { value: 'whatsapp', label: 'WhatsApp' },
+                    { value: 'email', label: 'Email' },
+                    { value: 'sms', label: 'SMS' },
+                  ]}
+                />
+                <Select
                   value={templateCategory}
                   onChange={e => setTemplateCategory(e.target.value)}
-                  className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                >
-                  <option value="general">{L('General', 'عام')}</option>
-                  <option value="abandoned_cart">{L('Abandoned Cart', 'سلة متروكة')}</option>
-                  <option value="win_back">{L('Win Back', 'استعادة')}</option>
-                  <option value="vip_reward">{L('VIP Reward', 'مكافأة VIP')}</option>
-                </select>
+                  options={[
+                    { value: 'general', label: L('General', 'عام') },
+                    { value: 'abandoned_cart', label: L('Abandoned Cart', 'سلة متروكة') },
+                    { value: 'win_back', label: L('Win Back', 'استعادة') },
+                    { value: 'vip_reward', label: L('VIP Reward', 'مكافأة VIP') },
+                  ]}
+                />
               </div>
               <textarea
                 value={templateBody}

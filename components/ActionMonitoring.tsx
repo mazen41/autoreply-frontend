@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Bot, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import Select from './ui/Select';
 
 export default function ActionMonitoring({ businessId }: { businessId: number }) {
   const [actions, setActions] = useState<any[]>([]);
@@ -65,16 +66,19 @@ export default function ActionMonitoring({ businessId }: { businessId: number })
             AI Action Monitoring
           </h2>
         </div>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-        >
-          <option value="all">All Actions</option>
-          <option value="pending">Pending</option>
-          <option value="executed">Executed</option>
-          <option value="failed">Failed</option>
-        </select>
+        <div className="w-40 shrink-0">
+          <Select
+            size="sm"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            options={[
+              { value: 'all', label: 'All Actions' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'executed', label: 'Executed' },
+              { value: 'failed', label: 'Failed' },
+            ]}
+          />
+        </div>
       </div>
 
       <div className="space-y-4">

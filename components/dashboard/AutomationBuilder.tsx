@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Select from '../ui/Select'
 
 interface WorkflowStep {
   id: string
@@ -146,56 +147,38 @@ export default function AutomationBuilder({ onSave }: AutomationBuilderProps) {
                 
                 {step.type === 'trigger' && (
                   <div>
-                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-                      Trigger Type
-                    </label>
-                    <select
+                    <Select
+                      label="Trigger Type"
                       value={step.config.type || ''}
                       onChange={(e) => updateStepConfig(step.id, { ...step.config, type: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border)',
-                        background: 'var(--surface)',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      <option value="">Select trigger type</option>
-                      <option value="keyword">Keyword Match</option>
-                      <option value="time">Time-based</option>
-                      <option value="first_contact">First Contact</option>
-                      <option value="tag_added">Tag Added</option>
-                      <option value="message_received">Message Received</option>
-                    </select>
+                      placeholder="Select trigger type"
+                      options={[
+                        { value: 'keyword', label: 'Keyword Match' },
+                        { value: 'time', label: 'Time-based' },
+                        { value: 'first_contact', label: 'First Contact' },
+                        { value: 'tag_added', label: 'Tag Added' },
+                        { value: 'message_received', label: 'Message Received' },
+                      ]}
+                    />
                   </div>
                 )}
 
                 {step.type === 'action' && (
                   <div>
-                    <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-                      Action Type
-                    </label>
-                    <select
+                    <Select
+                      label="Action Type"
                       value={step.config.type || ''}
                       onChange={(e) => updateStepConfig(step.id, { ...step.config, type: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '8px',
-                        borderRadius: '6px',
-                        border: '1px solid var(--border)',
-                        background: 'var(--surface)',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      <option value="">Select action type</option>
-                      <option value="send_message">Send Message</option>
-                      <option value="add_tag">Add Tag</option>
-                      <option value="remove_tag">Remove Tag</option>
-                      <option value="escalate">Escalate to Human</option>
-                      <option value="webhook">Webhook Call</option>
-                      <option value="pause_ai">Pause AI</option>
-                    </select>
+                      placeholder="Select action type"
+                      options={[
+                        { value: 'send_message', label: 'Send Message' },
+                        { value: 'add_tag', label: 'Add Tag' },
+                        { value: 'remove_tag', label: 'Remove Tag' },
+                        { value: 'escalate', label: 'Escalate to Human' },
+                        { value: 'webhook', label: 'Webhook Call' },
+                        { value: 'pause_ai', label: 'Pause AI' },
+                      ]}
+                    />
                   </div>
                 )}
               </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Clock, Save, X } from 'lucide-react';
+import Select from './ui/Select';
 
 export default function AwayMessageBuilder({ businessId }: { businessId: number }) {
   const [enabled, setEnabled] = useState(false);
@@ -139,20 +140,18 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
 
       {/* Timezone */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Timezone
-        </label>
-        <select
+        <Select
+          label="Timezone"
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-info dark:bg-gray-700 dark:text-white"
-        >
-          <option value="UTC">UTC</option>
-          <option value="Asia/Riyadh">Asia/Riyadh (GMT+3)</option>
-          <option value="Africa/Cairo">Africa/Cairo (GMT+2)</option>
-          <option value="Europe/London">Europe/London (GMT+0)</option>
-          <option value="America/New_York">America/New_York (GMT-5)</option>
-        </select>
+          options={[
+            { value: 'UTC', label: 'UTC' },
+            { value: 'Asia/Riyadh', label: 'Asia/Riyadh (GMT+3)' },
+            { value: 'Africa/Cairo', label: 'Africa/Cairo (GMT+2)' },
+            { value: 'Europe/London', label: 'Europe/London (GMT+0)' },
+            { value: 'America/New_York', label: 'America/New_York (GMT-5)' },
+          ]}
+        />
       </div>
 
       {/* Business Hours */}

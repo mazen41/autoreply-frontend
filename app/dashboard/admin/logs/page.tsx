@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useLang } from '../../../../lib/LangContext'
 import { RefreshCw, Copy, AlertTriangle, Info, Bug, AlertCircle } from 'lucide-react'
+import Select from '../../../../components/ui/Select'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -114,17 +115,20 @@ export default function SystemLogsPage() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 p-3 border-b border-[var(--border)] bg-[var(--surface)]">
-        <select
-          value={levelFilter}
-          onChange={e => setLevelFilter(e.target.value)}
-          className="h-8 px-2 rounded-lg border border-[var(--border)] bg-[var(--surface-elevated)] text-xs text-[var(--text-primary)] outline-none"
-        >
-          <option value="">{L('All Levels', 'جميع المستويات')}</option>
-          <option value="ERROR">ERROR</option>
-          <option value="WARNING">WARNING</option>
-          <option value="INFO">INFO</option>
-          <option value="DEBUG">DEBUG</option>
-        </select>
+        <div className="w-36 shrink-0">
+          <Select
+            size="sm"
+            value={levelFilter}
+            onChange={e => setLevelFilter(e.target.value)}
+            options={[
+              { value: '', label: L('All Levels', 'جميع المستويات') },
+              { value: 'ERROR', label: 'ERROR' },
+              { value: 'WARNING', label: 'WARNING' },
+              { value: 'INFO', label: 'INFO' },
+              { value: 'DEBUG', label: 'DEBUG' },
+            ]}
+          />
+        </div>
         <input
           type="search"
           value={searchQuery}

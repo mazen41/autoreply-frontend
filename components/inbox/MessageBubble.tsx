@@ -25,6 +25,7 @@ import {
   SendHorizonal,
   CheckCircle2,
 } from 'lucide-react'
+import Select from '../ui/Select'
 
 type MediaType = 'image' | 'audio' | 'video' | 'document' | null
 
@@ -393,15 +394,18 @@ const MessageBubble = memo(function MessageBubble({
                     className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand"
                   />
                   <div className="mt-2 flex items-center gap-2">
-                    <select
-                      value={learningType}
-                      onChange={e => setLearningType(e.target.value as 'knowledge' | 'faq' | 'tone')}
-                      className="flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs font-medium text-text-secondary focus:outline-none focus:border-brand"
-                    >
-                      <option value="knowledge">Knowledge base</option>
-                      <option value="faq">FAQ answer</option>
-                      <option value="tone">Tone correction</option>
-                    </select>
+                    <div className="flex-1">
+                      <Select
+                        size="sm"
+                        value={learningType}
+                        onChange={e => setLearningType(e.target.value as 'knowledge' | 'faq' | 'tone')}
+                        options={[
+                          { value: 'knowledge', label: 'Knowledge base' },
+                          { value: 'faq', label: 'FAQ answer' },
+                          { value: 'tone', label: 'Tone correction' },
+                        ]}
+                      />
+                    </div>
                     <button
                       onClick={handleSubmitCorrection}
                       disabled={!correctionText.trim() || submittingCorrection}

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Package, RefreshCw, ShieldCheck } from 'lucide-react'
+import Select from '../ui/Select'
 
 interface WooCommerceConnectProps {
   isConnected: boolean
@@ -73,11 +74,18 @@ export default function WooCommerceConnect({ isConnected, channels = [], channel
           <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] space-y-2 text-sm text-[var(--text-secondary)]">
             <div className="font-semibold text-[var(--text-primary)]">✓ WooCommerce connected</div>
             {channels.length > 1 && (
-              <label className="block text-xs">Select store
-                <select value={activeChannel.id} onChange={(event) => setSelectedChannelId(Number(event.target.value))} className="ml-2 rounded border px-2 py-1">
-                  {channels.map((item) => <option key={item.id} value={item.id}>{item.integration?.store_url || item.page_id || `Store #${item.id}`}</option>)}
-                </select>
-              </label>
+              <div className="pt-1">
+                <Select
+                  size="sm"
+                  label="Select store"
+                  value={String(activeChannel.id)}
+                  onChange={(event) => setSelectedChannelId(Number(event.target.value))}
+                  options={channels.map((item) => ({
+                    value: String(item.id),
+                    label: item.integration?.store_url || item.page_id || `Store #${item.id}`,
+                  }))}
+                />
+              </div>
             )}
             <div>Store: {activeChannel.integration?.store_url || activeChannel.page_id}</div>
             <div>{counts.products ?? 0} products · {counts.orders ?? 0} orders · {counts.customers ?? 0} customers</div>

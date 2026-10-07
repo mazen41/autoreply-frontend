@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import WhatsAppConnect from '../channels/WhatsAppConnect'
+import Select from '../ui/Select'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface OnboardingData {
@@ -209,18 +210,16 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-              {isRTL ? 'الدولة' : 'Country'}
-            </label>
-            <select
+            <Select
+              label={isRTL ? 'الدولة' : 'Country'}
               value={data.country}
               onChange={e => setData({ ...data, country: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl text-sm transition-all duration-200"
-              style={{ ...inputStyle, appearance: 'none' as any }}
-              onFocus={inputFocus} onBlur={inputBlur}>
-              <option value="">{isRTL ? 'اختر الدولة' : 'Select country'}</option>
-              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+              searchable
+              options={[
+                { value: '', label: isRTL ? 'اختر الدولة' : 'Select country' },
+                ...COUNTRIES.map(c => ({ value: c, label: c })),
+              ]}
+            />
           </div>
         </div>
 

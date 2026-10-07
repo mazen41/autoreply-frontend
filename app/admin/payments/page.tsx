@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useLang } from '../../../lib/LangContext'
+import Select from '../../../components/ui/Select'
 
 interface Subscription {
   id: number
@@ -163,21 +164,19 @@ export default function AdminPaymentsPage() {
             color: 'var(--text-primary)',
           }}
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-3 rounded-xl bg-transparent"
-          style={{
-            border: '1px solid var(--border)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <option value="">{isRTL ? 'كل الحالات' : 'All Status'}</option>
-          <option value="active">{isRTL ? 'نشط' : 'Active'}</option>
-          <option value="cancelled">{isRTL ? 'ملغي' : 'Cancelled'}</option>
-          <option value="expired">{isRTL ? 'منتهي' : 'Expired'}</option>
-          <option value="trial">{isRTL ? 'تجريبي' : 'Trial'}</option>
-        </select>
+        <div className="w-48 shrink-0">
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            options={[
+              { value: '', label: isRTL ? 'كل الحالات' : 'All Status' },
+              { value: 'active', label: isRTL ? 'نشط' : 'Active' },
+              { value: 'cancelled', label: isRTL ? 'ملغي' : 'Cancelled' },
+              { value: 'expired', label: isRTL ? 'منتهي' : 'Expired' },
+              { value: 'trial', label: isRTL ? 'تجريبي' : 'Trial' },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Subscriptions Table */}
@@ -246,20 +245,19 @@ export default function AdminPaymentsPage() {
                   {formatDate(sub.ends_at)}
                 </td>
                 <td className="p-4 text-right">
-                  <select
-                    value={sub.status}
-                    onChange={(e) => handleUpdateStatus(sub.id, e.target.value)}
-                    className="px-3 py-1 rounded-lg text-xs bg-transparent"
-                    style={{
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    <option value="active">{isRTL ? 'نشط' : 'Active'}</option>
-                    <option value="cancelled">{isRTL ? 'ملغي' : 'Cancelled'}</option>
-                    <option value="expired">{isRTL ? 'منتهي' : 'Expired'}</option>
-                    <option value="trial">{isRTL ? 'تجريبي' : 'Trial'}</option>
-                  </select>
+                  <div className="w-32 inline-block text-left">
+                    <Select
+                      size="sm"
+                      value={sub.status}
+                      onChange={(e) => handleUpdateStatus(sub.id, e.target.value)}
+                      options={[
+                        { value: 'active', label: isRTL ? 'نشط' : 'Active' },
+                        { value: 'cancelled', label: isRTL ? 'ملغي' : 'Cancelled' },
+                        { value: 'expired', label: isRTL ? 'منتهي' : 'Expired' },
+                        { value: 'trial', label: isRTL ? 'تجريبي' : 'Trial' },
+                      ]}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+import Select from '../ui/Select'
+import Button from '../ui/Button'
 
 interface AIToneSettingsProps {
   currentSettings: {
@@ -25,92 +27,59 @@ export default function AIToneSettings({ currentSettings, onSave }: AIToneSettin
   }
 
   return (
-    <div style={{ padding: '20px', background: 'var(--surface-elevated)', borderRadius: '12px' }}>
-      <h3 style={{ marginBottom: '20px', color: 'var(--text-primary)' }}>AI Tone & Persona</h3>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-          Tone Style
-        </label>
-        <select
+    <div className="p-6 bg-surface-elevated rounded-2xl border border-border space-y-5">
+      <div>
+        <h3 className="text-base font-bold text-text-primary">AI Tone & Persona</h3>
+        <p className="text-xs text-text-secondary mt-0.5">
+          Configure how the AI communicates and balances warmth, formality, and sales goals.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <Select
+          label="Tone Style"
           value={settings.tone}
           onChange={(e) => setSettings({ ...settings, tone: e.target.value })}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            background: 'var(--surface)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <option value="friendly">Friendly & Conversational</option>
-          <option value="professional">Professional & Formal</option>
-          <option value="enthusiastic">Enthusiastic & Energetic</option>
-          <option value="empathetic">Empathetic & Caring</option>
-        </select>
-      </div>
+          options={[
+            { value: 'friendly', label: 'Friendly & Conversational (Warm & Accessible)' },
+            { value: 'professional', label: 'Professional & Formal (Corporate & Structured)' },
+            { value: 'enthusiastic', label: 'Enthusiastic & Energetic (Engaging & High-Vibe)' },
+            { value: 'empathetic', label: 'Empathetic & Caring (Customer-Support Centric)' },
+          ]}
+        />
 
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-          Formality Level
-        </label>
-        <select
+        <Select
+          label="Formality Level"
           value={settings.formality}
           onChange={(e) => setSettings({ ...settings, formality: e.target.value })}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            background: 'var(--surface)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <option value="casual">Casual - Natural conversation</option>
-          <option value="semi-formal">Semi-Formal - Balanced approach</option>
-          <option value="formal">Formal - Professional language</option>
-        </select>
-      </div>
+          options={[
+            { value: 'casual', label: 'Casual — Natural, approachable conversation' },
+            { value: 'semi-formal', label: 'Semi-Formal — Balanced SaaS standard' },
+            { value: 'formal', label: 'Formal — Professional and strictly polite' },
+          ]}
+        />
 
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-          Communication Focus
-        </label>
-        <select
+        <Select
+          label="Communication Focus"
           value={settings.focus}
           onChange={(e) => setSettings({ ...settings, focus: e.target.value })}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid var(--border)',
-            background: 'var(--surface)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          <option value="support">Support - Problem solving</option>
-          <option value="sales">Sales - Features & benefits</option>
-          <option value="information">Information - Comprehensive answers</option>
-        </select>
+          options={[
+            { value: 'support', label: 'Support — Problem solving & clear instructions' },
+            { value: 'sales', label: 'Sales — Features, benefits & order conversion' },
+            { value: 'information', label: 'Information — Comprehensive answers & FAQs' },
+          ]}
+        />
       </div>
 
-      <button
-        onClick={handleSave}
-        disabled={isSaving}
-        style={{
-          padding: '12px 24px',
-          background: 'var(--accent)',
-          color: 'var(--on-accent-text)',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: isSaving ? 'not-allowed' : 'pointer',
-          opacity: isSaving ? 0.7 : 1,
-          fontWeight: 600,
-        }}
-      >
-        {isSaving ? 'Saving...' : 'Save Settings'}
-      </button>
+      <div className="pt-2 flex justify-end">
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          loading={isSaving}
+        >
+          Save Settings
+        </Button>
+      </div>
     </div>
   )
 }

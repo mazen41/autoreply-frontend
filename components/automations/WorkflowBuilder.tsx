@@ -6,6 +6,7 @@ import {
   Zap, Clock, GitBranch, Send, Tag, User, Webhook,
   Plus, Trash2, Save, X, ChevronDown, ChevronUp, Loader2
 } from 'lucide-react'
+import Select from '../ui/Select'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,18 +92,18 @@ function NodeConfigPanel({
           {node.type === 'trigger' && (
             <>
               <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1">{L('Trigger Type', 'نوع المحفز')}</label>
-                <select
+                <Select
+                  label={L('Trigger Type', 'نوع المحفز')}
                   value={config.type || 'keyword'}
                   onChange={e => updateField('type', e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                >
-                  <option value="keyword">{L('Keyword Match', 'تطابق الكلمات')}</option>
-                  <option value="first_contact">{L('First Contact', 'أول اتصال')}</option>
-                  <option value="tag_added">{L('Tag Added', 'إضافة علامة')}</option>
-                  <option value="order_status_changed">{L('Order Status', 'حالة الطلب')}</option>
-                  <option value="escalation_triggered">{L('Escalation', 'تصعيد')}</option>
-                </select>
+                  options={[
+                    { value: 'keyword', label: L('Keyword Match', 'تطابق الكلمات') },
+                    { value: 'first_contact', label: L('First Contact', 'أول اتصال') },
+                    { value: 'tag_added', label: L('Tag Added', 'إضافة علامة') },
+                    { value: 'order_status_changed', label: L('Order Status', 'حالة الطلب') },
+                    { value: 'escalation_triggered', label: L('Escalation', 'تصعيد') },
+                  ]}
+                />
               </div>
               {(config.type === 'keyword') && (
                 <div>
@@ -123,16 +124,16 @@ function NodeConfigPanel({
           {node.type === 'condition' && (
             <>
               <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1">{L('Field', 'الحقل')}</label>
-                <select
+                <Select
+                  label={L('Field', 'الحقل')}
                   value={config.field || 'customer_tag'}
                   onChange={e => updateField('field', e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                >
-                  <option value="customer_tag">{L('Customer Tag', 'علامة العميل')}</option>
-                  <option value="conversation_status">{L('Conversation Status', 'حالة المحادثة')}</option>
-                  <option value="message_contains">{L('Message Contains', 'تحتوي الرسالة')}</option>
-                </select>
+                  options={[
+                    { value: 'customer_tag', label: L('Customer Tag', 'علامة العميل') },
+                    { value: 'conversation_status', label: L('Conversation Status', 'حالة المحادثة') },
+                    { value: 'message_contains', label: L('Message Contains', 'تحتوي الرسالة') },
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-xs font-bold text-text-secondary mb-1">{L('Value', 'القيمة')}</label>
@@ -158,15 +159,17 @@ function NodeConfigPanel({
                     onChange={e => updateField('value', parseInt(e.target.value) || 1)}
                     className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
                   />
-                  <select
-                    value={config.unit || 'hours'}
-                    onChange={e => updateField('unit', e.target.value)}
-                    className="px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  >
-                    <option value="minutes">{L('Minutes', 'دقائق')}</option>
-                    <option value="hours">{L('Hours', 'ساعات')}</option>
-                    <option value="days">{L('Days', 'أيام')}</option>
-                  </select>
+                  <div className="w-32 shrink-0">
+                    <Select
+                      value={config.unit || 'hours'}
+                      onChange={e => updateField('unit', e.target.value)}
+                      options={[
+                        { value: 'minutes', label: L('Minutes', 'دقائق') },
+                        { value: 'hours', label: L('Hours', 'ساعات') },
+                        { value: 'days', label: L('Days', 'أيام') },
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
             </>
@@ -176,22 +179,22 @@ function NodeConfigPanel({
           {node.type === 'action' && (
             <>
               <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1">{L('Action Type', 'نوع الإجراء')}</label>
-                <select
+                <Select
+                  label={L('Action Type', 'نوع الإجراء')}
                   value={config.type || 'send_message'}
                   onChange={e => updateField('type', e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                >
-                  <option value="send_message">{L('Send Message', 'إرسال رسالة')}</option>
-                  <option value="add_tag">{L('Add Tag', 'إضافة علامة')}</option>
-                  <option value="remove_tag">{L('Remove Tag', 'إزالة علامة')}</option>
-                  <option value="assign_agent">{L('Assign Agent', 'تعيين وكيل')}</option>
-                  <option value="send_webhook">{L('Send Webhook', 'إرسال Webhook')}</option>
-                  <option value="update_custom_field">{L('Update Custom Field', 'تحديث حقل مخصص')}</option>
-                  <option value="toggle_ai">{L('Toggle AI', 'تبديل AI')}</option>
-                  <option value="start_sequence">{L('Start Sequence', 'بدء تسلسل')}</option>
-                  <option value="stop_sequence">{L('Stop Sequence', 'إيقاف تسلسل')}</option>
-                </select>
+                  options={[
+                    { value: 'send_message', label: L('Send Message', 'إرسال رسالة') },
+                    { value: 'add_tag', label: L('Add Tag', 'إضافة علامة') },
+                    { value: 'remove_tag', label: L('Remove Tag', 'إزالة علامة') },
+                    { value: 'assign_agent', label: L('Assign Agent', 'تعيين وكيل') },
+                    { value: 'send_webhook', label: L('Send Webhook', 'إرسال Webhook') },
+                    { value: 'update_custom_field', label: L('Update Custom Field', 'تحديث حقل مخصص') },
+                    { value: 'toggle_ai', label: L('Toggle AI', 'تبديل AI') },
+                    { value: 'start_sequence', label: L('Start Sequence', 'بدء تسلسل') },
+                    { value: 'stop_sequence', label: L('Stop Sequence', 'إيقاف تسلسل') },
+                  ]}
+                />
               </div>
 
               {config.type === 'send_message' && (
@@ -220,17 +223,16 @@ function NodeConfigPanel({
 
               {config.type === 'assign_agent' && availableAgents && (
                 <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Agent', 'الوكيل')}</label>
-                  <select
-                    value={config.agent_id || ''}
+                  <Select
+                    label={L('Agent', 'الوكيل')}
+                    value={config.agent_id ? String(config.agent_id) : ''}
                     onChange={e => updateField('agent_id', parseInt(e.target.value) || null)}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  >
-                    <option value="">{L('Select Agent', 'اختر وكيل')}</option>
-                    {availableAgents.map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                  </select>
+                    placeholder={L('Select Agent', 'اختر وكيل')}
+                    options={[
+                      { value: '', label: L('Select Agent', 'اختر وكيل') },
+                      ...availableAgents.map(a => ({ value: String(a.id), label: a.name })),
+                    ]}
+                  />
                 </div>
               )}
 
@@ -271,31 +273,30 @@ function NodeConfigPanel({
 
               {config.type === 'toggle_ai' && (
                 <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('AI Enabled', 'تفعيل AI')}</label>
-                  <select
+                  <Select
+                    label={L('AI Enabled', 'تفعيل AI')}
                     value={config.ai_enabled !== undefined ? String(config.ai_enabled) : 'true'}
                     onChange={e => updateField('ai_enabled', e.target.value === 'true')}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  >
-                    <option value="true">{L('Enable', 'تفعيل')}</option>
-                    <option value="false">{L('Disable', 'تعطيل')}</option>
-                  </select>
+                    options={[
+                      { value: 'true', label: L('Enable', 'تفعيل') },
+                      { value: 'false', label: L('Disable', 'تعطيل') },
+                    ]}
+                  />
                 </div>
               )}
 
               {(config.type === 'start_sequence' || config.type === 'stop_sequence') && availableSequences && (
                 <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Sequence', 'التسلسل')}</label>
-                  <select
-                    value={config.sequence_id || ''}
+                  <Select
+                    label={L('Sequence', 'التسلسل')}
+                    value={config.sequence_id ? String(config.sequence_id) : ''}
                     onChange={e => updateField('sequence_id', parseInt(e.target.value) || null)}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  >
-                    <option value="">{L('Select Sequence', 'اختر تسلسل')}</option>
-                    {availableSequences.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
+                    placeholder={L('Select Sequence', 'اختر تسلسل')}
+                    options={[
+                      { value: '', label: L('Select Sequence', 'اختر تسلسل') },
+                      ...availableSequences.map(s => ({ value: String(s.id), label: s.name })),
+                    ]}
+                  />
                 </div>
               )}
             </>

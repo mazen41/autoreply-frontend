@@ -11,6 +11,7 @@ import {
   Search, X, SlidersHorizontal, RefreshCw, Inbox, Bot, User,
   AlertTriangle, Clock, CheckCircle, MessageSquare, Filter, ChevronDown
 } from 'lucide-react'
+import Select from '../ui/Select'
 
 const TABS = [
   { key: 'all',        label: 'All',        labelAr: 'الكل',       icon: Inbox },
@@ -193,36 +194,42 @@ export default function ConversationList({
           </div>
           {/* Channel account filter */}
           {channels.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Account</span>
-              <select
-                value={channelIdFilter}
-                onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-brand/30"
-              >
-                <option value="">All Accounts</option>
-                {channels.map(ch => (
-                  <option key={ch.id} value={ch.id}>
-                    {ch.page_name || ch.page_id || `Account #${ch.id}`} ({ch.type})
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">Account</span>
+              <div className="w-36 shrink-0">
+                <Select
+                  size="sm"
+                  value={channelIdFilter ? String(channelIdFilter) : ''}
+                  onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
+                  options={[
+                    { value: '', label: 'All Accounts' },
+                    ...channels.map(ch => ({
+                      value: String(ch.id),
+                      label: `${ch.page_name || ch.page_id || `Account #${ch.id}`} (${ch.type})`,
+                    })),
+                  ]}
+                />
+              </div>
             </div>
           )}
           {/* Bot filter */}
           {bots.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Bot</span>
-              <select
-                value={botFilter}
-                onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-surface border border-border text-text-primary outline-none focus:border-brand/30"
-              >
-                <option value="">All Bots</option>
-                {bots.map(bot => (
-                  <option key={bot.id} value={bot.id}>{bot.name}</option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">Bot</span>
+              <div className="w-32 shrink-0">
+                <Select
+                  size="sm"
+                  value={botFilter ? String(botFilter) : ''}
+                  onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
+                  options={[
+                    { value: '', label: 'All Bots' },
+                    ...bots.map(bot => ({
+                      value: String(bot.id),
+                      label: bot.name,
+                    })),
+                  ]}
+                />
+              </div>
             </div>
           )}
           {(channelFilter || channelIdFilter !== '' || botFilter !== '') && (

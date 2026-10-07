@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Layers, Plus, Trash2, Clock, Play } from 'lucide-react';
+import Select from './ui/Select';
 
 function authHeaders(json = false) {
   const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
@@ -123,16 +124,16 @@ export default function DripSequencesBuilder({ businessId }: { businessId: numbe
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Trigger Type
               </label>
-              <select
+              <Select
                 value={newSequence.trigger_type}
                 onChange={(e) => setNewSequence({ ...newSequence, trigger_type: e.target.value })}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-600 dark:text-white"
-              >
-                <option value="manual">Manual</option>
-                <option value="new_user">New User</option>
-                <option value="tag_added">Tag Added</option>
-                <option value="no_reply">No Reply</option>
-              </select>
+                options={[
+                  { value: 'manual', label: 'Manual' },
+                  { value: 'new_user', label: 'New User' },
+                  { value: 'tag_added', label: 'Tag Added' },
+                  { value: 'no_reply', label: 'No Reply' },
+                ]}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">

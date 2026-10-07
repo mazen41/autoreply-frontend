@@ -10,6 +10,7 @@ import {
   Zap, Settings, Sliders, ShieldCheck, Tag, ShoppingCart, UserCheck, RefreshCw,
   Mail, Send, CheckCircle2, ChevronRight, HelpCircle
 } from 'lucide-react'
+import Select from '../../../../components/ui/Select'
 
 type StepType = 'message' | 'delay' | 'condition' | 'action'
 type ChannelType = 'whatsapp' | 'telegram' | 'email' | 'instagram' | 'messenger'
@@ -460,15 +461,17 @@ export default function SequenceEditorPage() {
                     onChange={(e) => setNoReplyHours(parseInt(e.target.value) || 1)}
                     className="w-24 h-10 px-3 text-center font-bold bg-[var(--surface)] border border-warning dark:border-warning rounded-lg text-sm text-[var(--text-primary)] outline-none"
                   />
-                  <select
-                    value={noReplyUnit}
-                    onChange={(e) => setNoReplyUnit(e.target.value as any)}
-                    className="h-10 px-3 bg-[var(--surface)] border border-warning dark:border-warning rounded-lg text-sm font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
-                  >
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                  </select>
+                  <div className="w-32 shrink-0">
+                    <Select
+                      value={noReplyUnit}
+                      onChange={(e) => setNoReplyUnit(e.target.value as any)}
+                      options={[
+                        { value: 'minutes', label: 'Minutes' },
+                        { value: 'hours', label: 'Hours' },
+                        { value: 'days', label: 'Days' },
+                      ]}
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -637,15 +640,17 @@ export default function SequenceEditorPage() {
                           onChange={(e) => updateStep(step.id, { delay_hours: parseInt(e.target.value) || 1 })}
                           className="w-28 h-10 px-3 text-center font-bold bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
                         />
-                        <select
-                          value={step.delay_unit || 'hours'}
-                          onChange={(e) => updateStep(step.id, { delay_unit: e.target.value as any })}
-                          className="h-10 px-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm font-semibold text-[var(--text-primary)] outline-none cursor-pointer"
-                        >
-                          <option value="minutes">Minutes</option>
-                          <option value="hours">Hours</option>
-                          <option value="days">Days</option>
-                        </select>
+                        <div className="w-32 shrink-0">
+                          <Select
+                            value={step.delay_unit || 'hours'}
+                            onChange={(e) => updateStep(step.id, { delay_unit: e.target.value as any })}
+                            options={[
+                              { value: 'minutes', label: 'Minutes' },
+                              { value: 'hours', label: 'Hours' },
+                              { value: 'days', label: 'Days' },
+                            ]}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -659,19 +664,17 @@ export default function SequenceEditorPage() {
                   )}
 
                   {step.step_type === 'action' && (
-                    <div className="space-y-3">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-                        Action Type
-                      </label>
-                      <select
+                    <div className="space-y-1.5">
+                      <Select
+                        label="Action Type"
                         value={step.config?.action_type || 'stop_sequence'}
                         onChange={(e) => updateStep(step.id, { config: { ...step.config, action_type: e.target.value } })}
-                        className="w-full h-10 px-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-sm font-semibold text-[var(--text-primary)] outline-none"
-                      >
-                        <option value="stop_sequence">Stop Sequence</option>
-                        <option value="add_tag">Add Tag to Contact</option>
-                        <option value="remove_tag">Remove Tag from Contact</option>
-                      </select>
+                        options={[
+                          { value: 'stop_sequence', label: 'Stop Sequence' },
+                          { value: 'add_tag', label: 'Add Tag to Contact' },
+                          { value: 'remove_tag', label: 'Remove Tag from Contact' },
+                        ]}
+                      />
                     </div>
                   )}
                 </div>
@@ -769,142 +772,158 @@ function ConditionEditor({ step, updateStep, availableSteps }: { step: any; upda
   return (
     <div className="space-y-4 bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)]">
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Condition Type</label>
-        <select
+        <Select
+          label="Condition Type"
           value={config.type || 'customer_replied'}
           onChange={(e) => handleTypeChange(e.target.value)}
-          className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-        >
-          <optgroup label="Conversation & Response">
-            <option value="customer_replied">Customer Replied (since last step)</option>
-            <option value="conversation_status">Conversation Status</option>
-            <option value="last_message_from_customer">Last Message from Customer</option>
-            <option value="last_message_from_ai">Last Message from AI</option>
-            <option value="is_escalated">Is Escalated</option>
-            <option value="is_not_escalated">Is Not Escalated</option>
-          </optgroup>
-
-          <optgroup label="Customer / Contact">
-            <option value="customer_tag">Customer Tag</option>
-            <option value="customer_field">Customer Field</option>
-            <option value="customer_exists">Customer Exists</option>
-          </optgroup>
-
-          <optgroup label="Message Content">
-            <option value="message_text">Message Text</option>
-            <option value="message_language">Message Language</option>
-            <option value="message_intent">Message Intent</option>
-          </optgroup>
-
-          <optgroup label="AI & Confidence">
-            <option value="ai_confidence">AI Confidence Score</option>
-            <option value="ai_intent">AI Detected Intent</option>
-            <option value="needs_escalation">AI Needs Escalation</option>
-          </optgroup>
-
-          <optgroup label="Orders & Products">
-            <option value="has_order">Has Active Order</option>
-            <option value="does_not_have_order">Does Not Have Order</option>
-            <option value="order_status">Order Status</option>
-            <option value="order_total">Order Total Amount</option>
-            <option value="product_exists">Product Name in Order</option>
-          </optgroup>
-
-          <optgroup label="Channel">
-            <option value="channel">Channel Type</option>
-          </optgroup>
-
-          <optgroup label="Schedule & Time">
-            <option value="within_business_hours">Within Business Hours</option>
-            <option value="outside_business_hours">Outside Business Hours</option>
-            <option value="day_of_week">Day of Week</option>
-            <option value="time_of_day">Time of Day</option>
-          </optgroup>
-        </select>
+          options={[
+            {
+              label: 'Conversation & Response',
+              options: [
+                { value: 'customer_replied', label: 'Customer Replied (since last step)' },
+                { value: 'conversation_status', label: 'Conversation Status' },
+                { value: 'last_message_from_customer', label: 'Last Message from Customer' },
+                { value: 'last_message_from_ai', label: 'Last Message from AI' },
+                { value: 'is_escalated', label: 'Is Escalated' },
+                { value: 'is_not_escalated', label: 'Is Not Escalated' },
+              ],
+            },
+            {
+              label: 'Customer / Contact',
+              options: [
+                { value: 'customer_tag', label: 'Customer Tag' },
+                { value: 'customer_field', label: 'Customer Field' },
+                { value: 'customer_exists', label: 'Customer Exists' },
+              ],
+            },
+            {
+              label: 'Message Content',
+              options: [
+                { value: 'message_text', label: 'Message Text' },
+                { value: 'message_language', label: 'Message Language' },
+                { value: 'message_intent', label: 'Message Intent' },
+              ],
+            },
+            {
+              label: 'AI & Confidence',
+              options: [
+                { value: 'ai_confidence', label: 'AI Confidence Score' },
+                { value: 'ai_intent', label: 'AI Detected Intent' },
+                { value: 'needs_escalation', label: 'AI Needs Escalation' },
+              ],
+            },
+            {
+              label: 'Orders & Products',
+              options: [
+                { value: 'has_order', label: 'Has Active Order' },
+                { value: 'does_not_have_order', label: 'Does Not Have Order' },
+                { value: 'order_status', label: 'Order Status' },
+                { value: 'order_total', label: 'Order Total Amount' },
+                { value: 'product_exists', label: 'Product Name in Order' },
+              ],
+            },
+            {
+              label: 'Channel',
+              options: [
+                { value: 'channel', label: 'Channel Type' },
+              ],
+            },
+            {
+              label: 'Schedule & Time',
+              options: [
+                { value: 'within_business_hours', label: 'Within Business Hours' },
+                { value: 'outside_business_hours', label: 'Outside Business Hours' },
+                { value: 'day_of_week', label: 'Day of Week' },
+                { value: 'time_of_day', label: 'Time of Day' },
+              ],
+            },
+          ]}
+        />
       </div>
 
       {needsField && (
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Field Name</label>
-          <select
+          <Select
+            label="Field Name"
             value={config.field_name || 'name'}
             onChange={(e) => updateStep(step.id, { condition_config: { ...config, field_name: e.target.value } })}
-            className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-          >
-            <option value="name">Customer Name</option>
-            <option value="email">Email Address</option>
-            <option value="phone">Phone / Sender ID</option>
-          </select>
+            options={[
+              { value: 'name', label: 'Customer Name' },
+              { value: 'email', label: 'Email Address' },
+              { value: 'phone', label: 'Phone / Sender ID' },
+            ]}
+          />
         </div>
       )}
 
       {needsValue && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Operator</label>
-            <select
+            <Select
+              label="Operator"
               value={config.operator || 'equals'}
               onChange={(e) => updateStep(step.id, { condition_config: { ...config, operator: e.target.value } })}
-              className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-            >
-              {config.type === 'customer_tag' ? (
-                <>
-                  <option value="has_tag">Has Tag</option>
-                  <option value="does_not_have_tag">Does Not Have Tag</option>
-                </>
-              ) : ['ai_confidence', 'order_total'].includes(config.type) ? (
-                <>
-                  <option value="greater_than">Greater Than (&gt;)</option>
-                  <option value="greater_than_or_equal">Greater Than or Equal (&ge;)</option>
-                  <option value="less_than">Less Than (&lt;)</option>
-                  <option value="less_than_or_equal">Less Than or Equal (&le;)</option>
-                  <option value="equals">Equals (=)</option>
-                </>
-              ) : (
-                <>
-                  <option value="equals">Equals</option>
-                  <option value="not_equals">Does Not Equal</option>
-                  <option value="contains">Contains</option>
-                  <option value="does_not_contain">Does Not Contain</option>
-                  <option value="starts_with">Starts With</option>
-                  <option value="ends_with">Ends With</option>
-                </>
-              )}
-            </select>
+              options={
+                config.type === 'customer_tag'
+                  ? [
+                      { value: 'has_tag', label: 'Has Tag' },
+                      { value: 'does_not_have_tag', label: 'Does Not Have Tag' },
+                    ]
+                  : ['ai_confidence', 'order_total'].includes(config.type)
+                  ? [
+                      { value: 'greater_than', label: 'Greater Than (>)' },
+                      { value: 'greater_than_or_equal', label: 'Greater Than or Equal (≥)' },
+                      { value: 'less_than', label: 'Less Than (<)' },
+                      { value: 'less_than_or_equal', label: 'Less Than or Equal (≤)' },
+                      { value: 'equals', label: 'Equals (=)' },
+                    ]
+                  : [
+                      { value: 'equals', label: 'Equals' },
+                      { value: 'not_equals', label: 'Does Not Equal' },
+                      { value: 'contains', label: 'Contains' },
+                      { value: 'does_not_contain', label: 'Does Not Contain' },
+                      { value: 'starts_with', label: 'Starts With' },
+                      { value: 'ends_with', label: 'Ends With' },
+                    ]
+              }
+            />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Value</label>
             {config.type === 'channel' ? (
-              <select
+              <Select
+                label="Value"
                 value={config.value || 'whatsapp'}
                 onChange={(e) => updateStep(step.id, { condition_config: { ...config, value: e.target.value } })}
-                className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-              >
-                <option value="whatsapp">WhatsApp</option>
-                <option value="instagram">Instagram</option>
-                <option value="messenger">Messenger</option>
-                <option value="telegram">Telegram</option>
-                <option value="email">Email</option>
-              </select>
+                options={[
+                  { value: 'whatsapp', label: 'WhatsApp' },
+                  { value: 'instagram', label: 'Instagram' },
+                  { value: 'messenger', label: 'Messenger' },
+                  { value: 'telegram', label: 'Telegram' },
+                  { value: 'email', label: 'Email' },
+                ]}
+              />
             ) : config.type === 'day_of_week' ? (
-              <select
+              <Select
+                label="Value"
                 value={config.value || 'Monday'}
                 onChange={(e) => updateStep(step.id, { condition_config: { ...config, value: e.target.value } })}
-                className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-              >
-                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type={['ai_confidence', 'order_total'].includes(config.type) ? 'number' : 'text'}
-                value={config.value ?? ''}
-                onChange={(e) => updateStep(step.id, { condition_config: { ...config, value: e.target.value } })}
-                placeholder={config.type === 'ai_confidence' ? 'e.g. 80' : config.type === 'customer_tag' ? 'e.g. VIP' : 'Enter value...'}
-                className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                options={['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => ({
+                  value: d,
+                  label: d,
+                }))}
               />
+            ) : (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Value</label>
+                <input
+                  type={['ai_confidence', 'order_total'].includes(config.type) ? 'number' : 'text'}
+                  value={config.value ?? ''}
+                  onChange={(e) => updateStep(step.id, { condition_config: { ...config, value: e.target.value } })}
+                  placeholder={config.type === 'ai_confidence' ? 'e.g. 80' : config.type === 'customer_tag' ? 'e.g. VIP' : 'Enter value...'}
+                  className="w-full h-10 px-3 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm font-medium text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -913,16 +932,17 @@ function ConditionEditor({ step, updateStep, availableSteps }: { step: any; upda
       {/* Branching Routes */}
       <div className="pt-3 border-t border-[var(--border)] grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[11px] font-bold text-success dark:text-success uppercase mb-1">If Condition is TRUE</label>
-          <select
+          <Select
+            size="sm"
+            label="If Condition is TRUE"
             value={config.on_true || 'continue'}
             onChange={(e) => updateStep(step.id, { condition_config: { ...config, on_true: e.target.value } })}
-            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-success dark:border-success rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
-          >
-            <option value="continue">Continue to Next Step</option>
-            <option value="stop">Stop Sequence</option>
-            <option value="jump">Jump to Step Number...</option>
-          </select>
+            options={[
+              { value: 'continue', label: 'Continue to Next Step' },
+              { value: 'stop', label: 'Stop Sequence' },
+              { value: 'jump', label: 'Jump to Step Number...' },
+            ]}
+          />
           {config.on_true === 'jump' && (
             <input
               type="number"
@@ -936,16 +956,17 @@ function ConditionEditor({ step, updateStep, availableSteps }: { step: any; upda
         </div>
 
         <div>
-          <label className="block text-[11px] font-bold text-error uppercase mb-1">If Condition is FALSE</label>
-          <select
+          <Select
+            size="sm"
+            label="If Condition is FALSE"
             value={config.on_false || 'stop'}
             onChange={(e) => updateStep(step.id, { condition_config: { ...config, on_false: e.target.value } })}
-            className="w-full h-9 px-3 bg-[var(--surface-elevated)] border border-error dark:border-error rounded-lg text-xs font-semibold text-[var(--text-primary)] outline-none"
-          >
-            <option value="stop">Stop Sequence</option>
-            <option value="continue">Continue to Next Step</option>
-            <option value="jump">Jump to Step Number...</option>
-          </select>
+            options={[
+              { value: 'stop', label: 'Stop Sequence' },
+              { value: 'continue', label: 'Continue to Next Step' },
+              { value: 'jump', label: 'Jump to Step Number...' },
+            ]}
+          />
           {config.on_false === 'jump' && (
             <input
               type="number"
