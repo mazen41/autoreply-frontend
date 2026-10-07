@@ -180,39 +180,7 @@ export default function TrainingDashboard() {
     } catch (e: unknown) {
       if (wanted.current === p) {
         setError(e instanceof Error ? e.message : 'Failed to load statistics')
-        // Use demo data for preview
-        if (!stats) {
-          setStats({
-            range: { preset: p, start: null, end: null },
-            total_ai_messages: 2847,
-            ai_messages_today: 143,
-            ai_messages_this_week: 892,
-            ai_messages_this_month: 2847,
-            total_conversations: 3420,
-            conversations_with_ai_reply: 2847,
-            auto_reply_rate: 83.2,
-            avg_confidence: 87.5,
-            confidence_count: 2847,
-            confidence_total: 2490,
-            escalated_conversations: 214,
-            escalation_rate: 6.3,
-            escalations_today: 12,
-            escalations_this_week: 67,
-            escalations_this_month: 214,
-            escalation_reasons: { low_confidence: 89, explicit_request: 67, complex_query: 38, no_knowledge: 20 },
-            intent_breakdown: { product_inquiry: 890, order_status: 654, pricing: 432, returns: 321, general: 550 },
-            channel_breakdown: { whatsapp: 1230, instagram: 890, telegram: 340, gmail: 387 },
-            dialect_breakdown: { gulf: 1200, egyptian: 800, msa: 500, english: 347 },
-            issue_breakdown: { inaccurate_response: 45, slow_response: 23, wrong_language: 12, tone_issues: 8 },
-            feedback_total: 1245,
-            feedback_positive: 1089,
-            feedback_negative: 156,
-            feedback_rate: 43.7,
-            satisfaction_percentage: 87.5,
-            last_updated: new Date().toLocaleString(),
-          })
-          setError(null)
-        }
+        setStats(null)
       }
     } finally {
       inflight.current = false

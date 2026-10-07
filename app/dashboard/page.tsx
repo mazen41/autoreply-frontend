@@ -45,79 +45,22 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null)
   const [recentConversations, setRecentConversations] = useState<any[]>([])
   const [channels, setChannels] = useState<any[]>([])
+  const [dailyMessages, setDailyMessages] = useState<number[]>([])
+  const [aiPerformance, setAiPerformance] = useState<any>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d')
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
       const token = getToken()
       if (!token) {
-        // Fallback realistic SaaS dataset for local/preview
-        setStats({
-          total_conversations: 14820,
-          ai_resolved_rate: 78.4,
-          avg_response_time: '1.2s',
-          active_customers: 6240,
-          conversion_rate: 14.8,
-        })
-        setRecentConversations([
-          {
-            id: 'c1',
-            sender_name: 'Sarah Jenkins',
-            channel: 'instagram',
-            message: 'Do you offer express delivery to Riyadh?',
-            ai_replied: true,
-            time: '2m ago',
-            status: 'resolved',
-          },
-          {
-            id: 'c2',
-            sender_name: 'Khaled Al-Mansoor',
-            channel: 'whatsapp',
-            message: 'I want to track order #SA-9821 please',
-            ai_replied: true,
-            time: '8m ago',
-            status: 'resolved',
-          },
-          {
-            id: 'c3',
-            sender_name: 'Elena Rostova',
-            channel: 'telegram',
-            message: 'Can I change my subscription billing cycle?',
-            ai_replied: false,
-            time: '14m ago',
-            status: 'needs_human',
-          },
-          {
-            id: 'c4',
-            sender_name: 'Marcus Brody',
-            channel: 'facebook',
-            message: 'Is there a discount for annual team licenses?',
-            ai_replied: true,
-            time: '25m ago',
-            status: 'resolved',
-          },
-          {
-            id: 'c5',
-            sender_name: 'Dr. Tariq Ziad',
-            channel: 'whatsapp',
-            message: 'Sent the payment receipt for the wholesale order',
-            ai_replied: false,
-            time: '42m ago',
-            status: 'needs_human',
-          },
-        ])
-        setChannels([
-          { type: 'whatsapp', name: 'WhatsApp Business', active: 2, volume: '6,420 msgs', share: 44 },
-          { type: 'instagram', name: 'Instagram DMs', active: 3, volume: '4,180 msgs', share: 28 },
-          { type: 'facebook', name: 'Facebook Messenger', active: 1, volume: '2,310 msgs', share: 16 },
-          { type: 'telegram', name: 'Telegram Bot', active: 1, volume: '1,910 msgs', share: 12 },
-        ])
-        setLoading(false)
-        return
+        throw new Error('Your session expired. Sign in again to load dashboard data.')
       }
 
-      const [statsRes, inboxRes, channelsRes] = await Promise.allSettled([
+      const days = Number.parseInt(timeRange, 10)
+      const [statsRes, inboxRes, channelsRes, dailyRes, aiRes] = await Promise.all([
         fetch(`${API}/api/stats`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         }),
@@ -127,89 +70,48 @@ export default function DashboardPage() {
         fetch(`${API}/api/channels`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         }),
+        fetch(`${API}/api/reports/daily-messages?days=${days}`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        }),
+        fetch(`${API}/api/reports/ai-performance`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        }),
       ])
 
-      if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
-        const data = await statsRes.value.json()
-        setStats({
-          total_conversations: data.total_messages || 14820,
-          ai_resolved_rate: data.response_rate || 78.4,
-          avg_response_time: '1.2s',
-          active_customers: 6240,
-          conversion_rate: 14.8,
-        })
-      } else {
-        setStats({
-          total_conversations: 14820,
-          ai_resolved_rate: 78.4,
-          avg_response_time: '1.2s',
-          active_customers: 6240,
-          conversion_rate: 14.8,
-        })
+      if (!statsRes.ok || !inboxRes.ok || !channelsRes.ok || !dailyRes.ok || !aiRes.ok) {
+        throw new Error('Some dashboard data could not be loaded. Retry to refresh it.')
       }
+      const [statsData, inboxData, channelData, dailyData, aiData] = await Promise.all([
+        statsRes.json(), inboxRes.json(), channelsRes.json(), dailyRes.json(), aiRes.json(),
+      ])
+      setStats(statsData)
+      setAiPerformance(aiData)
+      setDailyMessages(Array.isArray(dailyData.data) ? dailyData.data.map(Number) : [])
+      const chList = Array.isArray(channelData) ? channelData : channelData.data || []
+      setChannels(chList.filter((channel: any) => channel.status === 'connected'))
 
-      if (inboxRes.status === 'fulfilled' && inboxRes.value.ok) {
-        const data = await inboxRes.value.json()
-        const items = (data.data || []).slice(0, 5).map((item: any) => ({
-          id: item.id || Math.random().toString(),
-          sender_name: item.sender_name || item.sender_id || 'Customer',
-          channel: item.channel?.type || 'whatsapp',
-          message: item.message_preview || item.last_message || 'Inquiry received',
-          ai_replied: !!item.ai_replied || true,
-          time: item.time || 'Just now',
-          status: item.status || 'resolved',
-        }))
-        setRecentConversations(items.length > 0 ? items : [
-          {
-            id: 'c1',
-            sender_name: 'Sarah Jenkins',
-            channel: 'instagram',
-            message: 'Do you offer express delivery to Riyadh?',
-            ai_replied: true,
-            time: '2m ago',
-            status: 'resolved',
-          },
-          {
-            id: 'c2',
-            sender_name: 'Khaled Al-Mansoor',
-            channel: 'whatsapp',
-            message: 'I want to track order #SA-9821 please',
-            ai_replied: true,
-            time: '8m ago',
-            status: 'resolved',
-          },
-        ])
-      }
-
-      if (channelsRes.status === 'fulfilled' && channelsRes.value.ok) {
-        const data = await channelsRes.value.json()
-        const chList = Array.isArray(data) ? data : data.data || []
-        if (chList.length > 0) {
-          setChannels(chList)
-        }
-      }
+      const rows = Array.isArray(inboxData.data) ? inboxData.data : []
+      setRecentConversations(rows.slice(0, 5).map((item: any) => ({
+        id: item.id,
+        sender_name: item.sender_name || item.sender_id || 'Unknown customer',
+        channel: item.channel?.type || 'unknown',
+        message: item.latest_message?.content || item.message_preview || item.last_message || '',
+        ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
+        time: item.last_message_at || item.updated_at || item.created_at,
+        status: item.status,
+      })))
     } catch (e) {
-      console.warn('Dashboard fetch fallback:', e)
+      setLoadError(e instanceof Error ? e.message : 'Could not load dashboard data.')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [timeRange])
 
   useEffect(() => {
     fetchDashboardData()
   }, [fetchDashboardData])
 
-  // Volume bar data for weekly activity
-  const volumeData = [
-    { day: 'Mon', total: 1840, ai: 1420 },
-    { day: 'Tue', total: 2150, ai: 1720 },
-    { day: 'Wed', total: 2420, ai: 1940 },
-    { day: 'Thu', total: 2680, ai: 2120 },
-    { day: 'Fri', total: 2210, ai: 1710 },
-    { day: 'Sat', total: 1690, ai: 1310 },
-    { day: 'Sun', total: 1830, ai: 1420 },
-  ]
-  const maxDayVolume = Math.max(...volumeData.map((d) => d.total))
+  const maxDayVolume = Math.max(...dailyMessages, 1)
 
   return (
     <div className="space-y-6">
@@ -248,15 +150,22 @@ export default function DashboardPage() {
         }
       />
 
+      {loadError && (
+        <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm text-text-primary">
+          <span>{loadError}</span>
+          <Button variant="outline" size="sm" onClick={fetchDashboardData}>Retry</Button>
+        </div>
+      )}
+
       {/* ─── Top-Level KPIs Row ─────────────────────────────────────────── */}
       <motion.div
-        className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4"
         variants={variants.staggerContainer}
         initial="hidden"
         animate="visible"
       >
         {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
+          Array.from({ length: 4 }).map((_, i) => (
             <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
               <MetricCardSkeleton />
             </motion.div>
@@ -265,10 +174,9 @@ export default function DashboardPage() {
           <>
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Total Conversations"
-                value={stats?.total_conversations ? stats.total_conversations.toLocaleString() : '14,820'}
-                subValue="Across 4 channels"
-                trend={{ value: 14.2, isPositive: true }}
+                label="Total Messages"
+                value={(stats?.total_messages ?? 0).toLocaleString()}
+                subValue="Messages across your channels"
                 icon={<MessageSquare size={18} />}
               />
             </motion.div>
@@ -276,9 +184,8 @@ export default function DashboardPage() {
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
                 label="AI Autonomy Rate"
-                value={`${stats?.ai_resolved_rate || 78.4}%`}
-                subValue="Resolved without human"
-                trend={{ value: 5.1, isPositive: true }}
+                value={`${aiPerformance?.auto_reply_rate ?? 0}%`}
+                subValue={`${aiPerformance?.auto_replies ?? 0} AI replies`}
                 variant="ai"
                 icon={<Sparkles size={18} />}
               />
@@ -287,30 +194,18 @@ export default function DashboardPage() {
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
                 label="Avg Response Time"
-                value={stats?.avg_response_time || '1.2s'}
-                subValue="Human avg: 4m 12s"
-                trend={{ value: 35.0, isPositive: true, label: 'faster' }}
+                value={aiPerformance?.avg_response_time_formatted || 'No data'}
+                subValue="Average reply time"
                 icon={<Clock size={18} />}
               />
             </motion.div>
 
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Active Contacts"
-                value={stats?.active_customers ? stats.active_customers.toLocaleString() : '6,240'}
-                subValue="+420 new this week"
-                trend={{ value: 8.4, isPositive: true }}
-                icon={<Users size={18} />}
-              />
-            </motion.div>
-
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label="Conversion Rate"
-                value={`${stats?.conversion_rate || 14.8}%`}
-                subValue="Inquiries to orders"
-                trend={{ value: 2.3, isPositive: true }}
-                icon={<TrendingUp size={18} />}
+                label="Connected Channels"
+                value={channels.length}
+                subValue="Active communication accounts"
+                icon={<Radio size={18} />}
               />
             </motion.div>
           </>
@@ -323,162 +218,68 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle>Conversation Ingestion & AI Autonomy</CardTitle>
-              <CardDescription>
-                Daily message volume breakdown: Total incoming inquiries vs AI autonomously resolved.
-              </CardDescription>
+              <CardTitle>Message volume</CardTitle>
+              <CardDescription>Daily message totals for the selected period.</CardDescription>
             </div>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5 text-text-secondary">
                 <span className="w-2.5 h-2.5 rounded-sm bg-surface-secondary border border-border" />
-                <span>Total Inbound</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-text-secondary">
-                <span className="w-2.5 h-2.5 rounded-sm bg-brand" />
-                <span className="text-text-primary font-medium">AI Autonomous</span>
+                <span>Messages</span>
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="pt-4">
             <div className="h-60 flex items-end justify-between gap-3 pt-6 pb-2">
-              {volumeData.map((d) => {
-                const totalPct = Math.round((d.total / maxDayVolume) * 100)
-                const aiPct = Math.round((d.ai / maxDayVolume) * 100)
+              {dailyMessages.map((total, index) => {
+                const totalPct = Math.round((total / maxDayVolume) * 100)
+                const day = new Date(Date.now() - (dailyMessages.length - index - 1) * 86400000)
+                  .toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
 
                 return (
                   <div
-                    key={d.day}
+                    key={`${day}-${index}`}
                     className="flex-1 flex flex-col items-center gap-2 group h-full justify-end"
                   >
                     <div className="w-full max-w-[42px] flex items-end justify-center gap-1 h-full">
                       {/* Total Bar */}
                       <div
-                        className="w-1/2 bg-surface-elevated border border-border/80 hover:bg-surface-hover rounded-t-md transition-all relative group/bar"
+                        className="w-2/3 bg-brand hover:bg-brand-hover rounded-t-md transition-all relative group/bar"
                         style={{ height: `${totalPct}%` }}
                       >
                         <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-text-primary px-1.5 py-0.5 rounded border border-border shadow-xs pointer-events-none transition-opacity">
-                          {d.total}
+                          {total}
                         </div>
                       </div>
 
-                      {/* AI Resolved Bar */}
-                      <div
-                        className="w-1/2 bg-brand hover:bg-brand-hover rounded-t-md transition-all relative group/bar"
-                        style={{ height: `${aiPct}%` }}
-                      >
-                        <div className="opacity-0 group-hover/bar:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-surface-overlay text-[10px] font-bold text-brand px-1.5 py-0.5 rounded border border-border shadow-xs pointer-events-none transition-opacity">
-                          {d.ai}
-                        </div>
-                      </div>
                     </div>
 
                     <span className="text-[11px] font-medium text-text-tertiary">
-                      {d.day}
+                      {day}
                     </span>
                   </div>
                 )
               })}
             </div>
-
-            {/* Bottom summary stats */}
-            <div className="grid grid-cols-3 gap-4 pt-4 mt-2 border-t border-border/60 text-center">
-              <div>
-                <div className="text-xs text-text-tertiary">Peak Hour Volume</div>
-                <div className="text-sm font-bold text-text-primary mt-0.5">
-                  14:00 - 17:00 AST
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-text-tertiary">Human Escalations</div>
-                <div className="text-sm font-bold text-text-primary mt-0.5">
-                  312 tickets (2.1%)
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-text-tertiary">Avg CSAT Rating</div>
-                <div className="text-sm font-bold text-success mt-0.5">
-                  4.89 / 5.0 ★
-                </div>
-              </div>
-            </div>
+            {dailyMessages.length === 0 && <p className="py-10 text-center text-sm text-text-tertiary">No message history for this period.</p>}
           </CardContent>
         </Card>
 
-        {/* Right Col: Needs Attention & Action Items */}
-        <Card className="flex flex-col justify-between">
-          <div>
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <span>Needs Attention</span>
-                  <Badge variant="warning" dot size="xs">
-                    2 Pending
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  Human escalation triggers & channel token warnings
-                </CardDescription>
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected channels</CardTitle>
+            <CardDescription>Accounts currently connected to this workspace.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {channels.length === 0 ? <p className="text-sm text-text-tertiary">No connected channels.</p> : channels.map((channel) => (
+              <div key={channel.id} className="flex items-center gap-2 border-b border-border py-2 last:border-0">
+                <ChannelIcon type={channel.type} size={16} />
+                <span className="truncate text-sm text-text-primary">{channel.page_name || channel.page_id || channel.type}</span>
+                <span className="ml-auto text-xs text-text-tertiary">Connected</span>
               </div>
-            </CardHeader>
-
-            <CardContent className="space-y-3 pt-3">
-              {/* Item 1: Escalation */}
-              <div className="p-3 rounded-xl bg-warning/5 border border-warning/20 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-warning">
-                    <AlertTriangle size={14} />
-                    <span>Human Escalation</span>
-                  </div>
-                  <span className="text-[10px] text-text-tertiary">14m ago</span>
-                </div>
-                <p className="text-xs text-text-secondary leading-relaxed">
-                  Elena Rostova requested billing cycle adjustment on Telegram. Bot confidence 42%.
-                </p>
-                <div className="pt-1 flex items-center gap-2">
-                  <Link href="/inbox">
-                    <Button variant="subtle" size="xs">
-                      Claim in Inbox
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Item 2: Channel reauth */}
-              <div className="p-3 rounded-xl bg-surface-elevated/70 border border-border space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-text-primary">
-                    <Radio size={14} className="text-brand" />
-                    <span>Gmail OAuth Token Expiring</span>
-                  </div>
-                  <span className="text-[10px] text-text-tertiary">3 days left</span>
-                </div>
-                <p className="text-xs text-text-secondary leading-relaxed">
-                  support@nazbiz.io Google Workspace credentials require standard 60-day renewal.
-                </p>
-                <div className="pt-1">
-                  <Link href="/dashboard/channels">
-                    <Button variant="outline" size="xs">
-                      Renew Credentials
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </div>
-
-          <div className="p-4 bg-surface-elevated/40 border-t border-border/60">
-            <Link href="/dashboard/training">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-xs justify-between"
-                iconRight={<ChevronRight size={14} />}
-              >
-                <span>Review AI Training Queue (12 items)</span>
-              </Button>
-            </Link>
-          </div>
+            ))}
+          </CardContent>
+          <div className="border-t border-border p-4"><Link href="/dashboard/channels"><Button variant="ghost" size="sm" className="w-full">Manage channels</Button></Link></div>
         </Card>
       </div>
 
@@ -502,7 +303,7 @@ export default function DashboardPage() {
 
           <CardContent className="p-0">
             <div className="divide-y divide-border/60">
-              {recentConversations.map((item) => (
+              {recentConversations.length === 0 ? <p className="px-4 py-10 text-center text-sm text-text-tertiary">No conversations yet.</p> : recentConversations.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 flex items-center justify-between gap-4 hover:bg-surface-elevated/40 transition-colors group"
@@ -536,7 +337,7 @@ export default function DashboardPage() {
 
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-[11px] text-text-tertiary">
-                      {item.time}
+                      {item.time ? new Date(item.time).toLocaleString() : 'Time unavailable'}
                     </span>
                     <Link href={`/inbox?id=${item.id}`}>
                       <button
@@ -571,51 +372,13 @@ export default function DashboardPage() {
           </CardHeader>
 
           <CardContent className="space-y-4 pt-3">
-            {[
-              { id: 'whatsapp', name: 'WhatsApp Business', share: 44, volume: '6,420 replies', color: '#25D366' },
-              { id: 'instagram', name: 'Instagram Direct', share: 28, volume: '4,180 replies', color: '#E4405F' },
-              { id: 'facebook', name: 'Facebook Messenger', share: 16, volume: '2,310 replies', color: '#1877F2' },
-              { id: 'telegram', name: 'Telegram Bot', share: 12, volume: '1,910 replies', color: '#0088CC' },
-            ].map((ch) => (
-              <div key={ch.id} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 font-medium text-text-primary">
-                    <ChannelIcon type={ch.id as any} size={16} />
-                    <span>{ch.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-text-tertiary">{ch.volume}</span>
-                    <span className="font-bold text-text-primary">{ch.share}%</span>
-                  </div>
-                </div>
-
-                <div className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${ch.share}%`,
-                      backgroundColor: ch.color,
-                    }}
-                  />
-                </div>
+            {channels.length === 0 ? <p className="text-sm text-text-tertiary">No connected channels.</p> : channels.map((channel) => (
+              <div key={channel.id} className="flex items-center gap-2 border-b border-border py-2 last:border-0">
+                <ChannelIcon type={channel.type} size={16} />
+                <span className="truncate text-sm text-text-primary">{channel.page_name || channel.page_id || channel.type}</span>
+                <span className="ml-auto text-xs text-text-tertiary">Connected</span>
               </div>
             ))}
-
-            {/* Quick Automation Launch Banner */}
-            <div className="mt-4 p-3.5 rounded-xl bg-brand/5 border border-brand/15 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-text-primary">
-                <Zap size={14} className="text-brand" />
-                <span>Deploy Broadcast Campaign</span>
-              </div>
-              <p className="text-[11px] text-text-secondary leading-relaxed">
-                Reach past customers on WhatsApp and Instagram with AI re-engagement offers.
-              </p>
-              <Link href="/dashboard/campaigns">
-                <Button variant="primary" size="xs" className="mt-1">
-                  Create Campaign
-                </Button>
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>

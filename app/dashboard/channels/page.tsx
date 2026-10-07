@@ -68,13 +68,6 @@ const CHANNELS_CATALOG: ChannelDef[] = [
     brandColor: '#EA4335',
   },
   {
-    id: 'reviews',
-    name: 'Google Reviews',
-    description: 'Monitor Google Business reviews and automatically post professional AI answers.',
-    category: 'social',
-    brandColor: '#4285F4',
-  },
-  {
     id: 'salla',
     name: 'Salla Store',
     description: 'Saudi Arabia leading e-commerce platform. Sync orders, status, and buyer chat.',
@@ -110,14 +103,6 @@ const CHANNELS_CATALOG: ChannelDef[] = [
     category: 'ecommerce',
     brandColor: '#96588A',
   },
-  {
-    id: 'webchat',
-    name: 'Web Chat Widget',
-    description: 'Embeddable customizable AI live chat widget for your website or landing pages.',
-    category: 'messaging',
-    brandColor: '#8B3FFB',
-    badgeText: 'Instant Setup',
-  },
 ]
 
 export default function ChannelsPage() {
@@ -148,54 +133,7 @@ export default function ChannelsPage() {
     setErrorState(null)
     try {
       const token = getToken()
-      if (!token) {
-        // Fallback for demonstration / local preview
-        setApiChannels([
-          {
-            id: 101,
-            type: 'instagram',
-            page_name: 'NazBiz Official Store',
-            page_id: 'ig_94821',
-            ai_enabled: true,
-            status: 'active',
-          },
-          {
-            id: 102,
-            type: 'instagram',
-            page_name: 'NazBiz VIP Support',
-            page_id: 'ig_11204',
-            ai_enabled: false,
-            status: 'active',
-          },
-          {
-            id: 201,
-            type: 'whatsapp',
-            page_name: '+966 50 123 4567 (Official API)',
-            page_id: 'wa_88124',
-            ai_enabled: true,
-            status: 'active',
-          },
-          {
-            id: 301,
-            type: 'facebook',
-            page_name: 'NazBiz Global Page',
-            page_id: 'fb_44921',
-            ai_enabled: true,
-            status: 'active',
-          },
-          {
-            id: 401,
-            type: 'gmail',
-            page_name: 'support@nazbiz.io',
-            page_id: 'gm_7712',
-            ai_enabled: false,
-            status: 'warning',
-            status_message: 'OAuth refresh required',
-          },
-        ])
-        setLoading(false)
-        return
-      }
+      if (!token) throw new Error('Your session expired. Sign in again to load channels.')
 
       const res = await fetch(`${API}/api/channels`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
@@ -207,51 +145,8 @@ export default function ChannelsPage() {
         throw new Error(`Failed to load channels: ${res.status}`)
       }
     } catch (e: any) {
-      console.warn('API error fetching channels, using fallback mock data:', e)
-      // Provide clean preview data so the user can interactively test the UI
-      setApiChannels([
-        {
-          id: 101,
-          type: 'instagram',
-          page_name: 'NazBiz Official Store',
-          page_id: 'ig_94821',
-          ai_enabled: true,
-          status: 'active',
-        },
-        {
-          id: 102,
-          type: 'instagram',
-          page_name: 'NazBiz VIP Support',
-          page_id: 'ig_11204',
-          ai_enabled: false,
-          status: 'active',
-        },
-        {
-          id: 201,
-          type: 'whatsapp',
-          page_name: '+966 50 123 4567 (Official API)',
-          page_id: 'wa_88124',
-          ai_enabled: true,
-          status: 'active',
-        },
-        {
-          id: 301,
-          type: 'facebook',
-          page_name: 'NazBiz Global Page',
-          page_id: 'fb_44921',
-          ai_enabled: true,
-          status: 'active',
-        },
-        {
-          id: 401,
-          type: 'gmail',
-          page_name: 'support@nazbiz.io',
-          page_id: 'gm_7712',
-          ai_enabled: false,
-          status: 'warning',
-          status_message: 'OAuth refresh required',
-        },
-      ])
+      setApiChannels([])
+      setErrorState(e instanceof Error ? e.message : 'Could not load channels.')
     } finally {
       setLoading(false)
     }
@@ -347,17 +242,10 @@ export default function ChannelsPage() {
 
   // Toggle AI Auto-Reply
   const handleToggleAI = async (instanceId: number, currentStatus: boolean) => {
-    // Optimistic UI update
-    setApiChannels((prev) =>
-      prev.map((item) =>
-        item.id === instanceId ? { ...item, ai_enabled: !currentStatus } : item
-      )
-    )
-
     try {
       const token = getToken()
-      if (token) {
-        await fetch(`${API}/api/channels/${instanceId}`, {
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/channels/${instanceId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -366,7 +254,8 @@ export default function ChannelsPage() {
           },
           body: JSON.stringify({ ai_enabled: !currentStatus }),
         })
-      }
+      if (!response.ok) throw new Error('AI setting update failed.')
+      setApiChannels((prev) => prev.map((item) => item.id === instanceId ? { ...item, ai_enabled: !currentStatus } : item))
       showToast(
         !currentStatus
           ? 'AI Auto-Reply enabled for this account'
@@ -374,7 +263,7 @@ export default function ChannelsPage() {
       )
     } catch (e) {
       console.error(e)
-      showToast('Failed to update AI setting', 'error')
+      showToast(e instanceof Error ? e.message : 'Failed to update AI setting', 'error')
     }
   }
 
@@ -407,6 +296,7 @@ export default function ChannelsPage() {
   // Trigger OAuth
   const handleTriggerOAuth = async (ch: ChannelOption) => {
     const token = getToken()
+    if (!token) throw new Error('Your session expired. Sign in again before connecting a channel.')
 
     if (ch.id === 'facebook' || ch.id === 'instagram') {
       window.location.href = `${API}/api/channels/connect/facebook?token=${encodeURIComponent(
@@ -442,8 +332,7 @@ export default function ChannelsPage() {
       return
     }
 
-    // Default: simulate connection for demo
-    await new Promise((r) => setTimeout(r, 600))
+    throw new Error(`The ${ch.id} connection flow is not implemented yet.`)
   }
 
   // Open direct connect for specialized channels (WhatsApp, Telegram, WooCommerce)
@@ -567,6 +456,8 @@ export default function ChannelsPage() {
           </Button>
         }
       />
+
+      {errorState && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{errorState}</span><Button variant="outline" size="sm" onClick={() => void fetchChannels()}>Retry</Button></div>}
 
       {/* ─── Overview KPI Metrics Row ────────────────────────────────────── */}
       <motion.div
@@ -725,10 +616,6 @@ export default function ChannelsPage() {
         onClose={() => setWizardOpen(false)}
         initialChannel={selectedWizardChannel}
         onTriggerOAuth={handleTriggerOAuth}
-        onSuccess={(chId) => {
-          showToast('Channel connected successfully!', 'success')
-          fetchChannels()
-        }}
       />
 
       {/* ─── Direct WhatsApp Connect Modal ───────────────────────────────── */}

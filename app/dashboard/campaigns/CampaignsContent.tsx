@@ -80,64 +80,12 @@ function token() {
   return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
 }
 
-const DEMO_CAMPAIGNS: UnifiedCampaign[] = [
-  {
-    id: 1,
-    type: 'bulk',
-    name: 'Ramadan VIP Flash Sale Announcement',
-    message: 'Exclusive: Enjoy 25% off all smart accessories with coupon code RAMADAN25. Valid until midnight Friday!',
-    channel: { id: 101, type: 'whatsapp', page_name: 'NazBiz Riyadh WhatsApp', status: 'connected' },
-    status: 'sent',
-    scheduled_at: null,
-    sent_at: '2025-02-01T14:00:00Z',
-    total_recipients: 4850,
-    sent_count: 4850,
-    delivered_count: 4790,
-    opened_count: 4120,
-    clicked_count: 1480,
-    failed_count: 60,
-    created_at: '2025-02-01T10:00:00Z',
-  },
-  {
-    id: 2,
-    type: 'cart',
-    name: 'Abandoned Cart 2-Hour Recovery Wave',
-    message: 'We saved your shopping cart items! Complete checkout now and receive complimentary express delivery.',
-    channel: { id: 102, type: 'whatsapp', page_name: 'NazBiz Dubai Store', status: 'connected' },
-    status: 'sending',
-    scheduled_at: null,
-    sent_at: new Date().toISOString(),
-    total_recipients: 640,
-    sent_count: 480,
-    delivered_count: 460,
-    opened_count: 320,
-    clicked_count: 190,
-    failed_count: 5,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    type: 'email',
-    name: 'Monthly Product Catalog & Ecosystem Guide',
-    subject: 'Explore our latest smart home ecosystem devices',
-    content: 'Full HTML newsletter highlighting flagship smart gadgets and technical support tips.',
-    status: 'scheduled',
-    scheduled_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString(),
-    sent_at: null,
-    total_recipients: 12400,
-    sent_count: 0,
-    delivered_count: 0,
-    opened_count: 0,
-    clicked_count: 0,
-    failed_count: 0,
-    created_at: '2025-02-03T16:20:00Z',
-  },
-]
-
 export default function CampaignsContent() {
   const [campaigns, setCampaigns] = useState<UnifiedCampaign[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
+  const [businessId, setBusinessId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
@@ -155,34 +103,35 @@ export default function CampaignsContent() {
   const [saving, setSaving] = useState(false)
 
   const fetchCampaigns = useCallback(async () => {
+    setLoading(true)
+    setLoadError(null)
     try {
       const authToken = token()
-      if (!authToken) {
-        setCampaigns(DEMO_CAMPAIGNS)
-        setChannels([
-          { id: 101, type: 'whatsapp', page_name: 'NazBiz Riyadh WhatsApp', status: 'connected' },
-          { id: 102, type: 'whatsapp', page_name: 'NazBiz Dubai Store', status: 'connected' },
-          { id: 103, type: 'instagram', page_name: '@nazbiz_official', status: 'connected' },
-        ])
-        setLoading(false)
-        return
-      }
+      if (!authToken) throw new Error('Your session expired. Sign in again to load campaigns.')
 
-      const [bulkRes, emailRes, chRes] = await Promise.all([
-        fetch(`${API}/api/campaigns`, { headers: { Authorization: `Bearer ${authToken}` } }).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API}/api/email-campaigns`, { headers: { Authorization: `Bearer ${authToken}` } }).then(r => r.json()).catch(() => ({ data: [] })),
-        fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${authToken}` } }).then(r => r.json()).catch(() => ({ data: [] })),
+      const userResponse = await fetch(`${API}/api/auth/user`, { headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' } })
+      if (!userResponse.ok) throw new Error('Could not resolve the current business.')
+      const user = await userResponse.json()
+      if (!user.business_id) throw new Error('No business is associated with this account.')
+      setBusinessId(user.business_id)
+      const [bulkResponse, emailResponse, channelResponse] = await Promise.all([
+        fetch(`${API}/api/businesses/${user.business_id}/campaigns`, { headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' } }),
+        fetch(`${API}/api/email-campaigns`, { headers: { Authorization: `Bearer ${authToken}` } }),
+        fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${authToken}` } }),
       ])
-
-      const bulk = (bulkRes.data || []).map((c: any) => ({ ...c, type: 'bulk' as CampaignType }))
+      if (![bulkResponse, emailResponse, channelResponse].every((response) => response.ok)) throw new Error('Could not load campaign data.')
+      const [bulkRes, emailRes, chRes] = await Promise.all([bulkResponse.json(), emailResponse.json(), channelResponse.json()])
+      const bulkRows = Array.isArray(bulkRes) ? bulkRes : (bulkRes.data || [])
+      const bulk = bulkRows.map((c: any) => ({ ...c, type: 'bulk' as CampaignType }))
       const email = (emailRes.data || []).map((c: any) => ({ ...c, type: 'email' as CampaignType }))
-      const combined = [...bulk, ...email]
-      setCampaigns(combined.length > 0 ? combined : DEMO_CAMPAIGNS)
-
+      setCampaigns([...bulk, ...email])
       const chList = Array.isArray(chRes) ? chRes : (chRes.data || [])
       setChannels(chList.filter((c: any) => c.status === 'connected'))
-    } catch {
-      setCampaigns(DEMO_CAMPAIGNS)
+    } catch (error) {
+      console.error('Campaign loading failed:', error)
+      setCampaigns([])
+      setChannels([])
+      setLoadError(error instanceof Error ? error.message : 'Could not load campaigns.')
     } finally {
       setLoading(false)
     }
@@ -201,43 +150,65 @@ export default function CampaignsContent() {
       toast.error('Please provide a message body')
       return
     }
+    if (form.type === 'email' && !form.subject.trim()) {
+      toast.error('Please provide an email subject')
+      return
+    }
+    if (form.type === 'email' && !form.message.trim()) {
+      toast.error('Please provide email content')
+      return
+    }
 
     setSaving(true)
     try {
       const authToken = token()
-      if (authToken) {
-        const endpoint = form.type === 'email' ? '/api/email-campaigns' : '/api/campaigns'
-        await fetch(`${API}${endpoint}`, {
+      if (!authToken) throw new Error('Your session expired. Sign in again.')
+      if (form.type === 'bulk' && !form.channel_id) throw new Error('Choose a connected channel for this campaign.')
+      if (form.type === 'bulk' && !businessId) throw new Error('Business information is unavailable.')
+      const endpoint = form.type === 'email' ? '/api/email-campaigns' : `/api/businesses/${businessId}/campaigns`
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const payload = form.type === 'email'
+        ? {
+            name: form.name,
+            subject: form.subject,
+            content: form.message,
+            scheduled_at: form.scheduled_at || null,
+            audience_criteria: {},
+            timezone,
+          }
+        : { ...form, timezone }
+      const response = await fetch(`${API}${endpoint}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         })
-      }
-      toast.success('Campaign broadcast launched successfully')
+      if (!response.ok) throw new Error((await response.json().catch(() => ({}))).message || 'Campaign could not be created.')
+      toast.success('Campaign created')
       setShowModal(false)
       setForm({ name: '', type: 'bulk', message: '', subject: '', channel_id: '', scheduled_at: '' })
       fetchCampaigns()
-    } catch {
-      toast.error('Failed to create campaign')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create campaign')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (campaign: UnifiedCampaign) => {
     if (!confirm('Are you sure you want to permanently delete this campaign?')) return
     try {
       const authToken = token()
-      if (authToken) {
-        await fetch(`${API}/api/campaigns/${id}`, {
+      if (!authToken) throw new Error('Your session expired. Sign in again.')
+      const endpoint = campaign.type === 'email' ? `/api/email-campaigns/${campaign.id}` : `/api/businesses/${businessId}/campaigns/${campaign.id}`
+      const response = await fetch(`${API}${endpoint}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${authToken}` },
+          headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' },
         })
-      }
-      setCampaigns(prev => prev.filter(c => c.id !== id))
+      if (!response.ok) throw new Error('Campaign could not be deleted.')
+      setCampaigns(prev => prev.filter(c => c.id !== campaign.id || c.type !== campaign.type))
       toast.success('Campaign removed')
     } catch {
       toast.error('Failed to delete campaign')
@@ -379,6 +350,8 @@ export default function CampaignsContent() {
         }
       />
 
+      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchCampaigns()}>Retry</Button></div>}
+
       {/* KPI Overview */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-4 gap-4"
@@ -398,7 +371,7 @@ export default function CampaignsContent() {
           <MetricCard
             label="Audience Reach"
             value={stats.totalReach.toLocaleString()}
-            subValue="Direct messages delivered"
+            subValue="Messages reported as sent"
             icon={<Users size={18} />}
             variant="ai"
           />
@@ -407,7 +380,7 @@ export default function CampaignsContent() {
           <MetricCard
             label="In-Flight Waves"
             value={stats.sending}
-            subValue={stats.sending > 0 ? 'Actively streaming replies' : 'All waves delivered'}
+            subValue="Campaigns with sending status"
             icon={<Send size={18} />}
           />
         </motion.div>
@@ -464,7 +437,7 @@ export default function CampaignsContent() {
               : 0
 
             return (
-              <Card key={camp.id} variant="interactive" className="p-5">
+              <Card key={`${camp.type}-${camp.id}`} variant="interactive" className="p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                   <div className="space-y-2.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -550,7 +523,7 @@ export default function CampaignsContent() {
                     <Button
                       variant="ghost"
                       size="xs"
-                      onClick={() => handleDelete(camp.id)}
+                      onClick={() => void handleDelete(camp)}
                       className="text-text-tertiary hover:text-error hover:bg-error/10"
                       icon={<Trash2 size={12} />}
                       title="Delete"

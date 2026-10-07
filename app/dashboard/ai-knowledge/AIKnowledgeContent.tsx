@@ -42,6 +42,7 @@ export default function AIKnowledgeContent() {
   const [files, setFiles] = useState<KnowledgeFile[]>([])
   const [aiInstructions, setAiInstructions] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [savingInstructions, setSavingInstructions] = useState(false)
 
@@ -52,29 +53,8 @@ export default function AIKnowledgeContent() {
   const [testing, setTesting] = useState(false)
 
   // Business profile
-  const [profile, setProfile] = useState({
-    business_name: 'NazBiz Global',
-    business_type: 'Omnichannel Customer Communication SaaS',
-    phone: '+966 50 123 4567',
-    city: 'Riyadh',
-    country: 'Saudi Arabia',
-    services: 'AI auto-reply, WhatsApp marketing, multi-channel customer inbox, abandoned cart workflows',
-    reply_style: 'Professional, friendly, and concise with helpful follow-ups',
-  })
-  const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([
-    {
-      question: 'What are your delivery times across Saudi Arabia?',
-      answer: 'Standard shipping takes 2-3 business days in major cities (Riyadh, Jeddah, Dammam) and 3-5 days for other regions.',
-    },
-    {
-      question: 'What is your return & refund policy?',
-      answer: 'Customers can request a return within 14 days of delivery. Items must be in original packaging and condition.',
-    },
-    {
-      question: 'Do you offer cash on delivery (COD)?',
-      answer: 'Yes, cash on delivery is available for orders under 1,000 SAR with a small 15 SAR processing fee.',
-    },
-  ])
+  const [profile, setProfile] = useState({ business_name: '', business_type: '', phone: '', city: '', country: '', services: '', reply_style: '' })
+  const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([])
   const [newFaqQ, setNewFaqQ] = useState('')
   const [newFaqA, setNewFaqA] = useState('')
 
@@ -85,53 +65,25 @@ export default function AIKnowledgeContent() {
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
   const fetchKnowledge = async () => {
+    setLoading(true)
+    setLoadError(null)
     try {
       const token = getToken()
-      if (!token) {
-        // Fallback realistic demo files
-        setFiles([
-          {
-            id: 1,
-            filename: 'NazBiz_Product_Catalog_2026.pdf',
-            file_type: 'pdf',
-            uploaded_at: '2026-09-28',
-            status: 'indexed',
-            chunks_count: 84,
-          },
-          {
-            id: 2,
-            filename: 'Return_Policy_and_Terms_v3.pdf',
-            file_type: 'pdf',
-            uploaded_at: '2026-09-22',
-            status: 'indexed',
-            chunks_count: 32,
-          },
-          {
-            id: 3,
-            filename: 'Shipping_Rates_and_Zones_MENA.xlsx',
-            file_type: 'xlsx',
-            uploaded_at: '2026-09-15',
-            status: 'indexed',
-            chunks_count: 56,
-          },
-        ])
-        setAiInstructions(
-          'Always address the customer by their first name when available. Use warm, professional Arabic or English matching the customer language. Never promise custom discounts unless the user asks for a wholesale order.'
-        )
-        setLoading(false)
-        return
-      }
+      if (!token) throw new Error('Your session expired. Sign in again to load the knowledge base.')
 
       const res = await fetch(`${API}/api/knowledge`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
-      if (res.ok) {
-        const data = await res.json()
-        setFiles(data.files || [])
-        if (data.ai_instructions) setAiInstructions(data.ai_instructions)
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Could not load knowledge data.')
+      setFiles(data.files || [])
+      setAiInstructions(data.ai_instructions || '')
+      const actualProfile = data.profile || {}
+      setProfile({ business_name: actualProfile.business_name || '', business_type: actualProfile.business_type || '', phone: actualProfile.phone || '', city: actualProfile.city || '', country: actualProfile.country || '', services: actualProfile.services || '', reply_style: actualProfile.reply_style || '' })
+      setFaqs(Array.isArray(actualProfile.faqs) ? actualProfile.faqs : [])
     } catch (e) {
-      console.warn('Knowledge fetch fallback:', e)
+      console.warn('Knowledge fetch failed:', e)
+      setLoadError(e instanceof Error ? e.message : 'Could not load the knowledge base.')
     } finally {
       setLoading(false)
     }
@@ -147,15 +99,15 @@ export default function AIKnowledgeContent() {
     setUploading(true)
     try {
       const token = getToken()
-      if (token) {
-        const formData = new FormData()
-        formData.append('file', file)
-        await fetch(`${API}/api/knowledge/upload`, {
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await fetch(`${API}/api/knowledge/upload`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
           body: formData,
         })
-      }
+      if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'Upload failed.')
       toast.success('Document uploaded and queued for vector embedding')
       fetchKnowledge()
     } catch {
@@ -167,21 +119,64 @@ export default function AIKnowledgeContent() {
 
   const handleDeleteFile = async (id: number) => {
     if (!confirm('Remove this document from the knowledge base?')) return
-    setFiles((prev) => prev.filter((f) => f.id !== id))
-    toast.success('File deleted from knowledge index')
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/files/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      if (!response.ok) throw new Error('File could not be deleted.')
+      setFiles((prev) => prev.filter((f) => f.id !== id))
+      toast.success('File deleted from knowledge index')
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'File deletion failed.') }
   }
 
   const handleSaveInstructions = async () => {
     setSavingInstructions(true)
-    setTimeout(() => {
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/instructions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ai_instructions: aiInstructions }) })
+      if (!response.ok) throw new Error('Could not save AI instructions.')
+      const profileResponse = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ...profile, faqs }) })
+      if (!profileResponse.ok) throw new Error('Instructions saved, but profile changes could not be saved.')
+      toast.success('AI instructions saved')
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save AI instructions.') }
+    finally {
       setSavingInstructions(false)
-      toast.success('AI Instructions updated & redeployed to bots')
-    }, 600)
+    }
   }
 
-  const handleAddFaq = () => {
+  const handleReindex = async () => {
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/reindex`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      if (!response.ok) throw new Error('Could not queue knowledge reindexing.')
+      toast.success('Knowledge reindexing queued')
+      await fetchKnowledge()
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not reindex knowledge.') }
+  }
+
+  const handleDeleteFaq = async (index: number) => {
+    const updated = faqs.filter((_, faqIndex) => faqIndex !== index)
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ faqs: updated }) })
+      if (!response.ok) throw new Error('Could not remove the FAQ.')
+      setFaqs(updated)
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not remove the FAQ.') }
+  }
+
+  const handleAddFaq = async () => {
     if (!newFaqQ.trim() || !newFaqA.trim()) return
-    setFaqs((prev) => [...prev, { question: newFaqQ.trim(), answer: newFaqA.trim() }])
+    const updated = [...faqs, { question: newFaqQ.trim(), answer: newFaqA.trim() }]
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ faqs: updated }) })
+      if (!response.ok) throw new Error('Could not save the FAQ.')
+      setFaqs(updated)
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save the FAQ.'); return }
     setNewFaqQ('')
     setNewFaqA('')
     toast.success('FAQ entry added')
@@ -193,16 +188,18 @@ export default function AIKnowledgeContent() {
     setTestResponse('')
     setTestSources([])
 
-    setTimeout(() => {
-      setTesting(false)
-      setTestResponse(
-        `Based on NazBiz Product Catalog 2026 and your Return Policy guidelines, all customer inquiries matching "${testQuestion.trim()}" are handled with 24-hour dispatch and verified tracking links.`
-      )
-      setTestSources(['NazBiz_Product_Catalog_2026.pdf (Chunk #14)', 'FAQ: Delivery Terms'])
-    }, 800)
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/test`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ test_question: testQuestion.trim() }) })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Could not generate a test response.')
+      setTestResponse(data.test_response || '')
+    } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not test the knowledge base.') }
+    finally { setTesting(false) }
   }
 
-  const totalChunks = files.reduce((acc, f) => acc + (f.chunks_count || 20), 0)
+  const totalChunks = files.reduce((acc, f) => acc + (f.chunks_count || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -220,14 +217,18 @@ export default function AIKnowledgeContent() {
               type="file"
               className="hidden"
               onChange={handleFileUpload}
-              accept=".pdf,.xlsx,.xls,.docx,.txt"
+              accept=".pdf,.xlsx,.xls"
             />
             <Button
               variant="primary"
               size="md"
               icon={<UploadCloud size={16} />}
               loading={uploading}
-              onClick={() => {}}
+              onClick={(event) => {
+                event.preventDefault()
+                const input = event.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement | null
+                input?.click()
+              }}
             >
               Upload Document
             </Button>
@@ -238,38 +239,33 @@ export default function AIKnowledgeContent() {
             variant="outline"
             size="md"
             icon={<RefreshCw size={14} />}
-            onClick={() => fetchKnowledge()}
+            onClick={() => void handleReindex()}
           >
             Re-index Embeddings
           </Button>
         }
       />
 
+      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchKnowledge()}>Retry</Button></div>}
+
       {/* ─── Metric Cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="Knowledge Coverage"
-          value="98.4%"
-          subValue="High semantic recall"
-          variant="ai"
-          icon={<Brain size={18} />}
-        />
-        <MetricCard
           label="Indexed Documents"
           value={files.length}
-          subValue="PDFs, Spreadsheets & Text"
+          subValue="Documents currently in this account"
           icon={<FileText size={18} />}
         />
         <MetricCard
           label="Vector Chunks"
           value={totalChunks}
-          subValue="1,536-dim text-embedding-3"
+          subValue="Count reported by the knowledge API"
           icon={<Layers size={18} />}
         />
         <MetricCard
-          label="Last Trained"
-          value="Today"
-          subValue="Auto-sync on updates"
+          label="Knowledge FAQs"
+          value={faqs.length}
+          subValue="Saved business question and answer pairs"
           icon={<Clock size={18} />}
         />
       </div>
@@ -299,7 +295,7 @@ export default function AIKnowledgeContent() {
                 Drag and drop your knowledge files
               </h4>
               <p className="text-xs text-text-tertiary mt-1">
-                Supports PDF, DOCX, XLSX, and TXT files up to 25MB each.
+                Supports PDF, XLSX, and XLS files (up to 10 MB).
               </p>
             </div>
             <label className="inline-block cursor-pointer">
@@ -307,7 +303,7 @@ export default function AIKnowledgeContent() {
                 type="file"
                 className="hidden"
                 onChange={handleFileUpload}
-                accept=".pdf,.xlsx,.xls,.docx,.txt"
+                accept=".pdf,.xlsx,.xls"
               />
               <span className="px-4 py-2 bg-surface-elevated border border-border rounded-lg text-xs font-semibold text-text-primary hover:bg-surface-overlay transition-colors inline-flex items-center gap-1.5">
                 Browse Local Files
@@ -419,7 +415,7 @@ export default function AIKnowledgeContent() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setFaqs((prev) => prev.filter((_, i) => i !== idx))}
+                    onClick={() => void handleDeleteFaq(idx)}
                     className="p-1 rounded text-text-tertiary hover:text-error transition-colors"
                   >
                     <Trash2 size={14} />

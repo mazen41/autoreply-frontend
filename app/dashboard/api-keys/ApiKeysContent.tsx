@@ -65,34 +65,10 @@ const SCOPE_GROUPS = [
   },
 ]
 
-const DEMO_KEYS: ApiKey[] = [
-  {
-    id: 1,
-    business_id: 1,
-    name: 'Production Mobile App Sync',
-    key: 'naz_live_948f29104fa289c0918e74a812efb921',
-    scopes: ['conversations:read', 'conversations:write', 'messages:read', 'messages:write', 'customers:read'],
-    is_active: true,
-    last_used_at: new Date(Date.now() - 1000 * 60 * 14).toISOString(), // 14 mins ago
-    expires_at: null,
-    created_at: '2025-01-10T12:00:00Z',
-  },
-  {
-    id: 2,
-    business_id: 1,
-    name: 'Zapier / Make.com Webhook Forwarder',
-    key: 'naz_live_381b89940aa34177cd890209ab4412c9',
-    scopes: ['conversations:read', 'webhooks:write', 'customers:write'],
-    is_active: true,
-    last_used_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(), // 6 hours ago
-    expires_at: '2026-12-31T23:59:59Z',
-    created_at: '2025-02-04T10:15:00Z',
-  },
-]
-
 export default function ApiKeysContent() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<number | string | null>(null)
@@ -110,25 +86,19 @@ export default function ApiKeysContent() {
 
   const fetchApiKeys = async () => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) {
-        setApiKeys(DEMO_KEYS)
-        setLoading(false)
-        return
-      }
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again to load API keys.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       const data = await res.json()
-      if (res.ok && data) {
-        const fetched = Array.isArray(data) ? data : (data.data || [])
-        setApiKeys(fetched.length > 0 ? fetched : DEMO_KEYS)
-      } else {
-        setApiKeys(DEMO_KEYS)
-      }
-    } catch {
-      setApiKeys(DEMO_KEYS)
+      if (!res.ok) throw new Error(data?.message || `Could not load API keys (HTTP ${res.status}).`)
+      const fetched = Array.isArray(data) ? data : (data.data || [])
+      setApiKeys(fetched)
+      setLoadError(null)
+    } catch (cause) {
+      setLoadError(cause instanceof Error ? cause.message : 'Could not load API keys.')
     } finally {
       setLoading(false)
     }
@@ -145,27 +115,8 @@ export default function ApiKeysContent() {
     }
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) {
-        // Mock generation for local demo
-        const mockRawKey = `naz_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
-        const createdItem: ApiKey = {
-          id: Date.now(),
-          business_id: 1,
-          name: form.name,
-          key: mockRawKey,
-          scopes: form.scopes,
-          is_active: true,
-          last_used_at: null,
-          expires_at: form.expires_at || null,
-          created_at: new Date().toISOString(),
-        }
-        setApiKeys([createdItem, ...apiKeys])
-        setNewKey(mockRawKey)
-        setForm({ name: '', scopes: ['conversations:read'], expires_at: '' })
-        toast.success('API key generated successfully')
-        return
-      }
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again to create API keys.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys`, {
         method: 'POST',
@@ -178,13 +129,13 @@ export default function ApiKeysContent() {
       })
       const data = await res.json()
 
-      if (res.ok) {
+      if (res.ok && data.key) {
         setNewKey(data.key)
         setForm({ name: '', scopes: ['conversations:read'], expires_at: '' })
         fetchApiKeys()
         toast.success('API Key generated successfully')
       } else {
-        toast.error(data.error || 'Failed to create API key')
+        toast.error(data.error || data.message || 'Failed to create API key')
       }
     } catch {
       toast.error('Failed to create API key')
@@ -195,13 +146,13 @@ export default function ApiKeysContent() {
     if (!confirm('Are you sure you want to permanently revoke this API key? External systems using it will immediately cease working.')) return
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}`, {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
-      }
+      if (!res.ok) throw new Error('Revoke request failed.')
       setApiKeys(prev => prev.filter(k => k.id !== keyId))
       toast.success('API Key revoked')
     } catch {
@@ -211,13 +162,13 @@ export default function ApiKeysContent() {
 
   const handleToggle = async (keyId: number, currentStatus: boolean) => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}/toggle`, {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}/toggle`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
-      }
+      if (!res.ok) throw new Error('Status update failed.')
       setApiKeys(prev =>
         prev.map(k => (k.id === keyId ? { ...k, is_active: !currentStatus } : k))
       )
@@ -279,6 +230,8 @@ export default function ApiKeysContent() {
         }
       />
 
+      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchApiKeys()}>Retry</Button></div>}
+
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
@@ -293,13 +246,7 @@ export default function ApiKeysContent() {
           subValue="HTTP Authorization Header"
           icon={<Lock size={18} />}
         />
-        <MetricCard
-          label="Rate Limiting"
-          value="1,200 req/min"
-          subValue="Burst tolerance up to 2,500"
-          icon={<Shield size={18} />}
-          variant="ai"
-        />
+        <MetricCard label="Access model" value="Scoped" subValue="Permissions assigned per key" icon={<Shield size={18} />} />
       </div>
 
       {/* Keys Directory Table */}
@@ -323,7 +270,7 @@ export default function ApiKeysContent() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {apiKeys.length === 0 ? (
+          {loadError ? <p className="px-5 py-8 text-center text-sm text-text-muted">API key data is unavailable until the request succeeds.</p> : apiKeys.length === 0 ? (
             <div className="py-12">
               <EmptyState
                 icon={Key}

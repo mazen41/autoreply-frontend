@@ -43,13 +43,6 @@ interface TeamMember {
   user: { id: number; name: string; email: string }
 }
 
-const DEMO_MEMBERS: TeamMember[] = [
-  { id: 1, business_id: 1, user_id: 1, role: 'owner', is_active: true, invited_at: null, joined_at: '2024-01-15', user: { id: 1, name: 'Mohammed Al-Rashid', email: 'mohammed@nazbiz.com' } },
-  { id: 2, business_id: 1, user_id: 2, role: 'agent', is_active: true, invited_at: '2024-02-01', joined_at: '2024-02-02', user: { id: 2, name: 'Sara Ahmed', email: 'sara@nazbiz.com' } },
-  { id: 3, business_id: 1, user_id: 3, role: 'agent', is_active: true, invited_at: '2024-03-10', joined_at: '2024-03-11', user: { id: 3, name: 'Khalid Omar', email: 'khalid@nazbiz.com' } },
-  { id: 4, business_id: 1, user_id: 4, role: 'viewer', is_active: true, invited_at: '2024-04-15', joined_at: '2024-04-16', user: { id: 4, name: 'Fatima Hassan', email: 'fatima@nazbiz.com' } },
-]
-
 const ROLE_CONFIG: Record<string, { label: string; variant: 'default' | 'ai' | 'warning' | 'success' | 'error' | 'outline'; icon: React.ReactNode }> = {
   owner: { label: 'Owner', variant: 'ai', icon: <Crown size={10} /> },
   agent: { label: 'Agent', variant: 'success', icon: <Shield size={10} /> },
@@ -89,10 +82,12 @@ export default function TeamPage() {
       const user = await res.json()
       if (user.business_id) {
         setBusinessId(user.business_id)
-        fetchTeamMembers(user.business_id)
+        await fetchTeamMembers(user.business_id)
+      } else {
+        throw new Error('No business is associated with this account.')
       }
-    } catch {
-      setTeamMembers(DEMO_MEMBERS)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load team.')
       setLoading(false)
     }
   }
@@ -104,9 +99,9 @@ export default function TeamPage() {
       const res = await fetch(`${API}/businesses/${bid}/team`, { headers: authHeaders() })
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
-      setTeamMembers(data.length > 0 ? data : DEMO_MEMBERS)
-    } catch {
-      setTeamMembers(DEMO_MEMBERS)
+      setTeamMembers(Array.isArray(data) ? data : (data.data || []))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load team members.')
     } finally {
       setLoading(false)
     }
@@ -119,18 +114,17 @@ export default function TeamPage() {
     }
     setSending(true)
     try {
-      if (businessId) {
-        const res = await fetch(`${API}/businesses/${businessId}/team/invite`, {
+      if (!businessId) throw new Error('Business information is unavailable. Reload the page and try again.')
+      const res = await fetch(`${API}/businesses/${businessId}/team/invite`, {
           method: 'POST',
           headers: authHeaders(),
           body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
         })
-        if (!res.ok) throw new Error()
-      }
+      if (!res.ok) throw new Error('Invitation request failed.')
       toast.success('Invitation sent successfully')
       setShowInviteModal(false)
       setInviteEmail('')
-      if (businessId) fetchTeamMembers(businessId)
+      await fetchTeamMembers(businessId)
     } catch {
       toast.error('Failed to send invitation')
     } finally {
@@ -141,13 +135,12 @@ export default function TeamPage() {
   const handleRemove = async (memberId: number) => {
     if (!confirm('Are you sure you want to remove this member?')) return
     try {
-      if (businessId) {
-        const res = await fetch(`${API}/businesses/${businessId}/team/${memberId}`, {
+      if (!businessId) throw new Error('Business information is unavailable.')
+      const res = await fetch(`${API}/businesses/${businessId}/team/${memberId}`, {
           method: 'DELETE',
           headers: authHeaders(),
         })
-        if (!res.ok) throw new Error()
-      }
+      if (!res.ok) throw new Error('Member removal failed.')
       setTeamMembers(prev => prev.filter(m => m.id !== memberId))
       toast.success('Member removed')
     } catch {
@@ -179,6 +172,8 @@ export default function TeamPage() {
           </Button>
         }
       />
+
+      {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchBusinessId()}>Retry</Button></div>}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -217,6 +212,8 @@ export default function TeamPage() {
             <div className="divide-y divide-border/50">
               {[...Array(4)].map((_, i) => <SkeletonRow key={i} />)}
             </div>
+          ) : error ? (
+            <p className="px-5 py-8 text-center text-sm text-text-muted">Team data is unavailable until the request succeeds.</p>
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Users}

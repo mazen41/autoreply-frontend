@@ -1,12 +1,7 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { springs, variants } from '../../lib/motion'
-import {
-  Paperclip, Mic, Smile, Type, Send, Zap, Clock, X, FileText,
-  Image as ImageIcon, Video, StopCircle, Lock
-} from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
 
 interface ChatComposerProps {
   channelType?: string
@@ -17,69 +12,45 @@ interface ChatComposerProps {
   initialText?: string
 }
 
-export default function ChatComposer({
-  channelType, isRTL, onSendText, onSendMedia, disabled, initialText = ''
-}: ChatComposerProps) {
+export default function ChatComposer({ isRTL, onSendText, onSendMedia, disabled, initialText = '' }: ChatComposerProps) {
   const [text, setText] = useState(initialText)
-  const [isInternal, setIsInternal] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
   const [attachment, setAttachment] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
-  const [showAIOptions, setShowAIOptions] = useState(false)
-  
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const L = (en: string, ar: string) => isRTL ? ar : en
 
-  // Update initial text if changed (from Copilot insert)
   useEffect(() => {
-    if (initialText) {
-      setText(initialText)
-      // Focus and move cursor to end
-      setTimeout(() => {
-        if (textareaRef.current) {
-          textareaRef.current.focus()
-          textareaRef.current.setSelectionRange(initialText.length, initialText.length)
-        }
-      }, 10)
-    }
+    if (!initialText) return
+    setText(initialText)
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus()
+      textareaRef.current?.setSelectionRange(initialText.length, initialText.length)
+    })
   }, [initialText])
 
-  // Autoresize textarea
   useEffect(() => {
-    const el = textareaRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 150)}px`
+    const element = textareaRef.current
+    if (!element) return
+    element.style.height = 'auto'
+    element.style.height = `${Math.min(element.scrollHeight, 150)}px`
   }, [text])
 
   const handleSend = async () => {
-    const trimmed = text.trim()
-    if (!trimmed && !attachment) return
-    
+    const message = text.trim()
+    if ((!message && !attachment) || sending || disabled) return
     setSending(true)
-    let success = false
-    
     try {
+      let success = false
       if (attachment) {
-        let type = 'document'
-        if (attachment.type.startsWith('image/')) type = 'image'
-        else if (attachment.type.startsWith('video/')) type = 'video'
-        else if (attachment.type.startsWith('audio/')) type = 'audio'
-        
-        success = await onSendMedia(attachment, trimmed, type, false)
-        if (success) setAttachment(null)
+        const type = attachment.type.startsWith('image/') ? 'image' : attachment.type.startsWith('video/') ? 'video' : attachment.type.startsWith('audio/') ? 'audio' : 'document'
+        success = await onSendMedia(attachment, message, type, false)
       } else {
-        // If internal note, we would call a different API or pass a flag. 
-        // For now we just prefix it to simulate it since backend doesn't support it yet.
-        const msg = isInternal ? `[INTERNAL NOTE] ${trimmed}` : trimmed
-        success = await onSendText(msg)
+        success = await onSendText(message)
       }
-      
       if (success) {
         setText('')
-        setIsInternal(false)
+        setAttachment(null)
       }
     } finally {
       setSending(false)
@@ -87,215 +58,31 @@ export default function ChatComposer({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSend()
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault()
+      void handleSend()
     }
   }
 
-  const startRecording = () => {
-    setIsRecording(true)
-    setRecordingTime(0)
-    timerRef.current = setInterval(() => {
-      setRecordingTime(prev => prev + 1)
-    }, 1000)
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAttachment(event.target.files?.[0] || null)
+    event.target.value = ''
   }
 
-  const stopRecording = () => {
-    setIsRecording(false)
-    if (timerRef.current) clearInterval(timerRef.current)
-    // Mock sending voice note since we don't have actual MediaRecorder setup in this component yet
-    alert("Voice recording finished (mock). In full version, this uploads the blob.")
-    setRecordingTime(0)
-  }
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) setAttachment(file)
-    e.target.value = ''
-  }
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-    const s = seconds % 60
-    return `${m}:${s.toString().padStart(2, '0')}`
-  }
-
-  return (
-    <div className={`border-t border-border bg-surface p-3 transition-colors ${isInternal ? 'bg-warning/50 dark:bg-warning/20' : ''}`}>
-      
-      {/* Attachment Preview */}
-      {attachment && (
-        <div className="flex items-center gap-3 p-2 mb-3 bg-surface-elevated border border-border rounded-lg w-max">
-          <div className="w-10 h-10 rounded bg-surface flex items-center justify-center text-text-secondary">
-            {attachment.type.startsWith('image/') ? <ImageIcon size={20} /> :
-             attachment.type.startsWith('video/') ? <Video size={20} /> :
-             <FileText size={20} />}
-          </div>
-          <div>
-            <div className="text-xs font-bold text-text-primary truncate max-w-[200px]">{attachment.name}</div>
-            <div className="text-[10px] text-text-tertiary">{(attachment.size / 1024).toFixed(1)} KB</div>
-          </div>
-          <button onClick={() => setAttachment(null)} className="p-1 rounded-full hover:bg-surface ml-2">
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* Main Composer Area */}
-      <div className={`relative flex items-end gap-2 p-2 rounded-xl border transition-colors ${
-        isInternal 
-          ? 'bg-warning/50 dark:bg-warning/20 border-warning dark:border-warning/50 focus-within:border-warning' 
-          : 'bg-surface-elevated border-border focus-within:border-brand/30'
-      }`}>
-        
-        {/* Left Actions */}
-        <div className="flex items-center gap-1 mb-1">
-          <label className="p-2 rounded-lg hover:bg-surface text-text-secondary cursor-pointer transition-colors" title={L('Attach file', 'إرفاق ملف')}>
-            <Paperclip size={18} />
-            <input type="file" className="hidden" onChange={handleFileSelect} />
-          </label>
-          
-          <button 
-            className={`p-2 rounded-lg hover:bg-surface transition-colors ${isInternal ? 'text-warning bg-warning/50' : 'text-text-secondary'}`}
-            onClick={() => setIsInternal(!isInternal)}
-            title={L('Internal Note (Not visible to customer)', 'ملاحظة داخلية (غير مرئية للعميل)')}
-          >
-            <Lock size={18} />
-          </button>
-        </div>
-
-        {/* Input Area */}
-        <div className="flex-1 relative min-h-[40px] flex items-center">
-          {isRecording ? (
-            <div className="flex items-center gap-3 w-full px-2 text-error animate-pulse">
-              <Mic size={18} />
-              <span className="font-mono font-bold">{formatTime(recordingTime)}</span>
-              <span className="text-xs">{L('Recording...', 'جاري التسجيل...')}</span>
-            </div>
-          ) : (
-            <textarea
-              ref={textareaRef}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={disabled || sending}
-              placeholder={isInternal 
-                ? L('Type an internal note (type @ to tag someone)...', 'اكتب ملاحظة داخلية (اكتب @ للإشارة لشخص)...')
-                : L('Type your message... (Shift+Enter for new line)', 'اكتب رسالتك... (Shift+Enter لسطر جديد)')
-              }
-              className="w-full bg-transparent border-none outline-none resize-none max-h-[150px] py-2 px-2 text-sm text-text-primary placeholder-text-tertiary disabled:opacity-50"
-              rows={1}
-              dir="auto"
-            />
-          )}
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-1 mb-1">
-          {!isRecording && !text && !attachment && !isInternal && (
-            <button 
-              onClick={startRecording}
-              className="p-2 rounded-lg hover:bg-surface text-text-secondary transition-colors"
-              title={L('Voice note', 'رسالة صوتية')}
-            >
-              <Mic size={18} />
-            </button>
-          )}
-
-          {isRecording && (
-            <button 
-              onClick={stopRecording}
-              className="p-2 rounded-lg hover:bg-surface text-error transition-colors"
-              title={L('Stop recording', 'إيقاف التسجيل')}
-            >
-              <StopCircle size={18} />
-            </button>
-          )}
-
-          {/* AI Tools Dropdown */}
-          {!isInternal && !isRecording && (
-            <div className="relative">
-              <motion.button
-                onClick={() => setShowAIOptions(!showAIOptions)}
-                className="p-2 rounded-lg hover:bg-surface text-brand"
-                title={L('AI Tools', 'أدوات الذكاء الاصطناعي')}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.93 }}
-                transition={springs.snap}
-              >
-                <Zap size={18} />
-              </motion.button>
-
-              <AnimatePresence>
-                {showAIOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.96, y: -8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.96, y: -8 }}
-                    transition={springs.standard}
-                    className="absolute bottom-full right-0 mb-2 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden text-xs"
-                  >
-                    {[
-                      { label: L('Generate Reply', 'توليد رد'), action: () => { setText('AI Draft: We can certainly help with that...'); setShowAIOptions(false) } },
-                      { label: L('Improve Writing', 'تحسين الكتابة'), action: () => { setShowAIOptions(false) } },
-                      { label: L('Make Professional', 'جعله احترافياً'), action: () => { setShowAIOptions(false) } },
-                      { label: L('Translate to Arabic', 'ترجمة للعربية'), action: () => { setShowAIOptions(false) } },
-                    ].map(opt => (
-                      <button key={opt.label} onClick={opt.action} className="w-full text-left px-3 py-2 hover:bg-surface text-text-primary transition-colors">
-                        {opt.label}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* Send button — spring physics + subtle fly animation */}
-          <motion.button
-            onClick={handleSend}
-            disabled={disabled || sending || (!text.trim() && !attachment && !isRecording)}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              sending
-                ? 'bg-surface text-text-tertiary cursor-wait'
-                : text.trim() || attachment
-                  ? isInternal
-                    ? 'bg-warning text-white shadow-xs hover:bg-warning'
-                    : 'bg-brand text-brand-text font-bold shadow-xs btn-primary'
-                  : 'bg-surface text-text-tertiary'
-            }`}
-            whileHover={
-              (text.trim() || attachment) && !sending && !disabled
-                ? { scale: 1.05, y: -1 }
-                : {}
-            }
-            whileTap={
-              (text.trim() || attachment) && !sending && !disabled
-                ? { scale: 0.92 }
-                : {}
-            }
-            transition={springs.snap}
-          >
-            {sending ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Send size={18} className={isRTL ? 'rotate-180 -ml-1' : 'ml-1'} />
-            )}
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Footer text */}
-      <div className="flex justify-between items-center px-2 mt-2">
-        <span className="text-[10px] text-text-tertiary">
-          {isInternal ? L('Internal notes are highlighted in yellow and only visible to your team.', 'الملاحظات الداخلية مظللة باللون الأصفر ومرئية لفريقك فقط.') : ''}
-        </span>
-        <span className="text-[10px] text-text-tertiary flex items-center gap-1">
-          <Type size={10} /> ⌘K {L('for commands', 'للأوامر')}
-        </span>
-      </div>
+  return <div className="border-t border-border bg-surface p-3">
+    {attachment && <div className="mb-3 flex w-max items-center gap-3 rounded-lg border border-border bg-surface-elevated p-2">
+      <div className="flex h-10 w-10 items-center justify-center rounded bg-surface text-text-secondary">{attachment.type.startsWith('image/') ? <ImageIcon size={20} /> : attachment.type.startsWith('video/') ? <Video size={20} /> : <FileText size={20} />}</div>
+      <div><div className="max-w-[200px] truncate text-xs font-bold text-text-primary">{attachment.name}</div><div className="text-[10px] text-text-tertiary">{(attachment.size / 1024).toFixed(1)} KB</div></div>
+      <button type="button" aria-label={L('Remove attachment', 'إزالة المرفق')} onClick={() => setAttachment(null)} className="ml-2 rounded-full p-1 hover:bg-surface"><X size={14} /></button>
+    </div>}
+    <div className="flex items-end gap-2 rounded-xl border border-border bg-surface-elevated p-2 focus-within:border-brand/40">
+      <button type="button" disabled={disabled || sending} onClick={() => fileInputRef.current?.click()} className="mb-1 rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface disabled:opacity-50" title={L('Attach file', 'إرفاق ملف')}><Paperclip size={18} /></button>
+      <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+      <textarea ref={textareaRef} value={text} onChange={(event) => setText(event.target.value)} onKeyDown={handleKeyDown} disabled={disabled || sending} placeholder={L('Type your message... (Shift+Enter for new line)', 'اكتب رسالتك... (Shift+Enter لسطر جديد)')} className="max-h-[150px] min-h-10 flex-1 resize-none border-none bg-transparent px-2 py-2 text-sm text-text-primary outline-none placeholder:text-text-tertiary disabled:opacity-50" rows={1} dir="auto" />
+      <button type="button" onClick={() => void handleSend()} disabled={disabled || sending || (!text.trim() && !attachment)} className="mb-1 flex h-10 w-10 items-center justify-center rounded-xl bg-brand font-bold text-brand-text shadow-xs transition-opacity disabled:cursor-not-allowed disabled:opacity-40" aria-label={L('Send message', 'إرسال الرسالة')}>
+        {sending ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <Send size={18} className={isRTL ? 'rotate-180' : ''} />}
+      </button>
     </div>
-  )
+  </div>
 }

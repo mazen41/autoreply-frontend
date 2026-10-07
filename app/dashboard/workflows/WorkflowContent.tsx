@@ -60,58 +60,10 @@ interface WorkflowExecution {
   created_at: string
 }
 
-const DEMO_WORKFLOWS: Workflow[] = [
-  {
-    id: 1,
-    name: 'Auto-Assign High Value Leads to VIP Support',
-    description: 'When an incoming inquiry is classified as Wholesale or VIP, assign directly to Lead Agent and tag as VIP.',
-    is_active: true,
-    trigger: { type: 'ai_classification', config: { category: 'sales' } },
-    conditions: [{ type: 'conversation_priority', config: { value: 'high' }, operator: 'equals' }],
-    actions: [
-      { type: 'add_tag', config: { tag: 'VIP-Client' } },
-      { type: 'assign_agent', config: { agent_id: 2 } },
-      { type: 'send_message', config: { message: 'Hello! You have been connected with our priority accounts specialist.' } },
-    ],
-    execution_count: 1420,
-    last_executed_at: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
-    created_at: '2025-01-08T10:00:00Z',
-  },
-  {
-    id: 2,
-    name: 'After-Hours Emergency Auto-Responder',
-    description: 'Sends automated response informing customers of business operating hours when receiving messages after 10 PM.',
-    is_active: true,
-    trigger: { type: 'business_hours', config: { condition: 'outside_hours' } },
-    conditions: [],
-    actions: [
-      { type: 'send_message', config: { message: 'Thanks for reaching out! Our team is currently offline. We will reply at 8:00 AM.' } },
-      { type: 'add_tag', config: { tag: 'after-hours' } },
-    ],
-    execution_count: 3840,
-    last_executed_at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-    created_at: '2025-01-12T14:30:00Z',
-  },
-  {
-    id: 3,
-    name: 'Complaint Keyword Auto-Escalation',
-    description: 'Scans for keywords like "refund", "broken", or "dispute" and immediately alerts the operations supervisor.',
-    is_active: false,
-    trigger: { type: 'keyword', config: { keyword: 'refund' } },
-    conditions: [{ type: 'conversation_status', config: { value: 'open' }, operator: 'equals' }],
-    actions: [
-      { type: 'set_priority', config: { priority: 'high' } },
-      { type: 'notify_team', config: { team_id: 1, message: 'Potential escalation triggered by refund keyword' } },
-    ],
-    execution_count: 190,
-    last_executed_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    created_at: '2025-02-01T09:00:00Z',
-  },
-]
-
 export default function WorkflowContent() {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [showBuilder, setShowBuilder] = useState(false)
   const [editingWorkflow, setEditingWorkflow] = useState<Workflow | null>(null)
   const [showExecutions, setShowExecutions] = useState(false)
@@ -126,24 +78,20 @@ export default function WorkflowContent() {
 
   const fetchWorkflows = async () => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) {
-        setWorkflows(DEMO_WORKFLOWS)
-        setLoading(false)
-        return
-      }
+      setLoadError(null)
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again to load workflows.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       const data = await res.json()
-      if (res.ok && Array.isArray(data) && data.length > 0) {
-        setWorkflows(data)
-      } else {
-        setWorkflows(DEMO_WORKFLOWS)
-      }
-    } catch {
-      setWorkflows(DEMO_WORKFLOWS)
+      if (!res.ok) throw new Error(`Could not load workflows (HTTP ${res.status}).`)
+      setWorkflows(Array.isArray(data) ? data : (data.data || []))
+    } catch (error) {
+      console.error('Workflow loading failed:', error)
+      setWorkflows([])
+      setLoadError(error instanceof Error ? error.message : 'Could not load workflows.')
     } finally {
       setLoading(false)
     }
@@ -151,44 +99,18 @@ export default function WorkflowContent() {
 
   const fetchExecutions = async (workflowId: number) => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (!token) {
-        setExecutions([
-          {
-            id: 1,
-            workflow_id: workflowId,
-            status: 'completed',
-            trigger_data: { event: 'new_message', sender: '+966509998888' },
-            results: { action_taken: 'Tagged VIP, assigned to agent #2' },
-            error_message: null,
-            started_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-            completed_at: new Date(Date.now() - 1000 * 60 * 15 + 400).toISOString(),
-            created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-          },
-          {
-            id: 2,
-            workflow_id: workflowId,
-            status: 'completed',
-            trigger_data: { event: 'new_message', sender: '+966501112222' },
-            results: { action_taken: 'Dispatched automated notification' },
-            error_message: null,
-            started_at: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-            completed_at: new Date(Date.now() - 1000 * 60 * 80 + 350).toISOString(),
-            created_at: new Date(Date.now() - 1000 * 60 * 80).toISOString(),
-          },
-        ])
-        return
-      }
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again to load execution history.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${workflowId}/executions`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       })
       const data = await res.json()
-      if (res.ok) {
-        setExecutions(data.data || data)
-      }
-    } catch {
-      // silent
+      if (!res.ok) throw new Error(`Could not load execution history (HTTP ${res.status}).`)
+      setExecutions(data.data || data || [])
+    } catch (error) {
+      setExecutions([])
+      toast.error(error instanceof Error ? error.message : 'Could not load execution history.')
     }
   }
 
@@ -196,13 +118,13 @@ export default function WorkflowContent() {
     if (!confirm('Are you sure you want to delete this workflow rule?')) return
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}`, {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
-      }
+      if (!response.ok) throw new Error('Workflow delete request failed.')
       setWorkflows(prev => prev.filter(w => w.id !== id))
       toast.success('Workflow deleted')
     } catch {
@@ -212,13 +134,13 @@ export default function WorkflowContent() {
 
   const handleToggle = async (id: number, currentStatus: boolean) => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      if (token) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/toggle`, {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/toggle`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         })
-      }
+      if (!response.ok) throw new Error('Workflow status update failed.')
       setWorkflows(prev =>
         prev.map(w => (w.id === id ? { ...w, is_active: !currentStatus } : w))
       )
@@ -228,19 +150,17 @@ export default function WorkflowContent() {
     }
   }
 
-  const handleDuplicate = (id: number) => {
-    const item = workflows.find(w => w.id === id)
-    if (!item) return
-    const duplicated: Workflow = {
-      ...item,
-      id: Date.now(),
-      name: `${item.name} (Copy)`,
-      execution_count: 0,
-      last_executed_at: null,
-      created_at: new Date().toISOString(),
+  const handleDuplicate = async (id: number) => {
+    try {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/duplicate`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      if (!response.ok) throw new Error('Workflow could not be duplicated.')
+      await fetchWorkflows()
+      toast.success('Workflow duplicated successfully')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Workflow could not be duplicated.')
     }
-    setWorkflows([duplicated, ...workflows])
-    toast.success('Workflow duplicated successfully')
   }
 
   const viewExecutions = (workflow: Workflow) => {
@@ -388,8 +308,10 @@ export default function WorkflowContent() {
         }
       />
 
+      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchWorkflows()}>Retry</Button></div>}
+
       {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
           label="Total Automations"
           value={workflows.length}
@@ -409,12 +331,6 @@ export default function WorkflowContent() {
           subValue="Automated events triggered"
           icon={<Activity size={18} />}
         />
-        <MetricCard
-          label="Success Rate"
-          value="99.4%"
-          subValue="Minimal error drop-off"
-          icon={<CheckCircle2 size={18} />}
-        />
       </div>
 
       {/* Filters */}
@@ -432,7 +348,7 @@ export default function WorkflowContent() {
       />
 
       {/* Workflows Directory */}
-      {filteredWorkflows.length === 0 ? (
+      {loadError ? <Card className="p-6 text-sm text-text-muted">Workflow data is unavailable until the request succeeds.</Card> : filteredWorkflows.length === 0 ? (
         <Card className="py-12">
           <EmptyState
             icon={GitFork}
@@ -598,13 +514,13 @@ function WorkflowBuilder({
     setSaving(true)
     try {
       const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      const method = workflow ? 'PUT' : 'POST'
+      const method = workflow ? 'PATCH' : 'POST'
       const url = workflow
         ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${workflow.id}`
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows`
 
-      if (token) {
-        await fetch(url, {
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(url, {
           method,
           headers: {
             Authorization: `Bearer ${token}`,
@@ -613,7 +529,7 @@ function WorkflowBuilder({
           },
           body: JSON.stringify({ name, description, trigger, conditions, actions }),
         })
-      }
+      if (!response.ok) throw new Error('Workflow could not be saved.')
       toast.success(workflow ? 'Workflow updated' : 'Workflow created successfully')
       onSave()
     } catch {

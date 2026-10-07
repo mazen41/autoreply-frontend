@@ -56,54 +56,6 @@ const CH_CONFIG: Record<Channel, { label: string; badgeVariant: 'success' | 'ai'
   email: { label: 'Email', badgeVariant: 'ai' },
 }
 
-const DEMO_SEQUENCES: SequenceWithStats[] = [
-  {
-    id: 1,
-    name: 'New Customer Welcome & Onboarding',
-    description: '3-step sequence welcoming new clients, introducing top product categories, and offering a 10% coupon.',
-    channel: 'whatsapp',
-    status: 'active',
-    trigger_type: 'new_user',
-    trigger: 'New Customer Registration',
-    enrolled: 1840,
-    completed: 1620,
-    conversionRate: 24,
-    messagesSent: 4890,
-    updatedAt: '2 hours ago',
-    stepsCount: 3,
-  },
-  {
-    id: 2,
-    name: 'Abandoned Cart 48h Recovery Drip',
-    description: 'Triggered when checkout is started but unpaid after 2 hours. Follows up with stock alert and direct link.',
-    channel: 'whatsapp',
-    status: 'active',
-    trigger_type: 'order_created',
-    trigger: 'Checkout Initiated (Unpaid)',
-    enrolled: 820,
-    completed: 710,
-    conversionRate: 31,
-    messagesSent: 1640,
-    updatedAt: 'Yesterday',
-    stepsCount: 2,
-  },
-  {
-    id: 3,
-    name: 'Post-Delivery Review & Feedback Loop',
-    description: 'Sends automated Google Review request 3 days after shipping status marks Delivered.',
-    channel: 'telegram',
-    status: 'paused',
-    trigger_type: 'tag_added',
-    trigger: 'Tag: Order Delivered',
-    enrolled: 430,
-    completed: 390,
-    conversionRate: 18,
-    messagesSent: 430,
-    updatedAt: '3 days ago',
-    stepsCount: 1,
-  },
-]
-
 export default function SequencesPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -113,6 +65,8 @@ export default function SequencesPage() {
   const {
     sequences,
     loading,
+    error,
+    fetchSequences,
     activateSequence,
     pauseSequence,
     duplicateSequence,
@@ -120,21 +74,20 @@ export default function SequencesPage() {
   } = useSequences()
 
   const transformedSequences = useMemo(() => {
-    if (!sequences || sequences.length === 0) return DEMO_SEQUENCES
     return sequences.map(seq => ({
       id: seq.id,
       name: seq.name,
       description: seq.description,
-      channel: (seq.channel as Channel) || 'whatsapp',
+      channel: (seq.channel as Channel) || null,
       status: (seq.status as SeqStatus) || 'draft',
       trigger_type: seq.trigger_type || 'manual',
       trigger: seq.trigger_type ? seq.trigger_type.replace(/_/g, ' ') : 'Manual Trigger',
       enrolled: seq.total_enrollments || 0,
-      completed: seq.active_enrollments || 0,
-      conversionRate: seq.total_enrollments ? Math.round(((seq.active_enrollments || 0) / seq.total_enrollments) * 100) : 0,
-      messagesSent: (seq.total_enrollments || 0) * 2,
-      updatedAt: new Date(seq.updated_at).toLocaleDateString(),
-      stepsCount: seq.steps?.length || 2,
+      completed: 0,
+      conversionRate: 0,
+      messagesSent: 0,
+      updatedAt: seq.updated_at ? new Date(seq.updated_at).toLocaleDateString() : '—',
+      stepsCount: seq.steps?.length ?? 0,
     }))
   }, [sequences])
 
@@ -148,7 +101,6 @@ export default function SequencesPage() {
       const matchChannel = channelFilter === 'all' || seq.channel === channelFilter
       return matchSearch && matchStatus && matchChannel
     }).sort((a, b) => {
-      if (sortBy === 'performance') return b.conversionRate - a.conversionRate
       if (sortBy === 'enrolled') return b.enrolled - a.enrolled
       return b.id - a.id
     })
@@ -157,27 +109,28 @@ export default function SequencesPage() {
   const stats = useMemo(() => {
     const total = transformedSequences.length
     const active = transformedSequences.filter(s => s.status === 'active').length
-    const sent = transformedSequences.reduce((acc, s) => acc + s.messagesSent, 0)
-    const avgConversion = total > 0
-      ? Math.round(transformedSequences.reduce((acc, s) => acc + s.conversionRate, 0) / total)
-      : 0
-    return { total, active, sent, avgConversion }
+    const enrolled = transformedSequences.reduce((sum, sequence) => sum + sequence.enrolled, 0)
+    return { total, active, enrolled }
   }, [transformedSequences])
 
   const handleAction = async (action: string, id: number) => {
-    if (action === 'delete') {
+    try {
+      if (action === 'delete') {
       if (!confirm('Are you sure you want to delete this sequence?')) return
-      await deleteSequence(id)
+      if (!await deleteSequence(id)) throw new Error('Delete failed')
       toast.success('Sequence deleted')
     } else if (action === 'pause') {
-      await pauseSequence(id)
+      if (!await pauseSequence(id)) throw new Error('Pause failed')
       toast.success('Sequence paused')
     } else if (action === 'activate') {
-      await activateSequence(id)
+      if (!await activateSequence(id)) throw new Error('Activation failed')
       toast.success('Sequence activated')
     } else if (action === 'duplicate') {
-      await duplicateSequence(id)
+      if (!await duplicateSequence(id)) throw new Error('Duplicate failed')
       toast.success('Sequence duplicated')
+      }
+    } catch {
+      toast.error('The sequence change could not be completed.')
     }
   }
 
@@ -201,11 +154,13 @@ export default function SequencesPage() {
       />
 
       {/* KPI Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSequences()}>Retry</Button></div>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
           label="Total Sequences"
           value={stats.total}
-          subValue={`${stats.active} live in production`}
+          subValue={`${stats.active} currently active`}
           icon={<Layers size={18} />}
         />
         <MetricCard
@@ -216,16 +171,10 @@ export default function SequencesPage() {
           variant="ai"
         />
         <MetricCard
-          label="Dispatched Messages"
-          value={stats.sent.toLocaleString()}
-          subValue="Across customer journeys"
+          label="Total enrollments"
+          value={stats.enrolled.toLocaleString()}
+          subValue="Across sequences returned by the API"
           icon={<MessageSquare size={18} />}
-        />
-        <MetricCard
-          label="Avg Conversion Rate"
-          value={`${stats.avgConversion}%`}
-          trend={{ value: 4.8, isPositive: true }}
-          icon={<TrendingUp size={18} />}
         />
       </div>
 
@@ -242,11 +191,7 @@ export default function SequencesPage() {
         ]}
         activeTab={statusFilter}
         onTabChange={setStatusFilter}
-        sortOptions={[
-          { value: 'updated', label: 'Recently Updated' },
-          { value: 'performance', label: 'Highest Conversion' },
-          { value: 'enrolled', label: 'Most Enrolled' },
-        ]}
+        sortOptions={[{ value: 'updated', label: 'Recently Updated' }, { value: 'enrolled', label: 'Most Enrolled' }]}
         sortValue={sortBy}
         onSortChange={setSortBy}
       />
@@ -277,8 +222,7 @@ export default function SequencesPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((seq) => {
-            const ch = CH_CONFIG[seq.channel || 'whatsapp'] || CH_CONFIG.whatsapp
-            const completionPct = seq.enrolled > 0 ? Math.round((seq.completed / seq.enrolled) * 100) : 0
+            const ch = seq.channel ? CH_CONFIG[seq.channel] : null
 
             return (
               <Card key={seq.id} variant="interactive" className="flex flex-col justify-between">
@@ -305,9 +249,7 @@ export default function SequencesPage() {
                       </p>
                     </div>
 
-                    <Badge variant={ch.badgeVariant} size="sm" className="shrink-0 capitalize">
-                      {ch.label}
-                    </Badge>
+                    {ch && <Badge variant={ch.badgeVariant} size="sm" className="shrink-0 capitalize">{ch.label}</Badge>}
                   </div>
                 </CardHeader>
 
@@ -318,45 +260,17 @@ export default function SequencesPage() {
                     <span className="text-text-tertiary">Trigger:</span>
                     <span className="font-semibold text-text-primary truncate">{seq.trigger}</span>
                     <span className="text-text-tertiary ml-auto shrink-0 font-medium">
-                      {seq.stepsCount} steps
+                      {seq.stepsCount} configured steps
                     </span>
                   </div>
 
-                  {/* Metrics grid */}
-                  <div className="grid grid-cols-4 gap-2 text-center">
+                  {/* Only the enrollment total is provided in the sequence list API. */}
+                  <div className="grid grid-cols-1 gap-2 text-center">
                     <div className="p-2 rounded-lg bg-surface border border-border/50">
                       <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Enrolled</span>
                       <span className="text-xs font-bold text-text-primary tabular-nums">{seq.enrolled.toLocaleString()}</span>
                     </div>
-                    <div className="p-2 rounded-lg bg-surface border border-border/50">
-                      <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Finished</span>
-                      <span className="text-xs font-bold text-text-primary tabular-nums">{seq.completed.toLocaleString()}</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-surface border border-border/50">
-                      <span className="text-[10px] text-text-tertiary uppercase font-bold block mb-0.5">Sent</span>
-                      <span className="text-xs font-bold text-text-primary tabular-nums">{seq.messagesSent.toLocaleString()}</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-success/5 border border-success/15">
-                      <span className="text-[10px] text-success uppercase font-bold block mb-0.5">Conv.</span>
-                      <span className="text-xs font-bold text-success tabular-nums">{seq.conversionRate}%</span>
-                    </div>
                   </div>
-
-                  {/* Completion bar */}
-                  {seq.enrolled > 0 && (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[11px] text-text-tertiary">
-                        <span>Cohort Completion</span>
-                        <span className="font-semibold text-text-primary">{completionPct}%</span>
-                      </div>
-                      <div className="w-full h-1.5 rounded-full bg-surface-elevated overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-brand to-brand transition-all duration-500"
-                          style={{ width: `${completionPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
 
                 <CardFooter className="justify-between border-t border-border/60 bg-surface-elevated/20">

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
-  ArrowLeft, Play, Pause, Copy, MoreHorizontal, Edit2, TrendingUp,
+  ArrowLeft, Play, Pause, Copy, MoreHorizontal, Edit2,
   Users, CheckCircle, MessageSquare, AlertCircle, Clock, Zap,
   ChevronDown, BarChart2, ArrowUpRight, Trash2, RefreshCw, GitBranch
 } from 'lucide-react'
@@ -17,20 +17,6 @@ const STATUS_CONFIG = {
 }
 
 // ─── Mini bar chart ───────────────────────────────────────────────────────────
-const ENROLL_DATA = [12, 18, 24, 15, 31, 28, 40, 35, 29, 45, 52, 48, 60, 42]
-
-function TinyBarChart() {
-  const max = Math.max(...ENROLL_DATA)
-  return (
-    <div className="flex items-end gap-0.5 h-16">
-      {ENROLL_DATA.map((v, i) => (
-        <div key={i} className="flex-1 rounded-t-sm transition-all hover:opacity-80"
-          style={{ height: `${(v / max) * 100}%`, background: 'var(--accent)', opacity: 0.7 + (i / ENROLL_DATA.length) * 0.3 }} />
-      ))}
-    </div>
-  )
-}
-
 // ─── Step row ─────────────────────────────────────────────────────────────────
 interface StepData {
   step_type: string
@@ -85,13 +71,15 @@ function StatTile({ label, value, sub, accent }: { label: string; value: string;
 export default function SequenceDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { fetchSequence, activateSequence, pauseSequence, deleteSequence } = useSequences()
+  const { fetchSequence, activateSequence, pauseSequence, deleteSequence, duplicateSequence, getSequenceAnalytics, getSequenceEnrollments } = useSequences()
   
   const [sequenceuence, setSequence] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('draft')
   const [moreOpen, setMoreOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'contacts'>('overview')
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [enrollments, setEnrollments] = useState<any[]>([])
   
   const sequenceuenceId = params.id ? parseInt(params.id as string) : 0
   
@@ -107,6 +95,9 @@ export default function SequenceDetailPage() {
     if (data) {
       setSequence(data)
       setStatus(data.status || 'draft')
+      const [analyticsData, enrollmentData] = await Promise.all([getSequenceAnalytics(sequenceuenceId), getSequenceEnrollments(sequenceuenceId)])
+      setAnalytics(analyticsData)
+      setEnrollments(enrollmentData)
     }
     setLoading(false)
   }
@@ -131,7 +122,7 @@ export default function SequenceDetailPage() {
     if (confirm('Are you sure you want to delete this sequenceuence?')) {
       const deleted = await deleteSequence(sequenceuenceId)
       if (deleted) {
-        router.push('/dashboard/sequenceuences')
+        router.push('/dashboard/sequences')
       }
     }
   }
@@ -155,15 +146,31 @@ export default function SequenceDetailPage() {
   }
   
   const steps = sequenceuence.steps || []
-  const stats = {
-    enrolled: sequenceuence.total_enrollments || 0,
-    active: sequenceuence.active_enrollments || 0,
-    completed: 0, // Would need from analytics
-    dropped: 0,
-    messagesSent: 0, // Would need from analytics
-    deliveryRate: 0,
-    replyRate: 0,
-    conversionRate: 0,
+  const stats = analytics || {
+    total_enrollments: sequenceuence.total_enrollments || 0,
+    active_enrollments: sequenceuence.active_enrollments || 0,
+    completed_enrollments: null,
+    stopped_enrollments: null,
+    failed_enrollments: null,
+    conversion_rate: null,
+    messages_sent: null,
+    total_steps: steps?.length || 0,
+  }
+
+  const handleDuplicate = async () => {
+    const duplicated = await duplicateSequence(sequenceuenceId)
+    if (duplicated) router.push(`/dashboard/sequences/${duplicated.id}`)
+  }
+
+  const exportEnrollments = () => {
+    const rows = [['Contact', 'Status', 'Current step', 'Started at'], ...enrollments.map((item) => [item.conversation?.sender_name || item.conversation?.sender_id || '', item.status || '', String(item.current_step ?? ''), item.started_at || ''])]
+    const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `sequence-${sequenceuenceId}-enrollments.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -172,7 +179,7 @@ export default function SequenceDetailPage() {
       {/* ── Header ── */}
       <div className="flex items-start gap-4 justify-between">
         <div className="flex items-start gap-3">
-          <Link href="/dashboard/sequenceuences"
+          <Link href="/dashboard/sequences"
             className="mt-1 p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] transition-colors flex-shrink-0">
             <ArrowLeft size={16} />
           </Link>
@@ -202,7 +209,7 @@ export default function SequenceDetailPage() {
         {/* Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            onClick={() => setStatus(s => s === 'active' ? 'paused' : 'active')}
+            onClick={() => void handleStatusToggle()}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
               status === 'active'
                 ? 'border-warning bg-warning text-warning hover:bg-warning dark:bg-warning/20 dark:border-warning'
@@ -210,7 +217,7 @@ export default function SequenceDetailPage() {
             }`}>
             {status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Activate</>}
           </button>
-          <Link href={`/dashboard/sequenceuences/${params.id}/edit`}
+          <Link href={`/dashboard/sequences/${params.id}/edit`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors">
             <Edit2 size={14} /> Edit
           </Link>
@@ -221,14 +228,11 @@ export default function SequenceDetailPage() {
             </button>
             {moreOpen && (
               <div className="absolute right-0 top-11 w-40 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-20 overflow-hidden">
-                <button className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-colors">
+                <button onClick={() => void handleDuplicate()} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-colors">
                   <Copy size={13} /> Duplicate
                 </button>
-                <button className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-colors">
-                  <RefreshCw size={13} /> Send Test
-                </button>
                 <div className="border-t border-[var(--divider)]" />
-                <button className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-error hover:bg-error dark:hover:bg-error/20 transition-colors">
+                <button onClick={() => void handleDelete()} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-error hover:bg-error dark:hover:bg-error/20 transition-colors">
                   <Trash2 size={13} /> Delete
                 </button>
               </div>
@@ -254,16 +258,13 @@ export default function SequenceDetailPage() {
         <div className="space-y-6">
           {/* Stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="Enrolled"    value={stats.enrolled.toLocaleString()} sub="Total contacts" />
-            <StatTile label="Active Now"  value={stats.active.toLocaleString()} sub="In progress" accent="var(--accent)" />
-            <StatTile label="Completed"   value={stats.completed.toLocaleString()} sub="Finished all steps" accent="#16A085" />
-            <StatTile label="Conversion"  value={`${stats.conversionRate}%`} sub="Goal achieved" accent="#8B3FFB" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="Msgs Sent"   value={stats.messagesSent.toLocaleString()} />
-            <StatTile label="Delivery"    value={`${stats.deliveryRate}%`} accent="#16A085" />
-            <StatTile label="Reply Rate"  value={`${stats.replyRate}%`} accent="var(--accent)" />
-            <StatTile label="Dropped"     value={stats.dropped.toLocaleString()} />
+            <StatTile label="Enrolled" value={Number(stats.total_enrollments || 0).toLocaleString()} sub="Total contacts" />
+            <StatTile label="Active now" value={Number(stats.active_enrollments || 0).toLocaleString()} sub="In progress" accent="var(--accent)" />
+            <StatTile label="Completed" value={stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments).toLocaleString()} sub="Finished all steps" accent="#16A085" />
+            <StatTile label="Conversion" value={stats.conversion_rate == null ? '—' : `${stats.conversion_rate}%`} sub="Goal achieved" accent="#8B3FFB" />
+            <StatTile label="Messages sent" value={stats.messages_sent == null ? '—' : Number(stats.messages_sent).toLocaleString()} />
+            <StatTile label="Stopped" value={stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments).toLocaleString()} />
+            <StatTile label="Failed" value={stats.failed_enrollments == null ? '—' : Number(stats.failed_enrollments).toLocaleString()} />
           </div>
 
           {/* Steps timeline */}
@@ -293,64 +294,7 @@ export default function SequenceDetailPage() {
       {/* ── Analytics Tab ── */}
       {activeTab === 'analytics' && (
         <div className="space-y-5">
-          {/* Enrollment chart */}
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">Enrollments Over Time</h3>
-                <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Last 14 days</p>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm font-bold text-success">
-                <ArrowUpRight size={14} /> +18% vs last period
-              </div>
-            </div>
-            <TinyBarChart />
-            <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] mt-2">
-              <span>14 days ago</span>
-              <span>Today</span>
-            </div>
-          </div>
-
-          {/* Per-step drop-off */}
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5">
-            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-1">Step-by-Step Drop-off</h3>
-            <p className="text-xs text-[var(--text-tertiary)] mb-4">See where contacts leave the sequenceuence</p>
-            <div className="space-y-3">
-              {steps.filter((s: any) => s.step_type === 'message').map((step: any, i: number) => {
-                const rate = 50 // Placeholder - would come from real analytics
-                return (
-                  <div key={i}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[var(--text-secondary)] font-medium">Message {i + 1}</span>
-                      <span className="font-bold text-[var(--text-primary)]">{rate}% replied</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-[var(--surface)] overflow-hidden">
-                      <div className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${rate}%`,
-                          background: rate < 20 ? '#FF4757' : rate < 30 ? '#F39C12' : '#16A085'
-                        }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Key metrics */}
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: 'Completion Rate', value: '0%', desc: 'Contacts who finish all steps', color: '#16A085' },
-              { label: 'Avg Reply Rate',  value: '0%', desc: 'Across all message steps', color: 'var(--accent)' },
-              { label: 'Conversion',      value: '0%', desc: 'Achieved the sequence goal', color: '#8B3FFB' },
-            ].map(m => (
-              <div key={m.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
-                <p className="text-2xl font-black mb-1" style={{ color: m.color }}>{m.value}</p>
-                <p className="text-xs font-bold text-[var(--text-primary)] mb-0.5">{m.label}</p>
-                <p className="text-[10px] text-[var(--text-tertiary)]">{m.desc}</p>
-              </div>
-            ))}
-          </div>
+          <div className="rounded-xl border border-border bg-surface-elevated p-6 text-sm text-text-muted">The sequence analytics API provides aggregate counts only. Daily enrollment and per-step reply charts are not available.</div>
         </div>
       )}
 
@@ -360,9 +304,9 @@ export default function SequenceDetailPage() {
           {/* Enrollment breakdown */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'In Progress',  value: stats.active,    color: 'var(--accent)' },
-              { label: 'Completed',    value: stats.completed,  color: '#16A085' },
-              { label: 'Dropped',      value: stats.dropped,    color: '#FF4757' },
+              { label: 'In Progress', value: Number(stats.active_enrollments || 0), color: 'var(--accent)' },
+              { label: 'Completed', value: stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments), color: '#16A085' },
+              { label: 'Stopped', value: stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments), color: '#FF4757' },
             ].map(c => (
               <div key={c.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black" style={{ color: c.color }}>{c.value.toLocaleString()}</p>
@@ -375,15 +319,14 @@ export default function SequenceDetailPage() {
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
               <h3 className="text-sm font-bold text-[var(--text-primary)]">Enrolled Contacts</h3>
-              <button className="flex items-center gap-1.5 text-xs text-[var(--accent)] font-semibold hover:underline">
+              <button onClick={exportEnrollments} disabled={enrollments.length === 0} className="flex items-center gap-1.5 text-xs text-[var(--accent)] font-semibold hover:underline disabled:opacity-40">
                 Export CSV <ArrowUpRight size={12} />
               </button>
             </div>
-            <div className="p-5 text-center text-[var(--text-tertiary)]">
+            {enrollments.length === 0 ? <div className="p-5 text-center text-[var(--text-tertiary)]">
               <Users size={32} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">Contact enrollment data loads from your CRM.</p>
-              <p className="text-xs mt-1 opacity-60">Connect your CRM to see detailed contact progress here.</p>
-            </div>
+              <p className="text-sm">No enrollment records found.</p>
+            </div> : <div className="divide-y divide-border">{enrollments.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm"><span>{item.conversation?.sender_name || item.conversation?.sender_id || 'Unknown contact'}</span><span className="text-text-muted">{item.status}</span></div>)}</div>}
           </div>
         </div>
       )}

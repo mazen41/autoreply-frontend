@@ -15,82 +15,49 @@ import Tabs from '../../../components/ui/Tabs'
 import EmptyState from '../../../components/ui/EmptyState'
 import { SkeletonCard } from '../../../components/ui/Skeleton'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
+import toast from 'react-hot-toast'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-const RANGE_DAYS = [7, 30, 90]
+function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
+  if (data.length < 2) return null
+  const width = 400
+  const height = 90
+  const max = Math.max(...data, 1)
+  const points = data.map((value, index) => {
+    const x = (index / (data.length - 1)) * width
+    const y = height - (value / max) * (height - 8) - 4
+    return `${x},${y}`
+  })
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Daily messages chart" className="w-full h-24 overflow-visible">
+      <polyline points={points.join(' ')} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function getToken() {
   if (typeof document === 'undefined') return ''
   return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
 }
 
-// ─── Mini Sparkline ───────────────────────────────────────────────────────────
-function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
-  if (!data || data.length < 2) return null
-  const max = Math.max(...data, 1)
-  const w = 400, h = 60
-  const pts = data.map((v, i) => [
-    (i / (data.length - 1)) * w,
-    h - ((v / max) * (h - 8)),
-  ])
-  const line = `M${pts.map(([x, y]) => `${x},${y}`).join('L')}`
-  const area = `${line}V${h}H0Z`
-  const gradId = `spark-${color.replace(/[^a-z0-9]/gi, '')}`
-
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full" style={{ height: 60 }}>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill={`url(#${gradId})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {pts.length > 0 && (
-        <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3" fill={color} />
-      )}
-    </svg>
-  )
-}
-
-// ─── Demo Data ────────────────────────────────────────────────────────────────
-const DEMO = {
-  daily: [45, 62, 38, 74, 89, 56, 93, 67, 82, 45, 71, 98, 64, 85, 72, 91, 58, 79, 86, 54, 73, 88, 65, 95, 70, 83, 77, 92, 69, 87],
-  channels: [
-    { name: 'whatsapp', messages: 2340, pct: 42 },
-    { name: 'instagram', messages: 1560, pct: 28 },
-    { name: 'gmail', messages: 890, pct: 16 },
-    { name: 'telegram', messages: 450, pct: 8 },
-    { name: 'facebook', messages: 340, pct: 6 },
-  ],
-  ai: { auto_reply_rate: 83.2, avg_confidence: 87.5, total_resolved: 2847, avg_response_ms: 1230 },
-  questions: [
-    { question: 'ما هو سعر المنتج؟', count: 234, category: 'pricing' },
-    { question: 'هل التوصيل مجاني؟', count: 189, category: 'shipping' },
-    { question: 'كيف يمكنني إرجاع المنتج؟', count: 156, category: 'returns' },
-    { question: 'هل يوجد ضمان؟', count: 132, category: 'warranty' },
-    { question: 'ما هي طرق الدفع المتاحة؟', count: 98, category: 'payment' },
-  ],
-  timeSaved: { hours: 342, equivalent_agents: 2.4, cost_saved: 8540 },
-}
-
 export default function ReportsPage() {
   const [range, setRange] = useState('30d')
   const [loading, setLoading] = useState(true)
-  const [dailyData, setDailyData] = useState<number[]>(DEMO.daily)
-  const [channelData, setChannelData] = useState<any[]>(DEMO.channels)
-  const [aiPerformance, setAiPerformance] = useState<any>(DEMO.ai)
-  const [topQuestions, setTopQuestions] = useState<any[]>(DEMO.questions)
-  const [timeSaved, setTimeSaved] = useState<any>(DEMO.timeSaved)
+  const [dailyData, setDailyData] = useState<number[]>([])
+  const [channelData, setChannelData] = useState<any[]>([])
+  const [aiPerformance, setAiPerformance] = useState<any>(null)
+  const [topQuestions, setTopQuestions] = useState<any[]>([])
+  const [timeSaved, setTimeSaved] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => { fetchReports() }, [range])
 
   const fetchReports = async () => {
     setLoading(true)
+    setError(null)
     try {
       const token = getToken()
-      if (!token) { setLoading(false); return }
+      if (!token) throw new Error('Your session expired. Sign in again to load reports.')
       const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
 
       const [dailyRes, channelRes, aiRes, questionsRes, timeRes] = await Promise.all([
@@ -101,13 +68,19 @@ export default function ReportsPage() {
         fetch(`${API}/api/reports/time-saved`, { headers: { Authorization: `Bearer ${token}` } }),
       ])
 
-      if (dailyRes.ok) { const j = await dailyRes.json(); if (j.data?.length) setDailyData(j.data) }
-      if (channelRes.ok) { const j = await channelRes.json(); if (j.channels?.length) setChannelData(j.channels) }
-      if (aiRes.ok) { const j = await aiRes.json(); setAiPerformance(j) }
-      if (questionsRes.ok) { const j = await questionsRes.json(); if (j.questions?.length) setTopQuestions(j.questions) }
-      if (timeRes.ok) { const j = await timeRes.json(); setTimeSaved(j) }
-    } catch {
-      // Keep demo data on error
+      if (![dailyRes, channelRes, aiRes, questionsRes, timeRes].every((res) => res.ok)) {
+        throw new Error('Could not load all report data. Retry to refresh.')
+      }
+      const [daily, channel, ai, questions, saved] = await Promise.all([
+        dailyRes.json(), channelRes.json(), aiRes.json(), questionsRes.json(), timeRes.json(),
+      ])
+      setDailyData(Array.isArray(daily.data) ? daily.data.map(Number) : [])
+      setChannelData(Array.isArray(channel.channels) ? channel.channels : [])
+      setAiPerformance(ai)
+      setTopQuestions(Array.isArray(questions.questions) ? questions.questions : [])
+      setTimeSaved(saved)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not load reports.')
     } finally {
       setLoading(false)
     }
@@ -126,7 +99,7 @@ export default function ReportsPage() {
       a.download = `report.${format}`
       a.click()
     } catch {
-      // silent fail
+      toast.error('Could not export this report.')
     }
   }
 
@@ -158,6 +131,8 @@ export default function ReportsPage() {
         />
       </PageHeader>
 
+      {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchReports()}>Retry</Button></div>}
+
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
@@ -165,25 +140,25 @@ export default function ReportsPage() {
           value={`${aiPerformance?.auto_reply_rate || 0}%`}
           icon={<Bot size={18} />}
           variant="ai"
-          trend={{ value: 5.2, isPositive: true }}
+          subValue={`${aiPerformance?.auto_replies ?? 0} AI replies`}
         />
         <MetricCard
           label="Avg Response Time"
-          value={`${((aiPerformance?.avg_response_ms || 0) / 1000).toFixed(1)}s`}
+          value={`${aiPerformance?.avg_response_time_formatted || 'No data'}`}
           icon={<Clock size={18} />}
           subValue="End-to-end"
         />
         <MetricCard
           label="Time Saved"
-          value={`${timeSaved?.hours || 0}h`}
+          value={`${timeSaved?.time_saved_hours ?? 0}h`}
           icon={<Zap size={18} />}
-          subValue={`≈ ${timeSaved?.equivalent_agents || 0} agents`}
+          subValue={`${timeSaved?.messages_handled ?? 0} AI replies handled`}
         />
         <MetricCard
-          label="Cost Saved"
-          value={`$${(timeSaved?.cost_saved || 0).toLocaleString()}`}
+          label="Estimated value saved"
+          value={`${(timeSaved?.estimated_value ?? 0).toLocaleString()} SAR`}
           icon={<TrendingUp size={18} />}
-          trend={{ value: 12, isPositive: true }}
+          subValue="Based on configured reply-time and hourly-rate estimates"
         />
       </div>
 
@@ -204,7 +179,7 @@ export default function ReportsPage() {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <Sparkline data={dailyData} color="var(--brand)" />
+              {dailyData.length > 1 ? <Sparkline data={dailyData} color="var(--brand)" /> : <p className="py-8 text-center text-sm text-text-tertiary">No message history for this period.</p>}
             </CardContent>
           </Card>
         </div>
@@ -216,25 +191,29 @@ export default function ReportsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3.5">
-              {channelData.map((ch: any) => (
-                <div key={ch.name} className="flex items-center gap-3">
+              {channelData.length === 0 ? <p className="text-sm text-text-tertiary">No channel message data.</p> : channelData.map((ch: any) => {
+                const total = channelData.reduce((sum: number, item: any) => sum + Number(item.messages_count || 0), 0)
+                const pct = total > 0 ? Math.round((Number(ch.messages_count || 0) / total) * 100) : 0
+                return (
+                <div key={ch.id || ch.type || ch.name} className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-md flex items-center justify-center bg-surface-elevated shrink-0">
-                    <ChannelIcon type={ch.name} className="w-4 h-4" />
+                    <ChannelIcon type={ch.type || ch.name} className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-1">
-                      <span className="text-xs font-medium text-text-primary capitalize">{ch.name}</span>
-                      <span className="text-[11px] text-text-tertiary">{ch.pct || ch.percentage || 0}%</span>
+                      <span className="text-xs font-medium text-text-primary capitalize">{ch.name || ch.type}</span>
+                      <span className="text-[11px] text-text-tertiary">{pct}% · {Number(ch.messages_count || 0)} messages</span>
                     </div>
                     <div className="h-1 bg-surface-elevated rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full bg-brand transition-all duration-500"
-                        style={{ width: `${ch.pct || ch.percentage || 0}%` }}
+                        style={{ width: `${pct}%` }}
                       />
                     </div>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
@@ -252,7 +231,7 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-border/50">
-            {topQuestions.map((q: any, i: number) => (
+            {topQuestions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-text-tertiary">No customer questions found for this account.</p> : topQuestions.map((q: any, i: number) => (
               <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-surface-elevated/40 transition-colors">
                 <div className="w-7 h-7 rounded-md bg-surface-elevated flex items-center justify-center text-xs font-bold text-text-tertiary shrink-0">
                   {i + 1}
@@ -260,7 +239,6 @@ export default function ReportsPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-text-primary truncate">{q.question}</p>
                 </div>
-                <Badge variant="outline" size="sm">{q.category || 'general'}</Badge>
                 <span className="text-xs font-semibold text-text-primary tabular-nums shrink-0">
                   {q.count}
                 </span>
