@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getEcho, disconnectEcho } from '../lib/echo'
+import { getBusinessHeaders, getSelectedBusinessId } from '../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -16,6 +17,7 @@ function authHeaders() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getToken()}`,
     'Accept': 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 
@@ -23,6 +25,7 @@ function bearerHeaders() {
   return {
     'Authorization': `Bearer ${getToken()}`,
     'Accept': 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 
@@ -34,6 +37,9 @@ export interface ApiMessage {
   direction: 'inbound' | 'outbound'
   is_ai: boolean
   status: string
+  send_status?: 'queued' | 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'blocked' | string
+  delivery_status?: 'pending' | 'queued' | 'sent' | 'delivered' | 'failed' | string
+  error_details?: string | null
   created_at: string
   media_url?: string | null
   media_type?: 'image' | 'audio' | 'video' | 'document' | null
@@ -202,7 +208,16 @@ export function useInbox() {
     setMessages([])
     setMsgError(null)
     fetchMessages(id)
-  }, [fetchMessages])
+    const businessId = getSelectedBusinessId()
+    if (businessId) {
+      fetch(`${API}/businesses/${businessId}/conversations/${id}/read`, {
+        method: 'POST',
+        headers: authHeaders(),
+      }).then(res => {
+        if (res.ok) fetchConversations(true)
+      }).catch(() => {})
+    }
+  }, [fetchMessages, fetchConversations])
 
   const sendReply = useCallback(async (convId: number, text: string): Promise<boolean> => {
     setSending(true)

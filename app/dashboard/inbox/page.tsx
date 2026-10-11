@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useInbox } from '../../../hooks/useInbox'
 import { useLang } from '../../../lib/LangContext'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 // Components
 import ConversationList from '../../../components/inbox/ConversationList'
@@ -12,6 +13,7 @@ import MessageTimeline from '../../../components/inbox/MessageTimeline'
 import ChatComposer from '../../../components/inbox/ChatComposer'
 import AICopilot from '../../../components/inbox/AICopilot'
 import CustomerPanel from '../../../components/inbox/CustomerPanel'
+import HandoffTaskQueue from '../../../components/inbox/HandoffTaskQueue'
 import { MessageSquare, PanelRight } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -51,7 +53,7 @@ export default function InboxPage() {
     if (!token) return
 
     fetch(`${API}/api/bots`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -60,7 +62,7 @@ export default function InboxPage() {
       .catch(() => {})
 
     fetch(`${API}/api/channels`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -247,7 +249,9 @@ export default function InboxPage() {
       >
         {/* Panel 1 — Conversation List */}
         {!leftCollapsed && (
-          <div className="flex-shrink-0 h-full overflow-hidden" style={{ width: 280 }}>
+          <div className="flex flex-shrink-0 h-full flex-col overflow-hidden" style={{ width: 280 }}>
+            <HandoffTaskQueue onSelect={handleSelectConversation} onResolved={() => fetchConversations()} />
+            <div className="min-h-0 flex-1 overflow-hidden">
             <ConversationList
               conversations={conversations}
               selectedId={selectedId}
@@ -261,6 +265,7 @@ export default function InboxPage() {
               bots={bots}
               channels={channels}
             />
+            </div>
           </div>
         )}
 
@@ -325,6 +330,8 @@ export default function InboxPage() {
         {/* Step 1: Conversation list */}
         {mobileView === 'list' && (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <HandoffTaskQueue onSelect={handleSelectConversation} onResolved={() => fetchConversations()} />
+            <div className="min-h-0 flex-1 overflow-hidden">
             <ConversationList
               conversations={conversations}
               selectedId={selectedId}
@@ -337,6 +344,7 @@ export default function InboxPage() {
               bots={bots}
               channels={channels}
             />
+            </div>
           </div>
         )}
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { memo, useMemo, useRef, useState, useCallback } from 'react'
+import React, { memo, useMemo, useRef, useState, useCallback, useEffect } from 'react'
 import DOMPurify from 'dompurify'
 import {
   AlertCircle,
@@ -24,10 +24,28 @@ import {
   X,
   SendHorizonal,
   CheckCircle2,
+  Info,
+  Clock3,
 } from 'lucide-react'
 import Select from '../ui/Select'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 type MediaType = 'image' | 'audio' | 'video' | 'document' | null
+
+interface AiReplyAudit {
+  agent: { id: number; name: string } | null
+  agent_version: string | null
+  commerce_connection: { id: number; provider: string; name: string | null } | null
+  knowledge_file_ids: number[]
+  knowledge_chunk_ids: number[]
+  prompt_version: string | null
+  ai_provider: string | null
+  ai_model: string | null
+  confidence: number | null
+  escalation_decision: boolean
+  escalation_reason: string | null
+  consent_basis: string
+}
 
 interface MessageBubbleProps {
   msg: {
@@ -38,9 +56,14 @@ interface MessageBubbleProps {
     direction: 'inbound' | 'outbound'
     is_ai: boolean
     status: string
+    send_status?: 'queued' | 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'blocked' | string
+    delivery_status?: 'pending' | 'sent' | 'delivered' | 'failed' | string
+    error_details?: string | null
     created_at: string
     media_url?: string | null
     media_type?: MediaType
+    media_processing_status?: 'pending' | 'processing' | 'done' | 'failed' | 'unsupported' | null
+    media_processing_reason?: string | null
     mime_type?: string | null
     file_name?: string | null
     file_size?: number | null
@@ -74,7 +97,7 @@ function absoluteMediaUrl(url?: string | null) {
 }
 
 function messageMediaUrl(messageId: number, mode: 'inline' | 'download') {
-  return `${API_ORIGIN}/api/messages/${messageId}/media?disposition=${mode}&token=${encodeURIComponent(getToken())}`
+  return `${API_ORIGIN}/api/messages/${messageId}/media?disposition=${mode}`
 }
 
 function formatMsgTime(iso: string) {
@@ -112,14 +135,58 @@ function AttachmentIcon({ kind }: { kind: string }) {
 function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; isOutgoing: boolean }) {
   const [previewError, setPreviewError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [authenticatedMediaUrl, setAuthenticatedMediaUrl] = useState('')
   const kind = fileKind(msg.media_type, msg.mime_type, msg.file_name)
   const directUrl = absoluteMediaUrl(msg.media_url)
-  const inlineUrl = msg.id > 0 ? messageMediaUrl(msg.id, 'inline') : directUrl
-  const downloadUrl = msg.id > 0 ? messageMediaUrl(msg.id, 'download') : directUrl
+  const inlineUrl = msg.id > 0 ? authenticatedMediaUrl : directUrl
+  const downloadUrl = inlineUrl
   const name = msg.file_name || (kind === 'pdf' ? 'PDF document' : 'Attachment')
   const meta = [kind.toUpperCase(), formatFileSize(msg.file_size)].filter(Boolean).join(' - ')
 
-  const downloadButton = (
+  useEffect(() => {
+    let disposed = false
+    let objectUrl: string | null = null
+    setLoading(true)
+    setPreviewError(false)
+
+    const load = async () => {
+      try {
+        if (msg.id <= 0) {
+          setAuthenticatedMediaUrl(directUrl)
+          setLoading(false)
+          return
+        }
+
+        const token = getToken()
+        const response = await fetch(messageMediaUrl(msg.id, 'inline'), {
+          headers: { Authorization: `Bearer ${token}`, Accept: '*/*', ...getBusinessHeaders() },
+        })
+        if (!response.ok) throw new Error('Attachment could not be loaded')
+        const blob = await response.blob()
+        objectUrl = URL.createObjectURL(blob)
+        if (!disposed) {
+          setAuthenticatedMediaUrl(objectUrl)
+          setLoading(false)
+        }
+      } catch {
+        if (!disposed) {
+          setPreviewError(true)
+          setLoading(false)
+        }
+      }
+    }
+
+    setAuthenticatedMediaUrl('')
+    void load()
+    return () => {
+      disposed = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [msg.id, directUrl])
+
+  const downloadButton = loading || !downloadUrl ? (
+    <span className="text-[11px] opacity-70">Loading attachment…</span>
+  ) : (
     <a
       href={downloadUrl}
       download={name}
@@ -242,8 +309,12 @@ const MessageBubble = memo(function MessageBubble({
   const isGmail = channelType === 'gmail'
   const canReact = channelType === 'whatsapp' && !!msg.whatsapp_message_id
   const hasMedia = !!msg.media_url || !!msg.media_type
-  const isFailed = msg.status === 'failed'
-  const isPending = msg.status === 'pending'
+  const outboundStates = [msg.send_status, msg.delivery_status, msg.status].filter((value): value is string => !!value)
+  const outboundState = ['blocked', 'failed', 'read', 'delivered', 'sent', 'queued', 'pending']
+    .find(state => outboundStates.includes(state)) || outboundStates[0] || ''
+  const isFailed = outboundState === 'failed'
+  const isBlocked = outboundState === 'blocked'
+  const isPending = outboundState === 'pending' || outboundState === 'queued'
 
   // Correction panel state
   const [showCorrection, setShowCorrection] = useState(false)
@@ -251,6 +322,35 @@ const MessageBubble = memo(function MessageBubble({
   const [learningType, setLearningType] = useState<'knowledge' | 'faq' | 'tone'>('knowledge')
   const [submittingCorrection, setSubmittingCorrection] = useState(false)
   const [correctionSubmitted, setCorrectionSubmitted] = useState(false)
+  const [showAiAudit, setShowAiAudit] = useState(false)
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditError, setAuditError] = useState('')
+  const [aiAudit, setAiAudit] = useState<AiReplyAudit | null>(null)
+
+  const loadAiAudit = useCallback(async () => {
+    if (aiAudit || auditLoading) return
+    setAuditLoading(true)
+    setAuditError('')
+    try {
+      const response = await fetch(`${API_ORIGIN}/api/messages/${msg.id}/ai-audit`, {
+        headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      if (response.status === 403) throw new Error('Only business owners and managers can view this explanation.')
+      if (response.status === 404) throw new Error('No decision audit is available for this reply.')
+      if (!response.ok) throw new Error('Could not load the reply explanation.')
+      setAiAudit(await response.json() as AiReplyAudit)
+    } catch (error) {
+      setAuditError(error instanceof Error ? error.message : 'Could not load the reply explanation.')
+    } finally {
+      setAuditLoading(false)
+    }
+  }, [aiAudit, auditLoading, msg.id])
+
+  const toggleAiAudit = useCallback(() => {
+    const next = !showAiAudit
+    setShowAiAudit(next)
+    if (next) void loadAiAudit()
+  }, [loadAiAudit, showAiAudit])
 
   const handleSubmitCorrection = useCallback(async () => {
     if (!correctionText.trim() || !onCorrectAI || submittingCorrection) return
@@ -277,10 +377,15 @@ const MessageBubble = memo(function MessageBubble({
   }, [isRTL, msg.content, msg.file_name])
 
   const statusIndicator = () => {
-    if (msg.status === 'delivered') return <CheckCheck size={12} className="text-success" />
-    if (msg.status === 'sent' || msg.status === 'manual') return <Check size={12} className="text-text-tertiary" />
-    if (isFailed) return <XCircle size={12} className="text-error" />
-    if (isPending) return <Loader2 size={12} className="animate-spin text-text-tertiary" />
+    const labels = isRTL
+      ? { queued: 'في قائمة الإرسال', sent: 'تم الإرسال', delivered: 'تم التسليم', read: 'تمت القراءة', failed: 'فشل الإرسال', blocked: 'تم الحظر' }
+      : { queued: 'Queued', sent: 'Sent', delivered: 'Delivered', read: 'Read', failed: 'Failed', blocked: 'Blocked' }
+    if (outboundState === 'read') return <span title={msg.error_details || labels.read} className="inline-flex items-center gap-1 text-success"><CheckCheck size={12} />{labels.read}</span>
+    if (outboundState === 'delivered') return <span title={msg.error_details || labels.delivered} className="inline-flex items-center gap-1 text-success"><CheckCheck size={12} />{labels.delivered}</span>
+    if (outboundState === 'sent' || outboundState === 'manual') return <span title={msg.error_details || labels.sent} className="inline-flex items-center gap-1 text-text-tertiary"><Check size={12} />{labels.sent}</span>
+    if (isBlocked) return <span title={msg.error_details || labels.blocked} className="inline-flex items-center gap-1 text-warning"><AlertCircle size={12} />{labels.blocked}</span>
+    if (isFailed) return <span title={msg.error_details || labels.failed} className="inline-flex items-center gap-1 text-error"><XCircle size={12} />{labels.failed}</span>
+    if (isPending) return <span title={labels.queued} className="inline-flex items-center gap-1 text-text-tertiary"><Clock3 size={12} />{labels.queued}</span>
     return null
   }
 
@@ -311,6 +416,25 @@ const MessageBubble = memo(function MessageBubble({
             {sanitizedHtml ? <EmailIframe content={sanitizedHtml} /> : <div className="whitespace-pre-wrap break-words">{msg.content}</div>}
           </div>
         </div>
+        {!isIn && (
+          <div className="mt-1 flex justify-end text-[11px] text-text-secondary">
+            {statusIndicator()}
+          </div>
+        )}
+        {(isFailed || isBlocked) && msg.error_details && (
+          <div role="status" className={`mt-1 text-end text-xs ${isBlocked ? 'text-warning' : 'text-error'}`}>
+            {isBlocked ? (isRTL ? `تم الحظر: ${msg.error_details}` : `Blocked: ${msg.error_details}`) : msg.error_details}
+          </div>
+        )}
+        {msg.is_ai && !isIn && (
+          <AiAuditDisclosure
+            audit={aiAudit}
+            error={auditError}
+            loading={auditLoading}
+            open={showAiAudit}
+            onToggle={toggleAiAudit}
+          />
+        )}
       </div>
     )
   }
@@ -340,9 +464,15 @@ const MessageBubble = memo(function MessageBubble({
                 {msg.content}
               </div>
             )}
-            {isFailed && (
-              <div className="mt-2 flex items-center gap-1.5 text-xs text-error">
-                <AlertCircle size={13} /> Failed to send
+            {(isFailed || isBlocked) && (
+              <div className={`mt-2 flex items-center gap-1.5 text-xs ${isBlocked ? 'text-warning' : 'text-error'}`} role="status">
+                <AlertCircle size={13} /> {isBlocked ? `${isRTL ? 'تم الحظر' : 'Blocked'}: ${msg.error_details || (isRTL ? 'سبب السياسة غير متاح' : 'Policy reason unavailable')}` : (msg.error_details || (isRTL ? 'فشل الإرسال' : 'Failed to send'))}
+              </div>
+            )}
+            {msg.media_processing_status && ['failed', 'unsupported'].includes(msg.media_processing_status) && (
+              <div className="mt-2 flex items-start gap-1.5 rounded-md bg-warning/10 px-2 py-1.5 text-[11px] text-warning" role="status">
+                <AlertCircle size={13} className="mt-0.5 shrink-0" />
+                <span>{msg.media_processing_reason || (isRTL ? 'تعذرت معالجة الوسائط.' : 'Media could not be processed.')}</span>
               </div>
             )}
           </div>
@@ -368,7 +498,28 @@ const MessageBubble = memo(function MessageBubble({
                 </button>
               </div>
             )}
+            {msg.is_ai && !isIn && (
+              <button
+                type="button"
+                onClick={toggleAiAudit}
+                className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-text-tertiary hover:bg-brand/10 hover:text-brand"
+                aria-expanded={showAiAudit}
+              >
+                <Info size={12} /> Why did the bot say this?
+              </button>
+            )}
           </div>
+
+          {showAiAudit && !isIn && (
+            <AiAuditDisclosure
+              audit={aiAudit}
+              error={auditError}
+              loading={auditLoading}
+              open={showAiAudit}
+              onToggle={toggleAiAudit}
+              hideToggle
+            />
+          )}
 
           {/* Inline AI Correction Panel */}
           {showCorrection && msg.is_ai && !isIn && (
@@ -452,5 +603,52 @@ const MessageBubble = memo(function MessageBubble({
     </div>
   )
 })
+
+function AiAuditDisclosure({
+  audit,
+  error,
+  loading,
+  open,
+  onToggle,
+  hideToggle = false,
+}: {
+  audit: AiReplyAudit | null
+  error: string
+  loading: boolean
+  open: boolean
+  onToggle: () => void
+  hideToggle?: boolean
+}) {
+  if (!open && hideToggle) return null
+
+  return (
+    <div className="mt-2 w-full max-w-[min(76%,42rem)] rounded-lg border border-border bg-surface-elevated p-2.5 text-xs text-text-secondary">
+      {!hideToggle && (
+        <button type="button" onClick={onToggle} className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline" aria-expanded={open}>
+          <Info size={13} /> Why did the bot say this?
+        </button>
+      )}
+      {open && (
+        <div className={hideToggle ? '' : 'mt-2'}>
+          {loading && <div role="status">Loading reply explanation…</div>}
+          {!loading && error && <div role="status" className="text-warning">{error}</div>}
+          {!loading && !error && audit && (
+            <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1.5">
+              <dt>Agent</dt><dd className="min-w-0 text-text-primary">{audit.agent?.name ?? 'Unassigned'}{audit.agent_version ? ` · ${audit.agent_version}` : ''}</dd>
+              <dt>Store</dt><dd className="min-w-0 text-text-primary">{audit.commerce_connection ? `${audit.commerce_connection.name || audit.commerce_connection.provider} (${audit.commerce_connection.provider})` : 'No commerce store'}</dd>
+              <dt>Knowledge files</dt><dd className="text-text-primary">{audit.knowledge_file_ids.length ? audit.knowledge_file_ids.join(', ') : 'None retrieved'}</dd>
+              <dt>Knowledge chunks</dt><dd className="text-text-primary">{audit.knowledge_chunk_ids.length ? audit.knowledge_chunk_ids.join(', ') : 'None retrieved'}</dd>
+              <dt>Prompt version</dt><dd className="text-text-primary">{audit.prompt_version || 'Not recorded'}</dd>
+              <dt>AI model</dt><dd className="text-text-primary">{[audit.ai_provider, audit.ai_model].filter(Boolean).join(' · ') || 'Not recorded'}</dd>
+              <dt>Confidence</dt><dd className="text-text-primary">{audit.confidence === null ? 'Not recorded' : `${Math.round(audit.confidence * 100)}%`}</dd>
+              <dt>Escalation</dt><dd className="text-text-primary">{audit.escalation_decision ? `Yes · ${audit.escalation_reason || 'Reason not recorded'}` : `No · ${audit.escalation_reason || 'Automatic reply'}`}</dd>
+              <dt>Consent basis</dt><dd className="text-text-primary">{audit.consent_basis.replaceAll('_', ' ')}</dd>
+            </dl>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default MessageBubble
