@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useLang } from '../../../../lib/LangContext'
 import WorkflowBuilder from '../../../../components/automations/WorkflowBuilder'
 import { Loader2 } from 'lucide-react'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -40,11 +41,12 @@ export default function WorkflowBuilderPage() {
   // Fetch available agents, bots, and sequences
   useEffect(() => {
     const token = getToken()
-    if (!token) return
+    const businessId = getSelectedBusinessId()
+    if (!token || !businessId) return
 
     // Fetch team members (agents)
-    fetch(`${API}/api/businesses/team`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    fetch(`${API}/api/businesses/${businessId}/team`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -56,7 +58,7 @@ export default function WorkflowBuilderPage() {
 
     // Fetch bots
     fetch(`${API}/api/bots`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -68,7 +70,7 @@ export default function WorkflowBuilderPage() {
 
     // Fetch sequences
     fetch(`${API}/api/sequences`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
@@ -89,17 +91,21 @@ export default function WorkflowBuilderPage() {
       const triggerNode = nodes.find(n => n.type === 'trigger')
       const actionNodes = nodes.filter(n => n.type === 'action')
       const conditionNodes = nodes.filter(n => n.type === 'condition')
-      const delayNodes = nodes.filter(n => n.type === 'delay')
+      const rawTrigger = triggerNode?.config || { type: 'keyword', keywords: [] }
+      const triggerConditions = rawTrigger.conditions || Object.fromEntries(
+        Object.entries(rawTrigger).filter(([key]) => key !== 'type')
+      )
 
       const payload = {
         name: L('New Workflow', 'سير عمل جديد'),
         description: L('Created via visual builder', 'تم الإنشاء عبر المنشئ المرئي'),
-        trigger: triggerNode?.config || { type: 'keyword', conditions: [] },
-        conditions: conditionNodes.map(n => n.config),
-        actions: actionNodes.map(n => ({
-          type: n.config.type,
-          config: n.config,
+        trigger: { type: rawTrigger.type || 'keyword', conditions: triggerConditions },
+        conditions: conditionNodes.map(n => ({
+          type: n.config.type || n.config.field,
+          config: { value: n.config.value },
+          operator: n.config.operator || 'and',
         })),
+        actions: actionNodes.map(n => n.config),
       }
 
       const url = workflowId

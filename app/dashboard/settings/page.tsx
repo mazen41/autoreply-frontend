@@ -28,6 +28,7 @@ import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 import Skeleton from '../../../components/ui/Skeleton'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -44,22 +45,22 @@ export default function SettingsPage() {
 
   // Profile Form
   const [profile, setProfile] = useState({
-    name: 'Mohammed Al-Rashid',
-    email: 'mohammed@nazbiz.com',
-    role: 'Owner & Admin',
+    name: '',
+    email: '',
+    role: '',
   })
 
   // Business Form
   const [bizData, setBizData] = useState({
-    business_name: 'NazBiz Omnichannel Commerce',
-    business_type: 'E-commerce & Retail',
-    description: 'Premier regional retailer specializing in smart tech, lifestyle accessories, and 24/7 customer care.',
-    website: 'https://nazbiz.com',
-    phone: '+966 50 123 4567',
-    address: 'King Fahd Road, Al Olaya District',
-    city: 'Riyadh',
-    country: 'Saudi Arabia',
-    services: 'Express Delivery, 14-day Hassle-free Returns, Warranty Replacement, Technical Support',
+    business_name: '',
+    business_type: '',
+    description: '',
+    website: '',
+    phone: '',
+    address: '',
+    city: '',
+    country: '',
+    services: '',
     reply_style: 'friendly',
   })
 
@@ -82,7 +83,7 @@ export default function SettingsPage() {
     }
     try {
       const res = await fetch(`${API}/api/auth/user`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
@@ -91,9 +92,7 @@ export default function SettingsPage() {
           name: data.name || prev.name,
           email: data.email || prev.email,
         }))
-        if (data.business_id) {
-          fetchBusiness(token)
-        }
+        await fetchBusiness(token)
       }
     } catch {
       // Use defaults
@@ -105,7 +104,7 @@ export default function SettingsPage() {
   async function fetchBusiness(token: string) {
     try {
       const res = await fetch(`${API}/api/business`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
@@ -122,6 +121,8 @@ export default function SettingsPage() {
           services: data.services || prev.services,
           reply_style: data.reply_style || prev.reply_style,
         }))
+      } else {
+        throw new Error('Could not load the selected business profile')
       }
     } catch {
       // silent
@@ -134,11 +135,12 @@ export default function SettingsPage() {
     try {
       const token = getToken()
       if (token) {
-        await fetch(`${API}/api/auth/profile`, {
+        const response = await fetch(`${API}/api/auth/profile`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
           body: JSON.stringify({ name: profile.name, email: profile.email }),
         })
+        if (!response.ok) throw new Error('Profile update failed')
       }
       toast.success('Personal profile updated successfully')
     } catch {
@@ -154,11 +156,12 @@ export default function SettingsPage() {
     try {
       const token = getToken()
       if (token) {
-        await fetch(`${API}/api/business`, {
+        const response = await fetch(`${API}/api/business`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
           body: JSON.stringify(bizData),
         })
+        if (!response.ok) throw new Error('Business profile update failed')
       }
       toast.success('Business context and AI profile saved')
     } catch {

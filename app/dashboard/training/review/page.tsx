@@ -4,6 +4,7 @@ import React from 'react'
 import TrainingReview from '../../../../components/dashboard/TrainingReview'
 import { motion } from 'framer-motion'
 import { useLang } from '../../../../lib/LangContext'
+import { getBusinessHeaders } from '../../../../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -18,6 +19,7 @@ function authHeaders(): Record<string, string> {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getToken()}`,
     'Accept': 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 

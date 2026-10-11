@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -15,6 +16,7 @@ function authHeaders(): Record<string, string> {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getToken()}`,
     'Accept': 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 

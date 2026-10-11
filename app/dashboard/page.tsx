@@ -13,6 +13,8 @@ import Badge from '../../components/ui/Badge'
 import Avatar from '../../components/ui/Avatar'
 import ChannelIcon from '../../components/ui/ChannelIcon'
 import { MetricCardSkeleton } from '../../components/ui/Skeleton'
+import { getBusinessHeaders } from '../../lib/businessContext'
+import HandoffTaskQueue from '../../components/inbox/HandoffTaskQueue'
 import {
   MessageSquare,
   Sparkles,
@@ -27,7 +29,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Bot,
-  RefreshCw,
   Plus,
   ExternalLink,
 } from 'lucide-react'
@@ -39,77 +40,77 @@ function getToken(): string {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+type DashboardSection = 'stats' | 'ai' | 'channels' | 'daily' | 'inbox'
+
+const SECTION_LABELS: Record<DashboardSection, string> = {
+  stats: 'Message totals', ai: 'AI performance', channels: 'Connected channels', daily: 'Message chart', inbox: 'Recent activity',
+}
+
+function SectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex min-h-[116px] flex-col items-start justify-center gap-2 rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-text-primary">
+      <span>{message}</span>
+      <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>
+    </div>
+  )
+}
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<any>(null)
   const [recentConversations, setRecentConversations] = useState<any[]>([])
   const [channels, setChannels] = useState<any[]>([])
   const [dailyMessages, setDailyMessages] = useState<number[]>([])
+  const [dailyDates, setDailyDates] = useState<string[]>([])
   const [aiPerformance, setAiPerformance] = useState<any>(null)
-  const [loadError, setLoadError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d')
+  const [sectionLoading, setSectionLoading] = useState<Record<DashboardSection, boolean>>({ stats: true, ai: true, channels: true, daily: true, inbox: true })
+  const [sectionErrors, setSectionErrors] = useState<Record<DashboardSection, string | null>>({ stats: null, ai: null, channels: null, daily: null, inbox: null })
 
-  const fetchDashboardData = useCallback(async () => {
-    setLoading(true)
-    setLoadError(null)
+  const loadSection = useCallback(async <T,>(section: DashboardSection, path: string, onData: (data: T) => void) => {
+    setSectionLoading(previous => ({ ...previous, [section]: true }))
+    setSectionErrors(previous => ({ ...previous, [section]: null }))
     try {
       const token = getToken()
-      if (!token) {
-        throw new Error('Your session expired. Sign in again to load dashboard data.')
-      }
-
-      const days = Number.parseInt(timeRange, 10)
-      const [statsRes, inboxRes, channelsRes, dailyRes, aiRes] = await Promise.all([
-        fetch(`${API}/api/stats`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }),
-        fetch(`${API}/api/inbox`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }),
-        fetch(`${API}/api/channels`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }),
-        fetch(`${API}/api/reports/daily-messages?days=${days}`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }),
-        fetch(`${API}/api/reports/ai-performance`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }),
-      ])
-
-      if (!statsRes.ok || !inboxRes.ok || !channelsRes.ok || !dailyRes.ok || !aiRes.ok) {
-        throw new Error('Some dashboard data could not be loaded. Retry to refresh it.')
-      }
-      const [statsData, inboxData, channelData, dailyData, aiData] = await Promise.all([
-        statsRes.json(), inboxRes.json(), channelsRes.json(), dailyRes.json(), aiRes.json(),
-      ])
-      setStats(statsData)
-      setAiPerformance(aiData)
-      setDailyMessages(Array.isArray(dailyData.data) ? dailyData.data.map(Number) : [])
-      const chList = Array.isArray(channelData) ? channelData : channelData.data || []
-      setChannels(chList.filter((channel: any) => channel.status === 'connected'))
-
-      const rows = Array.isArray(inboxData.data) ? inboxData.data : []
-      setRecentConversations(rows.slice(0, 5).map((item: any) => ({
-        id: item.id,
-        sender_name: item.sender_name || item.sender_id || 'Unknown customer',
-        channel: item.channel?.type || 'unknown',
-        message: item.latest_message?.content || item.message_preview || item.last_message || '',
-        ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
-        time: item.last_message_at || item.updated_at || item.created_at,
-        status: item.status,
-      })))
-    } catch (e) {
-      setLoadError(e instanceof Error ? e.message : 'Could not load dashboard data.')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}${path}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      if (!response.ok) throw new Error(`Could not load ${SECTION_LABELS[section].toLowerCase()} (${response.status}).`)
+      onData(await response.json() as T)
+    } catch (cause) {
+      setSectionErrors(previous => ({ ...previous, [section]: cause instanceof Error ? cause.message : `Could not load ${SECTION_LABELS[section].toLowerCase()}.` }))
     } finally {
-      setLoading(false)
+      setSectionLoading(previous => ({ ...previous, [section]: false }))
     }
-  }, [timeRange])
+  }, [])
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [fetchDashboardData])
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+  const days = Number.parseInt(timeRange, 10)
+  const loadStats = useCallback(() => loadSection('stats', `/api/stats?days=${days}&timezone=${encodeURIComponent(timezone)}`, setStats), [days, loadSection, timezone])
+  const loadAi = useCallback(() => loadSection('ai', `/api/reports/ai-performance?days=${days}&timezone=${encodeURIComponent(timezone)}`, setAiPerformance), [days, loadSection, timezone])
+  const loadDaily = useCallback(() => loadSection('daily', `/api/reports/daily-messages?days=${days}&timezone=${encodeURIComponent(timezone)}`, (data: any) => {
+    setDailyMessages(Array.isArray(data.data) ? data.data.map(Number) : [])
+    setDailyDates(Array.isArray(data.dates) ? data.dates : [])
+  }), [days, loadSection, timezone])
+  const loadChannels = useCallback(() => loadSection('channels', '/api/channels', (data: any) => {
+    const channelList = Array.isArray(data) ? data : data.data || []
+    setChannels(channelList.filter((channel: any) => channel.status === 'connected'))
+  }), [loadSection])
+  const loadInbox = useCallback(() => loadSection('inbox', '/api/inbox', (data: any) => {
+    const rows = Array.isArray(data.data) ? data.data : []
+    setRecentConversations(rows.slice(0, 5).map((item: any) => ({
+      id: item.id,
+      sender_name: item.sender_name || item.sender_id || 'Unknown customer',
+      channel: item.channel?.type || 'unknown',
+      message: item.latest_message?.content || item.message_preview || item.last_message || '',
+      ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
+      time: item.last_message_at || item.updated_at || item.created_at,
+      status: item.status,
+    })))
+  }), [loadSection])
+
+  useEffect(() => { void loadStats(); void loadAi(); void loadDaily() }, [loadStats, loadAi, loadDaily])
+  useEffect(() => { void loadChannels(); void loadInbox() }, [loadChannels, loadInbox])
 
   const maxDayVolume = Math.max(...dailyMessages, 1)
 
@@ -118,7 +119,7 @@ export default function DashboardPage() {
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
         title="Command Center"
-        description="Real-time omnichannel engagement, AI agent autonomy, and conversation triage across all channels."
+        description="Omnichannel engagement, AI agent performance, and recent conversation activity across connected channels."
         breadcrumbs={[
           { label: 'NazBiz', href: '/dashboard' },
           { label: 'Dashboard' },
@@ -150,12 +151,7 @@ export default function DashboardPage() {
         }
       />
 
-      {loadError && (
-        <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm text-text-primary">
-          <span>{loadError}</span>
-          <Button variant="outline" size="sm" onClick={fetchDashboardData}>Retry</Button>
-        </div>
-      )}
+      <HandoffTaskQueue />
 
       {/* ─── Top-Level KPIs Row ─────────────────────────────────────────── */}
       <motion.div
@@ -164,52 +160,18 @@ export default function DashboardPage() {
         initial="hidden"
         animate="visible"
       >
-        {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCardSkeleton />
-            </motion.div>
-          ))
-        ) : (
-          <>
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label="Total Messages"
-                value={(stats?.total_messages ?? 0).toLocaleString()}
-                subValue="Messages across your channels"
-                icon={<MessageSquare size={18} />}
-              />
-            </motion.div>
-
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label="AI Autonomy Rate"
-                value={`${aiPerformance?.auto_reply_rate ?? 0}%`}
-                subValue={`${aiPerformance?.auto_replies ?? 0} AI replies`}
-                variant="ai"
-                icon={<Sparkles size={18} />}
-              />
-            </motion.div>
-
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label="Avg Response Time"
-                value={aiPerformance?.avg_response_time_formatted || 'No data'}
-                subValue="Average reply time"
-                icon={<Clock size={18} />}
-              />
-            </motion.div>
-
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label="Connected Channels"
-                value={channels.length}
-                subValue="Active communication accounts"
-                icon={<Radio size={18} />}
-              />
-            </motion.div>
-          </>
-        )}
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          {sectionLoading.stats ? <MetricCardSkeleton /> : sectionErrors.stats ? <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} /> : <MetricCard label="Total Messages" value={(stats?.total_messages ?? 0).toLocaleString()} subValue={`${timeRange} · messages across your channels`} icon={<MessageSquare size={18} />} />}
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          {sectionLoading.ai ? <MetricCardSkeleton /> : sectionErrors.ai ? <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} /> : <MetricCard label="AI Share of Replies" value={`${aiPerformance?.ai_share_of_replies ?? 0}%`} subValue={`${aiPerformance?.auto_replies ?? 0} AI replies · ${timeRange}`} variant="ai" icon={<Sparkles size={18} />} />}
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          {sectionLoading.ai ? <MetricCardSkeleton /> : sectionErrors.ai ? <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} /> : <MetricCard label="Median Response Time" value={aiPerformance?.median_response_time_formatted || 'No data'} subValue={`Customer message to first reply · ${timeRange}`} icon={<Clock size={18} />} />}
+        </motion.div>
+        <motion.div variants={variants.fadeUp} transition={springs.standard}>
+          {sectionLoading.channels ? <MetricCardSkeleton /> : sectionErrors.channels ? <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} /> : <MetricCard label="Connected Channels" value={channels.length} subValue="Active communication accounts" icon={<Radio size={18} />} />}
+        </motion.div>
       </motion.div>
 
       {/* ─── Main Grid: Charts & Performance ─────────────────────────────── */}
@@ -230,11 +192,11 @@ export default function DashboardPage() {
           </CardHeader>
 
           <CardContent className="pt-4">
-            <div className="h-60 flex items-end justify-between gap-3 pt-6 pb-2">
+            {sectionLoading.daily ? <div className="h-60 animate-pulse rounded-lg bg-surface-elevated" /> : sectionErrors.daily ? <SectionError message={sectionErrors.daily} onRetry={() => void loadDaily()} /> : <div className="h-60 flex items-end justify-between gap-3 pt-6 pb-2">
               {dailyMessages.map((total, index) => {
                 const totalPct = Math.round((total / maxDayVolume) * 100)
-                const day = new Date(Date.now() - (dailyMessages.length - index - 1) * 86400000)
-                  .toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
+                const date = dailyDates[index]
+                const day = date ? `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}` : ''
 
                 return (
                   <div
@@ -260,8 +222,8 @@ export default function DashboardPage() {
                   </div>
                 )
               })}
-            </div>
-            {dailyMessages.length === 0 && <p className="py-10 text-center text-sm text-text-tertiary">No message history for this period.</p>}
+            </div>}
+            {!sectionLoading.daily && !sectionErrors.daily && dailyMessages.length === 0 && <p className="py-10 text-center text-sm text-text-tertiary">No message history for this period.</p>}
           </CardContent>
         </Card>
 
@@ -271,7 +233,7 @@ export default function DashboardPage() {
             <CardDescription>Accounts currently connected to this workspace.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {channels.length === 0 ? <p className="text-sm text-text-tertiary">No connected channels.</p> : channels.map((channel) => (
+            {sectionLoading.channels ? <p className="text-sm text-text-tertiary">Loading channels…</p> : sectionErrors.channels ? <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} /> : channels.length === 0 ? <p className="text-sm text-text-tertiary">No connected channels.</p> : channels.map((channel) => (
               <div key={channel.id} className="flex items-center gap-2 border-b border-border py-2 last:border-0">
                 <ChannelIcon type={channel.type} size={16} />
                 <span className="truncate text-sm text-text-primary">{channel.page_name || channel.page_id || channel.type}</span>
@@ -289,9 +251,9 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle>Live Inbound Activity Feed</CardTitle>
+              <CardTitle>Recent inbound activity</CardTitle>
               <CardDescription>
-                Incoming messages streaming in real-time across all connected platforms.
+                The latest conversations across connected platforms.
               </CardDescription>
             </div>
             <Link href="/inbox">
@@ -303,7 +265,7 @@ export default function DashboardPage() {
 
           <CardContent className="p-0">
             <div className="divide-y divide-border/60">
-              {recentConversations.length === 0 ? <p className="px-4 py-10 text-center text-sm text-text-tertiary">No conversations yet.</p> : recentConversations.map((item) => (
+              {sectionLoading.inbox ? <p className="px-4 py-10 text-center text-sm text-text-tertiary">Loading recent activity…</p> : sectionErrors.inbox ? <div className="p-4"><SectionError message={sectionErrors.inbox} onRetry={() => void loadInbox()} /></div> : recentConversations.length === 0 ? <p className="px-4 py-10 text-center text-sm text-text-tertiary">No conversations yet.</p> : recentConversations.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 flex items-center justify-between gap-4 hover:bg-surface-elevated/40 transition-colors group"

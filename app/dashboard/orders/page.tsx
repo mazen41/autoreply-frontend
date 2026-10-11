@@ -7,6 +7,7 @@ import {
   ExternalLink, ChevronDown, ChevronUp, X
 } from 'lucide-react'
 import Select from '../../../components/ui/Select'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -24,9 +25,10 @@ interface Order {
   currency: string
   status: string
   store_type: 'salla' | 'shopify' | 'woocommerce'
+  store_name?: string | null
   customer_name: string | null
   customer_phone: string | null
-  conversation_id: number
+  conversation_id?: number | null
   created_at: string
 }
 
@@ -34,6 +36,7 @@ export default function OrdersPage() {
   const { isRTL } = useLang()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
   const [storeFilter, setStoreFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
@@ -41,6 +44,7 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
+    setLoadError('')
     try {
       const token = getToken()
       const params = new URLSearchParams()
@@ -49,14 +53,19 @@ export default function OrdersPage() {
       if (statusFilter) params.append('status', statusFilter)
 
       const res = await fetch(`${API}/api/orders?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
         setOrders(data.data || data || [])
+      } else {
+        setOrders([])
+        setLoadError(L('Orders could not be loaded for the selected business.', 'تعذر تحميل طلبات النشاط التجاري المحدد.'))
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error)
+      setOrders([])
+      setLoadError(L('Orders could not be loaded. Check your connection and try again.', 'تعذر تحميل الطلبات. تحقق من الاتصال وحاول مرة أخرى.'))
     } finally {
       setLoading(false)
     }
@@ -142,6 +151,8 @@ export default function OrdersPage() {
             <p className="text-sm text-[var(--text-secondary)]">{L('Loading orders...', 'جاري تحميل الطلبات...')}</p>
           </div>
         </div>
+      ) : loadError ? (
+        <div role="alert" className="text-center py-16 text-sm text-[var(--text-secondary)]">{loadError}</div>
       ) : orders.length === 0 ? (
         <div className="text-center py-24">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--accent-subtle)] to-[var(--surface-elevated)] flex items-center justify-center mx-auto mb-5 border border-[var(--border)]">
@@ -167,7 +178,7 @@ export default function OrdersPage() {
                       {order.status}
                     </span>
                     <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--text-tertiary)]">
-                      {order.store_type}
+                      {order.store_name || order.store_type}
                     </span>
                   </div>
                   <p className="text-xs text-[var(--text-secondary)] mb-1">
@@ -183,13 +194,13 @@ export default function OrdersPage() {
                   <p className="font-black text-lg text-[var(--text-primary)]">
                     {order.total ? `${order.total} ${order.currency}` : '—'}
                   </p>
-                  <a
+                  {order.conversation_id && <a
                     href={`/inbox?conversation_id=${order.conversation_id}`}
                     className="inline-flex items-center gap-1 text-[10px] text-[var(--accent)] hover:underline mt-1"
                   >
                     {L('View conversation', 'عرض المحادثة')}
                     <ExternalLink size={10} />
-                  </a>
+                  </a>}
                 </div>
               </div>
             </div>

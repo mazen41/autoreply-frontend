@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { getBusinessHeaders } from '../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io') + '/api'
 
@@ -15,6 +16,7 @@ function authHeaders() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getToken()}`,
     'Accept': 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 

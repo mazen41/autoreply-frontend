@@ -163,7 +163,14 @@ export default function SequenceDetailPage() {
   }
 
   const exportEnrollments = () => {
-    const rows = [['Contact', 'Status', 'Current step', 'Started at'], ...enrollments.map((item) => [item.conversation?.sender_name || item.conversation?.sender_id || '', item.status || '', String(item.current_step ?? ''), item.started_at || ''])]
+    const rows = [['Contact', 'Sending account', 'Status', 'Reason', 'Current step', 'Started at'], ...enrollments.map((item) => [
+      item.conversation?.sender_name || item.conversation?.sender_id || '',
+      item.conversation?.channel?.page_name || item.conversation?.channel?.page_id || item.conversation?.channel?.type || '',
+      item.status || '',
+      item.stop_reason || item.failed_reason || '',
+      String(item.current_step ?? ''),
+      item.started_at || '',
+    ])]
     const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n')
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const anchor = document.createElement('a')
@@ -315,7 +322,7 @@ export default function SequenceDetailPage() {
             ))}
           </div>
 
-          {/* Placeholder table */}
+          {/* Enrollment outcomes and delivery context */}
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
               <h3 className="text-sm font-bold text-[var(--text-primary)]">Enrolled Contacts</h3>
@@ -326,7 +333,18 @@ export default function SequenceDetailPage() {
             {enrollments.length === 0 ? <div className="p-5 text-center text-[var(--text-tertiary)]">
               <Users size={32} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm">No enrollment records found.</p>
-            </div> : <div className="divide-y divide-border">{enrollments.map((item) => <div key={item.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm"><span>{item.conversation?.sender_name || item.conversation?.sender_id || 'Unknown contact'}</span><span className="text-text-muted">{item.status}</span></div>)}</div>}
+            </div> : <div className="divide-y divide-border">{enrollments.map((item) => {
+              const reason = item.stop_reason || item.failed_reason
+              const sender = item.conversation?.channel
+              return <div key={item.id} className="flex flex-col gap-1 px-5 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="truncate text-[var(--text-primary)]">{item.conversation?.sender_name || item.conversation?.sender_id || 'Unknown contact'}</p>
+                  <p className="text-xs text-[var(--text-tertiary)]">Sending account: {sender?.page_name || sender?.page_id || sender?.type || 'Unavailable'}</p>
+                  {reason && <p className="text-xs text-warning">Reason: {String(reason).replaceAll('_', ' ')}</p>}
+                </div>
+                <span className="shrink-0 text-text-muted">{item.status}</span>
+              </div>
+            })}</div>}
           </div>
         </div>
       )}

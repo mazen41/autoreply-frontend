@@ -1,33 +1,34 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import PageHeader from '../../../components/ui/PageHeader'
-import MetricCard from '../../../components/ui/MetricCard'
-import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
+import Card, { CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
-import Input from '../../../components/ui/Input'
+import Input, { Textarea } from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
-import Tabs from '../../../components/ui/Tabs'
-import ChannelIcon from '../../../components/ui/ChannelIcon'
-import {
-  MessageCircle,
-  QrCode,
-  ShieldCheck,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  Send,
-  Zap,
-  Sliders,
-  FileText,
-  UserCheck,
-  Building,
-  Globe,
-  Sparkles,
-  ExternalLink,
-  Plus,
-} from 'lucide-react'
+import { AlertCircle, CheckCircle2, RefreshCw, Send } from 'lucide-react'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+interface Channel {
+  id: number
+  type: string
+  page_id: string
+  page_name: string
+  status: string
+  metadata?: Record<string, any>
+}
+
+interface CloudTemplate {
+  id: number
+  name: string
+  language: string
+  category: string
+  status: string
+  rejection_reason?: string | null
+}
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -35,382 +36,206 @@ function getToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-
 export default function WhatsAppPage() {
-  const [activeTab, setActiveTab] = useState('overview')
-  const [loading, setLoading] = useState(false)
-  const [pairingCode, setPairingCode] = useState<string | null>('4821-9903')
-  const [isConnected, setIsConnected] = useState(true)
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [selectedChannelId, setSelectedChannelId] = useState('')
+  const [templates, setTemplates] = useState<CloudTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [working, setWorking] = useState(false)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [connection, setConnection] = useState({ phone_number_id: '', business_account_id: '', access_token: '', name: '' })
+  const [template, setTemplate] = useState({ name: '', language: 'en_US', category: 'UTILITY', body: '' })
 
-  // Templates list
-  const templates = [
-    {
-      id: 'tpl-1',
-      name: 'order_status_update',
-      category: 'Utility',
-      status: 'APPROVED',
-      language: 'Arabic & English',
-      preview: 'Hello {{customer_name}}, your order #{{order_id}} has been shipped and is on its way.',
-    },
-    {
-      id: 'tpl-2',
-      name: 'abandoned_cart_reminder',
-      category: 'Marketing',
-      status: 'APPROVED',
-      language: 'Arabic',
-      preview: 'مرحباً {{customer_name}}، لاحظنا أنك تركت بعض المنتجات في سلتك. استخدم كود NAZ10 لخصم 10%.',
-    },
-    {
-      id: 'tpl-3',
-      name: 'appointment_confirmation',
-      category: 'Utility',
-      status: 'APPROVED',
-      language: 'Arabic & English',
-      preview: 'Your scheduled consultation is confirmed for {{date}} at {{time}} AST.',
-    },
-  ]
+  const selectedChannel = channels.find(channel => String(channel.id) === selectedChannelId)
+  const cloudChannels = channels.filter(channel => channel.type === 'whatsapp' && channel.metadata?.whatsapp_provider === 'cloud')
+
+  const loadChannels = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const authToken = getToken()
+      if (!authToken) throw new Error('Your session expired. Sign in again.')
+      if (!getSelectedBusinessId()) throw new Error('Select a business before managing WhatsApp.')
+      const response = await fetch(`${API}/api/channels`, {
+        headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Could not load WhatsApp channels.')
+      const rows: Channel[] = Array.isArray(data) ? data : (data.data || [])
+      const whatsapp = rows.filter(channel => channel.type === 'whatsapp')
+      setChannels(whatsapp)
+      setSelectedChannelId(current => whatsapp.some(channel => String(channel.id) === current)
+        ? current
+        : String(whatsapp.find(channel => channel.metadata?.whatsapp_provider === 'cloud')?.id || ''))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load WhatsApp channels.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { void loadChannels() }, [loadChannels])
+
+  const loadTemplates = useCallback(async (channelId: string) => {
+    setTemplates([])
+    if (!channelId) return
+    setWorking(true)
+    setError('')
+    try {
+      const response = await fetch(`${API}/api/channels/whatsapp/${channelId}/templates`, {
+        headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Could not sync WhatsApp templates.')
+      setTemplates(data.templates || [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not sync WhatsApp templates.')
+    } finally {
+      setWorking(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedChannel?.metadata?.whatsapp_provider === 'cloud') void loadTemplates(selectedChannelId)
+    else setTemplates([])
+  }, [loadTemplates, selectedChannel, selectedChannelId])
+
+  const connectCloud = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setWorking(true)
+    setError('')
+    setNotice('')
+    try {
+      const response = await fetch(`${API}/api/channels/whatsapp/cloud`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify(connection),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Could not connect this WhatsApp Cloud number.')
+      setConnection({ phone_number_id: '', business_account_id: '', access_token: '', name: '' })
+      setNotice(data.webhook_subscribed
+        ? 'WhatsApp Cloud API connected and its WABA webhook subscription was registered. Confirm the Meta app webhook subscribes to whatsapp_business_account messages.'
+        : 'WhatsApp Cloud API connected, but the WABA webhook subscription failed. Check token permissions and subscribe the Meta app to whatsapp_business_account messages.')
+      await loadChannels()
+      if (data.channel?.id) setSelectedChannelId(String(data.channel.id))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not connect this WhatsApp Cloud number.')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  const createTemplate = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!selectedChannelId) return
+    setWorking(true)
+    setError('')
+    setNotice('')
+    try {
+      const response = await fetch(`${API}/api/channels/whatsapp/${selectedChannelId}/templates`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify({
+          name: template.name,
+          language: template.language,
+          category: template.category,
+          components: [{ type: 'BODY', text: template.body }],
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Template submission failed.')
+      setTemplate({ name: '', language: 'en_US', category: 'UTILITY', body: '' })
+      setNotice('Template submitted to Meta. It can be used for campaigns after Meta approves it.')
+      await loadTemplates(selectedChannelId)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Template submission failed.')
+    } finally {
+      setWorking(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
-      {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
-        title="WhatsApp Business Hub"
-        description="Official WhatsApp Cloud API & automated conversational management. Manage connected numbers, templates, and AI auto-replies."
-        breadcrumbs={[
-          { label: 'NazBiz', href: '/dashboard' },
-          { label: 'WhatsApp Hub' },
-        ]}
-        primaryAction={
-          <Button
-            variant="primary"
-            size="md"
-            icon={<Plus size={16} />}
-            onClick={() => setActiveTab('templates')}
-          >
-            New Template
-          </Button>
-        }
-        secondaryActions={
-          <Badge variant="success" dot size="md">
-            Cloud API: Healthy (High Tier)
-          </Badge>
-        }
+        title="WhatsApp Business"
+        description="Manage official Cloud API connections and sync approved message templates."
+        breadcrumbs={[{ label: 'NazBiz', href: '/dashboard' }, { label: 'WhatsApp' }]}
       />
 
-      {/* ─── KPI Metrics ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          label="Active WhatsApp Number"
-          value="+966 50 123 4567"
-          subValue="Verified Business"
-          icon={<MessageCircle size={18} />}
-        />
-        <MetricCard
-          label="Quality Rating"
-          value="GREEN"
-          subValue="High tier tier (100k msgs/day)"
-          icon={<ShieldCheck size={18} />}
-          variant="default"
-        />
-        <MetricCard
-          label="WhatsApp Messages"
-          value="6,420"
-          subValue="Sent & received this week"
-          trend={{ value: 18.2, isPositive: true }}
-          icon={<Send size={18} />}
-        />
-        <MetricCard
-          label="AI Autonomy on WhatsApp"
-          value="84.2%"
-          subValue="5,405 AI resolved replies"
-          trend={{ value: 6.4, isPositive: true }}
-          variant="ai"
-          icon={<Sparkles size={18} />}
-        />
-      </div>
+      {error && <div role="alert" className="rounded-xl border border-error/40 bg-error/10 p-3 text-sm text-error flex items-center gap-2"><AlertCircle size={16} />{error}</div>}
+      {notice && <div role="status" className="rounded-xl border border-success/40 bg-success/10 p-3 text-sm text-success flex items-center gap-2"><CheckCircle2 size={16} />{notice}</div>}
 
-      {/* ─── Segmented Tabs ──────────────────────────────────────────────── */}
-      <Tabs
-        tabs={[
-          { id: 'overview', label: 'Connection & Health', icon: <QrCode size={14} /> },
-          { id: 'templates', label: 'Approved Templates', icon: <FileText size={14} />, count: templates.length },
-          { id: 'automation', label: 'AI & Automation Rules', icon: <Zap size={14} /> },
-          { id: 'profile', label: 'Business Profile', icon: <Building size={14} /> },
-        ]}
-        activeTab={activeTab}
-        onChange={setActiveTab}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Connect WhatsApp Cloud API</CardTitle>
+          <CardDescription>Enter the Meta phone number ID, WhatsApp Business Account ID, and a system-user access token with messaging and management permissions.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={connectCloud} className="grid gap-4 md:grid-cols-2">
+            <Input label="Phone number ID *" value={connection.phone_number_id} onChange={e => setConnection({ ...connection, phone_number_id: e.target.value })} required />
+            <Input label="WhatsApp Business Account ID *" value={connection.business_account_id} onChange={e => setConnection({ ...connection, business_account_id: e.target.value })} required />
+            <Input label="Display name" value={connection.name} onChange={e => setConnection({ ...connection, name: e.target.value })} />
+            <Input label="System-user access token *" type="password" value={connection.access_token} onChange={e => setConnection({ ...connection, access_token: e.target.value })} required autoComplete="new-password" />
+            <div className="md:col-span-2"><Button type="submit" variant="primary" loading={working} icon={<Send size={14} />}>Verify and connect</Button></div>
+          </form>
+        </CardContent>
+      </Card>
 
-      {/* ─── Tab 1: Overview & Connection ─────────────────────────────────── */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Connected Phone Numbers</CardTitle>
-              <CardDescription>
-                Live WhatsApp instances synced with the NazBiz inbox and AI routing engine.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-4 pt-2">
-              <div className="p-4 rounded-xl bg-surface-elevated border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-success/10 border border-success/20 text-success flex items-center justify-center p-2.5">
-                    <MessageCircle size={28} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-text-primary">
-                        NazBiz Official VIP Support
-                      </h4>
-                      <Badge variant="success" dot size="xs">
-                        Connected
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-text-secondary mt-0.5 font-mono">
-                      +966 50 123 4567
-                    </div>
-                    <div className="text-[11px] text-text-tertiary mt-1">
-                      Instance ID: wa_inst_99482 • Meta Cloud API v20.0
-                    </div>
-                  </div>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div><CardTitle>Connected WhatsApp numbers</CardTitle><CardDescription>Each account is listed independently. Evolution sessions are unofficial and cannot send campaigns.</CardDescription></div>
+            <Button variant="outline" size="sm" onClick={() => void loadChannels()} loading={loading} icon={<RefreshCw size={14} />}>Refresh</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {loading ? <p className="text-sm text-text-secondary">Loading connections…</p> : channels.length === 0 ? <p className="text-sm text-text-secondary">No WhatsApp numbers are connected to this business.</p> : channels.map(channel => {
+            const isCloud = channel.metadata?.whatsapp_provider === 'cloud'
+            return (
+              <button key={channel.id} type="button" onClick={() => setSelectedChannelId(String(channel.id))} className={`w-full rounded-xl border p-4 text-left ${selectedChannelId === String(channel.id) ? 'border-primary bg-primary/5' : 'border-border'}`}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div><p className="font-semibold text-text-primary">{channel.page_name || channel.metadata?.display_phone_number || channel.page_id}</p><p className="text-xs text-text-secondary">{channel.metadata?.display_phone_number || channel.page_id}</p></div>
+                  <div className="flex gap-2"><Badge variant={isCloud ? 'success' : 'warning'} size="xs">{isCloud ? 'Official Cloud API' : 'Unofficial Evolution'}</Badge><Badge variant={channel.status === 'connected' ? 'success' : 'default'} size="xs">{channel.status}</Badge></div>
                 </div>
+                {isCloud && channel.metadata?.webhook_subscribed !== true && <p className="mt-2 text-xs text-warning">WABA webhook subscription is not confirmed; inbound updates may not reach Naz.</p>}
+              </button>
+            )
+          })}
+        </CardContent>
+      </Card>
 
-                <div className="flex items-center gap-2 self-start sm:self-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => setActiveTab('automation')}
-                  >
-                    AI Settings
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => alert('Disconnect number dialog')}
-                  >
-                    Unlink
-                  </Button>
-                </div>
-              </div>
-
-              {/* API Health Diagnostic */}
-              <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border/80 space-y-2.5">
-                <div className="text-xs font-bold text-text-primary flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-success" />
-                  <span>Meta Webhook & Cloud Health</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
-                  <div>
-                    <span className="text-text-tertiary">Webhook Status</span>
-                    <div className="font-semibold text-text-primary mt-0.5">Active (0 dropped)</div>
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Daily Limit</span>
-                    <div className="font-semibold text-text-primary mt-0.5">100,000 / day</div>
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Avg Delivery Latency</span>
-                    <div className="font-semibold text-text-primary mt-0.5">420 ms</div>
-                  </div>
-                  <div>
-                    <span className="text-text-tertiary">Assigned Bot</span>
-                    <div className="font-semibold text-brand mt-0.5">OmniSales v2</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Connect Pairing Box */}
+      {selectedChannel?.metadata?.whatsapp_provider === 'cloud' && (
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card>
-            <CardHeader>
-              <CardTitle>Pair New Number</CardTitle>
-              <CardDescription>
-                Connect a secondary support line or backup business phone
-              </CardDescription>
-            </CardHeader>
+            <CardHeader><CardTitle>Templates for {selectedChannel.page_name}</CardTitle><CardDescription>Template statuses are refreshed from Meta. Campaigns can use approved templates only.</CardDescription></CardHeader>
+            <CardContent className="space-y-3">
+              <Button variant="outline" size="sm" onClick={() => void loadTemplates(selectedChannelId)} loading={working} icon={<RefreshCw size={14} />}>Sync from Meta</Button>
+              {templates.length === 0 ? <p className="text-sm text-text-secondary">No templates returned for this number.</p> : templates.map(item => (
+                <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                  <div><p className="text-sm font-medium">{item.name}</p><p className="text-xs text-text-secondary">{item.language} · {item.category}{item.rejection_reason ? ` · ${item.rejection_reason}` : ''}</p></div>
+                  <Badge variant={item.status === 'APPROVED' ? 'success' : item.status === 'REJECTED' ? 'error' : 'warning'} size="xs">{item.status}</Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-            <CardContent className="space-y-4 pt-2">
-              <div className="p-4 rounded-xl bg-surface-elevated text-center space-y-3 border border-border">
-                <div className="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center mx-auto">
-                  <QrCode size={24} />
+          <Card>
+            <CardHeader><CardTitle>Submit a message template</CardTitle><CardDescription>Meta reviews new templates before they become available for campaigns.</CardDescription></CardHeader>
+            <CardContent>
+              <form onSubmit={createTemplate} className="space-y-4">
+                <Input label="Template name *" value={template.name} onChange={e => setTemplate({ ...template, name: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })} required pattern="[a-z0-9_]+" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input label="Language code *" value={template.language} onChange={e => setTemplate({ ...template, language: e.target.value })} placeholder="en_US" required />
+                  <Select label="Category" value={template.category} onChange={e => setTemplate({ ...template, category: e.target.value })} options={[{ value: 'UTILITY', label: 'Utility' }, { value: 'MARKETING', label: 'Marketing' }, { value: 'AUTHENTICATION', label: 'Authentication' }]} />
                 </div>
-                <div className="text-xs text-text-secondary leading-relaxed">
-                  Open WhatsApp on your device &gt; Linked Devices &gt; Link with phone number:
-                </div>
-                <div className="p-3 bg-surface-card rounded-lg font-mono text-base font-bold text-brand tracking-widest border border-border">
-                  {pairingCode}
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
-                onClick={() => setPairingCode('9102-7714')}
-              >
-                Regenerate Pairing Code
-              </Button>
+                <Textarea label="Body text *" value={template.body} onChange={e => setTemplate({ ...template, body: e.target.value })} rows={5} required />
+                <Button type="submit" variant="primary" loading={working}>Submit to Meta</Button>
+              </form>
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {/* ─── Tab 2: WhatsApp Templates ────────────────────────────────────── */}
-      {activeTab === 'templates' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-text-primary">
-                Meta Pre-Approved Message Templates
-              </h3>
-              <p className="text-xs text-text-secondary mt-0.5">
-                Templates are required to initiate outbound conversations outside the 24-hour service window.
-              </p>
-            </div>
-            <Button variant="primary" size="sm">
-              + Submit New Template
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {templates.map((tpl) => (
-              <Card key={tpl.id} className="flex flex-col justify-between">
-                <div>
-                  <CardHeader className="pb-2.5">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="neutral" size="xs">
-                        {tpl.category}
-                      </Badge>
-                      <Badge variant="success" size="xs">
-                        {tpl.status}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xs font-mono font-bold mt-2 truncate">
-                      {tpl.name}
-                    </CardTitle>
-                    <span className="text-[10px] text-text-tertiary">
-                      {tpl.language}
-                    </span>
-                  </CardHeader>
-
-                  <CardContent className="pt-2">
-                    <div className="p-3 rounded-lg bg-surface-elevated text-xs font-medium text-text-secondary leading-relaxed border border-border/60">
-                      "{tpl.preview}"
-                    </div>
-                  </CardContent>
-                </div>
-
-                <CardFooter className="flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-text-tertiary">Ready to broadcast</span>
-                  <Button variant="ghost" size="xs">
-                    Test Send
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ─── Tab 3: Automation & AI Rules ─────────────────────────────────── */}
-      {activeTab === 'automation' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>WhatsApp AI Automation Settings</CardTitle>
-            <CardDescription>
-              Configure how the AI agent responds to incoming WhatsApp inquiries
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-5 pt-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="Assigned AI Agent"
-                defaultValue="omnisales"
-                options={[
-                  { value: 'omnisales', label: 'OmniSales Agent v2 (Active)' },
-                  { value: 'support', label: '24/7 Care & Triage Copilot' },
-                  { value: 'lead', label: 'Lead Qualification Bot' },
-                ]}
-              />
-
-              <Select
-                label="Voice Note Processing"
-                defaultValue="transcribe-reply"
-                options={[
-                  { value: 'transcribe-reply', label: 'Transcribe & Reply with AI (Multimodal)' },
-                  { value: 'transcribe-only', label: 'Transcribe only (Human review)' },
-                  { value: 'ignore', label: 'Ask customer for text' },
-                ]}
-                helperText="AI listens to customer WhatsApp voice notes automatically"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Select
-                label="Auto-Reply Window"
-                defaultValue="always"
-                options={[
-                  { value: 'always', label: '24/7 Always Active' },
-                  { value: 'after-hours', label: 'After-Hours Only' },
-                  { value: 'business-hours', label: 'Business Hours Only' },
-                ]}
-              />
-
-              <Input
-                label="Human Escalation Keyword"
-                defaultValue="human, agent, speak with person, موظف"
-                helperText="Comma-separated trigger words that immediately notify staff"
-              />
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex justify-end">
-            <Button variant="primary" size="md">
-              Save Automation Rules
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
-
-      {/* ─── Tab 4: Business Profile ──────────────────────────────────────── */}
-      {activeTab === 'profile' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>WhatsApp Official Business Profile</CardTitle>
-            <CardDescription>
-              Public customer-facing profile details displayed inside the WhatsApp app
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-4 pt-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Business Display Name" defaultValue="NazBiz Global Official" />
-              <Input label="Category" defaultValue="Customer Support & Software" />
-            </div>
-
-            <Input
-              label="Business Description"
-              defaultValue="Official WhatsApp channel for NazBiz customer inquiries, automated order tracking, and billing support."
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Website" defaultValue="https://nazbiz.io" />
-              <Input label="Customer Support Email" defaultValue="support@nazbiz.io" />
-            </div>
-          </CardContent>
-
-          <CardFooter className="flex justify-end">
-            <Button variant="primary" size="md">
-              Sync Profile with Meta
-            </Button>
-          </CardFooter>
-        </Card>
       )}
     </div>
   )

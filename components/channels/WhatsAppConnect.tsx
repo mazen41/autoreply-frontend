@@ -27,6 +27,9 @@ export default function WhatsAppConnect({
   const [pairingCode, setPairingCode] = useState<string | null>(null)
   const [connected, setConnected] = useState(initialIsConnected)
   const [disconnecting, setDisconnecting] = useState(false)
+  const [unofficialRiskAccepted, setUnofficialRiskAccepted] = useState(false)
+  const [savingRiskAcceptance, setSavingRiskAcceptance] = useState(false)
+  const [riskAcceptanceSaved, setRiskAcceptanceSaved] = useState(false)
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -73,6 +76,7 @@ export default function WhatsAppConnect({
   }, [checkStatus, stopPolling])
 
   const initConnect = useCallback(async () => {
+    if (!unofficialRiskAccepted) return
     setLoading(true)
     setError('')
     setQrcode(null)
@@ -87,7 +91,8 @@ export default function WhatsAppConnect({
 
       const res = await fetch(`${API}/api/whatsapp/connect`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unofficial_risk_accepted: true }),
       })
 
       const data = await res.json()
@@ -115,7 +120,7 @@ export default function WhatsAppConnect({
     } finally {
       setLoading(false)
     }
-  }, [API, checkStatus, onConnected, startPolling])
+  }, [API, checkStatus, onConnected, startPolling, unofficialRiskAccepted])
 
   useEffect(() => {
     if (!initialIsConnected) {
@@ -153,6 +158,26 @@ export default function WhatsAppConnect({
       setError(err.message || 'Disconnect failed')
     } finally {
       setDisconnecting(false)
+    }
+  }
+
+  const saveExistingRiskAcceptance = async () => {
+    if (!channel?.id || !unofficialRiskAccepted) return
+    setSavingRiskAcceptance(true)
+    setError('')
+    try {
+      const authToken = getToken()
+      const response = await fetch(`${API}/api/channels/whatsapp/${channel.id}/accept-unofficial-risk`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Could not save risk acknowledgment.')
+      setRiskAcceptanceSaved(true)
+    } catch (err: any) {
+      setError(err.message || 'Could not save risk acknowledgment.')
+    } finally {
+      setSavingRiskAcceptance(false)
     }
   }
 
@@ -214,6 +239,27 @@ export default function WhatsAppConnect({
               </div>
             </div>
 
+            {channel?.metadata?.whatsapp_provider !== 'cloud'
+              && channel?.metadata?.unofficial_risk_accepted !== true
+              && !riskAcceptanceSaved && (
+              <div className="p-3 rounded-2xl text-left space-y-3" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                <p className="text-[10px] text-text-secondary">
+                  {isRTL
+                    ? 'هذا اتصال WhatsApp Web غير رسمي وقد يؤدي إلى تقييد الرقم. أكد فهمك للمخاطر قبل استئناف الإرسال.'
+                    : 'This is an unofficial WhatsApp Web connection and may result in number restrictions. Acknowledge the risk before messaging resumes.'}
+                </p>
+                <label className="flex items-start gap-2 text-[10px] text-text-secondary cursor-pointer">
+                  <input type="checkbox" checked={unofficialRiskAccepted} onChange={event => setUnofficialRiskAccepted(event.target.checked)} className="mt-0.5" />
+                  <span>{isRTL ? 'أفهم المخاطر وأوافق على المتابعة.' : 'I understand the risks and agree to continue.'}</span>
+                </label>
+                <button onClick={saveExistingRiskAcceptance} disabled={!unofficialRiskAccepted || savingRiskAcceptance} className="px-3 py-2 rounded-lg text-[10px] font-bold text-white disabled:opacity-50" style={{ background: '#25D366' }}>
+                  {savingRiskAcceptance ? (isRTL ? 'جارٍ الحفظ...' : 'Saving...') : (isRTL ? 'تأكيد المخاطر' : 'Acknowledge risk')}
+                </button>
+              </div>
+            )}
+
+            {riskAcceptanceSaved && <p className="text-[10px] text-success">{isRTL ? 'تم تسجيل الإقرار.' : 'Risk acknowledgment saved.'}</p>}
+
             <button
               onClick={handleDisconnect}
               disabled={disconnecting}
@@ -236,6 +282,43 @@ export default function WhatsAppConnect({
           </div>
         ) : (
           <div className="space-y-4 text-center">
+            <div
+              className="p-3 rounded-2xl text-left space-y-2"
+              style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+            >
+              <p className="text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
+                {isRTL ? 'اتصال واتساب غير رسمي' : 'Unofficial WhatsApp connection'}
+              </p>
+              <p className="text-[10px] text-text-secondary">
+                {isRTL
+                  ? 'يربط هذا الخيار عبر جلسة WhatsApp Web وقد يخالف شروط واتساب أو يؤدي إلى تقييد الرقم. استخدم WhatsApp Cloud API للرسائل التسويقية.'
+                  : 'This links through a WhatsApp Web session. It may violate WhatsApp terms or result in number restrictions. Use WhatsApp Cloud API for marketing messages.'}
+              </p>
+              <label className="flex items-start gap-2 text-[10px] text-text-secondary cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={unofficialRiskAccepted}
+                  onChange={(event) => setUnofficialRiskAccepted(event.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  {isRTL
+                    ? 'أفهم المخاطر وأوافق على متابعة الاتصال غير الرسمي.'
+                    : 'I understand these risks and agree to continue with the unofficial connection.'}
+                </span>
+              </label>
+            </div>
+
+            {!loading && !qrcode && unofficialRiskAccepted && !error && (
+              <button
+                onClick={initConnect}
+                className="w-full py-3 rounded-xl font-bold text-xs text-white"
+                style={{ background: '#25D366' }}
+              >
+                {isRTL ? 'إنشاء اتصال واتساب' : 'Start WhatsApp connection'}
+              </button>
+            )}
+
             {loading && !qrcode && (
               <div className="py-12 flex flex-col items-center justify-center space-y-3">
                 <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />

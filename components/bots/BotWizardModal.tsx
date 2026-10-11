@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import ChannelIcon from '../ui/ChannelIcon'
 import { XIcon, LightningIcon, PlusIcon, CheckIcon } from '../ui/DashboardIcons'
 import Select from '../ui/Select'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -85,11 +86,15 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
   // Form State
   const [name, setName] = useState(bot?.name || '')
   const [status, setStatus] = useState<'active' | 'inactive'>(bot?.status || 'active')
-  const [aiProvider, setAiProvider] = useState(bot?.ai_provider || 'gemini')
-  const [aiModel, setAiModel] = useState(bot?.ai_model || 'gemini-2.5-flash')
+  const [aiProvider, setAiProvider] = useState(bot?.ai_provider || '')
+  const [aiModel, setAiModel] = useState(bot?.ai_model || '')
+  const [businessAiProvider, setBusinessAiProvider] = useState<string | null>(null)
+  const [businessAiModel, setBusinessAiModel] = useState<string | null>(null)
   const [aiInstructions, setAiInstructions] = useState(bot?.ai_instructions || '')
   const [replyStyle, setReplyStyle] = useState(bot?.reply_style || 'Friendly & Professional')
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(bot?.ai_confidence_threshold ?? 0.80)
+  const [escalationKeywords, setEscalationKeywords] = useState<string>((bot?.escalation_config?.keywords || []).join(', '))
+  const [escalationIntents, setEscalationIntents] = useState<string>((bot?.escalation_config?.intents || []).join(', '))
   const [ecommerceConnectionIds, setEcommerceConnectionIds] = useState<number[]>(
     bot?.ecommerce_connections?.map((connection: any) => connection.id)
       || (bot?.ecommerce_channel_id ? [bot.ecommerce_channel_id] : [])
@@ -110,6 +115,10 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
       channel_id: a.channel_id,
     })) || []
   )
+  const connectedCommerceStores = channels.filter((channel) =>
+    ['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase())
+    && channel.status === 'connected'
+  )
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,24 +127,31 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
 
       try {
         const [chRes, kRes] = await Promise.all([
-          fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/knowledge`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
+          fetch(`${API}/api/knowledge`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
         ])
 
         if (chRes.ok) {
           const chData = await chRes.json()
           const loadedChannels = Array.isArray(chData) ? chData : chData.data || []
           setChannels(loadedChannels)
+          const savedRoutes = new Map<number, number>(
+            (bot?.channels || [])
+              .filter((channel: any) => channel.pivot?.ecommerce_connection_id != null)
+              .map((channel: any) => [Number(channel.id), Number(channel.pivot.ecommerce_connection_id)])
+          )
           setChannelCommerceDefaults(Object.fromEntries(
             loadedChannels
               .filter((channel: any) => !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase()))
-              .map((channel: any) => [channel.id, channel.default_ecommerce_connection_id ?? null])
+              .map((channel: any) => [channel.id, savedRoutes.get(Number(channel.id)) ?? null])
           ))
         }
 
         if (kRes.ok) {
           const kData = await kRes.json()
           setKnowledgeFiles(kData.files || [])
+          setBusinessAiProvider(kData.profile?.ai_provider || null)
+          setBusinessAiModel(kData.profile?.ai_model || null)
         }
       } catch (err) {
         console.error('Failed to fetch modal data:', err)
@@ -153,18 +169,29 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
     setLoading(true)
     try {
       const token = getToken()
+      const keywords = escalationKeywords.split(/[\n,]/).map((value) => value.trim()).filter(Boolean)
+      const intents = escalationIntents.split(/[\n,]/).map((value) => value.trim()).filter(Boolean)
+      const communicationChannels = channels.filter((channel) =>
+        selectedChannelIds.includes(channel.id)
+        && !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase())
+      )
       const payload = {
         name,
         status,
-        ai_provider: aiProvider,
-        ai_model: aiModel,
+        ai_provider: aiProvider || null,
+        ai_model: aiModel || null,
         ai_instructions: aiInstructions,
         reply_style: replyStyle,
         ai_confidence_threshold: confidenceThreshold,
+        escalation_config: keywords.length || intents.length ? { keywords, intents } : null,
         ecommerce_connection_ids: ecommerceConnectionIds,
         default_ecommerce_connection_id: defaultEcommerceConnectionId,
         channel_ids: selectedChannelIds,
         primary_channel_ids: primaryChannelIds,
+        channel_store_routing: Object.fromEntries(communicationChannels.map((channel) => [
+          channel.id,
+          channelCommerceDefaults[channel.id] ?? null,
+        ])),
         knowledge_assignments: assignments,
       }
 
@@ -177,6 +204,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
+          ...getBusinessHeaders(),
         },
         body: JSON.stringify(payload),
       })
@@ -186,29 +214,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
         throw new Error(errData.message || 'Failed to save Bot')
       }
 
-      const communicationChannels = channels.filter((channel) =>
-        selectedChannelIds.includes(channel.id)
-        && !['salla', 'shopify', 'woocommerce'].includes(channel.type?.toLowerCase())
-      )
-      const routeResults = await Promise.allSettled(communicationChannels.map(async (channel) => {
-        const routeRes = await fetch(`${API}/api/channels/${channel.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            default_ecommerce_connection_id: channelCommerceDefaults[channel.id] ?? null,
-          }),
-        })
-        return routeRes.ok
-      }))
-
       onSaved()
-      if (routeResults.some((result) => result.status === 'rejected' || !result.value)) {
-        alert('The Bot was saved, but one or more channel store routes could not be saved. Edit the Bot to retry those routes.')
-      }
     } catch (err: any) {
       console.error(err)
       alert(err.message || 'Error saving Bot')
@@ -324,30 +330,36 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Select
-                    label="AI Provider"
+                    label={`AI Provider${!aiProvider ? ` · Inheriting ${businessAiProvider || 'business default'}` : ''}`}
                     value={aiProvider}
                     onChange={(e) => {
                       const newProvider = e.target.value
                       setAiProvider(newProvider)
                       const models = AI_PROVIDERS[newProvider]?.models
-                      if (models?.length) setAiModel(models[0].value)
+                      setAiModel(newProvider && models?.length ? models[0].value : '')
                     }}
-                    options={Object.entries(AI_PROVIDERS).map(([key, cfg]) => ({
+                    options={[
+                      { value: '', label: `Inherit business default${businessAiProvider ? ` (${AI_PROVIDERS[businessAiProvider]?.label || businessAiProvider})` : ''}` },
+                      ...Object.entries(AI_PROVIDERS).filter(([key]) => ['gemini', 'groq'].includes(key)).map(([key, cfg]) => ({
                       value: key,
                       label: cfg.label,
-                    }))}
+                      })),
+                    ]}
                   />
                 </div>
 
                 <div>
                   <Select
-                    label="AI Model"
+                    label={`AI Model${!aiModel ? ` · Inheriting ${businessAiModel || 'business default'}` : ''}`}
                     value={aiModel}
                     onChange={(e) => setAiModel(e.target.value)}
-                    options={(AI_PROVIDERS[aiProvider]?.models || []).map((m) => ({
+                    options={[
+                      { value: '', label: `Inherit business default${businessAiModel ? ` (${businessAiModel})` : ''}` },
+                      ...(AI_PROVIDERS[aiProvider || businessAiProvider || '']?.models || []).map((m) => ({
                       value: m.value,
                       label: m.label,
-                    }))}
+                      })),
+                    ]}
                   />
                 </div>
               </div>
@@ -410,6 +422,37 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                   Answers with confidence below this threshold will automatically escalate to human agents.
                 </p>
               </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Escalation keywords
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={escalationKeywords}
+                    onChange={(e) => setEscalationKeywords(e.target.value)}
+                    placeholder="refund, complaint, speak to a person"
+                    className="w-full rounded-xl border px-3.5 py-2.5 text-xs font-medium focus:border-accent focus:outline-none"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                  />
+                  <p className="mt-1 text-[10px] text-text-tertiary">Comma or line separated. A matching customer message is routed to a human.</p>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Escalation intents
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={escalationIntents}
+                    onChange={(e) => setEscalationIntents(e.target.value)}
+                    placeholder="customer_requested_human, complaint"
+                    className="w-full rounded-xl border px-3.5 py-2.5 text-xs font-medium focus:border-accent focus:outline-none"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                  />
+                  <p className="mt-1 text-[10px] text-text-tertiary">Use the intent names returned by the assistant, for example customer_requested_human.</p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -424,7 +467,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                 <p className="text-[11px] text-text-secondary">
                   Select every store this Bot can use. The default is used unless a conversation channel has its own store mapping.
                 </p>
-                {channels.filter((c) => ['salla', 'shopify', 'woocommerce'].includes(c.type?.toLowerCase())).length === 0 ? (
+                {connectedCommerceStores.length === 0 ? (
                   <p className="text-xs text-text-tertiary">No connected commerce stores yet.</p>
                 ) : (
                   <div className="space-y-2">
@@ -464,6 +507,11 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                       )
                     })}
                   </div>
+                )}
+                {defaultEcommerceConnectionId !== null && !connectedCommerceStores.some((store) =>
+                  store.id === defaultEcommerceConnectionId && ecommerceConnectionIds.includes(store.id)
+                ) && (
+                  <p className="text-[11px] text-error">The saved Bot default is no longer an enabled, connected store. Choose a valid default or clear it.</p>
                 )}
               </div>
 
@@ -539,6 +587,26 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                         )}
                         {isSelected && !['salla', 'shopify', 'woocommerce'].includes(ch.type?.toLowerCase()) && (
                           <div className="mt-3">
+                            {(() => {
+                              const routeId = channelCommerceDefaults[ch.id]
+                              const routedStore = connectedCommerceStores.find((store) =>
+                                store.id === routeId && ecommerceConnectionIds.includes(store.id)
+                              )
+                              const botDefault = connectedCommerceStores.find((store) =>
+                                store.id === defaultEcommerceConnectionId && ecommerceConnectionIds.includes(store.id)
+                              )
+                              const automaticStore = !botDefault && ecommerceConnectionIds.length === 1
+                                ? connectedCommerceStores.find((store) => store.id === ecommerceConnectionIds[0])
+                                : null
+                              const effectiveStore = routedStore || botDefault || automaticStore
+                              return (
+                                <p className={`mb-1.5 text-[10px] ${routeId && !routedStore ? 'text-error' : 'text-text-secondary'}`}>
+                                  {routeId && !routedStore
+                                    ? 'Saved route is ineligible; choose a connected store enabled for this agent.'
+                                    : `Effective store: ${effectiveStore ? `${effectiveStore.type?.toUpperCase()} — ${effectiveStore.page_name || effectiveStore.page_id || `Store #${effectiveStore.id}`}` : 'Unresolved — select a route or Bot default.'}`}
+                                </p>
+                              )
+                            })()}
                             <Select
                               size="sm"
                               label="Default commerce store for this channel"
@@ -549,7 +617,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                               })}
                               options={[
                                 { value: '', label: 'Use Bot default / automatic resolution' },
-                                ...channels
+                                ...connectedCommerceStores
                                   .filter((store) => ecommerceConnectionIds.includes(store.id))
                                   .map((store) => ({
                                     value: String(store.id),

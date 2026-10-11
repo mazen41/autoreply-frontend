@@ -3,10 +3,11 @@
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
 
-export default function SocialLoginButtons({ redirectTo, packageId, billingCycle }: {
+export default function SocialLoginButtons({ redirectTo, packageId, billingCycle, rememberMe }: {
   redirectTo?: string
   packageId?: string
   billingCycle?: string
+  rememberMe?: boolean
 } = {}) {
   const { isRTL, t } = useLang()
   const [loading, setLoading] = useState<'google' | 'facebook' | null>(null)
@@ -20,6 +21,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       if (redirectTo) params.set('redirect', redirectTo)
       if (packageId) params.set('package', packageId)
       if (billingCycle) params.set('billing', billingCycle)
+      params.set('remember_me', String(rememberMe ?? false))
       const qs = params.toString() ? `?${params.toString()}` : ''
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${provider}/redirect${qs}`, {

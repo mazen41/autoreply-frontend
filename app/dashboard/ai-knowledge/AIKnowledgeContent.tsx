@@ -9,6 +9,7 @@ import Badge from '../../../components/ui/Badge'
 import Input from '../../../components/ui/Input'
 import Tabs from '../../../components/ui/Tabs'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 import {
   Brain,
   UploadCloud,
@@ -35,6 +36,7 @@ interface KnowledgeFile {
   uploaded_at: string
   status?: string
   chunks_count?: number
+  error_message?: string | null
 }
 
 export default function AIKnowledgeContent() {
@@ -72,7 +74,7 @@ export default function AIKnowledgeContent() {
       if (!token) throw new Error('Your session expired. Sign in again to load the knowledge base.')
 
       const res = await fetch(`${API}/api/knowledge`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Could not load knowledge data.')
@@ -104,14 +106,19 @@ export default function AIKnowledgeContent() {
       formData.append('file', file)
       const response = await fetch(`${API}/api/knowledge/upload`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
           body: formData,
         })
-      if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'Upload failed.')
-      toast.success('Document uploaded and queued for vector embedding')
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || 'Upload failed.')
+      if (result.duplicate) {
+        toast('This document is already in this business knowledge base.')
+      } else {
+        toast.success('Document uploaded and queued for indexing')
+      }
       fetchKnowledge()
-    } catch {
-      toast.error('Upload failed')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Upload failed')
     } finally {
       setUploading(false)
     }
@@ -122,7 +129,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/files/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      const response = await fetch(`${API}/api/knowledge/files/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
       if (!response.ok) throw new Error('File could not be deleted.')
       setFiles((prev) => prev.filter((f) => f.id !== id))
       toast.success('File deleted from knowledge index')
@@ -134,9 +141,9 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/instructions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ai_instructions: aiInstructions }) })
+      const response = await fetch(`${API}/api/knowledge/instructions`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() }, body: JSON.stringify({ ai_instructions: aiInstructions }) })
       if (!response.ok) throw new Error('Could not save AI instructions.')
-      const profileResponse = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ ...profile, faqs }) })
+      const profileResponse = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() }, body: JSON.stringify({ ...profile, faqs }) })
       if (!profileResponse.ok) throw new Error('Instructions saved, but profile changes could not be saved.')
       toast.success('AI instructions saved')
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save AI instructions.') }
@@ -149,7 +156,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/reindex`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      const response = await fetch(`${API}/api/knowledge/reindex`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
       if (!response.ok) throw new Error('Could not queue knowledge reindexing.')
       toast.success('Knowledge reindexing queued')
       await fetchKnowledge()
@@ -161,7 +168,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ faqs: updated }) })
+      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() }, body: JSON.stringify({ faqs: updated }) })
       if (!response.ok) throw new Error('Could not remove the FAQ.')
       setFaqs(updated)
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not remove the FAQ.') }
@@ -173,7 +180,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ faqs: updated }) })
+      const response = await fetch(`${API}/api/knowledge/profile`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() }, body: JSON.stringify({ faqs: updated }) })
       if (!response.ok) throw new Error('Could not save the FAQ.')
       setFaqs(updated)
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Could not save the FAQ.'); return }
@@ -191,7 +198,7 @@ export default function AIKnowledgeContent() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/knowledge/test`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ test_question: testQuestion.trim() }) })
+      const response = await fetch(`${API}/api/knowledge/test`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() }, body: JSON.stringify({ test_question: testQuestion.trim() }) })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Could not generate a test response.')
       setTestResponse(data.test_response || '')
@@ -295,7 +302,7 @@ export default function AIKnowledgeContent() {
                 Drag and drop your knowledge files
               </h4>
               <p className="text-xs text-text-tertiary mt-1">
-                Supports PDF, XLSX, and XLS files (up to 10 MB).
+                Supports PDF, XLSX, and XLS files (up to 10 MB). Each file is limited to 500 indexed chunks.
               </p>
             </div>
             <label className="inline-block cursor-pointer">
@@ -336,14 +343,15 @@ export default function AIKnowledgeContent() {
                           {file.filename}
                         </div>
                         <div className="text-[11px] text-text-tertiary mt-0.5">
-                          {file.chunks_count || 32} vector chunks • Uploaded {file.uploaded_at}
+                          {file.chunks_count ?? 0} vector chunks • Uploaded {file.uploaded_at}
+                          {file.error_message && <span className="block text-error">{file.error_message}</span>}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="success" dot size="xs">
-                        Indexed
+                      <Badge variant={file.status === 'active' ? 'success' : file.status === 'failed' ? 'error' : 'warning'} dot size="xs">
+                        {file.status === 'active' ? 'Indexed' : file.status === 'failed' ? 'Indexing failed' : file.status || 'Pending'}
                       </Badge>
                       <button
                         type="button"

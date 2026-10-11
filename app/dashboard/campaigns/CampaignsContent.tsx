@@ -41,15 +41,47 @@ import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 
 type CampaignType = 'bulk' | 'email' | 'social' | 'comment' | 'cart' | 'other'
-type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'partially_failed'
+type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'partially_sent' | 'failed' | 'partially_failed'
+type EmailAudienceMode = 'manual' | 'gmail' | 'contacts'
+
+interface EmailAudiencePreview {
+  count: number
+  total_matched: number
+  excluded_no_consent: number
+  excluded_opted_out: number
+  excluded_suppression: number
+  excluded_automated_sender: number
+  sender: { name: string; address: string; configured: boolean }
+}
+
+interface MessageAudiencePreview {
+  sender: { channel_id: number; channel_type: string; account_name: string; connected: boolean }
+  total_matched: number
+  eligible: number
+  excluded: Record<string, number>
+  excluded_reasons: Record<string, number>
+  campaign_ready: boolean
+  configuration_reason: string | null
+  rechecked_at_delivery: boolean
+}
 
 interface Channel {
   id: number
   type: string
   page_name: string
   status: string
+  metadata?: Record<string, any>
+}
+
+interface WhatsAppCloudTemplate {
+  id: number
+  name: string
+  language: string
+  status: string
+  category: string
 }
 
 interface UnifiedCampaign {
@@ -83,6 +115,8 @@ function token() {
 export default function CampaignsContent() {
   const [campaigns, setCampaigns] = useState<UnifiedCampaign[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
+  const [cloudTemplates, setCloudTemplates] = useState<WhatsAppCloudTemplate[]>([])
+  const [loadingCloudTemplates, setLoadingCloudTemplates] = useState(false)
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -90,6 +124,12 @@ export default function CampaignsContent() {
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [statsCampaign, setStatsCampaign] = useState<UnifiedCampaign | null>(null)
+  const [emailAudienceMode, setEmailAudienceMode] = useState<EmailAudienceMode>('manual')
+  const [emailRecipientsInput, setEmailRecipientsInput] = useState('')
+  const [audiencePreview, setAudiencePreview] = useState<EmailAudiencePreview | null>(null)
+  const [previewingAudience, setPreviewingAudience] = useState(false)
+  const [messageAudiencePreview, setMessageAudiencePreview] = useState<MessageAudiencePreview | null>(null)
+  const [previewingMessageAudience, setPreviewingMessageAudience] = useState(false)
 
   // Form State
   const [form, setForm] = useState({
@@ -99,8 +139,74 @@ export default function CampaignsContent() {
     subject: '',
     channel_id: '',
     scheduled_at: '',
+    whatsapp_cloud_template_id: '',
+    whatsapp_template_components_json: '',
   })
   const [saving, setSaving] = useState(false)
+
+  const emailAudienceCriteria = useCallback(() => ({
+    mode: emailAudienceMode,
+    ...(emailAudienceMode === 'manual'
+      ? { recipients: emailRecipientsInput.split(/[\n,;]+/).map(email => email.trim()).filter(Boolean) }
+      : {}),
+  }), [emailAudienceMode, emailRecipientsInput])
+
+  const previewEmailAudience = async () => {
+    setPreviewingAudience(true)
+    setAudiencePreview(null)
+    try {
+      const authToken = token()
+      if (!authToken || !businessId) throw new Error('Select a business before previewing the audience.')
+      const response = await fetch(`${API}/api/email-campaigns/audience/preview`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+        body: JSON.stringify({ audience_criteria: emailAudienceCriteria() }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || data.error || 'Could not preview this audience.')
+      setAudiencePreview(data as EmailAudiencePreview)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not preview this audience.')
+    } finally {
+      setPreviewingAudience(false)
+    }
+  }
+
+  const previewMessageAudience = async () => {
+    setPreviewingMessageAudience(true)
+    setMessageAudiencePreview(null)
+    try {
+      const authToken = token()
+      if (!authToken || !businessId) throw new Error('Select a business before previewing the audience.')
+      if (!form.channel_id) throw new Error('Choose the sending account first.')
+      const response = await fetch(`${API}/api/businesses/${businessId}/campaigns/audience/preview`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+        body: JSON.stringify({
+          channel_id: Number(form.channel_id),
+          filters: {},
+          whatsapp_cloud_template_id: form.whatsapp_cloud_template_id ? Number(form.whatsapp_cloud_template_id) : null,
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || data.error || 'Could not preview this audience.')
+      setMessageAudiencePreview(data as MessageAudiencePreview)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not preview this audience.')
+    } finally {
+      setPreviewingMessageAudience(false)
+    }
+  }
 
   const fetchCampaigns = useCallback(async () => {
     setLoading(true)
@@ -112,12 +218,13 @@ export default function CampaignsContent() {
       const userResponse = await fetch(`${API}/api/auth/user`, { headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' } })
       if (!userResponse.ok) throw new Error('Could not resolve the current business.')
       const user = await userResponse.json()
-      if (!user.business_id) throw new Error('No business is associated with this account.')
-      setBusinessId(user.business_id)
+      const activeBusinessId = getSelectedBusinessId()
+      if (!activeBusinessId) throw new Error('Select a business before loading campaigns.')
+      setBusinessId(activeBusinessId)
       const [bulkResponse, emailResponse, channelResponse] = await Promise.all([
-        fetch(`${API}/api/businesses/${user.business_id}/campaigns`, { headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' } }),
-        fetch(`${API}/api/email-campaigns`, { headers: { Authorization: `Bearer ${authToken}` } }),
-        fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${authToken}` } }),
+        fetch(`${API}/api/businesses/${activeBusinessId}/campaigns`, { headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', ...getBusinessHeaders() } }),
+        fetch(`${API}/api/email-campaigns`, { headers: { Authorization: `Bearer ${authToken}`, ...getBusinessHeaders() } }),
+        fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${authToken}`, ...getBusinessHeaders() } }),
       ])
       if (![bulkResponse, emailResponse, channelResponse].every((response) => response.ok)) throw new Error('Could not load campaign data.')
       const [bulkRes, emailRes, chRes] = await Promise.all([bulkResponse.json(), emailResponse.json(), channelResponse.json()])
@@ -140,6 +247,34 @@ export default function CampaignsContent() {
   useEffect(() => {
     fetchCampaigns()
   }, [fetchCampaigns])
+
+  const selectedChannel = channels.find(channel => String(channel.id) === form.channel_id)
+  const selectedCloudWhatsApp = selectedChannel?.type === 'whatsapp' && selectedChannel.metadata?.whatsapp_provider === 'cloud'
+
+  useEffect(() => {
+    let active = true
+    setCloudTemplates([])
+    if (!selectedCloudWhatsApp || !form.channel_id) return
+
+    const loadTemplates = async () => {
+      setLoadingCloudTemplates(true)
+      try {
+        const authToken = token()
+        const response = await fetch(`${API}/api/channels/whatsapp/${form.channel_id}/templates`, {
+          headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', ...getBusinessHeaders() },
+        })
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data.message || 'Could not load approved WhatsApp templates.')
+        if (active) setCloudTemplates((data.templates || []).filter((template: WhatsAppCloudTemplate) => template.status === 'APPROVED'))
+      } catch (error) {
+        if (active) toast.error(error instanceof Error ? error.message : 'Could not load WhatsApp templates.')
+      } finally {
+        if (active) setLoadingCloudTemplates(false)
+      }
+    }
+    void loadTemplates()
+    return () => { active = false }
+  }, [selectedCloudWhatsApp, form.channel_id])
 
   const handleCreate = async () => {
     if (!form.name.trim()) {
@@ -167,28 +302,45 @@ export default function CampaignsContent() {
       if (form.type === 'bulk' && !businessId) throw new Error('Business information is unavailable.')
       const endpoint = form.type === 'email' ? '/api/email-campaigns' : `/api/businesses/${businessId}/campaigns`
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      let templateComponents: unknown[] | undefined
+      if (form.type === 'bulk' && selectedCloudWhatsApp) {
+        if (!form.whatsapp_cloud_template_id) throw new Error('Choose an approved WhatsApp Cloud template.')
+        if (form.whatsapp_template_components_json.trim()) {
+          const parsed = JSON.parse(form.whatsapp_template_components_json)
+          if (!Array.isArray(parsed)) throw new Error('Template parameters must be a JSON array.')
+          templateComponents = parsed
+        }
+      }
       const payload = form.type === 'email'
         ? {
             name: form.name,
             subject: form.subject,
             content: form.message,
             scheduled_at: form.scheduled_at || null,
-            audience_criteria: {},
+            audience_criteria: emailAudienceCriteria(),
             timezone,
           }
-        : { ...form, timezone }
+        : {
+            ...form,
+            whatsapp_template_components: templateComponents,
+            timezone,
+          }
       const response = await fetch(`${API}${endpoint}`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${authToken}`,
             'Content-Type': 'application/json',
+            ...getBusinessHeaders(),
           },
           body: JSON.stringify(payload),
         })
       if (!response.ok) throw new Error((await response.json().catch(() => ({}))).message || 'Campaign could not be created.')
       toast.success('Campaign created')
       setShowModal(false)
-      setForm({ name: '', type: 'bulk', message: '', subject: '', channel_id: '', scheduled_at: '' })
+      setForm({ name: '', type: 'bulk', message: '', subject: '', channel_id: '', scheduled_at: '', whatsapp_cloud_template_id: '', whatsapp_template_components_json: '' })
+      setEmailAudienceMode('manual')
+      setEmailRecipientsInput('')
+      setAudiencePreview(null)
       fetchCampaigns()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create campaign')
@@ -205,7 +357,7 @@ export default function CampaignsContent() {
       const endpoint = campaign.type === 'email' ? `/api/email-campaigns/${campaign.id}` : `/api/businesses/${businessId}/campaigns/${campaign.id}`
       const response = await fetch(`${API}${endpoint}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
       if (!response.ok) throw new Error('Campaign could not be deleted.')
       setCampaigns(prev => prev.filter(c => c.id !== campaign.id || c.type !== campaign.type))
@@ -229,7 +381,7 @@ export default function CampaignsContent() {
 
   const stats = useMemo(() => {
     const total = campaigns.length
-    const sent = campaigns.filter(c => c.status === 'sent').length
+    const sent = campaigns.filter(c => c.status === 'sent' || c.status === 'partially_sent').length
     const sending = campaigns.filter(c => c.status === 'sending').length
     const totalReach = campaigns.reduce((acc, c) => acc + (c.sent_count || 0), 0)
     return { total, sent, sending, totalReach }
@@ -445,7 +597,7 @@ export default function CampaignsContent() {
                         {camp.name}
                       </span>
                       <Badge
-                        variant={camp.status === 'sent' ? 'success' : camp.status === 'sending' ? 'ai' : camp.status === 'scheduled' ? 'warning' : 'outline'}
+                        variant={camp.status === 'sent' ? 'success' : camp.status === 'sending' ? 'ai' : camp.status === 'scheduled' || camp.status === 'partially_sent' || camp.status === 'partially_failed' ? 'warning' : 'outline'}
                         dot
                         size="sm"
                       >
@@ -464,6 +616,13 @@ export default function CampaignsContent() {
                     <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
                       {camp.message || camp.subject || camp.content}
                     </p>
+
+                    {camp.error_message && (
+                      <p role="status" className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-xs text-warning">
+                        <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                        <span>{camp.error_message}</span>
+                      </p>
+                    )}
 
                     {/* Live delivery progress bar if sending */}
                     {isSending && (
@@ -570,7 +729,10 @@ export default function CampaignsContent() {
               <label className="text-xs font-semibold text-text-primary">Connected Account</label>
               <Select
                 value={form.channel_id}
-                onChange={(e) => setForm({ ...form, channel_id: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, channel_id: e.target.value })
+                  setMessageAudiencePreview(null)
+                }}
                 options={[
                   { value: '', label: 'Select connected phone / page' },
                   ...channels.map(ch => ({
@@ -582,17 +744,128 @@ export default function CampaignsContent() {
             </div>
           </div>
 
+          {form.type !== 'email' && form.channel_id && (
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 p-4">
+              <Button variant="secondary" size="sm" onClick={() => void previewMessageAudience()} loading={previewingMessageAudience}>
+                Preview eligible audience
+              </Button>
+              {messageAudiencePreview && (
+                <div className="text-xs text-text-secondary" role="status">
+                  <p>Sending account: <strong>{messageAudiencePreview.sender.account_name}</strong> ({messageAudiencePreview.sender.channel_type}).</p>
+                  {!messageAudiencePreview.campaign_ready && (
+                    <p className="mt-1 text-warning">Not ready to send: {messageAudiencePreview.configuration_reason}</p>
+                  )}
+                  <p className="mt-1">
+                    {messageAudiencePreview.eligible} eligible of {messageAudiencePreview.total_matched} matched;
+                    {' '}excluded {messageAudiencePreview.excluded.no_consent || 0} without consent,
+                    {' '}{messageAudiencePreview.excluded.opted_out || 0} opted out,
+                    {' '}{messageAudiencePreview.excluded.suppressed || 0} suppressed,
+                    {' '}{messageAudiencePreview.excluded.messaging_window_expired || 0} outside Meta&apos;s 24-hour window,
+                    {' '}{messageAudiencePreview.excluded.channel_not_connected || 0} from disconnected accounts.
+                    {' '}Eligibility is checked again at send time.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {form.type === 'email' && (
-            <Input
-              label="Email Subject Line *"
-              value={form.subject}
-              onChange={(e) => setForm({ ...form, subject: e.target.value })}
-              placeholder="e.g. Your personal VIP invitation inside"
-            />
+            <>
+              <Input
+                label="Email Subject Line *"
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                placeholder="e.g. Your personal VIP invitation inside"
+              />
+              <div className="space-y-3 rounded-lg border border-border/60 p-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-primary">Email audience</label>
+                  <Select
+                    value={emailAudienceMode}
+                    onChange={(e) => {
+                      setEmailAudienceMode(e.target.value as EmailAudienceMode)
+                      setAudiencePreview(null)
+                    }}
+                    options={[
+                      { value: 'manual', label: 'Email addresses I provide' },
+                      { value: 'gmail', label: 'People from Gmail conversations' },
+                      { value: 'contacts', label: 'Contacts with an email address' },
+                    ]}
+                  />
+                </div>
+                {emailAudienceMode === 'manual' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-text-primary">Recipient email addresses</label>
+                    <Textarea
+                      value={emailRecipientsInput}
+                      onChange={(e) => {
+                        setEmailRecipientsInput(e.target.value)
+                        setAudiencePreview(null)
+                      }}
+                      placeholder="name@example.com, another@example.com"
+                      rows={3}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-xs text-text-secondary">
+                    Only contacts with recorded marketing opt-in are eligible. Unsubscribed and automated addresses are excluded.
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button variant="secondary" size="sm" onClick={() => void previewEmailAudience()} loading={previewingAudience}>
+                    Preview eligible audience
+                  </Button>
+                  {audiencePreview && (
+                    <div className="text-xs text-text-secondary" role="status">
+                      <p>
+                        Sending from: <strong>{audiencePreview.sender.configured ? `${audiencePreview.sender.name} <${audiencePreview.sender.address}>` : 'No default sender configured'}</strong>.
+                      </p>
+                      <p className="mt-1">
+                        {audiencePreview.count} eligible of {audiencePreview.total_matched} matched; excluded {audiencePreview.excluded_no_consent} without consent, {audiencePreview.excluded_opted_out} opted out, {audiencePreview.excluded_suppression} suppressed, and {audiencePreview.excluded_automated_sender} automated.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-text-primary">Broadcast Message Content *</label>
+            {selectedCloudWhatsApp && (
+              <div className="space-y-3 rounded-lg border border-border/60 p-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-primary">Approved WhatsApp template *</label>
+                  <Select
+                    value={form.whatsapp_cloud_template_id}
+                    onChange={(event) => setForm({ ...form, whatsapp_cloud_template_id: event.target.value })}
+                    options={[
+                      { value: '', label: loadingCloudTemplates ? 'Loading templates…' : 'Select approved template' },
+                      ...cloudTemplates.map(template => ({
+                        value: String(template.id),
+                        label: `${template.name} · ${template.language}`,
+                      })),
+                    ]}
+                  />
+                  {!loadingCloudTemplates && cloudTemplates.length === 0 && (
+                    <p className="text-[11px] text-text-secondary">No approved templates found. Submit and get a template approved in WhatsApp Manager first.</p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-text-primary">Template parameters (optional JSON array)</label>
+                  <Textarea
+                    value={form.whatsapp_template_components_json}
+                    onChange={(event) => setForm({ ...form, whatsapp_template_components_json: event.target.value })}
+                    placeholder={'[{"type":"body","parameters":[{"type":"text","text":"Summer sale"}]}]'}
+                    rows={3}
+                  />
+                  <p className="text-[10px] text-text-secondary">Cloud API sends the approved template. The campaign message below is for your internal campaign record.</p>
+                </div>
+              </div>
+            )}
+
+            <label className="text-xs font-semibold text-text-primary">
+              {selectedCloudWhatsApp ? 'Internal Campaign Message *' : 'Broadcast Message Content *'}
+            </label>
             <Textarea
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}

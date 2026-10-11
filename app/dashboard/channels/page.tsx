@@ -16,6 +16,7 @@ import TelegramConnect from '../../../components/channels/TelegramConnect'
 import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 import ShopifyConnect from '../../../components/channels/ShopifyConnect'
 import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 import {
   Radio,
   Plus,
@@ -35,6 +36,13 @@ function getToken(): string {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+type AiSetupChecklist = {
+  ready: boolean
+  checks: Record<string, { passed: boolean; label: string }>
+  missing: string[]
+}
+type GoLiveSettings = { consent_policy_acknowledged: boolean; handoff_notification_email: string | null }
 
 const CHANNELS_CATALOG: ChannelDef[] = [
   {
@@ -84,10 +92,11 @@ const CHANNELS_CATALOG: ChannelDef[] = [
   },
   {
     id: 'tiktok',
-    name: 'TikTok Direct Messages',
-    description: 'Engage TikTok shop customers and convert video inquiries into direct sales.',
+    name: 'TikTok (Messaging unavailable)',
+    description: 'The connected TikTok API does not support customer messaging or reply automation.',
     category: 'social',
     brandColor: '#FF0050',
+    disabled: true,
   },
   {
     id: 'shopify',
@@ -107,6 +116,11 @@ const CHANNELS_CATALOG: ChannelDef[] = [
 
 export default function ChannelsPage() {
   const [apiChannels, setApiChannels] = useState<any[]>([])
+  const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
+  const [testReplyLoading, setTestReplyLoading] = useState(false)
+  const [testReply, setTestReply] = useState<string | null>(null)
+  const [goLiveSettings, setGoLiveSettings] = useState<GoLiveSettings>({ consent_policy_acknowledged: false, handoff_notification_email: '' })
+  const [savingGoLiveSettings, setSavingGoLiveSettings] = useState(false)
   const [loading, setLoading] = useState(true)
   const [errorState, setErrorState] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -136,7 +150,7 @@ export default function ChannelsPage() {
       if (!token) throw new Error('Your session expired. Sign in again to load channels.')
 
       const res = await fetch(`${API}/api/channels`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
@@ -152,9 +166,82 @@ export default function ChannelsPage() {
     }
   }, [])
 
+  const fetchAiSetup = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const response = await fetch(`${API}/api/ai/setup-verification`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      if (response.ok) setAiSetup(await response.json())
+    } catch {
+      // Channel loading remains usable if readiness status is temporarily unavailable.
+    }
+  }, [])
+
+  const fetchGoLiveSettings = useCallback(async () => {
+    const token = getToken()
+    const businessId = window.localStorage.getItem('naz_selected_business_id')
+    if (!token || !businessId) return
+    try {
+      const response = await fetch(`${API}/api/businesses/${businessId}/go-live-settings`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      if (response.ok) setGoLiveSettings(await response.json())
+    } catch { /* Readiness remains visible if settings are temporarily unavailable. */ }
+  }, [])
+
   useEffect(() => {
     fetchChannels()
-  }, [fetchChannels])
+    void fetchAiSetup()
+    void fetchGoLiveSettings()
+  }, [fetchChannels, fetchAiSetup, fetchGoLiveSettings])
+
+  const saveGoLiveSettings = async () => {
+    const businessId = window.localStorage.getItem('naz_selected_business_id')
+    if (!businessId) return showToast('Select a business first.', 'error')
+    setSavingGoLiveSettings(true)
+    try {
+      const response = await fetch(`${API}/api/businesses/${businessId}/go-live-settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify(goLiveSettings),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.message || 'Could not save go-live settings.')
+      setGoLiveSettings(result)
+      await fetchAiSetup()
+      showToast('Go-live settings saved.', 'success')
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not save go-live settings.', 'error')
+    } finally { setSavingGoLiveSettings(false) }
+  }
+
+  const runAiSetupTest = async () => {
+    setTestReplyLoading(true)
+    setTestReply(null)
+    try {
+      const response = await fetch(`${API}/api/knowledge/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+        body: JSON.stringify({ test_question: 'Write a short greeting for a customer.' }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'The AI test reply could not be generated.')
+      setTestReply(data.test_response || 'The AI test reply was generated successfully.')
+      await fetchAiSetup()
+      showToast('Test reply generated and setup checklist refreshed.', 'success')
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'The AI test reply failed.', 'error')
+    } finally {
+      setTestReplyLoading(false)
+    }
+  }
 
   const commerceSyncIsActive = apiChannels.some((channel) =>
     ['queued', 'syncing'].includes(channel.integration?.sync_status || '')
@@ -167,7 +254,7 @@ export default function ChannelsPage() {
       if (!token) return
       try {
         const res = await fetch(`${API}/api/channels`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
         if (!res.ok) return
         const data = await res.json()
@@ -195,7 +282,7 @@ export default function ChannelsPage() {
         for (let attempt = 0; attempt < 30; attempt++) {
           try {
             const res = await fetch(`${API}/api/channels/woocommerce/connection-status?state=${encodeURIComponent(wooState)}`, {
-              headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' },
+              headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
             })
             const result = await res.json()
             if (result.status === 'connected') {
@@ -251,10 +338,15 @@ export default function ChannelsPage() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
+            ...getBusinessHeaders(),
           },
           body: JSON.stringify({ ai_enabled: !currentStatus }),
         })
-      if (!response.ok) throw new Error('AI setting update failed.')
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        if (result.checks) setAiSetup({ ready: Boolean(result.ready), checks: result.checks, missing: result.missing || [] })
+        throw new Error(result.message || result.error || 'AI setting update failed.')
+      }
       setApiChannels((prev) => prev.map((item) => item.id === instanceId ? { ...item, ai_enabled: !currentStatus } : item))
       showToast(
         !currentStatus
@@ -278,7 +370,7 @@ export default function ChannelsPage() {
       if (!token) throw new Error('Please sign in again before disconnecting this channel.')
       const response = await fetch(`${API}/api/channels/${instanceId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (!response.ok) {
         const result = await response.json().catch(() => ({}))
@@ -299,15 +391,25 @@ export default function ChannelsPage() {
     if (!token) throw new Error('Your session expired. Sign in again before connecting a channel.')
 
     if (ch.id === 'facebook' || ch.id === 'instagram') {
-      window.location.href = `${API}/api/channels/connect/facebook?token=${encodeURIComponent(
-        token
-      )}&redirect=dashboard`
+      const response = await fetch(`${API}/api/channels/connect/facebook`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.url) {
+        throw new Error(data.message || data.error || 'Could not get Facebook authorization URL')
+      }
+      window.location.href = data.url
       return
     }
 
     if (ch.id === 'gmail') {
       const res = await fetch(`${API}/api/channels/connect/gmail`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
       if (data.url) {
@@ -319,16 +421,28 @@ export default function ChannelsPage() {
     }
 
     if (ch.id === 'salla') {
-      window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(
-        token
-      )}&redirect=dashboard`
+      const response = await fetch(`${API}/api/channels/connect/salla`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.url) {
+        throw new Error(data.message || data.error || 'Could not get Salla authorization URL')
+      }
+      window.location.href = data.url
       return
     }
 
     if (ch.id === 'tiktok') {
-      window.location.href = `${API}/api/channels/connect/tiktok?token=${encodeURIComponent(
-        token
-      )}&redirect=dashboard`
+      const response = await fetch(`${API}/api/channels/connect/tiktok`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.url) {
+        throw new Error(data.message || data.error || 'Could not get TikTok authorization URL')
+      }
+      window.location.href = data.url
       return
     }
 
@@ -366,7 +480,7 @@ export default function ChannelsPage() {
   }, [apiChannels])
 
   const totalActiveAI = useMemo(() => {
-    return apiChannels.filter((c) => c.ai_enabled).length
+    return apiChannels.filter((c) => c.effective_ai_enabled ?? c.ai_enabled).length
   }, [apiChannels])
 
   const totalNeedsAttention = useMemo(() => {
@@ -458,6 +572,42 @@ export default function ChannelsPage() {
       />
 
       {errorState && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{errorState}</span><Button variant="outline" size="sm" onClick={() => void fetchChannels()}>Retry</Button></div>}
+
+      {aiSetup && (
+        <section className="rounded-2xl border border-border bg-surface-card p-5" aria-labelledby="ai-setup-title">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 id="ai-setup-title" className="text-sm font-semibold text-text-primary">AI go-live checklist</h2>
+              <p className="mt-1 text-xs text-text-secondary">Replies stay off until setup is complete and a test reply succeeds.</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void runAiSetupTest()} disabled={testReplyLoading}>
+              {testReplyLoading ? 'Generating test reply…' : 'Generate test reply'}
+            </Button>
+          </div>
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {Object.entries(aiSetup.checks).map(([key, check]) => (
+              <li key={key} className="flex items-center gap-2 text-xs text-text-secondary">
+                {check.passed
+                  ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                  : <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />}
+                <span>{check.label}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
+            <label className="flex items-start gap-2 text-xs text-text-secondary">
+              <input type="checkbox" className="mt-0.5" checked={goLiveSettings.consent_policy_acknowledged} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: event.target.checked })} />
+              <span>I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored. <a className="text-brand underline" href="/privacy">Privacy policy</a></span>
+            </label>
+            <label className="space-y-1 text-xs text-text-secondary">Human handoff notification email
+              <input type="email" className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm" value={goLiveSettings.handoff_notification_email || ''} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, handoff_notification_email: event.target.value })} placeholder="support@example.com" />
+            </label>
+            <div className="md:col-span-2"><Button variant="outline" size="sm" onClick={() => void saveGoLiveSettings()} disabled={savingGoLiveSettings}>{savingGoLiveSettings ? 'Saving…' : 'Save go-live requirements'}</Button></div>
+          </div>
+          {testReply && <p className="mt-3 rounded-lg bg-surface-elevated p-3 text-xs text-text-secondary">Test reply: {testReply}</p>}
+          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">Setup verified. You can enable AI replies on a connected channel.</p>}
+        </section>
+      )}
 
       {/* ─── Overview KPI Metrics Row ────────────────────────────────────── */}
       <motion.div
@@ -596,7 +746,7 @@ export default function ChannelsPage() {
                 const endpoint = instance.type === 'shopify'
                   ? `/api/channels/shopify/${instance.id}/sync`
                   : `/api/channels/woocommerce/${instance.id}/sync`
-                const res = await fetch(`${API}${endpoint}`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+                const res = await fetch(`${API}${endpoint}`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
                 const result = await res.json()
                 if (!res.ok) throw new Error(result.error || 'Could not queue store sync')
                 showToast('Store sync started', 'success')
@@ -632,7 +782,7 @@ export default function ChannelsPage() {
             const token = getToken()
             await fetch(`${API}/api/whatsapp/disconnect`, {
               method: 'POST',
-              headers: { Authorization: `Bearer ${token}` },
+              headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() },
             })
             fetchChannels()
             setActiveModalChannel(null)
@@ -675,6 +825,7 @@ export default function ChannelsPage() {
               headers: {
                 Authorization: `Bearer ${getToken()}`,
                 'Content-Type': 'application/json',
+                ...getBusinessHeaders(),
                 Accept: 'application/json',
               },
               body: JSON.stringify(data),
@@ -686,7 +837,7 @@ export default function ChannelsPage() {
           onSync={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'woocommerce')
             if (!channel) return
-            const res = await fetch(`${API}/api/channels/woocommerce/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' } })
+            const res = await fetch(`${API}/api/channels/woocommerce/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() } })
             if (!res.ok) throw new Error('Could not queue store sync')
             showToast('Store sync started', 'success')
             fetchChannels()
@@ -707,7 +858,7 @@ export default function ChannelsPage() {
           onConnect={async (data) => {
             const res = await fetch(`${API}/api/channels/shopify/connect`, {
               method: 'POST',
-              headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+              headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
               body: JSON.stringify(data),
             })
             const result = await res.json()
@@ -717,7 +868,7 @@ export default function ChannelsPage() {
           onSync={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'shopify')
             if (!channel) return
-            const res = await fetch(`${API}/api/channels/shopify/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json' } })
+            const res = await fetch(`${API}/api/channels/shopify/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() } })
             if (!res.ok) throw new Error('Could not queue store sync')
             showToast('Store sync started', 'success')
             fetchChannels()

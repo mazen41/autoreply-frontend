@@ -99,9 +99,10 @@ function NodeConfigPanel({
                   options={[
                     { value: 'keyword', label: L('Keyword Match', 'تطابق الكلمات') },
                     { value: 'first_contact', label: L('First Contact', 'أول اتصال') },
-                    { value: 'tag_added', label: L('Tag Added', 'إضافة علامة') },
-                    { value: 'order_status_changed', label: L('Order Status', 'حالة الطلب') },
-                    { value: 'escalation_triggered', label: L('Escalation', 'تصعيد') },
+                  { value: 'tag_added', label: L('Tag Added', 'إضافة علامة') },
+                  { value: 'order_status_changed', label: L('Order Status', 'حالة الطلب') },
+                    { value: 'message_received', label: L('Message Received', 'استلام رسالة') },
+                    { value: 'time', label: L('Scheduled Time', 'وقت مجدول') },
                   ]}
                 />
               </div>
@@ -115,6 +116,25 @@ function NodeConfigPanel({
                     rows={4}
                     className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent resize-none"
                   />
+                </div>
+              )}
+              {config.type === 'tag_added' && (
+                <div>
+                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Tag name', 'اسم العلامة')}</label>
+                  <input
+                    value={(config.tags || [])[0] || ''}
+                    onChange={e => updateField('tags', e.target.value ? [e.target.value] : [])}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
+                  />
+                </div>
+              )}
+              {config.type === 'time' && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-text-secondary">{L('Business local-time window', 'نافذة وقت العمل المحلي')}</label>
+                  <div className="flex gap-2">
+                    <input type="time" value={config.time_range?.start || '09:00'} onChange={e => updateField('time_range', { ...(config.time_range || {}), start: e.target.value, end: config.time_range?.end || '17:00' })} className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary" />
+                    <input type="time" value={config.time_range?.end || '17:00'} onChange={e => updateField('time_range', { ...(config.time_range || {}), start: config.time_range?.start || '09:00', end: e.target.value })} className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary" />
+                  </div>
                 </div>
               )}
             </>

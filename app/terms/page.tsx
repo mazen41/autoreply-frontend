@@ -74,12 +74,23 @@ export default function TermsPage() {
           ]
         },
         {
+          id: 'consent-and-processing',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '6. Customer Consent & Data Processing',
+          items: [
+            'You are responsible for having a lawful basis to connect customer channels and process customer messages.',
+            'Marketing campaigns and other promotional automation may be sent only to contacts with recorded prior opt-in. STOP and unsubscribe requests must be honored.',
+            'When AI, media analysis, channel sync, commerce, email, payments, or real-time features are enabled, the information required for that feature may be processed by the providers listed in our Privacy Policy.',
+            'You must provide any notices required by local law before processing customer messages or media with third-party services.'
+          ]
+        },
+        {
           id: 'billing',
           icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
-          title: '6. Subscriptions, Payments & Cancellations',
+          title: '7. Subscriptions, Payments & Cancellations',
           items: [
             'Subscriptions (Free, Starter, Pro, Enterprise) are billed on a recurring monthly or annual basis.',
-            'All billing transactions are processed via secure PCI-compliant gateways (Paymob & Stripe).',
+            'Billing transactions are processed by the payment gateway shown at checkout, which may include Paymob or MyFatoorah.',
             'Subscriptions renew automatically unless cancelled before the renewal date via dashboard settings.',
             'Failed subscription renewals may result in automatic feature degradation or channel pause.'
           ]
@@ -87,7 +98,7 @@ export default function TermsPage() {
         {
           id: 'termination',
           icon: <Scale className="w-5 h-5 text-error" />,
-          title: '7. Termination & Account Deletion',
+          title: '8. Termination & Account Deletion',
           content: `You can terminate your subscription at any time. Naz Biz reserves the right to suspend or terminate accounts that violate platform policies or terms of service without prior notice.`
         }
       ]
@@ -150,12 +161,23 @@ export default function TermsPage() {
           ]
         },
         {
+          id: 'consent-and-processing',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '6. موافقة العملاء ومعالجة البيانات',
+          items: [
+            'تقع على عاتقك مسؤولية امتلاك أساس قانوني لربط قنوات العملاء ومعالجة رسائلهم.',
+            'لا يجوز إرسال الحملات التسويقية أو الرسائل الترويجية الآلية إلا لجهات الاتصال التي سجلت موافقتها المسبقة. يجب احترام طلبات STOP وإلغاء الاشتراك.',
+            'عند تفعيل الذكاء الاصطناعي أو تحليل الوسائط أو مزامنة القنوات أو التجارة أو البريد أو الدفع أو التحديثات الفورية، قد يعالج المزودون المذكورون في سياسة الخصوصية المعلومات اللازمة لهذه الميزة.',
+            'يجب تقديم الإشعارات التي تتطلبها الأنظمة المحلية قبل معالجة رسائل العملاء أو وسائطهم عبر خدمات خارجية.'
+          ]
+        },
+        {
           id: 'billing',
           icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
-          title: '6. الاشتراكات والدفع والإلغاء',
+          title: '7. الاشتراكات والدفع والإلغاء',
           items: [
             'تتم فوترة الاشتراكات (المجانية، المبتدئة، الاحترافية) على أساس دوري شهري أو سنوي.',
-            'تتم معالجة كافة المدفوعات عبر بوابات مشفرة متوافقة مع معايير PCI (Paymob & Stripe).',
+            'تتم معالجة الفواتير عبر بوابة الدفع الظاهرة عند الدفع، وقد تشمل Paymob أو MyFatoorah.',
             'تتجدد الاشتراكات تلقائياً ما لم يتم إلغاؤها قبل تاريخ التجديد من لوحة التحكم.',
             'قد يؤدي تعثر الفوترة إلى إيقاف مؤقت لأتمتة القنوات.'
           ]
@@ -163,7 +185,7 @@ export default function TermsPage() {
         {
           id: 'termination',
           icon: <Scale className="w-5 h-5 text-error" />,
-          title: '7. الإنهاء وحظر الحسابات',
+          title: '8. الإنهاء وحظر الحسابات',
           content: `يحق لك إلغاء حسابك في أي وقت. تحافظ ناز بيز على حقها في إيقاف أو إنهاء الحسابات المخالفة للشروط وقواعد الاستخدام دون إشعار مسبق.`
         }
       ]

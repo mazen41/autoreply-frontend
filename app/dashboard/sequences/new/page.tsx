@@ -74,6 +74,7 @@ export default function SequenceEditorPage() {
   const [noReplyHours, setNoReplyHours] = useState(24)
   const [noReplyUnit, setNoReplyUnit] = useState<'minutes' | 'hours' | 'days'>('hours')
   const [allowReentry, setAllowReentry] = useState(false)
+  const [stopOnReply, setStopOnReply] = useState(false)
 
   const toggleChannel = (chId: ChannelType) => {
     if (selectedChannels.includes(chId)) {
@@ -130,6 +131,7 @@ export default function SequenceEditorPage() {
 
           if (sequence.settings) {
             setAllowReentry(sequence.settings.allow_reentry || false)
+            setStopOnReply(sequence.settings.stop_on_reply || false)
           }
 
           const uiSteps = (sequence.steps || []).map((step: SequenceStep) => ({
@@ -251,6 +253,7 @@ export default function SequenceEditorPage() {
         steps: steps,
         settings: {
           allow_reentry: allowReentry,
+          stop_on_reply: stopOnReply,
         },
       }
 
@@ -488,6 +491,24 @@ export default function SequenceEditorPage() {
                 className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${allowReentry ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`}
               >
                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${allowReentry ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+
+            {/* Stop on reply Toggle */}
+            <div className="flex items-center justify-between pt-2 border-t border-[var(--divider)]">
+              <div>
+                <p className="text-xs font-bold text-[var(--text-primary)]">Stop when customer replies</p>
+                <p className="text-[11px] text-[var(--text-tertiary)]">Cancel pending steps as soon as this customer sends a message</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={stopOnReply}
+                aria-label="Stop sequence when customer replies"
+                onClick={() => setStopOnReply(!stopOnReply)}
+                className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${stopOnReply ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${stopOnReply ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
             </div>
 

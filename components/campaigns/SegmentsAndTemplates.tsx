@@ -7,6 +7,7 @@ import {
   Clock, Search, ChevronDown, ChevronUp, X, Save, FileText
 } from 'lucide-react'
 import Select from '../ui/Select'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -69,7 +70,7 @@ export default function SegmentsAndTemplates() {
     try {
       const token = getToken()
       const res = await fetch(`${API}/api/segments`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
@@ -87,7 +88,7 @@ export default function SegmentsAndTemplates() {
     try {
       const token = getToken()
       const res = await fetch(`${API}/api/campaign-templates`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (res.ok) {
         const data = await res.json()
@@ -128,6 +129,7 @@ export default function SegmentsAndTemplates() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
+        ...getBusinessHeaders(),
       },
       body: JSON.stringify(payload),
     })
@@ -164,6 +166,7 @@ export default function SegmentsAndTemplates() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
+        ...getBusinessHeaders(),
       },
       body: JSON.stringify(payload),
     })
@@ -182,7 +185,7 @@ export default function SegmentsAndTemplates() {
     const token = getToken()
     await fetch(`${API}/api/segments/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
     fetchSegments()
   }
@@ -191,7 +194,7 @@ export default function SegmentsAndTemplates() {
     const token = getToken()
     await fetch(`${API}/api/campaign-templates/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
     })
     fetchTemplates()
   }

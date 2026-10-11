@@ -34,14 +34,15 @@ import Select from '../../../components/ui/Select'
 import FilterBar from '../../../components/ui/FilterBar'
 import EmptyState from '../../../components/ui/EmptyState'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 interface Workflow {
   id: number
   name: string
   description: string | null
   is_active: boolean
-  trigger: { type: string; config: any }
-  conditions: Array<{ type: string; config: any; operator: string }>
+  trigger: { type: string; config?: any; conditions?: any }
+  conditions: Array<{ type: string; config: any; operator?: string; comparison?: string }>
   actions: Array<{ type: string; config: any; delay?: number }>
   execution_count: number
   last_executed_at: string | null
@@ -55,6 +56,7 @@ interface WorkflowExecution {
   trigger_data: any
   results: any
   error_message: string | null
+  test_mode: boolean
   started_at: string | null
   completed_at: string | null
   created_at: string
@@ -83,7 +85,7 @@ export default function WorkflowContent() {
       if (!token) throw new Error('Your session expired. Sign in again to load workflows.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
       if (!res.ok) throw new Error(`Could not load workflows (HTTP ${res.status}).`)
@@ -103,7 +105,7 @@ export default function WorkflowContent() {
       if (!token) throw new Error('Your session expired. Sign in again to load execution history.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${workflowId}/executions`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
       if (!res.ok) throw new Error(`Could not load execution history (HTTP ${res.status}).`)
@@ -111,6 +113,23 @@ export default function WorkflowContent() {
     } catch (error) {
       setExecutions([])
       toast.error(error instanceof Error ? error.message : 'Could not load execution history.')
+    }
+  }
+
+  const replayFailedActions = async (workflowId: number, executionId: number) => {
+    try {
+      const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${workflowId}/executions/${executionId}/replay`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed actions could not be replayed.')
+      toast.success('Failed actions replayed')
+      await fetchExecutions(workflowId)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed actions could not be replayed.')
     }
   }
 
@@ -122,7 +141,7 @@ export default function WorkflowContent() {
       if (!token) throw new Error('Your session expired. Sign in again.')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
       if (!response.ok) throw new Error('Workflow delete request failed.')
       setWorkflows(prev => prev.filter(w => w.id !== id))
@@ -138,7 +157,7 @@ export default function WorkflowContent() {
       if (!token) throw new Error('Your session expired. Sign in again.')
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/toggle`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
       if (!response.ok) throw new Error('Workflow status update failed.')
       setWorkflows(prev =>
@@ -154,7 +173,7 @@ export default function WorkflowContent() {
     try {
       const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
       if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/duplicate`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${id}/duplicate`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
       if (!response.ok) throw new Error('Workflow could not be duplicated.')
       await fetchWorkflows()
       toast.success('Workflow duplicated successfully')
@@ -259,9 +278,14 @@ export default function WorkflowContent() {
                         </Badge>
                         <span className="text-text-tertiary">Execution #{item.id}</span>
                       </div>
-                      <span className="text-text-tertiary">
-                        {new Date(item.created_at).toLocaleString()}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {item.status === 'failed' && !item.test_mode && selectedWorkflow && (
+                          <Button variant="outline" size="xs" icon={<Play size={11} />} onClick={() => replayFailedActions(selectedWorkflow.id, item.id)}>
+                            Replay failed actions
+                          </Button>
+                        )}
+                        <span className="text-text-tertiary">{new Date(item.created_at).toLocaleString()}</span>
+                      </div>
                     </div>
 
                     {item.results && (
@@ -490,10 +514,24 @@ function WorkflowBuilder({
 }) {
   const [name, setName] = useState(workflow?.name || '')
   const [description, setDescription] = useState(workflow?.description || '')
-  const [trigger, setTrigger] = useState(workflow?.trigger || { type: 'new_conversation', config: {} })
-  const [conditions, setConditions] = useState(workflow?.conditions || [])
+  const [trigger, setTrigger] = useState<{ type: string; config: Record<string, any> }>(() => {
+    const saved = workflow?.trigger
+    const type = saved?.type === 'first_contact' ? 'first_contact' : (saved?.type || 'message_received')
+    const savedConditions = saved?.conditions || {}
+    return {
+      type,
+      config: {
+        keyword: savedConditions.keywords?.[0] || '',
+        time_condition: savedConditions.time_condition || '',
+      },
+    }
+  })
+  const [conditions, setConditions] = useState<Array<{ type: string; config: Record<string, any>; operator?: string; comparison?: string }>>(workflow?.conditions || [])
   const [actions, setActions] = useState(
-    workflow?.actions || [{ type: 'send_message', config: { message: 'Welcome to our store!' }, delay: 0 }]
+    workflow?.actions?.map((action: any) => {
+      const { type, ...config } = action
+      return { type, config, delay: 0 }
+    }) || [{ type: 'send_message', config: { message: 'Welcome to our store!' }, delay: 0 }]
   )
   const [saving, setSaving] = useState(false)
 
@@ -520,14 +558,33 @@ function WorkflowBuilder({
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows`
 
       if (!token) throw new Error('Your session expired. Sign in again.')
+      const normalizedTrigger = trigger.type === 'keyword'
+        ? { type: 'keyword', conditions: { keywords: [trigger.config?.keyword || ''], match_type: 'any' } }
+        : trigger.type === 'business_hours'
+          ? { type: 'message_received', conditions: { time_condition: 'outside_hours' } }
+          : trigger.type === 'tag_added'
+            ? { type: 'tag_added', conditions: { tags: [trigger.config?.tag || ''].filter(Boolean) } }
+          : { type: trigger.type, conditions: {} }
       const response = await fetch(url, {
           method,
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            ...getBusinessHeaders(),
           },
-          body: JSON.stringify({ name, description, trigger, conditions, actions }),
+          body: JSON.stringify({
+            name,
+            description,
+            trigger: normalizedTrigger,
+            conditions: conditions.map((condition: any) => ({
+              type: condition.type,
+              config: condition.config,
+              operator: 'and',
+              comparison: condition.comparison || condition.operator || 'equals',
+            })),
+            actions,
+          }),
         })
       if (!response.ok) throw new Error('Workflow could not be saved.')
       toast.success(workflow ? 'Workflow updated' : 'Workflow created successfully')
@@ -540,7 +597,7 @@ function WorkflowBuilder({
   }
 
   const addCondition = () => {
-    setConditions([...conditions, { type: 'conversation_priority', config: { value: 'high' }, operator: 'equals' }])
+    setConditions([...conditions, { type: 'conversation_status', config: { value: 'open' }, comparison: 'equals', operator: 'and' }])
   }
 
   const addAction = () => {
@@ -594,12 +651,11 @@ function WorkflowBuilder({
             value={trigger.type}
             onChange={(e) => setTrigger({ ...trigger, type: e.target.value, config: {} })}
             options={[
-              { value: 'new_conversation', label: 'New Conversation Created' },
-              { value: 'new_message', label: 'New Inbound Customer Message' },
-              { value: 'ai_classification', label: 'AI Classifies Topic / Intent' },
+              { value: 'first_contact', label: 'First Customer Message' },
+              { value: 'message_received', label: 'New Inbound Customer Message' },
               { value: 'keyword', label: 'Specific Keyword Detected' },
               { value: 'business_hours', label: 'Business Working Hours Check' },
-              { value: 'customer_tag_added', label: 'Customer Tag Assigned' },
+              { value: 'tag_added', label: 'Customer Tag Assigned' },
             ]}
           />
           {trigger.type === 'keyword' && (
@@ -608,6 +664,14 @@ function WorkflowBuilder({
               value={trigger.config?.keyword || ''}
               onChange={(e) => setTrigger({ ...trigger, config: { ...trigger.config, keyword: e.target.value } })}
               placeholder="e.g., refund, cancel, discount"
+            />
+          )}
+          {trigger.type === 'tag_added' && (
+            <Input
+              label="Tag to Match"
+              value={trigger.config?.tag || ''}
+              onChange={(e) => setTrigger({ ...trigger, config: { ...trigger.config, tag: e.target.value } })}
+              placeholder="e.g., VIP"
             />
           )}
         </div>
@@ -641,17 +705,17 @@ function WorkflowBuilder({
                       setConditions(updated)
                     }}
                     options={[
-                      { value: 'conversation_priority', label: 'Conversation Priority' },
                       { value: 'conversation_status', label: 'Conversation Status' },
                       { value: 'customer_tag', label: 'Customer Tag' },
+                      { value: 'message_contains', label: 'Message Contains' },
                     ]}
                   />
                   <Select
                     className="w-32"
-                    value={cond.operator}
+                    value={cond.comparison || cond.operator}
                     onChange={(e) => {
                       const updated = [...conditions]
-                      updated[idx].operator = e.target.value
+                      updated[idx].comparison = e.target.value
                       setConditions(updated)
                     }}
                     options={[
@@ -723,19 +787,7 @@ function WorkflowBuilder({
                       { value: 'send_message', label: 'Send Automated Message' },
                       { value: 'add_tag', label: 'Add Contact Tag' },
                       { value: 'assign_agent', label: 'Assign to Agent' },
-                      { value: 'set_priority', label: 'Set Priority Level' },
-                      { value: 'close_conversation', label: 'Mark as Resolved' },
                     ]}
-                  />
-                  <Input
-                    type="number"
-                    value={act.delay || 0}
-                    onChange={(e) => {
-                      const updated = [...actions]
-                      updated[idx].delay = parseInt(e.target.value) || 0
-                      setActions(updated)
-                    }}
-                    placeholder="Delay in minutes (0 for immediate)"
                   />
                 </div>
 

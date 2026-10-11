@@ -16,6 +16,12 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('last_30_days');
+  const medianResponseMinutes = dashboardData?.conversations?.median_response_time_minutes;
+  const medianResponseLabel = medianResponseMinutes == null
+    ? 'No data'
+    : medianResponseMinutes < 1
+      ? `${Math.round(medianResponseMinutes * 60)} sec`
+      : `${medianResponseMinutes} min`;
 
   const fetchDashboard = async () => {
     try {
@@ -54,6 +60,11 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
             ]}
           />
         </div>
+        {dashboardData?.range && (
+          <p className="text-xs text-gray-500">
+            {dashboardData.range.start} – {dashboardData.range.end} ({dashboardData.range.timezone})
+          </p>
+        )}
       </div>
 
       {/* Conversation Statistics */}
@@ -64,18 +75,13 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
             Conversations
           </h2>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <p className="mb-4 text-xs text-gray-500">Conversation counts are for conversations started in the selected period; Open and Closed show their current status.</p>
+        <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-3xl font-bold text-gray-900 dark:text-white">
               {dashboardData?.conversations?.total || 0}
             </div>
-            <div className="text-sm text-gray-500">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-info">
-              {dashboardData?.conversations?.new || 0}
-            </div>
-            <div className="text-sm text-gray-500">New</div>
+            <div className="text-sm text-gray-500">Started in Period</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-success">
@@ -90,18 +96,12 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
             <div className="text-sm text-gray-500">Closed</div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 gap-4 mt-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {Math.round(dashboardData?.conversations?.avg_response_time_minutes || 0)}m
+              {medianResponseLabel}
             </div>
-            <div className="text-sm text-gray-500">Avg Response Time</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {Math.round(dashboardData?.conversations?.avg_resolution_time_minutes || 0)}m
-            </div>
-            <div className="text-sm text-gray-500">Avg Resolution Time</div>
+            <div className="text-sm text-gray-500">Median First Reply Time</div>
           </div>
         </div>
       </div>
@@ -135,9 +135,9 @@ export default function AnalyticsDashboard({ businessId }: { businessId: number 
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-success">
-              {Math.round(dashboardData?.ai?.ai_success_rate || 0)}%
+              {Math.round(dashboardData?.ai?.ai_share_of_replies || 0)}%
             </div>
-            <div className="text-sm text-gray-500">Success Rate</div>
+            <div className="text-sm text-gray-500">AI Share of Replies</div>
           </div>
         </div>
       </div>

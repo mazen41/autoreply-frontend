@@ -62,7 +62,7 @@ export default function NotificationCenter() {
       const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
       if (!token) return
 
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications/read-all`, { 
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/notifications/mark-all-read`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
       });

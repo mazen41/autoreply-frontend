@@ -16,6 +16,7 @@ import EmptyState from '../../../components/ui/EmptyState'
 import { SkeletonCard } from '../../../components/ui/Skeleton'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
@@ -48,6 +49,10 @@ export default function ReportsPage() {
   const [aiPerformance, setAiPerformance] = useState<any>(null)
   const [topQuestions, setTopQuestions] = useState<any[]>([])
   const [timeSaved, setTimeSaved] = useState<any>(null)
+  const [minutesPerReply, setMinutesPerReply] = useState(3)
+  const [hourlyRate, setHourlyRate] = useState(100)
+  const [hourlyRateCurrency, setHourlyRateCurrency] = useState('SAR')
+  const [savingEstimates, setSavingEstimates] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => { fetchReports() }, [range])
@@ -61,11 +66,11 @@ export default function ReportsPage() {
       const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
 
       const [dailyRes, channelRes, aiRes, questionsRes, timeRes] = await Promise.all([
-        fetch(`${API}/api/reports/daily-messages?days=${days}`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/api/reports/channel-breakdown`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/api/reports/ai-performance`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/api/reports/top-questions?limit=5`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/api/reports/time-saved`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/api/reports/daily-messages?days=${days}`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
+        fetch(`${API}/api/reports/channel-breakdown`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
+        fetch(`${API}/api/reports/ai-performance?days=${days}`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
+        fetch(`${API}/api/reports/top-questions?limit=5&days=${days}`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
+        fetch(`${API}/api/reports/time-saved?days=${days}`, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } }),
       ])
 
       if (![dailyRes, channelRes, aiRes, questionsRes, timeRes].every((res) => res.ok)) {
@@ -79,10 +84,33 @@ export default function ReportsPage() {
       setAiPerformance(ai)
       setTopQuestions(Array.isArray(questions.questions) ? questions.questions : [])
       setTimeSaved(saved)
+      setMinutesPerReply(Number(saved.estimate_inputs?.minutes_per_reply ?? 3))
+      setHourlyRate(Number(saved.estimate_inputs?.hourly_rate ?? 100))
+      setHourlyRateCurrency(String(saved.estimate_inputs?.hourly_rate_currency ?? 'SAR'))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not load reports.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function saveEstimateInputs() {
+    const token = getToken()
+    if (!token) return
+    setSavingEstimates(true)
+    try {
+      const response = await fetch(`${API}/api/reports/time-saved/settings`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify({ minutes_per_reply: minutesPerReply, hourly_rate: hourlyRate, currency: hourlyRateCurrency }),
+      })
+      if (!response.ok) throw new Error('Could not save estimate settings')
+      toast.success('Estimate inputs saved')
+      await fetchReports()
+    } catch {
+      toast.error('Could not save estimate inputs')
+    } finally {
+      setSavingEstimates(false)
     }
   }
 
@@ -91,7 +119,7 @@ export default function ReportsPage() {
     if (!token) return
     try {
       const url = `${API}/api/reports/export/${format}?type=messages`
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } })
       if (!res.ok) throw new Error('Export failed')
       const blob = await res.blob()
       const a = document.createElement('a')
@@ -136,15 +164,15 @@ export default function ReportsPage() {
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="AI Auto-Reply Rate"
-          value={`${aiPerformance?.auto_reply_rate || 0}%`}
+          label="AI share of replies"
+          value={`${aiPerformance?.ai_share_of_replies || 0}%`}
           icon={<Bot size={18} />}
           variant="ai"
           subValue={`${aiPerformance?.auto_replies ?? 0} AI replies`}
         />
         <MetricCard
-          label="Avg Response Time"
-          value={`${aiPerformance?.avg_response_time_formatted || 'No data'}`}
+          label="Median Response Time"
+          value={`${aiPerformance?.median_response_time_formatted || 'No data'}`}
           icon={<Clock size={18} />}
           subValue="End-to-end"
         />
@@ -156,11 +184,35 @@ export default function ReportsPage() {
         />
         <MetricCard
           label="Estimated value saved"
-          value={`${(timeSaved?.estimated_value ?? 0).toLocaleString()} SAR`}
+          value={`${(timeSaved?.estimated_value ?? 0).toLocaleString()} ${timeSaved?.estimate_inputs?.hourly_rate_currency ?? 'SAR'}`}
           icon={<TrendingUp size={18} />}
-          subValue="Based on configured reply-time and hourly-rate estimates"
+          subValue={`${timeSaved?.estimate_inputs?.minutes_per_reply ?? 3} min/reply · ${timeSaved?.estimate_inputs?.hourly_rate ?? 100} ${timeSaved?.estimate_inputs?.hourly_rate_currency ?? 'SAR'}/hr estimate`}
         />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Estimate inputs</CardTitle>
+          <CardDescription>These merchant-provided assumptions estimate time and value saved. They are estimates, not measured savings.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+            Minutes per manual reply
+            <input type="number" min={1} max={60} value={minutesPerReply} onChange={(event) => setMinutesPerReply(Number(event.target.value))} className="h-9 w-36 rounded-md border border-border bg-surface px-2 text-sm text-text-primary" />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+            Hourly rate
+            <input type="number" min={0} step="0.01" max={1000000} value={hourlyRate} onChange={(event) => setHourlyRate(Number(event.target.value))} className="h-9 w-36 rounded-md border border-border bg-surface px-2 text-sm text-text-primary" />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-text-secondary">
+            Currency
+            <select value={hourlyRateCurrency} onChange={(event) => setHourlyRateCurrency(event.target.value)} className="h-9 rounded-md border border-border bg-surface px-2 text-sm text-text-primary">
+              {['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
+            </select>
+          </label>
+          <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates}>Save estimates</Button>
+        </CardContent>
+      </Card>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

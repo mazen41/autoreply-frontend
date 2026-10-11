@@ -6,10 +6,12 @@ import PageHeader from '../../../components/ui/PageHeader'
 import MetricCard from '../../../components/ui/MetricCard'
 import Button from '../../../components/ui/Button'
 import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 
 type Analytics = {
-  conversations?: { total?: number; new?: number; open?: number; closed?: number; avg_response_time_minutes?: number | null }
-  ai?: { ai_conversations?: number; ai_responses?: number; escalated_conversations?: number; ai_success_rate?: number }
+  range?: { start?: string; end?: string; timezone?: string }
+  conversations?: { total?: number; new?: number; open?: number; closed?: number; median_response_time_minutes?: number | null }
+  ai?: { ai_conversations?: number; ai_responses?: number; escalated_conversations?: number; ai_share_of_replies?: number }
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -32,12 +34,10 @@ export default function AnalyticsPage() {
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again to view analytics.')
-      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' }
-      const userResponse = await fetch(`${API}/api/auth/user`, { headers })
-      if (!userResponse.ok) throw new Error(`Could not load your account (HTTP ${userResponse.status}).`)
-      const user = await userResponse.json()
-      if (!user.business_id) throw new Error('No business profile is available for analytics.')
-      const response = await fetch(`${API}/api/businesses/${user.business_id}/analytics/dashboard?preset=${PRESETS[dateRange]}`, { headers })
+      const businessId = getSelectedBusinessId()
+      if (!businessId) throw new Error('Select a business before viewing analytics.')
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() }
+      const response = await fetch(`${API}/api/businesses/${businessId}/analytics/dashboard?preset=${PRESETS[dateRange]}`, { headers })
       if (!response.ok) throw new Error(`Could not load analytics (HTTP ${response.status}).`)
       setData(await response.json())
     } catch (cause) {
@@ -50,8 +50,8 @@ export default function AnalyticsPage() {
 
   useEffect(() => { void fetchAnalytics() }, [fetchAnalytics])
 
-  const avgMinutes = data?.conversations?.avg_response_time_minutes
-  const responseTime = avgMinutes == null ? 'No data' : avgMinutes < 1 ? `${Math.round(avgMinutes * 60)} sec` : `${avgMinutes} min`
+  const medianMinutes = data?.conversations?.median_response_time_minutes
+  const responseTime = medianMinutes == null ? 'No data' : medianMinutes < 1 ? `${Math.round(medianMinutes * 60)} sec` : `${medianMinutes} min`
 
   return (
     <div className="space-y-6">
@@ -81,9 +81,9 @@ export default function AnalyticsPage() {
             <MetricCard label="AI conversations" value={data.ai?.ai_conversations ?? 0} icon={<Bot size={18} />} />
             <MetricCard label="AI replies" value={data.ai?.ai_responses ?? 0} icon={<Bot size={18} />} />
             <MetricCard label="Escalated conversations" value={data.ai?.escalated_conversations ?? 0} icon={<Activity size={18} />} />
-            <MetricCard label="Average first reply" value={responseTime} icon={<Clock size={18} />} />
+            <MetricCard label="Median first reply" value={responseTime} icon={<Clock size={18} />} />
           </div>
-          <p className="text-xs text-text-tertiary">AI success rate: {data.ai?.ai_success_rate ?? 0}% of outbound messages in the selected period.</p>
+          <p className="text-xs text-text-tertiary">AI share of replies: {data.ai?.ai_share_of_replies ?? 0}% of eligible customer replies in {data.range?.timezone ?? 'your business timezone'}.</p>
         </section>
       </>}
     </div>

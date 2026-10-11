@@ -17,6 +17,7 @@ import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Tabs from '../../../components/ui/Tabs'
 import { SkeletonCard } from '../../../components/ui/Skeleton'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -31,6 +32,7 @@ function authHeaders(): Record<string, string> {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${getToken()}`,
     Accept: 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 

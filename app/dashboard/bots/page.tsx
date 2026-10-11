@@ -8,6 +8,7 @@ import Button from '../../../components/ui/Button'
 import EmptyState from '../../../components/ui/EmptyState'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import BotWizardModal from '../../../components/bots/BotWizardModal'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -20,6 +21,9 @@ type BotRecord = {
   id: number
   name: string
   status?: string
+  effective_ai_enabled?: boolean
+  effective_ai_channels?: number
+  ai_pause_reason?: string | null
   ai_provider?: string
   ai_model?: string
   ai_instructions?: string
@@ -46,7 +50,7 @@ export default function BotsPage() {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again to load bots.')
       const response = await fetch(`${API}/api/bots`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (!response.ok) throw new Error(`Could not load bots (HTTP ${response.status}).`)
       const data = await response.json()
@@ -96,7 +100,7 @@ export default function BotsPage() {
             const assignments = bot.knowledge_assignments || bot.knowledgeAssignments || []
             const commerce = bot.ecommerce_connections || []
             return <Card key={bot.id} className="flex flex-col">
-              <CardHeader className="pb-2"><div className="flex items-start justify-between gap-3"><div><CardTitle className="text-base">{bot.name}</CardTitle><p className="mt-1 text-xs text-text-muted">{bot.ai_provider || 'AI provider not set'}{bot.ai_model ? ` · ${bot.ai_model}` : ''}</p></div><span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${bot.status === 'active' ? 'border-success/30 bg-success/10 text-success' : 'border-border bg-surface-elevated text-text-muted'}`}>{bot.status || 'unknown'}</span></div></CardHeader>
+              <CardHeader className="pb-2"><div className="flex items-start justify-between gap-3"><div><CardTitle className="text-base">{bot.name}</CardTitle><p className="mt-1 text-xs text-text-muted">{bot.ai_provider || 'AI provider not set'}{bot.ai_model ? ` · ${bot.ai_model}` : ''}</p><p className={`mt-1 text-xs ${bot.effective_ai_enabled ? 'text-success' : 'text-warning'}`}>{bot.effective_ai_enabled ? `Replies active on ${bot.effective_ai_channels || 0} channel${bot.effective_ai_channels === 1 ? '' : 's'}` : bot.ai_pause_reason === 'agent_inactive' ? 'Agent paused — replies paused' : 'Replies paused — no active channel'}</p></div><span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${bot.status === 'active' ? 'border-success/30 bg-success/10 text-success' : 'border-border bg-surface-elevated text-text-muted'}`}>{bot.status || 'unknown'}</span></div></CardHeader>
               <CardContent className="flex-1 space-y-4 pt-3">
                 <section><h3 className="mb-2 text-xs font-medium text-text-muted">Channels ({bot.channels?.length || 0})</h3>{bot.channels?.length ? <div className="flex flex-wrap gap-2">{bot.channels.map((channel) => <span key={channel.id} title={channel.page_name || channel.page_id || channel.type} className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-elevated px-2 py-1 text-xs"><ChannelIcon type={channel.type as any} size={14} />{channel.page_name || channel.type}</span>)}</div> : <p className="text-xs text-text-tertiary">No channels assigned</p>}</section>
                 <section><h3 className="mb-2 text-xs font-medium text-text-muted">Commerce connections ({commerce.length})</h3>{commerce.length ? <ul className="space-y-1">{commerce.map((connection) => <li key={connection.id} className="text-xs text-text-secondary">{connection.type}{connection.page_name ? ` · ${connection.page_name}` : ''}{connection.pivot?.is_default ? ' · default' : ''}</li>)}</ul> : <p className="text-xs text-text-tertiary">No commerce connection assigned</p>}</section>

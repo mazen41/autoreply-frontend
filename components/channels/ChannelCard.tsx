@@ -23,6 +23,8 @@ export interface ChannelInstance {
   page_name?: string
   page_id?: string
   ai_enabled: boolean
+  effective_ai_enabled?: boolean
+  ai_pause_reason?: string | null
   status?: 'active' | 'connected' | 'warning' | 'error' | 'syncing'
   status_message?: string
   last_activity?: string
@@ -42,6 +44,7 @@ export interface ChannelDef {
   category: 'messaging' | 'social' | 'ecommerce' | 'email'
   brandColor: string
   badgeText?: string
+  disabled?: boolean
 }
 
 export interface ChannelCardProps {
@@ -197,8 +200,11 @@ export default function ChannelCard({
                     <button
                       type="button"
                       onClick={() => onToggleAI(inst.id, inst.ai_enabled)}
+                      disabled={channel.disabled}
                       title={
-                        inst.ai_enabled
+                        inst.ai_enabled && inst.effective_ai_enabled === false
+                          ? 'AI is enabled for this channel, but replies are paused until an active agent is available.'
+                          : inst.ai_enabled
                           ? 'AI Auto-Reply is active. Click to pause.'
                           : 'AI Auto-Reply is off. Click to activate.'
                       }
@@ -209,9 +215,20 @@ export default function ChannelCard({
                       }`}
                     >
                       <Sparkles className="w-3 h-3" />
-                      <span>{inst.ai_enabled ? 'AI On' : 'AI Off'}</span>
+                      <span>{channel.disabled ? 'Replies off' : inst.ai_enabled ? 'AI On' : 'AI Off'}</span>
                     </button>
                   </div>
+
+                  {inst.ai_pause_reason === 'no_active_agent' && (
+                    <p className="mb-2 text-[10px] font-medium text-warning">
+                      No active agent — replies paused
+                    </p>
+                  )}
+                  {inst.ai_pause_reason === 'multiple_active_agents_without_primary' && (
+                    <p className="mb-2 text-[10px] font-medium text-warning">
+                      Multiple agents need a primary selection — replies paused
+                    </p>
+                  )}
 
                   {/* Actions Bar inside instance */}
                   <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
@@ -302,7 +319,11 @@ export default function ChannelCard({
 
       {/* ─── Card Footer ─────────────────────────────────────────────────── */}
       <div className="p-4 bg-surface-elevated/40 border-t border-border/60 flex items-center gap-2">
-        {isConnected ? (
+        {channel.disabled ? (
+          <Button variant="outline" size="sm" className="w-full text-xs" disabled>
+            Messaging unavailable
+          </Button>
+        ) : isConnected ? (
           <>
             <Button
               variant="outline"
