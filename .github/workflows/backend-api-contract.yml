@@ -1,0 +1,46 @@
+name: Backend API route contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  api-route-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out frontend
+        uses: actions/checkout@v4
+
+      - name: Check out backend
+        uses: actions/checkout@v4
+        with:
+          repository: mazen41/autoreply-backend
+          ref: main
+          path: autoreply-backend
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_sqlite, sqlite3, xml, curl, zip, gd, bcmath
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install backend dependencies
+        working-directory: autoreply-backend
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare Laravel environment
+        working-directory: autoreply-backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Verify frontend API paths exist in Laravel
+        working-directory: autoreply-backend
+        run: node scripts/check-frontend-api-routes.mjs ../autoreply-frontend
