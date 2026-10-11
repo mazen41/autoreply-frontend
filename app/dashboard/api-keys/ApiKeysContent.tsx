@@ -44,23 +44,8 @@ const SCOPE_GROUPS = [
     category: 'Conversations & Messaging',
     scopes: [
       { id: 'conversations:read', label: 'Read Conversations', desc: 'Query conversation threads and metadata' },
-      { id: 'conversations:write', label: 'Manage Conversations', desc: 'Create, update, assign, and resolve threads' },
       { id: 'messages:read', label: 'Read Messages', desc: 'Access message history and attachments' },
       { id: 'messages:write', label: 'Send Messages', desc: 'Dispatch replies and initiate outbound chats' },
-    ],
-  },
-  {
-    category: 'Customer Data & CRM',
-    scopes: [
-      { id: 'customers:read', label: 'Read Contacts', desc: 'Retrieve customer profiles, tags, and custom fields' },
-      { id: 'customers:write', label: 'Manage Contacts', desc: 'Upsert customers and sync demographic tags' },
-    ],
-  },
-  {
-    category: 'Analytics & Webhooks',
-    scopes: [
-      { id: 'analytics:read', label: 'Read Analytics', desc: 'Fetch KPIs, bot performance, and volume reports' },
-      { id: 'webhooks:write', label: 'Manage Webhooks', desc: 'Configure inbound and outbound event triggers' },
     ],
   },
 ]

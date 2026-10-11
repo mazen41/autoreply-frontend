@@ -19,8 +19,8 @@ export default function PrivacyPage() {
     en: {
       title: 'Privacy Policy',
       badge: 'Security & Data Protection',
-      subtitle: 'At Naz Biz (Naz Autoreply), we prioritize your privacy. We secure your channel credentials, business profile data, and customer communications with military-grade encryption.',
-      lastUpdated: 'Last updated: August 2026',
+      subtitle: 'This policy explains how Naz Biz processes business and customer data to provide inbox, AI, automation, and commerce features.',
+      lastUpdated: 'Last updated: October 2026',
       backHome: 'Back to Platform',
       contactUs: 'Questions? Reach out to privacy@nazbiz.io',
       sections: [
@@ -64,11 +64,13 @@ export default function PrivacyPage() {
           intro: 'Naz Biz connects directly with official channel providers and infrastructure services:',
           items: [
             'Meta Platforms (Facebook & Instagram Graph API) — Authorized messaging and page management.',
-            'Official Messaging Gateways (WhatsApp Business Suite & Telegram API) — Instant message delivery and receipt status.',
+            'WhatsApp Business Cloud, Telegram, and connected channel providers — message delivery and receipt status. Evolution API may be used for merchants who connect the legacy WhatsApp session integration.',
             'Google Cloud & Gmail API — Authorized email ingestion and reply dispatching.',
             'E-Commerce Platforms (Salla, Shopify, WooCommerce, TikTok) — Order sync, webhooks, and catalog management.',
-            'AI Providers (Google Gemini & Anthropic Claude) — Contextual AI response processing under strict privacy agreements.',
-            'Payment Processors (Paymob & Stripe) — Financial transactions handled via PCI-DSS compliant gateways (we never store raw credit card numbers).'
+            'AI providers, when enabled: Google Gemini, Groq, OpenAI, and Anthropic. Message text, relevant business context, and media submitted for analysis may be sent to the configured provider to generate a reply or analysis.',
+            'Commerce platforms: Salla, Shopify, WooCommerce, and supported TikTok integrations receive store sync or order actions requested by the merchant.',
+            'Operations providers may include Pusher for real-time dashboard updates, the configured email delivery service, and Paymob or MyFatoorah for payments. City-level address lookup uses the merchant-configured private Nominatim endpoint.',
+            'Payment data is handled by the selected payment gateway; Naz Biz does not store raw card numbers.'
           ]
         },
         {
@@ -76,10 +78,11 @@ export default function PrivacyPage() {
           icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
           title: '5. Security & Encryption Standards',
           items: [
-            'All channel credentials and access tokens are encrypted at rest using AES-256 encryption.',
-            'All data in transit is protected using TLS 1.3 / HTTPS encryption protocols.',
+            'Channel credentials and access tokens are encrypted at rest by the application. Passwords are stored as hashes.',
+            'Connections use HTTPS where supported by the connected provider.',
             'Strict multi-tenant database isolation ensures your business data is never accessible by other organizations.',
-            'Data is retained while your account remains active. You may request permanent deletion at any time.'
+            'Default retention is 365 days for messages and 30 days for inbound media. Business owners can change retention periods in Privacy & Data settings.',
+            'Data sent to a connected channel, commerce, AI, payment, email, or infrastructure provider is also subject to that provider’s own terms and retention rules.'
           ]
         },
         {
@@ -97,8 +100,8 @@ export default function PrivacyPage() {
     ar: {
       title: 'سياسة الخصوصية',
       badge: 'حماية البيانات والأمان',
-      subtitle: 'في ناز بيز (Naz Autoreply)، نضع خصوصيتك وأمان بياناتك في المقدمة. نقوم بتشفير رموز اتصال القنوات ومعلومات النشاط التجاري بأعلى معايير التشفير.',
-      lastUpdated: 'آخر تحديث: أغسطس 2026',
+      subtitle: 'توضح هذه السياسة كيفية معالجة ناز بيز لبيانات المنشأة والعملاء لتقديم صندوق الوارد والذكاء الاصطناعي والأتمتة والتجارة الإلكترونية.',
+      lastUpdated: 'آخر تحديث: أكتوبر 2026',
       backHome: 'العودة إلى المنصة',
       contactUs: 'أسئلة؟ تواصل معنا عبر privacy@nazbiz.io',
       sections: [
@@ -142,11 +145,13 @@ export default function PrivacyPage() {
           intro: 'تتصل ناز بيز مباشرة مع المنصات الرسمية وبوابات التوثيق لتشغيل المراسلات:',
           items: [
             'ميتا (واجهة فيسبوك وإنستغرام الرسمية Graph API) — لإدارة الصفحات والمراسلات.',
-            'بوابات المراسلة (منظومة واتساب وتليجرام الرسمية) — لإرسال الرسائل وتأكيد الوصول.',
+            'واتساب للأعمال السحابي وتليجرام ومزودو القنوات المتصلة — لإرسال الرسائل وتأكيد الوصول. قد تُستخدم Evolution API عند ربط تكامل واتساب القديم.',
             'جوجل (Google Cloud & Gmail API) — لقراءة بريد الخدمة وإرسال الردود.',
             'منصات التجارة الإلكترونية (سلة، شوبيفاي، ووكومرس، تيك توك) — لمزامنة الطلبات والمنتجات.',
-            'محركات الذكاء الاصطناعي (Google Gemini & Anthropic Claude) — لتوليد الردود السياقية وفق معايير أمان عالية.',
-            'بوابات الدفع (Paymob & Stripe) — لمعالجة المعاملات المالية بشكل آمن دون تخزين بيانات البطاقات.'
+            'مزودو الذكاء الاصطناعي عند تفعيلهم: Google Gemini وGroq وOpenAI وAnthropic. قد يُرسل نص الرسالة والسياق التجاري اللازم والوسائط المقدمة للتحليل إلى المزود المحدد لتوليد الرد أو التحليل.',
+            'منصات التجارة: سلة وشوبيفاي وWooCommerce وتكاملات تيك توك المدعومة لمزامنة المتجر وتنفيذ إجراءات الطلبات التي يطلبها التاجر.',
+            'قد تشمل مزودات التشغيل Pusher لتحديثات لوحة التحكم الفورية، وخدمة البريد الإلكتروني المضبوطة، وPaymob أو MyFatoorah للدفع. يستخدم تحديد المدينة نقطة Nominatim الخاصة التي يضبطها التاجر.',
+            'يتعامل مزود الدفع المختار مع بيانات الدفع؛ لا تخزن ناز بيز أرقام البطاقات كاملة.'
           ]
         },
         {
@@ -154,10 +159,11 @@ export default function PrivacyPage() {
           icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
           title: '5. معايير الأمان والتشفير',
           items: [
-            'جميع مفاتيح الاتصال ورموز القنوات مشفرة باستخدام تشفير AES-256.',
-            'جميع البيانات أثناء النقل محمية ببروتوكولات TLS 1.3 / HTTPS.',
+            'تُشفّر بيانات اعتماد القنوات ورموز الوصول أثناء التخزين بواسطة التطبيق، وتُخزن كلمات المرور بصيغة تجزئة آمنة.',
+            'تستخدم الاتصالات HTTPS حيثما يدعمه مزود الخدمة المتصل.',
             'عزل كامل لقواعد البيانات يضمن عدم تداخل بيانات المنشآت.',
-            'تُحفظ البيانات طوال فترة تفعيل الحساب، ويمكن طلب حذفها نهائياً في أي وقت.'
+            'مدة الاحتفاظ الافتراضية ٣٦٥ يوماً للرسائل و٣٠ يوماً للوسائط الواردة، ويمكن لمالك النشاط تعديلها من إعدادات الخصوصية والبيانات.',
+            'تخضع البيانات المرسلة إلى مزودي القنوات والتجارة والذكاء الاصطناعي والدفع والبريد والبنية التحتية أيضاً لشروط وسياسات الاحتفاظ الخاصة بكل مزود.'
           ]
         },
         {

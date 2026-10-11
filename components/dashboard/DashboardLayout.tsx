@@ -26,11 +26,12 @@ import {
   Users,
   Workflow,
   FileSpreadsheet,
-  Tag,
   Layers,
   KeyRound,
   Settings,
   CreditCard,
+  ShieldCheck,
+  ListTodo,
   HelpCircle,
   ChevronDown,
   Menu,
@@ -41,7 +42,7 @@ import {
   LogOut,
   ExternalLink,
   Check,
-  Building2,
+  PauseCircle,
 } from 'lucide-react'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -91,6 +92,7 @@ const NAV_GROUPS: NavGroupDef[] = [
     items: [
       { icon: Send, href: '/dashboard/campaigns', labelEn: 'Campaigns', labelAr: 'الحملات' },
       { icon: GitBranch, href: '/dashboard/sequences', labelEn: 'Sequences', labelAr: 'التسلسلات' },
+      { icon: PauseCircle, href: '/dashboard/automation-controls', labelEn: 'Run controls', labelAr: 'التحكم في التشغيل' },
     ],
   },
   {
@@ -99,9 +101,9 @@ const NAV_GROUPS: NavGroupDef[] = [
     labelAr: 'العمليات',
     items: [
       { icon: Users, href: '/dashboard/team', labelEn: 'Team', labelAr: 'الفريق' },
+      { icon: ListTodo, href: '/dashboard/handoffs', labelEn: 'Handoffs', labelAr: 'التصعيدات' },
       { icon: Workflow, href: '/dashboard/workflows', labelEn: 'Workflows', labelAr: 'سير العمل' },
       { icon: FileSpreadsheet, href: '/dashboard/reports', labelEn: 'Reports', labelAr: 'التقارير' },
-      { icon: Tag, href: '/dashboard/classification', labelEn: 'Classification', labelAr: 'التصنيف' },
       { icon: Layers, href: '/dashboard/multimodal', labelEn: 'Multimodal', labelAr: 'متعدد الوسائط' },
     ],
   },
@@ -116,17 +118,27 @@ const NAV_GROUPS: NavGroupDef[] = [
 ]
 
 const NAV_BOTTOM: NavItemDef[] = [
+  { icon: ShieldCheck, href: '/dashboard/privacy-data', labelEn: 'Privacy & Data', labelAr: 'الخصوصية والبيانات' },
   { icon: Settings, href: '/dashboard/settings', labelEn: 'Settings', labelAr: 'الإعدادات' },
   { icon: CreditCard, href: '/dashboard/billing', labelEn: 'Billing', labelAr: 'الفوترة' },
 ]
 
 const ALL_ITEMS = [...NAV_GROUPS.flatMap((g) => g.items), ...NAV_BOTTOM]
 
-// ─── AUTH HOOK ─────────────────────────────────────────────────────────────
+type BusinessOption = { id: number; name: string; role: string; is_primary: boolean }
+
+// ─── AUTH AND ACTIVE BUSINESS ───────────────────────────────────────────────
 function useUser() {
-  const router = useRouter()
-  const [user, setUser] = useState<{ name: string; email: string; onboarding_completed: boolean } | null>(null)
+  const [user, setUser] = useState<{ id?: number; name: string; email: string; onboarding_completed: boolean; business_id?: number | null } | null>(null)
+  const [businesses, setBusinesses] = useState<BusinessOption[]>([])
+  const [selectedBusinessId, setSelectedBusinessIdState] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const selectBusiness = useCallback((businessId: number) => {
+    setSelectedBusinessIdState(businessId)
+    window.localStorage.setItem('naz_selected_business_id', String(businessId))
+    window.dispatchEvent(new CustomEvent('naz:business-changed', { detail: { businessId } }))
+  }, [])
 
   useEffect(() => {
     const token = document.cookie
@@ -141,31 +153,48 @@ function useUser() {
       return
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    })
-      .then(async (r) => {
+    const load = async () => {
+      try {
+        const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
         const data = await r.json().catch(() => null)
         if (!r.ok || data?.requires_verification || data?.email_verified === false) {
           setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })
           return
         }
         setUser(data)
-      })
-      .catch(() => {
+        const businessResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/businesses`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        })
+        if (businessResponse.ok) {
+          const result = await businessResponse.json()
+          const options: BusinessOption[] = Array.isArray(result.businesses) ? result.businesses : []
+          setBusinesses(options)
+          const stored = Number(window.localStorage.getItem('naz_selected_business_id'))
+          const active = options.find((business) => business.id === stored)
+            || options.find((business) => business.is_primary)
+            || options[0]
+          if (active) selectBusiness(active.id)
+        }
+      } catch {
         setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })
-      })
-      .finally(() => setLoading(false))
-  }, [router])
+      } finally {
+        setLoading(false)
+      }
+    }
+    void load()
+  }, [selectBusiness])
 
-  return { user, loading }
+  return { user, businesses, selectedBusinessId, selectBusiness, loading }
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isRTL, toggleLang } = useLang()
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading: authLoading } = useUser()
+  const { user, businesses, selectedBusinessId, selectBusiness, loading: authLoading } = useUser()
+  const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId)
 
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -275,14 +304,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-text-primary truncate flex items-center gap-1.5">
-                  <span>NazBiz Global</span>
+                  <span>{selectedBusiness?.name || 'Select business'}</span>
                   <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-brand/10 text-brand font-bold border border-brand/20">
                     PRO
                   </span>
                 </div>
-                <div className="text-[10px] text-text-tertiary truncate">
-                  alex@nazbiz.io
-                </div>
+                <div className="text-[10px] text-text-tertiary truncate">{user?.email || 'Business workspace'}</div>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-text-tertiary group-hover:text-text-primary shrink-0 transition-transform" />
             </button>
@@ -302,38 +329,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Workspace Dropdown Popover */}
           {workspaceMenuOpen && !collapsed && (
             <div className="absolute top-[62px] left-3 right-3 bg-surface-overlay border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-2.5 py-1.5 text-[10px] font-semibold text-text-tertiary uppercase tracking-wider">
-                Workspaces
-              </div>
-              <button
-                type="button"
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-brand/10 text-brand text-xs font-semibold"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <div className="w-5 h-5 rounded bg-brand text-brand-text text-[10px] flex items-center justify-center font-bold">
-                    N
-                  </div>
-                  <span className="truncate">NazBiz Global</span>
-                </div>
-                <Check className="w-3.5 h-3.5 shrink-0" />
-              </button>
-              <button
-                type="button"
-                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-surface-elevated text-text-secondary hover:text-text-primary text-xs font-medium transition-colors"
-              >
-                <div className="w-5 h-5 rounded bg-surface-card border border-border text-text-tertiary text-[10px] flex items-center justify-center font-bold">
-                  S
-                </div>
-                <span className="truncate">Staging Sandbox</span>
-              </button>
-              <div className="my-1 border-t border-border/60" />
-              <button
-                type="button"
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary hover:text-text-primary text-xs transition-colors"
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Manage Workspaces</span>
-              </button>
+              <div className="px-2.5 py-1.5 text-[10px] font-semibold text-text-tertiary uppercase tracking-wider">Businesses</div>
+              {businesses.length ? businesses.map((business) => (
+                <button key={business.id} type="button" onClick={() => { selectBusiness(business.id); setWorkspaceMenuOpen(false); window.location.reload() }}
+                  className={`w-full flex items-center justify-between gap-2 p-2 rounded-lg text-xs font-medium transition-colors ${business.id === selectedBusinessId ? 'bg-brand/10 text-brand' : 'hover:bg-surface-elevated text-text-secondary hover:text-text-primary'}`}>
+                  <span className="truncate">{business.name}</span>
+                  <span className="shrink-0 text-[10px] opacity-70">{business.role}</span>
+                  {business.id === selectedBusinessId && <Check className="w-3.5 h-3.5 shrink-0" />}
+                </button>
+              )) : <div className="px-2.5 py-2 text-xs text-text-tertiary">No businesses available</div>}
             </div>
           )}
         </div>
