@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { CreditCard, TrendingUp, AlertTriangle, ArrowUpRight, Download } from 'lucide-react';
+import { getBusinessHeaders } from '../lib/businessContext';
+
+function getToken() {
+  if (typeof document === 'undefined') return '';
+  return decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '');
+}
 
 export default function BillingDashboard() {
   const [subscription, setSubscription] = useState<any>(null);
@@ -10,9 +16,11 @@ export default function BillingDashboard() {
 
   const fetchBillingData = async () => {
     try {
+      const token = getToken();
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() };
       const [subRes, usageRes] = await Promise.all([
-        fetch('/api/billing/subscription'),
-        fetch('/api/billing/usage'),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/billing/subscription`, { headers }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/billing/usage`, { headers }),
       ]);
 
       setSubscription(await subRes.json());
@@ -31,7 +39,7 @@ export default function BillingDashboard() {
     try {
       await fetch('/api/billing/upgrade', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, ...getBusinessHeaders() },
         body: JSON.stringify({ package_id: planId, billing_cycle: 'monthly' }),
       });
       await fetchBillingData();
@@ -50,7 +58,7 @@ export default function BillingDashboard() {
     return <div className="p-6 text-center">Loading billing information...</div>;
   }
 
-  const usagePercentage = usageStats?.usage_percentage || 0;
+  const usagePercentage = usageStats?.usage?.ai_replies?.percentage || 0;
   const isNearLimit = usagePercentage >= 80;
   const isOverLimit = usagePercentage >= 100;
 
@@ -113,10 +121,10 @@ export default function BillingDashboard() {
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600 dark:text-gray-300">AI Messages Used</span>
                 <span className="font-medium text-gray-900 dark:text-white">
-                  {usageStats.usage_count} / {usageStats.is_unlimited ? 'Unlimited' : usageStats.usage_limit}
+                  {usageStats.usage.ai_replies.used} / {usageStats.usage.ai_replies.unlimited ? 'Unlimited' : usageStats.usage.ai_replies.limit}
                 </span>
               </div>
-              {!usageStats.is_unlimited && (
+              {!usageStats.usage.ai_replies.unlimited && (
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all ${
@@ -143,6 +151,10 @@ export default function BillingDashboard() {
                 </span>
               </div>
             )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-300">
+            <span>Outbound messages: {usageStats.usage.outbound_messages.used} / {usageStats.usage.outbound_messages.unlimited ? 'Unlimited' : usageStats.usage.outbound_messages.limit}</span>
+            <span>Channel accounts: {usageStats.usage.channels.used} / {usageStats.usage.channels.unlimited ? 'Unlimited' : usageStats.usage.channels.limit}</span>
+          </div>
           </div>
         )}
       </div>

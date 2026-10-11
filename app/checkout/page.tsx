@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
+import { getBusinessHeaders } from '../../lib/businessContext'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
@@ -36,6 +37,7 @@ function CheckoutContent() {
   const router = useRouter()
   const { isRTL } = useLang()
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [autoRenew, setAutoRenew] = useState(false)
   const [pkg, setPkg] = useState<Package | null>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
@@ -79,8 +81,9 @@ function CheckoutContent() {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          ...getBusinessHeaders(),
         },
-        body: JSON.stringify({ package_id: pkg.id, billing_cycle: billingCycle }),
+        body: JSON.stringify({ package_id: pkg.id, billing_cycle: billingCycle, auto_renew: billingCycle === 'monthly' && autoRenew }),
       })
 
       const data = await res.json()
@@ -180,6 +183,24 @@ function CheckoutContent() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="mb-6 rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+              {billingCycle === 'monthly' ? (
+                <label className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-primary)' }}>
+                  <input type="checkbox" checked={autoRenew} onChange={event => setAutoRenew(event.target.checked)} className="mt-1" />
+                  <span>
+                    <strong>{isRTL ? 'تجديد تلقائي شهرياً' : 'Automatically renew monthly'}</strong>
+                    <span className="mt-1 block" style={{ color: 'var(--text-secondary)' }}>
+                      {isRTL ? 'اختياري. سيعالج MyFatoorah الدفعات المتكررة. يمكنك إيقاف التجديد من صفحة الفوترة.' : 'Optional. MyFatoorah will process recurring payments. You can turn renewal off from Billing.'}
+                    </span>
+                  </span>
+                </label>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {isRTL ? 'التجديد السنوي يدوي حالياً. يمكنك التجديد من صفحة الأسعار قبل انتهاء خطتك.' : 'Annual plans renew manually for now. You can renew from Pricing before your plan ends.'}
+                </p>
+              )}
             </div>
 
             <ul className="space-y-3 mb-6">
