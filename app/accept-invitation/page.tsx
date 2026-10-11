@@ -8,7 +8,8 @@ export default function AcceptInvitationPage() {
   const { t, isRTL } = useLang()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token')
+  const [token, setToken] = useState<string | null>(null)
+  const [tokenReady, setTokenReady] = useState(false)
   const action = searchParams.get('action') // 'reject' if user clicked decline
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -16,13 +17,21 @@ export default function AcceptInvitationPage() {
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
+    const queryToken = searchParams.get('token')
+    const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get('token')
+    setToken(queryToken || fragmentToken)
+    setTokenReady(true)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!tokenReady) return
     if (token) {
       checkInvitation()
     } else {
       setError('Invalid invitation link')
       setLoading(false)
     }
-  }, [token])
+  }, [token, tokenReady])
 
   const checkInvitation = async () => {
     try {
@@ -71,7 +80,7 @@ export default function AcceptInvitationPage() {
 
   const handleAccept = () => {
     // Redirect to setup account page with the token
-    router.push(`/setup-account?token=${token}`)
+    router.push(`/setup-account#token=${encodeURIComponent(token || '')}`)
   }
 
   if (loading) {

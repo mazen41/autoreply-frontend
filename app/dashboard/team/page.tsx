@@ -15,6 +15,7 @@ import Modal from '../../../components/ui/Modal'
 import EmptyState from '../../../components/ui/EmptyState'
 import { SkeletonRow } from '../../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -29,6 +30,7 @@ function authHeaders() {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${getToken()}`,
     Accept: 'application/json',
+    ...getBusinessHeaders(),
   }
 }
 
@@ -36,15 +38,24 @@ interface TeamMember {
   id: number
   business_id: number
   user_id: number
-  role: 'owner' | 'agent' | 'viewer'
+  role: 'owner' | 'manager' | 'agent' | 'viewer'
   is_active: boolean
   invited_at: string | null
   joined_at: string | null
   user: { id: number; name: string; email: string }
 }
 
+interface PendingInvitation {
+  id: number
+  email: string
+  role: string
+  expires_at: string
+  created_at: string
+}
+
 const ROLE_CONFIG: Record<string, { label: string; variant: 'default' | 'ai' | 'warning' | 'success' | 'error' | 'outline'; icon: React.ReactNode }> = {
   owner: { label: 'Owner', variant: 'ai', icon: <Crown size={10} /> },
+  manager: { label: 'Manager', variant: 'warning', icon: <Shield size={10} /> },
   agent: { label: 'Agent', variant: 'success', icon: <Shield size={10} /> },
   viewer: { label: 'Viewer', variant: 'outline', icon: <Eye size={10} /> },
 }
@@ -64,11 +75,12 @@ const GRADIENT_COLORS = [
 
 export default function TeamPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<'agent' | 'viewer'>('agent')
+  const [inviteRole, setInviteRole] = useState<'manager' | 'agent' | 'viewer'>('agent')
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
   const [sending, setSending] = useState(false)
@@ -77,15 +89,10 @@ export default function TeamPage() {
 
   const fetchBusinessId = async () => {
     try {
-      const res = await fetch(`${API}/auth/user`, { headers: authHeaders() })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
-      const user = await res.json()
-      if (user.business_id) {
-        setBusinessId(user.business_id)
-        await fetchTeamMembers(user.business_id)
-      } else {
-        throw new Error('No business is associated with this account.')
-      }
+      const selectedBusinessId = getSelectedBusinessId()
+      if (!selectedBusinessId) throw new Error('Select a business before opening team settings.')
+      setBusinessId(selectedBusinessId)
+      await fetchTeamMembers(selectedBusinessId)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not load team.')
       setLoading(false)
@@ -100,10 +107,31 @@ export default function TeamPage() {
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
       setTeamMembers(Array.isArray(data) ? data : (data.data || []))
+      const invitationsResponse = await fetch(`${API}/businesses/${bid}/team/invitations`, { headers: authHeaders() })
+      if (invitationsResponse.ok) {
+        const invitationData = await invitationsResponse.json()
+        setPendingInvitations(Array.isArray(invitationData) ? invitationData : [])
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not load team members.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleInvitation = async (invitationId: number, action: 'resend' | 'revoke') => {
+    if (!businessId) return
+    try {
+      const response = await fetch(`${API}/businesses/${businessId}/team/invitations/${invitationId}${action === 'resend' ? '/resend' : ''}`, {
+        method: action === 'resend' ? 'POST' : 'DELETE',
+        headers: authHeaders(),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || `Could not ${action} invitation.`)
+      toast.success(action === 'resend' ? 'Invitation resent' : 'Invitation revoked')
+      await fetchTeamMembers(businessId)
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : `Could not ${action} invitation.`)
     }
   }
 
@@ -292,6 +320,31 @@ export default function TeamPage() {
         </CardContent>
       </Card>
 
+      {pendingInvitations.length > 0 && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="border-b border-border px-5 py-4">
+              <h2 className="text-sm font-semibold text-text-primary">Pending invitations</h2>
+              <p className="mt-1 text-xs text-text-tertiary">Invited users join only after accepting the invitation.</p>
+            </div>
+            <div className="divide-y divide-border/50">
+              {pendingInvitations.map(invitation => (
+                <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">{invitation.email}</p>
+                    <p className="text-xs text-text-secondary">{ROLE_CONFIG[invitation.role]?.label || invitation.role} · expires {new Date(invitation.expires_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => void handleInvitation(invitation.id, 'resend')}>Resend</Button>
+                    <Button variant="ghost" size="sm" onClick={() => void handleInvitation(invitation.id, 'revoke')} className="text-error">Revoke</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Invite Modal */}
       <Modal
         isOpen={showInviteModal}
@@ -312,7 +365,7 @@ export default function TeamPage() {
           <div className="space-y-2">
             <label className="text-xs font-medium text-text-secondary">Role</label>
             <div className="grid grid-cols-2 gap-2">
-              {(['agent', 'viewer'] as const).map(role => {
+              {(['manager', 'agent', 'viewer'] as const).map(role => {
                 const rc = ROLE_CONFIG[role]
                 const isSelected = inviteRole === role
                 return (
@@ -330,7 +383,7 @@ export default function TeamPage() {
                     <div className="text-left">
                       <div className="font-semibold">{rc.label}</div>
                       <div className="text-[10px] text-text-tertiary mt-0.5">
-                        {role === 'agent' ? 'Can manage conversations' : 'Read-only access'}
+                        {role === 'manager' ? 'Can manage settings and automations' : role === 'agent' ? 'Can manage conversations' : 'Read-only access'}
                       </div>
                     </div>
                   </button>

@@ -8,7 +8,8 @@ export default function SetupAccountPage() {
   const { t, isRTL } = useLang()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token')
+  const [token, setToken] = useState<string | null>(null)
+  const [tokenReady, setTokenReady] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [invitation, setInvitation] = useState<any>(null)
@@ -16,19 +17,26 @@ export default function SetupAccountPage() {
   
   const [formData, setFormData] = useState({
     name: '',
-    username: '',
     password: '',
     confirmPassword: '',
   })
 
   useEffect(() => {
+    const queryToken = searchParams.get('token')
+    const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get('token')
+    setToken(queryToken || fragmentToken)
+    setTokenReady(true)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (!tokenReady) return
     if (token) {
       checkInvitation()
     } else {
       setError('Invalid invitation link')
       setLoading(false)
     }
-  }, [token])
+  }, [token, tokenReady])
 
   const checkInvitation = async () => {
     try {
@@ -43,10 +51,6 @@ export default function SetupAccountPage() {
 
       const data = await response.json()
       setInvitation(data)
-      // Pre-fill email if available
-      if (data.email) {
-        setFormData(prev => ({ ...prev, email: data.email }))
-      }
     } catch (error: any) {
       setError(error.message || 'Failed to check invitation')
     } finally {
@@ -60,14 +64,8 @@ export default function SetupAccountPage() {
     setProcessing(true)
 
     // Validation
-    if (!formData.name.trim()) {
+    if (!invitation?.requires_existing_account_password && !formData.name.trim()) {
       setError(isRTL ? 'الاسم مطلوب' : 'Name is required')
-      setProcessing(false)
-      return
-    }
-
-    if (!formData.username.trim()) {
-      setError(isRTL ? 'اسم المستخدم مطلوب' : 'Username is required')
       setProcessing(false)
       return
     }
@@ -78,7 +76,7 @@ export default function SetupAccountPage() {
       return
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (!invitation?.requires_existing_account_password && formData.password !== formData.confirmPassword) {
       setError(isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match')
       setProcessing(false)
       return
@@ -93,7 +91,6 @@ export default function SetupAccountPage() {
         },
         body: JSON.stringify({
           name: formData.name,
-          username: formData.username,
           password: formData.password,
         }),
       })
@@ -171,7 +168,7 @@ export default function SetupAccountPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          {!invitation?.requires_existing_account_password && <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {isRTL ? 'الاسم الكامل' : 'Full Name'}
             </label>
@@ -183,25 +180,13 @@ export default function SetupAccountPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'أدخل اسمك الكامل' : 'Enter your full name'}
             />
-          </div>
+          </div>}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {isRTL ? 'اسم المستخدم' : 'Username'}
-            </label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({...formData, username: e.target.value})}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
-              placeholder={isRTL ? 'اختر اسم مستخدم' : 'Choose a username'}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {isRTL ? 'كلمة المرور' : 'Password'}
+              {invitation?.requires_existing_account_password
+                ? (isRTL ? 'كلمة مرور حسابك الحالي' : 'Existing account password')
+                : (isRTL ? 'كلمة المرور' : 'Password')}
             </label>
             <input
               type="password"
@@ -209,14 +194,16 @@ export default function SetupAccountPage() {
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
-              placeholder={isRTL ? 'اختر كلمة مرور قوية' : 'Choose a strong password'}
+              placeholder={invitation?.requires_existing_account_password
+                ? (isRTL ? 'أدخل كلمة مرور حسابك' : 'Enter your current password')
+                : (isRTL ? 'اختر كلمة مرور قوية' : 'Choose a strong password')}
             />
             <p className="text-xs text-gray-500 mt-1">
               {isRTL ? 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' : 'Password must be at least 8 characters'}
             </p>
           </div>
 
-          <div>
+          {!invitation?.requires_existing_account_password && <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {isRTL ? 'تأكيد كلمة المرور' : 'Confirm Password'}
             </label>
@@ -228,7 +215,7 @@ export default function SetupAccountPage() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-info focus:border-transparent"
               placeholder={isRTL ? 'أعد إدخال كلمة المرور' : 'Re-enter password'}
             />
-          </div>
+          </div>}
 
           <button
             type="submit"
@@ -237,7 +224,9 @@ export default function SetupAccountPage() {
           >
             {processing 
               ? (isRTL ? 'جاري إنشاء الحساب...' : 'Creating account...') 
-              : (isRTL ? 'إنشاء الحساب والانضمام' : 'Create Account & Join')
+              : (invitation?.requires_existing_account_password
+                ? (isRTL ? 'تأكيد والانضمام' : 'Sign in and join')
+                : (isRTL ? 'إنشاء الحساب والانضمام' : 'Create Account & Join'))
             }
           </button>
         </form>

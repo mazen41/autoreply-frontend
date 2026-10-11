@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import WhatsAppConnect from '../channels/WhatsAppConnect'
 import Select from '../ui/Select'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface OnboardingData {
@@ -15,6 +16,8 @@ interface OnboardingData {
   phone: string
   city: string
   country: string
+  currency: string
+  timezone: string
   workingDays: string[]
   workingFrom: string
   workingTo: string
@@ -62,6 +65,17 @@ const CHANNELS = [
 ]
 
 const COUNTRIES = ['السعودية','الإمارات','مصر','الكويت','البحرين','قطر','الأردن','المغرب','تونس','Other']
+const REGIONAL_DEFAULTS: Record<string, { currency: string; timezone: string }> = {
+  'السعودية': { currency: 'SAR', timezone: 'Asia/Riyadh' },
+  'الإمارات': { currency: 'AED', timezone: 'Asia/Dubai' },
+  'مصر': { currency: 'EGP', timezone: 'Africa/Cairo' },
+  'الكويت': { currency: 'KWD', timezone: 'Asia/Kuwait' },
+  'البحرين': { currency: 'BHD', timezone: 'Asia/Bahrain' },
+  'قطر': { currency: 'QAR', timezone: 'Asia/Qatar' },
+  'الأردن': { currency: 'JOD', timezone: 'Asia/Amman' },
+  'المغرب': { currency: 'MAD', timezone: 'Africa/Casablanca' },
+  'تونس': { currency: 'TND', timezone: 'Africa/Tunis' },
+}
 
 // ─── PROGRESS BAR ─────────────────────────────────────────────────────────────
 function ProgressBar({ step, total }: { step: number; total: number }) {
@@ -213,7 +227,11 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             <Select
               label={isRTL ? 'الدولة' : 'Country'}
               value={data.country}
-              onChange={e => setData({ ...data, country: e.target.value })}
+              onChange={e => {
+                const country = e.target.value
+                const defaults = REGIONAL_DEFAULTS[country] || { currency: 'USD', timezone: 'UTC' }
+                setData({ ...data, country, currency: defaults.currency, timezone: defaults.timezone })
+              }}
               searchable
               options={[
                 { value: '', label: isRTL ? 'اختر الدولة' : 'Select country' },
@@ -221,6 +239,19 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               ]}
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            {isRTL ? 'العملة' : 'Currency'}
+            <select value={data.currency} onChange={e => setData({ ...data, currency: e.target.value })} className="mt-1.5 w-full px-3 py-3 rounded-xl text-sm" style={inputStyle}>
+              {['SAR','EGP','AED','KWD','BHD','QAR','OMR','JOD','MAD','TND','USD','EUR','GBP'].map(code => <option key={code} value={code}>{code}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            {isRTL ? 'المنطقة الزمنية' : 'Timezone'}
+            <input value={data.timezone} onChange={e => setData({ ...data, timezone: e.target.value })} placeholder="Africa/Cairo" className="mt-1.5 w-full px-3 py-3 rounded-xl text-sm" style={inputStyle} />
+          </label>
         </div>
 
         {/* City */}
@@ -497,7 +528,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     try {
       await fetch(`${API}/api/onboarding/step4`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}`, ...getBusinessHeaders() },
         body: JSON.stringify({ connected_channel: channelId }),
       })
     } catch (e) {
@@ -511,17 +542,24 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
     if (id === 'whatsapp') {
       setShowWhatsAppModal(true)
-    } else if (id === 'salla') {
-      window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}&redirect=onboarding`
-    } else if (id === 'facebook' || id === 'instagram') {
-      const width = 600, height = 700
-      const left = window.screen.width / 2 - width / 2
-      const top = window.screen.height / 2 - height / 2
-      window.open(`${API}/api/channels/connect/facebook?token=${encodeURIComponent(token)}&redirect=popup`, 'connect_facebook', `width=${width},height=${height},left=${left},top=${top}`)
+    } else if (id === 'salla' || id === 'facebook' || id === 'instagram') {
+      try {
+        const endpoint = id === 'salla' ? 'salla' : 'facebook'
+        const response = await fetch(`${API}/api/channels/connect/${endpoint}`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+        })
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || !result.url) throw new Error(result.message || 'Could not start channel connection')
+        window.location.href = result.url
+      } catch (error) {
+        console.error('Channel connection could not start:', error)
+        setConnecting(null)
+      }
     } else if (id === 'gmail') {
       try {
         const res = await fetch(`${API}/api/channels/connect/gmail`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
         if (res.ok) {
           const json = await res.json()
@@ -749,6 +787,8 @@ export default function OnboardingWizard() {
     phone: '',
     city: '',
     country: '',
+    currency: 'SAR',
+    timezone: 'Asia/Riyadh',
     workingDays: ['sat','sun','mon','tue','wed','thu'],
     workingFrom: '09:00',
     workingTo: '22:00',
@@ -778,13 +818,14 @@ export default function OnboardingWizard() {
         if (res.ok) {
           const json = await res.json()
           // If already completed, redirect to dashboard
-          if (json.completed) {
-            router.replace('/dashboard')
+          if (json.completed || json.wizard_dismissed || json.skipped) {
+            router.replace('/dashboard/channels')
             return
           }
           // Restore business data into form
           if (json.business) {
             const b = json.business
+            if (b.id) window.localStorage.setItem('naz_selected_business_id', String(b.id))
             setData(prev => ({
               ...prev,
               businessType:     b.business_type     || prev.businessType,
@@ -792,6 +833,8 @@ export default function OnboardingWizard() {
               phone:            b.phone             || prev.phone,
               city:             b.city              || prev.city,
               country:          b.country           || prev.country,
+              currency:         b.currency          || prev.currency,
+              timezone:         b.timezone          || prev.timezone,
               workingDays:      b.working_days       || prev.workingDays,
               workingFrom:      b.working_from       || prev.workingFrom,
               workingTo:        b.working_to         || prev.workingTo,
@@ -839,19 +882,22 @@ export default function OnboardingWizard() {
     }
     const payloads: Record<number, object> = {
       1: { business_type: data.businessType },
-      2: { business_name: data.businessName, phone: data.phone, city: data.city, country: data.country, working_days: data.workingDays, working_from: data.workingFrom, working_to: data.workingTo },
+      2: { business_name: data.businessName, phone: data.phone, city: data.city, country: data.country, currency: data.currency, timezone: data.timezone, working_days: data.workingDays, working_from: data.workingFrom, working_to: data.workingTo },
       3: { services: data.services, faqs: data.faqs, reply_style: data.replyStyle },
       4: { connected_channel: data.connectedChannel },
     }
     try {
       const res = await fetch(endpoints[stepNum], {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${token}`, ...getBusinessHeaders() },
         body: JSON.stringify(payloads[stepNum]),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         console.error(`Step ${stepNum} save failed:`, err)
+      } else if (stepNum === 1) {
+        const result = await res.json().catch(() => ({}))
+        if (result.business_id) window.localStorage.setItem('naz_selected_business_id', String(result.business_id))
       }
     } catch (e) {
       console.error(`Step ${stepNum} network error:`, e)
@@ -876,21 +922,37 @@ export default function OnboardingWizard() {
   const finish = async () => {
     setSaving(true)
     try {
-      await fetch(`${API}/api/onboarding/complete`, {
+      const response = await fetch(`${API}/api/onboarding/complete`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${getToken()}` },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', Authorization: `Bearer ${getToken()}`, ...getBusinessHeaders() },
       })
-    } catch { /* silent */ }
-    setSaving(false)
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.message || 'Could not save onboarding progress.')
+      const packageId = searchParams.get('package')
+      const billingCycle = searchParams.get('billing')
+      if (result.setup_ready && packageId) {
+        window.location.href = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
+      } else {
+        router.replace('/dashboard/channels')
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not save onboarding progress.')
+    } finally { setSaving(false) }
+  }
 
-    const packageId = searchParams.get('package')
-    const billingCycle = searchParams.get('billing')
-
-    if (packageId) {
-      window.location.href = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
-    } else {
-      window.location.href = '/dashboard'
-    }
+  const skipOnboarding = async () => {
+    setSaving(true)
+    setError('')
+    try {
+      const response = await fetch(`${API}/api/onboarding/skip`, {
+        method: 'POST',
+        headers: { Accept: 'application/json', Authorization: `Bearer ${getToken()}`, ...getBusinessHeaders() },
+      })
+      if (!response.ok) throw new Error('Could not skip onboarding.')
+      router.replace('/dashboard/channels')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Could not skip onboarding.')
+    } finally { setSaving(false) }
   }
 
   const variants = {
@@ -935,6 +997,7 @@ export default function OnboardingWizard() {
 
           <div className="relative">
             {step <= 4 && <ProgressBar step={step} total={4} />}
+            {error && <p role="alert" className="mb-4 rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-xs text-red-200">{error}</p>}
 
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -967,7 +1030,8 @@ export default function OnboardingWizard() {
                 {step === 4 && (
                   <button
                     type="button"
-                    onClick={next}
+                    onClick={skipOnboarding}
+                    disabled={saving}
                     className="px-3 py-3 text-xs text-text-tertiary hover:text-text-secondary transition-colors"
                   >
                     {isRTL ? 'تخطي' : 'Skip'}

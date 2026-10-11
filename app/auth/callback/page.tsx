@@ -13,12 +13,12 @@ function CallbackHandler() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const token     = searchParams.get('token')
-    const isNewUser = searchParams.get('is_new_user')
     const errorParam = searchParams.get('error')
     const redirectTo = searchParams.get('redirect')
     const packageId = searchParams.get('package')
     const billingCycle = searchParams.get('billing')
+    const rememberMe = searchParams.get('remember_me') === '1'
+    const code = searchParams.get('code')
 
     if (errorParam === 'auth_failed') {
       setError('Authentication failed. Please try again.')
@@ -26,53 +26,60 @@ function CallbackHandler() {
       return
     }
 
-    if (!token) {
-      setError('Missing authentication token.')
+    if (!code) {
+      setError('Missing or expired sign-in code.')
       setTimeout(() => router.push('/login?error=auth_failed'), 2000)
       return
     }
 
-    // Persist token
-    document.cookie = `naz_token=${token}; path=/; max-age=604800; SameSite=Lax`
+    // Remove the one-time exchange code from browser history before redeeming it.
+    window.history.replaceState({}, '', '/auth/callback')
+    let cancelled = false
 
-    // Determine redirect after auth
-    let redirectUrl = redirectTo
-    if (!redirectUrl) {
-      if (isNewUser === 'true') {
-        // New user - always go to onboarding first with package/billing params
-        const params = new URLSearchParams()
-        if (packageId) params.set('package', packageId)
-        if (billingCycle) params.set('billing', billingCycle)
-        const queryString = params.toString()
-        redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
-      } else if (packageId) {
-        // Existing user with plan selected, go to checkout
-        redirectUrl = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
-      } else {
-        // Existing user without plan, go to dashboard
-        redirectUrl = '/dashboard'
+    const completeSignIn = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/exchange`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ code, remember_me: rememberMe }),
+        })
+        const session = await response.json().catch(() => ({}))
+        if (!response.ok || !session.token) throw new Error('Sign-in code rejected')
+
+        const token = session.token as string
+        const maxAge = 60 * 60 * 24 * (rememberMe ? 7 : 3)
+        const secure = window.location.protocol === 'https:' ? '; secure' : ''
+        document.cookie = `naz_token=${token}; path=/; max-age=${maxAge}; samesite=lax${secure}`
+
+        let redirectUrl = redirectTo
+        if (!redirectUrl) {
+          if (session.is_new_user) {
+            const params = new URLSearchParams()
+            if (packageId) params.set('package', packageId)
+            if (billingCycle) params.set('billing', billingCycle)
+            const queryString = params.toString()
+            redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
+          } else if (packageId) {
+            redirectUrl = `/checkout?package=${encodeURIComponent(packageId)}${billingCycle ? `&billing=${encodeURIComponent(billingCycle)}` : ''}`
+          } else {
+            redirectUrl = '/dashboard'
+          }
+        }
+
+        await fetch(`${API_URL}/api/auth/user`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        }).catch(() => null)
+
+        if (!cancelled) router.push(redirectUrl)
+      } catch {
+        if (cancelled) return
+        setError('Authentication failed. Please try again.')
+        setTimeout(() => router.push('/login?error=auth_failed'), 2000)
       }
     }
 
-    // Fetch user — guard against HTML error pages
-    fetch(`${API_URL}/api/auth/user`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    })
-      .then(async (res) => {
-        const text = await res.text()
-        try {
-          const data = JSON.parse(text)
-          // User data not stored - we'll fetch on demand
-        } catch {
-          // User fetch failed but token is saved — still redirect
-          console.warn('Could not parse user response, redirecting anyway')
-        }
-        router.push(redirectUrl)
-      })
-      .catch(() => {
-        // Network error — token already saved, redirect anyway
-        router.push(redirectUrl)
-      })
+    void completeSignIn()
+    return () => { cancelled = true }
   }, [searchParams, router])
 
   if (error) {
@@ -93,9 +100,7 @@ function CallbackHandler() {
           <circle cx="12" cy="12" r="10" stroke="var(--accent-focus)" strokeWidth="3"/>
           <path d="M12 2a10 10 0 0 1 10 10" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"/>
         </svg>
-        <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-          {t.auth.signingIn}
-        </p>
+        <p className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>{t.auth.signingIn}</p>
       </div>
     </div>
   )

@@ -56,6 +56,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(userData)
         }
       } else {
+        if (response.status === 401) {
+          document.cookie = 'naz_token=; path=/; max-age=0'
+          if (window.location.pathname.startsWith('/dashboard')) {
+            window.location.replace('/login')
+          }
+        }
         setUser(null)
       }
     } catch (error) {

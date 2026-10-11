@@ -74,7 +74,7 @@ export default function LoginForm() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, remember_me: rememberMe }),
       })
       const data = await res.json()
       if (res.status === 403 && data.requires_verification) {
@@ -85,7 +85,7 @@ export default function LoginForm() {
 
       if (!data.token) throw new Error(t.auth.loginError)
 
-      const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24
+      const maxAge = 60 * 60 * 24 * (rememberMe ? 7 : 3)
       const secure = window.location.protocol === 'https:' ? '; secure' : ''
       document.cookie = `naz_token=${data.token}; path=/; max-age=${maxAge}; samesite=lax${secure}`
 
@@ -136,7 +136,7 @@ export default function LoginForm() {
           <p className="text-sm mb-8 text-text-secondary">{t.auth.loginToAccess}</p>
         </motion.div>
 
-        <SocialLoginButtons redirectTo={redirectTo || undefined} />
+        <SocialLoginButtons redirectTo={redirectTo || undefined} rememberMe={rememberMe} />
 
         <AnimatePresence>
           {error && (
