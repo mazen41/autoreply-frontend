@@ -56,7 +56,7 @@ const CHANNELS_CATALOG: ChannelDef[] = [
   {
     id: 'whatsapp',
     name: 'WhatsApp Business',
-    description: 'Official WhatsApp Cloud API integration for 24/7 automated conversational support.',
+    description: 'WhatsApp Business integration for 24/7 automated conversational support.',
     category: 'messaging',
     brandColor: '#25D366',
     badgeText: 'Highest CSAT',
@@ -89,14 +89,6 @@ const CHANNELS_CATALOG: ChannelDef[] = [
     description: 'Connect Telegram bot channels for instant AI triage and community support.',
     category: 'messaging',
     brandColor: '#0088CC',
-  },
-  {
-    id: 'tiktok',
-    name: 'TikTok (Messaging unavailable)',
-    description: 'The connected TikTok API does not support customer messaging or reply automation.',
-    category: 'social',
-    brandColor: '#FF0050',
-    disabled: true,
   },
   {
     id: 'shopify',
@@ -433,18 +425,7 @@ export default function ChannelsPage() {
       return
     }
 
-    if (ch.id === 'tiktok') {
-      const response = await fetch(`${API}/api/channels/connect/tiktok`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
-      })
-      const data = await response.json().catch(() => ({}))
-      if (!response.ok || !data.url) {
-        throw new Error(data.message || data.error || 'Could not get TikTok authorization URL')
-      }
-      window.location.href = data.url
-      return
-    }
+
 
     throw new Error(`The ${ch.id} connection flow is not implemented yet.`)
   }

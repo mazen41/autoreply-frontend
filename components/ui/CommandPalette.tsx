@@ -50,7 +50,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
 
     // Channels
     { id: 'ch-ig', title: 'Instagram DMs', description: 'Automate comments and direct messages', category: 'Channels', href: '/dashboard/channels#instagram' },
-    { id: 'ch-wa', title: 'WhatsApp Business', description: 'Official Cloud API messaging', category: 'Channels', href: '/dashboard/whatsapp' },
+    { id: 'ch-wa', title: 'WhatsApp Business', description: 'WhatsApp Business messaging', category: 'Channels', href: '/dashboard/whatsapp' },
     { id: 'ch-fb', title: 'Facebook Messenger', description: 'Page messaging and auto-replies', category: 'Channels', href: '/dashboard/channels#facebook' },
     { id: 'ch-tg', title: 'Telegram Bot', description: 'Customer support bot channels', category: 'Channels', href: '/dashboard/channels#telegram' },
   ]

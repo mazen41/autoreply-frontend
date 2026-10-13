@@ -76,13 +76,8 @@ interface Channel {
   metadata?: Record<string, any>
 }
 
-interface WhatsAppCloudTemplate {
-  id: number
-  name: string
-  language: string
-  status: string
-  category: string
-}
+
+
 
 interface UnifiedCampaign {
   id: number
@@ -115,8 +110,6 @@ function token() {
 export default function CampaignsContent() {
   const [campaigns, setCampaigns] = useState<UnifiedCampaign[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
-  const [cloudTemplates, setCloudTemplates] = useState<WhatsAppCloudTemplate[]>([])
-  const [loadingCloudTemplates, setLoadingCloudTemplates] = useState(false)
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -139,8 +132,6 @@ export default function CampaignsContent() {
     subject: '',
     channel_id: '',
     scheduled_at: '',
-    whatsapp_cloud_template_id: '',
-    whatsapp_template_components_json: '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -195,7 +186,6 @@ export default function CampaignsContent() {
         body: JSON.stringify({
           channel_id: Number(form.channel_id),
           filters: {},
-          whatsapp_cloud_template_id: form.whatsapp_cloud_template_id ? Number(form.whatsapp_cloud_template_id) : null,
         }),
       })
       const data = await response.json().catch(() => ({}))
@@ -249,32 +239,7 @@ export default function CampaignsContent() {
   }, [fetchCampaigns])
 
   const selectedChannel = channels.find(channel => String(channel.id) === form.channel_id)
-  const selectedCloudWhatsApp = selectedChannel?.type === 'whatsapp' && selectedChannel.metadata?.whatsapp_provider === 'cloud'
 
-  useEffect(() => {
-    let active = true
-    setCloudTemplates([])
-    if (!selectedCloudWhatsApp || !form.channel_id) return
-
-    const loadTemplates = async () => {
-      setLoadingCloudTemplates(true)
-      try {
-        const authToken = token()
-        const response = await fetch(`${API}/api/channels/whatsapp/${form.channel_id}/templates`, {
-          headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', ...getBusinessHeaders() },
-        })
-        const data = await response.json().catch(() => ({}))
-        if (!response.ok) throw new Error(data.message || 'Could not load approved WhatsApp templates.')
-        if (active) setCloudTemplates((data.templates || []).filter((template: WhatsAppCloudTemplate) => template.status === 'APPROVED'))
-      } catch (error) {
-        if (active) toast.error(error instanceof Error ? error.message : 'Could not load WhatsApp templates.')
-      } finally {
-        if (active) setLoadingCloudTemplates(false)
-      }
-    }
-    void loadTemplates()
-    return () => { active = false }
-  }, [selectedCloudWhatsApp, form.channel_id])
 
   const handleCreate = async () => {
     if (!form.name.trim()) {
@@ -302,15 +267,6 @@ export default function CampaignsContent() {
       if (form.type === 'bulk' && !businessId) throw new Error('Business information is unavailable.')
       const endpoint = form.type === 'email' ? '/api/email-campaigns' : `/api/businesses/${businessId}/campaigns`
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-      let templateComponents: unknown[] | undefined
-      if (form.type === 'bulk' && selectedCloudWhatsApp) {
-        if (!form.whatsapp_cloud_template_id) throw new Error('Choose an approved WhatsApp Cloud template.')
-        if (form.whatsapp_template_components_json.trim()) {
-          const parsed = JSON.parse(form.whatsapp_template_components_json)
-          if (!Array.isArray(parsed)) throw new Error('Template parameters must be a JSON array.')
-          templateComponents = parsed
-        }
-      }
       const payload = form.type === 'email'
         ? {
             name: form.name,
@@ -322,7 +278,6 @@ export default function CampaignsContent() {
           }
         : {
             ...form,
-            whatsapp_template_components: templateComponents,
             timezone,
           }
       const response = await fetch(`${API}${endpoint}`, {
@@ -337,7 +292,7 @@ export default function CampaignsContent() {
       if (!response.ok) throw new Error((await response.json().catch(() => ({}))).message || 'Campaign could not be created.')
       toast.success('Campaign created')
       setShowModal(false)
-      setForm({ name: '', type: 'bulk', message: '', subject: '', channel_id: '', scheduled_at: '', whatsapp_cloud_template_id: '', whatsapp_template_components_json: '' })
+      setForm({ name: '', type: 'bulk', message: '', subject: '', channel_id: '', scheduled_at: '' })
       setEmailAudienceMode('manual')
       setEmailRecipientsInput('')
       setAudiencePreview(null)
@@ -830,41 +785,10 @@ export default function CampaignsContent() {
             </>
           )}
 
-          <div className="space-y-1.5">
-            {selectedCloudWhatsApp && (
-              <div className="space-y-3 rounded-lg border border-border/60 p-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Approved WhatsApp template *</label>
-                  <Select
-                    value={form.whatsapp_cloud_template_id}
-                    onChange={(event) => setForm({ ...form, whatsapp_cloud_template_id: event.target.value })}
-                    options={[
-                      { value: '', label: loadingCloudTemplates ? 'Loading templates…' : 'Select approved template' },
-                      ...cloudTemplates.map(template => ({
-                        value: String(template.id),
-                        label: `${template.name} · ${template.language}`,
-                      })),
-                    ]}
-                  />
-                  {!loadingCloudTemplates && cloudTemplates.length === 0 && (
-                    <p className="text-[11px] text-text-secondary">No approved templates found. Submit and get a template approved in WhatsApp Manager first.</p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-text-primary">Template parameters (optional JSON array)</label>
-                  <Textarea
-                    value={form.whatsapp_template_components_json}
-                    onChange={(event) => setForm({ ...form, whatsapp_template_components_json: event.target.value })}
-                    placeholder={'[{"type":"body","parameters":[{"type":"text","text":"Summer sale"}]}]'}
-                    rows={3}
-                  />
-                  <p className="text-[10px] text-text-secondary">Cloud API sends the approved template. The campaign message below is for your internal campaign record.</p>
-                </div>
-              </div>
-            )}
 
+          <div className="space-y-1.5">
             <label className="text-xs font-semibold text-text-primary">
-              {selectedCloudWhatsApp ? 'Internal Campaign Message *' : 'Broadcast Message Content *'}
+              Broadcast Message Content *
             </label>
             <Textarea
               value={form.message}

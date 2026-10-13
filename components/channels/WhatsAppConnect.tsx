@@ -239,8 +239,7 @@ export default function WhatsAppConnect({
               </div>
             </div>
 
-            {channel?.metadata?.whatsapp_provider !== 'cloud'
-              && channel?.metadata?.unofficial_risk_accepted !== true
+            {channel?.metadata?.unofficial_risk_accepted !== true
               && !riskAcceptanceSaved && (
               <div className="p-3 rounded-2xl text-left space-y-3" style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
                 <p className="text-[10px] text-text-secondary">
@@ -291,8 +290,8 @@ export default function WhatsAppConnect({
               </p>
               <p className="text-[10px] text-text-secondary">
                 {isRTL
-                  ? 'يربط هذا الخيار عبر جلسة WhatsApp Web وقد يخالف شروط واتساب أو يؤدي إلى تقييد الرقم. استخدم WhatsApp Cloud API للرسائل التسويقية.'
-                  : 'This links through a WhatsApp Web session. It may violate WhatsApp terms or result in number restrictions. Use WhatsApp Cloud API for marketing messages.'}
+                  ? 'يربط هذا الخيار عبر جلسة WhatsApp Web وقد يخالف شروط واتساب أو يؤدي إلى تقييد الرقم.'
+                  : 'This links through a WhatsApp Web session. It may violate WhatsApp terms or result in number restrictions.'}
               </p>
               <label className="flex items-start gap-2 text-[10px] text-text-secondary cursor-pointer">
                 <input

@@ -64,7 +64,7 @@ export default function PrivacyPage() {
           intro: 'Naz Biz connects directly with official channel providers and infrastructure services:',
           items: [
             'Meta Platforms (Facebook & Instagram Graph API) — Authorized messaging and page management.',
-            'WhatsApp Business Cloud, Telegram, and connected channel providers — message delivery and receipt status. Evolution API may be used for merchants who connect the legacy WhatsApp session integration.',
+            'WhatsApp Business, Telegram, and connected channel providers — message delivery and receipt status. Evolution API may be used for merchants who connect the legacy WhatsApp session integration.',
             'Google Cloud & Gmail API — Authorized email ingestion and reply dispatching.',
             'E-Commerce Platforms (Salla, Shopify, WooCommerce, TikTok) — Order sync, webhooks, and catalog management.',
             'AI providers, when enabled: Google Gemini, Groq, OpenAI, and Anthropic. Message text, relevant business context, and media submitted for analysis may be sent to the configured provider to generate a reply or analysis.',
