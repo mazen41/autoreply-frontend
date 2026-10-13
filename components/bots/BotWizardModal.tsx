@@ -35,7 +35,16 @@ type ChannelRecord = {
   page_id?: string
   page_name?: string
   status?: string
+  comment_webhook_status?: 'subscribed' | 'error' | 'unknown' | string
+  comment_webhook_error_code?: string | null
   bots?: Array<{ id: number; name?: string; status?: string; pivot?: { is_primary?: boolean } }>
+}
+type PublicInfoCategory = 'general_business_info' | 'product_names' | 'product_descriptions' | 'product_prices' | 'discounts' | 'availability' | 'product_links'
+type CommentSettings = {
+  enabled: boolean
+  public_reply_enabled: boolean
+  private_reply_enabled: boolean
+  settings: { public_information: PublicInfoCategory[]; fallback_response: string; trigger_keywords: string[]; excluded_keywords: string[] }
 }
 type ChannelCardProps = {
   channel: ChannelRecord
@@ -46,7 +55,7 @@ type ChannelCardProps = {
   enabledStoreIds: number[]
   botDefaultId: number | null
   otherBotCount: number
-  copy: Pick<WizardCopy, 'sharedWith' | 'primary' | 'storeRoute' | 'automatic' | 'useBotDefault' | 'effectiveStore' | 'unresolved' | 'invalidRoute'>
+  copy: Pick<WizardCopy, 'sharedWith' | 'primary' | 'storeRoute' | 'automatic' | 'useBotDefault' | 'effectiveStore' | 'unresolved' | 'invalidRoute' | 'commentWebhookSubscribed' | 'commentWebhookError' | 'commentWebhookUnknown'>
   onToggle: (id: number) => void
   onTogglePrimary: (id: number) => void
   onRouteChange: (id: number, storeId: number | null) => void
@@ -62,6 +71,41 @@ function getStoreLabel(store: ChannelRecord): string {
 }
 
 type WizardCopy = typeof translations.ar.botWizard
+const PUBLIC_INFO_CATEGORIES: PublicInfoCategory[] = ['general_business_info', 'product_names', 'product_descriptions', 'product_prices', 'discounts', 'availability', 'product_links']
+const EMPTY_COMMENT_SETTINGS = (): CommentSettings => ({
+  enabled: false, public_reply_enabled: true, private_reply_enabled: false,
+  settings: { public_information: [], fallback_response: '', trigger_keywords: [], excluded_keywords: [] },
+})
+
+function initialCommentSettings(bot?: BotWizardRecord | null): Record<number, CommentSettings> {
+  const state: Record<number, CommentSettings> = {}
+  for (const channel of bot?.channels || []) {
+    const pivot = channel.pivot as (typeof channel.pivot & { comment_automation_enabled?: boolean; public_comment_reply_enabled?: boolean; private_comment_reply_enabled?: boolean; comment_settings?: unknown })
+    if (!pivot) continue
+    let settings: Record<string, unknown> = {}
+    if (typeof pivot.comment_settings === 'string') {
+      try { settings = JSON.parse(pivot.comment_settings) as Record<string, unknown> } catch { settings = {} }
+    } else if (pivot.comment_settings && typeof pivot.comment_settings === 'object') {
+      settings = pivot.comment_settings as Record<string, unknown>
+    }
+    state[channel.id] = {
+      enabled: Boolean(pivot.comment_automation_enabled),
+      public_reply_enabled: pivot.public_comment_reply_enabled !== false,
+      private_reply_enabled: Boolean(pivot.private_comment_reply_enabled),
+      settings: {
+        public_information: Array.isArray(settings.public_information) ? settings.public_information.filter((value): value is PublicInfoCategory => PUBLIC_INFO_CATEGORIES.includes(value as PublicInfoCategory)) : [],
+        fallback_response: typeof settings.fallback_response === 'string' ? settings.fallback_response : '',
+        trigger_keywords: Array.isArray(settings.trigger_keywords) ? settings.trigger_keywords.filter((value): value is string => typeof value === 'string') : [],
+        excluded_keywords: Array.isArray(settings.excluded_keywords) ? settings.excluded_keywords.filter((value): value is string => typeof value === 'string') : [],
+      },
+    }
+  }
+  return state
+}
+
+function keywordList(value: string): string[] {
+  return [...new Set(value.split(',').map((item) => item.trim()).filter(Boolean))].slice(0, 30)
+}
 
 const ChannelCard = memo(function ChannelCard({
   channel, selected, primary, routeId, stores, enabledStoreIds, botDefaultId,
@@ -93,6 +137,9 @@ const ChannelCard = memo(function ChannelCard({
           </div>
           {selected && (
             <div className="mt-4 space-y-3 border-t border-border/70 pt-3">
+              {['facebook', 'instagram'].includes(channel.type) && <p role={channel.comment_webhook_status === 'error' ? 'alert' : undefined} className={`text-xs ${channel.comment_webhook_status === 'error' ? 'text-error' : 'text-text-muted'}`}>
+                {channel.comment_webhook_status === 'subscribed' ? copy.commentWebhookSubscribed : channel.comment_webhook_status === 'error' ? `${copy.commentWebhookError}${channel.comment_webhook_error_code ? ` (${channel.comment_webhook_error_code})` : ''}` : copy.commentWebhookUnknown}
+              </p>}
               {communicationChannel && otherBotCount > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-text-muted">{copy.sharedWith.replace('{count}', String(otherBotCount))}</p>
@@ -169,6 +216,13 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
     bot?.ecommerce_connections?.find((connection) => connection.pivot?.is_default)?.id || bot?.ecommerce_channel_id || null,
   )
   const [selectedChannelIds, setSelectedChannelIds] = useState<number[]>(bot?.channels?.map((channel) => channel.id) || [])
+  const [commentSettings, setCommentSettings] = useState<Record<number, CommentSettings>>(() => initialCommentSettings(bot))
+  const [commentKeywordDrafts, setCommentKeywordDrafts] = useState<Record<number, { trigger: string; excluded: string }>>(() => {
+    const initial = initialCommentSettings(bot)
+    return Object.fromEntries(Object.entries(initial).map(([id, value]) => [id, {
+      trigger: value.settings.trigger_keywords.join(', '), excluded: value.settings.excluded_keywords.join(', '),
+    }]))
+  })
   const [primaryChannelIds, setPrimaryChannelIds] = useState<number[]>(bot?.channels?.filter((channel) => channel.pivot?.is_primary).map((channel) => channel.id) || [])
   const [assignments, setAssignments] = useState<Assignment[]>(bot?.knowledgeAssignments?.flatMap((assignment) => (
     assignment.business_knowledge_file_id == null
@@ -348,6 +402,11 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
     setChannelCommerceDefaults((current) => ({ ...current, [id]: storeId }))
   }, [markDirty])
 
+  const changeCommentSettings = (channelId: number, update: (current: CommentSettings) => CommentSettings) => {
+    markDirty()
+    setCommentSettings((current) => ({ ...current, [channelId]: update(current[channelId] || EMPTY_COMMENT_SETTINGS()) }))
+  }
+
   const addChip = (value: string, values: string[], setValues: React.Dispatch<React.SetStateAction<string[]>>, clearDraft: () => void) => {
     const normalized = value.trim().replace(/,+$/, '')
     if (normalized && !values.some((item) => item.toLocaleLowerCase() === normalized.toLocaleLowerCase())) {
@@ -426,6 +485,30 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
           ? Object.values(data.errors).flat().join(' ')
           : data.message
         throw new Error(serverErrors || copy.saveError)
+      }
+      const responseData = await response.json().catch(() => ({}))
+      const savedBotId = Number(responseData.bot?.id || bot?.id)
+      if (!savedBotId) throw new Error(copy.saveError)
+
+      const socialAssignments = channels.filter((channel) => selectedChannelIds.includes(channel.id) && ['facebook', 'instagram'].includes(channel.type))
+      if (socialAssignments.length) {
+        const settingsResponse = await fetch(`${API}/api/bots/${savedBotId}/comment-automation`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+          body: JSON.stringify({ channels: socialAssignments.map((channel) => {
+            const value = commentSettings[channel.id] || EMPTY_COMMENT_SETTINGS()
+            const drafts = commentKeywordDrafts[channel.id] || { trigger: '', excluded: '' }
+            return { channel_id: channel.id, enabled: value.enabled, public_reply_enabled: value.public_reply_enabled, private_reply_enabled: value.private_reply_enabled, settings: {
+              ...value.settings,
+              trigger_keywords: keywordList(drafts.trigger),
+              excluded_keywords: keywordList(drafts.excluded),
+            } }
+          }) }),
+        })
+        if (!settingsResponse.ok) {
+          const data = await settingsResponse.json().catch(() => ({}))
+          throw new Error(data.message || copy.commentSaveError)
+        }
       }
       setDirty(false)
       setFeedback({ type: 'success', text: copy.saved })
@@ -624,6 +707,31 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                       return <ChannelCard key={channel.id} channel={channel} selected={selectedChannelIds.includes(channel.id)} primary={primaryChannelIds.includes(channel.id)} routeId={channelCommerceDefaults[channel.id] ?? null} stores={connectedCommerceStores} enabledStoreIds={ecommerceConnectionIds} botDefaultId={defaultEcommerceConnectionId} otherBotCount={otherBots.length} copy={copy} onToggle={toggleChannel} onTogglePrimary={togglePrimary} onRouteChange={changeRoute} />
                     })}
                   </div>}
+                  {communicationChannels.filter((channel) => ['facebook', 'instagram'].includes(channel.type) && selectedChannelIds.includes(channel.id)).map((channel) => {
+                    const value = commentSettings[channel.id] || EMPTY_COMMENT_SETTINGS()
+                    const update = (patch: Partial<CommentSettings>) => changeCommentSettings(channel.id, (current) => ({ ...current, ...patch }))
+                    const updateSettings = (patch: Partial<CommentSettings['settings']>) => changeCommentSettings(channel.id, (current) => ({ ...current, settings: { ...current.settings, ...patch } }))
+                    const categories: Array<[PublicInfoCategory, string]> = [
+                      ['general_business_info', copy.commentGeneralInfo], ['product_names', copy.commentProductNames], ['product_descriptions', copy.commentProductDescriptions],
+                      ['product_prices', copy.commentProductPrices], ['discounts', copy.commentDiscounts], ['availability', copy.commentAvailability], ['product_links', copy.commentProductLinks],
+                    ]
+                    return <article key={`comments-${channel.id}`} className="mt-4 rounded-2xl border border-border bg-surface p-4">
+                      <div className="mb-3"><h4 className="text-sm font-semibold text-text-primary">{copy.commentAutomation}: {channel.page_name || channel.type}</h4><p className="mt-1 text-xs text-text-muted">{copy.commentAutomationHint}</p></div>
+                      <div className="space-y-3">
+                        <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.enabled} onChange={(event) => update({ enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentEnable}</label>
+                        {value.enabled && <div className="space-y-4 border-s border-border ps-4">
+                          <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.public_reply_enabled} onChange={(event) => update({ public_reply_enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentPublicReply}</label>
+                          <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.private_reply_enabled} onChange={(event) => update({ private_reply_enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentPrivateReply}</label>
+                          <fieldset><legend className="mb-2 text-xs font-semibold text-text-secondary">{copy.commentPublicInfo}</legend><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {categories.map(([category, label]) => <label key={category} className="flex items-center gap-2 text-xs text-text-secondary"><input type="checkbox" checked={value.settings.public_information.includes(category)} onChange={(event) => updateSettings({ public_information: event.target.checked ? [...value.settings.public_information, category] : value.settings.public_information.filter((item) => item !== category) })} className="size-3.5 accent-[var(--accent)]" />{label}</label>)}
+                          </div></fieldset>
+                          <label className="block text-xs font-medium text-text-secondary">{copy.commentFallback}<textarea value={value.settings.fallback_response} maxLength={300} onChange={(event) => updateSettings({ fallback_response: event.target.value })} className="mt-1.5 min-h-20 w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" /></label>
+                          <label className="block text-xs font-medium text-text-secondary">{copy.commentTriggers}<input value={commentKeywordDrafts[channel.id]?.trigger ?? value.settings.trigger_keywords.join(', ')} onChange={(event) => { markDirty(); setCommentKeywordDrafts((current) => ({ ...current, [channel.id]: { trigger: event.target.value, excluded: current[channel.id]?.excluded ?? value.settings.excluded_keywords.join(', ') } })) }} placeholder={copy.commentKeywordsPlaceholder} className="mt-1.5 w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" /></label>
+                          <label className="block text-xs font-medium text-text-secondary">{copy.commentExclusions}<input value={commentKeywordDrafts[channel.id]?.excluded ?? value.settings.excluded_keywords.join(', ')} onChange={(event) => { markDirty(); setCommentKeywordDrafts((current) => ({ ...current, [channel.id]: { trigger: current[channel.id]?.trigger ?? value.settings.trigger_keywords.join(', '), excluded: event.target.value } })) }} placeholder={copy.commentKeywordsPlaceholder} className="mt-1.5 w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" /></label>
+                        </div>}
+                      </div>
+                    </article>
+                  })}
                 </section>
               </motion.section>
             )}

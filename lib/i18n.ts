@@ -323,6 +323,11 @@ export const translations = {
       unsaved: 'تغييرات غير محفوظة', close: 'إغلاق', nameRequired: 'اسم الوكيل مطلوب.',
       instructionsRequired: 'أضف تعليمات لا تقل عن 10 أحرف.', thresholdInvalid: 'اختر قيمة بين 50% و100%.', confirmClose: 'لديك تغييرات غير محفوظة. هل تريد الإغلاق؟', loading: 'جارٍ التحميل…',
       loadError: 'تعذر تحميل بيانات الوكيل.', saveError: 'تعذر حفظ الوكيل.', saved: 'تم حفظ الوكيل بنجاح.',
+      commentAutomation: 'الرد التلقائي على التعليقات', commentAutomationHint: 'إعدادات منفصلة لهذا الحساب. الردود العامة لا تعرض إلا المعلومات التي تسمح بها أدناه.',
+      commentEnable: 'تفعيل الأتمتة على تعليقات هذا الحساب', commentPublicReply: 'الرد علناً على التعليق', commentPrivateReply: 'إرسال رد خاص مؤهل من خلال واجهة Meta المخصصة',
+      commentPublicInfo: 'المعلومات المسموح بنشرها علناً', commentGeneralInfo: 'معلومات عامة عن النشاط', commentProductNames: 'أسماء المنتجات', commentProductDescriptions: 'أوصاف المنتجات', commentProductPrices: 'الأسعار', commentDiscounts: 'الخصومات والعروض', commentAvailability: 'التوفر والمخزون', commentProductLinks: 'روابط المنتجات',
+      commentFallback: 'الرد الآمن عند تعذر الإجابة', commentTriggers: 'كلمات التفعيل (اختياري)', commentExclusions: 'كلمات الاستثناء (اختياري)', commentKeywordsPlaceholder: 'مثال: السعر، التوفر', commentSaveError: 'تم حفظ الوكيل لكن تعذر حفظ إعدادات التعليقات. أعد الحفظ للمحاولة مرة أخرى.',
+      commentWebhookSubscribed: 'اشتراك تعليقات Meta نشط لهذا الحساب.', commentWebhookError: 'فشل اشتراك تعليقات Meta. أعد ربط الحساب بعد التحقق من الصلاحيات.', commentWebhookUnknown: 'حالة اشتراك التعليقات غير معروفة. قد تحتاج إلى إعادة ربط الحساب.',
       stepError: 'أصلح الأخطاء في هذه الخطوة للمتابعة.',
     },
     // Common
@@ -689,6 +694,11 @@ export const translations = {
       instructionsRequired: 'Add instructions with at least 10 characters.', thresholdInvalid: 'Choose a value from 50% to 100%.', confirmClose: 'You have unsaved changes. Close without saving?', loading: 'Loading…',
       stepError: 'Fix the errors in this step to continue.',
       loadError: 'Could not load bot configuration.', saveError: 'Could not save the bot.', saved: 'Bot saved successfully.',
+      commentAutomation: 'Comment auto-reply', commentAutomationHint: 'These settings apply only to this account. Public replies disclose only the information allowed below.',
+      commentEnable: 'Enable automation for this account’s comments', commentPublicReply: 'Reply publicly to the comment', commentPrivateReply: 'Send an eligible private reply through Meta’s dedicated API',
+      commentPublicInfo: 'Information allowed in public replies', commentGeneralInfo: 'General business information', commentProductNames: 'Product names', commentProductDescriptions: 'Product descriptions', commentProductPrices: 'Prices', commentDiscounts: 'Discounts and promotions', commentAvailability: 'Availability and stock', commentProductLinks: 'Product links',
+      commentFallback: 'Safe fallback when an answer is unavailable', commentTriggers: 'Trigger keywords (optional)', commentExclusions: 'Excluded keywords (optional)', commentKeywordsPlaceholder: 'Example: price, availability', commentSaveError: 'The bot was saved, but comment settings could not be saved. Save again to retry.',
+      commentWebhookSubscribed: 'Meta comment events are subscribed for this account.', commentWebhookError: 'Meta comment subscription failed. Reconnect the account after checking permissions.', commentWebhookUnknown: 'Comment subscription status is unknown. The account may need to be reconnected.',
     },
     // Common
     common: {
