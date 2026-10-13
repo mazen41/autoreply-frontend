@@ -32,12 +32,14 @@ import toast from 'react-hot-toast'
 
 type SeqStatus = 'active' | 'paused' | 'draft' | 'archived'
 type Channel = 'whatsapp' | 'telegram' | 'email'
+type TargetChannel = 'whatsapp' | 'telegram' | 'email' | 'instagram' | 'facebook'
 
 interface SequenceWithStats {
   id: number
   name: string
   description?: string | null
   channel?: 'whatsapp' | 'telegram' | 'email' | null
+  targetChannels: TargetChannel[]
   status: SeqStatus
   trigger_type: string
   trigger?: string
@@ -79,6 +81,9 @@ export default function SequencesPage() {
       name: seq.name,
       description: seq.description,
       channel: (seq.channel as Channel) || null,
+      targetChannels: (Array.isArray(seq.settings?.target_channels) && seq.settings.target_channels.length > 0
+        ? seq.settings.target_channels
+        : seq.channel ? [seq.channel] : []) as TargetChannel[],
       status: (seq.status as SeqStatus) || 'draft',
       trigger_type: seq.trigger_type || 'manual',
       trigger: seq.trigger_type ? seq.trigger_type.replace(/_/g, ' ') : 'Manual Trigger',
@@ -98,7 +103,7 @@ export default function SequencesPage() {
         seq.name.toLowerCase().includes(search.toLowerCase()) ||
         (seq.description && seq.description.toLowerCase().includes(search.toLowerCase()))
       const matchStatus = statusFilter === 'all' || seq.status === statusFilter
-      const matchChannel = channelFilter === 'all' || seq.channel === channelFilter
+      const matchChannel = channelFilter === 'all' || seq.targetChannels.includes(channelFilter as TargetChannel)
       return matchSearch && matchStatus && matchChannel
     }).sort((a, b) => {
       if (sortBy === 'enrolled') return b.enrolled - a.enrolled
@@ -222,7 +227,13 @@ export default function SequencesPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((seq) => {
-            const ch = seq.channel ? CH_CONFIG[seq.channel] : null
+            const channelLabels: Record<TargetChannel, string> = {
+              whatsapp: 'WhatsApp',
+              telegram: 'Telegram',
+              email: 'Email',
+              instagram: 'Instagram',
+              facebook: 'Messenger',
+            }
 
             return (
               <Card key={seq.id} variant="interactive" className="flex flex-col justify-between">
@@ -249,7 +260,11 @@ export default function SequencesPage() {
                       </p>
                     </div>
 
-                    {ch && <Badge variant={ch.badgeVariant} size="sm" className="shrink-0 capitalize">{ch.label}</Badge>}
+                    {seq.targetChannels.map(target => (
+                      <Badge key={target} variant={CH_CONFIG[target as Channel]?.badgeVariant || 'outline'} size="sm" className="shrink-0 capitalize">
+                        {channelLabels[target] || target}
+                      </Badge>
+                    ))}
                   </div>
                 </CardHeader>
 

@@ -5,6 +5,15 @@ import { getBusinessHeaders } from '../lib/businessContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io') + '/api'
 
+async function responseError(res: Response, fallback: string): Promise<Error> {
+  const payload = await res.json().catch(() => null)
+  const validationMessages = payload?.errors
+    ? Object.values(payload.errors).flat().filter(Boolean).join(' ')
+    : ''
+
+  return new Error(payload?.error || validationMessages || payload?.message || `${fallback} (HTTP ${res.status})`)
+}
+
 function getToken(): string {
   if (typeof document === 'undefined') return ''
   const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
@@ -143,7 +152,7 @@ export function useSequences() {
         headers: authHeaders(),
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
+      if (!res.ok) throw await responseError(res, 'Failed to create sequence')
       const result = await res.json()
       const newSequence = result.data ?? null
       if (newSequence) {
@@ -153,7 +162,7 @@ export function useSequences() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to create sequence'
       setError(msg)
-      return null
+      throw e
     }
   }, [])
 
@@ -172,7 +181,7 @@ export function useSequences() {
         headers: authHeaders(),
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
+      if (!res.ok) throw await responseError(res, 'Failed to update sequence')
       const result = await res.json()
       const updatedSequence = result.data ?? null
       if (updatedSequence) {
@@ -182,7 +191,7 @@ export function useSequences() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to update sequence'
       setError(msg)
-      return null
+      throw e
     }
   }, [])
 
@@ -192,7 +201,7 @@ export function useSequences() {
         method: 'DELETE',
         headers: authHeaders(),
       })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
+      if (!res.ok) throw await responseError(res, 'Failed to delete sequence')
       setSequences(prev => prev.filter(s => s.id !== id))
       return true
     } catch (e: unknown) {
@@ -208,7 +217,7 @@ export function useSequences() {
         method: 'POST',
         headers: authHeaders(),
       })
-      if (!res.ok) throw new Error(`Error ${res.status}`)
+      if (!res.ok) throw await responseError(res, 'Failed to activate sequence')
       const result = await res.json()
       const updatedSequence = result.data ?? null
       if (updatedSequence) {
@@ -218,7 +227,7 @@ export function useSequences() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to activate sequence'
       setError(msg)
-      return null
+      throw e
     }
   }, [])
 

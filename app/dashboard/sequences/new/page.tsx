@@ -13,7 +13,7 @@ import {
 import Select from '../../../../components/ui/Select'
 
 type StepType = 'message' | 'delay' | 'condition' | 'action'
-type ChannelType = 'whatsapp' | 'telegram' | 'email' | 'instagram' | 'messenger'
+type ChannelType = 'whatsapp' | 'telegram' | 'email' | 'instagram' | 'facebook'
 
 interface SequenceStepUI {
   id: string
@@ -30,7 +30,7 @@ interface SequenceStepUI {
 const CHANNELS: { id: ChannelType; label: string; color: string; bg: string }[] = [
   { id: 'whatsapp',  label: 'WhatsApp',  color: '#25D366', bg: 'rgba(37,211,102,0.1)' },
   { id: 'instagram', label: 'Instagram', color: '#C13584', bg: 'rgba(193,53,132,0.1)' },
-  { id: 'messenger', label: 'Messenger', color: '#0084FF', bg: 'rgba(0,132,255,0.1)' },
+  { id: 'facebook', label: 'Messenger', color: '#0084FF', bg: 'rgba(0,132,255,0.1)' },
   { id: 'telegram',  label: 'Telegram',  color: '#2AABEE', bg: 'rgba(42,171,238,0.1)' },
   { id: 'email',     label: 'Email',     color: '#EA4335', bg: 'rgba(234,67,53,0.1)' },
 ]
@@ -69,7 +69,6 @@ export default function SequenceEditorPage() {
   const [sequenceName, setSequenceName] = useState('')
   const [sequenceDescription, setSequenceDescription] = useState('')
   const [triggerType, setTriggerType] = useState<string>('manual')
-  const [channel, setChannel] = useState<ChannelType>('whatsapp')
   const [selectedChannels, setSelectedChannels] = useState<ChannelType[]>(['whatsapp'])
   const [noReplyHours, setNoReplyHours] = useState(24)
   const [noReplyUnit, setNoReplyUnit] = useState<'minutes' | 'hours' | 'days'>('hours')
@@ -81,12 +80,10 @@ export default function SequenceEditorPage() {
       if (selectedChannels.length > 1) {
         const next = selectedChannels.filter(c => c !== chId)
         setSelectedChannels(next)
-        setChannel(next[0])
       }
     } else {
       const next = [...selectedChannels, chId]
       setSelectedChannels(next)
-      setChannel(next[0])
     }
   }
   const [steps, setSteps] = useState<SequenceStepUI[]>([
@@ -116,7 +113,11 @@ export default function SequenceEditorPage() {
           setSequenceName(sequence.name)
           setSequenceDescription(sequence.description || '')
           setTriggerType(sequence.trigger_type || 'manual')
-          setChannel((sequence.channel || 'whatsapp') as any)
+          const configuredChannels = sequence.settings?.target_channels
+          const initialChannels = Array.isArray(configuredChannels) && configuredChannels.length > 0
+            ? configuredChannels.map((value: string) => value === 'messenger' ? 'facebook' : value)
+            : [sequence.channel || 'whatsapp']
+          setSelectedChannels(initialChannels as ChannelType[])
 
           if (sequence.trigger_type === 'no_reply' && sequence.trigger_config) {
             const cfg = sequence.trigger_config
@@ -249,11 +250,14 @@ export default function SequenceEditorPage() {
         name: sequenceName,
         description: sequenceDescription,
         trigger_type: triggerType,
-        channel: channel,
+        // Keep the old scalar channel for compatibility. Persist the complete
+        // multi-select in settings.target_channels.
+        channel: selectedChannels.find(ch => ['whatsapp', 'telegram', 'email'].includes(ch)) || null,
         steps: steps,
         settings: {
           allow_reentry: allowReentry,
           stop_on_reply: stopOnReply,
+          target_channels: selectedChannels,
         },
       }
 
@@ -271,8 +275,15 @@ export default function SequenceEditorPage() {
         sequence = await createSequence(sequenceData)
       }
 
+      if (!sequence) {
+        throw new Error('The sequence could not be saved. Please review the sequence settings and try again.')
+      }
+
       if (sequence && shouldActivate) {
-        await activateSequence(sequence.id)
+        const activated = await activateSequence(sequence.id)
+        if (!activated) {
+          throw new Error('The sequence was saved, but could not be activated.')
+        }
       }
 
       if (sequence) {
@@ -637,7 +648,7 @@ export default function SequenceEditorPage() {
                           <Eye size={15} className="text-[var(--text-tertiary)] mt-0.5 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-tertiary)] block mb-1">
-                              {channel} Live Preview
+                              {(CHANNELS.find(ch => ch.id === selectedChannels[0])?.label || 'Channel')} Live Preview
                             </span>
                             <div className="bg-[var(--surface-elevated)] p-2.5 rounded-xl border border-[var(--border)] text-xs text-[var(--text-primary)] whitespace-pre-wrap max-w-sm">
                               {step.message}

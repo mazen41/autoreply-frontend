@@ -76,6 +76,7 @@ export default function SequenceDetailPage() {
   const [sequenceuence, setSequence] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('draft')
+  const [actionError, setActionError] = useState<string | null>(null)
   const [moreOpen, setMoreOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'contacts'>('overview')
   const [analytics, setAnalytics] = useState<any>(null)
@@ -103,18 +104,23 @@ export default function SequenceDetailPage() {
   }
   
   const handleStatusToggle = async () => {
-    if (status === 'active') {
-      const paused = await pauseSequence(sequenceuenceId)
-      if (paused) {
-        setStatus('paused')
-        setSequence(paused)
+    setActionError(null)
+    try {
+      if (status === 'active') {
+        const paused = await pauseSequence(sequenceuenceId)
+        if (paused) {
+          setStatus('paused')
+          setSequence(paused)
+        }
+      } else {
+        const activated = await activateSequence(sequenceuenceId)
+        if (activated) {
+          setStatus('active')
+          setSequence(activated)
+        }
       }
-    } else {
-      const activated = await activateSequence(sequenceuenceId)
-      if (activated) {
-        setStatus('active')
-        setSequence(activated)
-      }
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Could not update the sequence status.')
     }
   }
   
@@ -198,9 +204,13 @@ export default function SequenceDetailPage() {
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
                 {st.label}
               </span>
-              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)]">
-                {sequenceuence.channel === 'whatsapp' ? '● WhatsApp' : sequenceuence.channel === 'telegram' ? '● Telegram' : '● Email'}
-              </span>
+              {(Array.isArray(sequenceuence.settings?.target_channels) && sequenceuence.settings.target_channels.length > 0
+                ? sequenceuence.settings.target_channels
+                : [sequenceuence.channel || 'email']).map((target: string) => (
+                <span key={target} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)]">
+                  ● {target === 'facebook' || target === 'messenger' ? 'Messenger' : target.charAt(0).toUpperCase() + target.slice(1)}
+                </span>
+              ))}
             </div>
             <p className="text-sm text-[var(--text-secondary)] mt-1">{sequenceuence.description}</p>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
@@ -247,6 +257,8 @@ export default function SequenceDetailPage() {
           </div>
         </div>
       </div>
+
+      {actionError && <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">{actionError}</div>}
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-1 w-fit">
