@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
+import { Mail, Share2, Music, Star, MessageCircleMore } from 'lucide-react'
 
-interface IconProps {
+export interface IconProps {
   size?: number
   className?: string
   strokeWidth?: number
@@ -343,3 +344,50 @@ export const CheckIcon = ({ size = 20, className = '', strokeWidth = 1.5, style 
     <path d="M20 6 9 17l-5-5" />
   </svg>
 )
+
+export type ChannelIconType = React.ComponentType<{ size?: number; className?: string; strokeWidth?: number; style?: React.CSSProperties }> | string
+
+export const CHANNEL_ICONS: Record<string, ChannelIconType> = {
+  facebook: '/icons/facebook.svg',
+  instagram: '/icons/instagram.svg',
+  whatsapp: '/icons/whatsapp.svg',
+  telegram: '/icons/telegram.svg',
+  shopify: '/icons/shopify.svg',
+  woocommerce: '/icons/woocommerce-icon.svg',
+  salla: '/icons/sllla.svg',
+  gmail: Mail,
+  twitter: Share2,
+  tiktok: Music,
+  reviews: Star,
+  webchat: MessageCircleMore,
+}
+
+export const ChannelIcon = ({
+  channel,
+  size = 20,
+  className = '',
+  style,
+}: {
+  channel: string
+  size?: number
+  className?: string
+  style?: React.CSSProperties
+}) => {
+  const icon = CHANNEL_ICONS[channel]
+  if (!icon) return null
+  if (typeof icon === 'string') {
+    return (
+      <img
+        src={icon}
+        alt={`${channel} icon`}
+        width={size}
+        height={size}
+        className={`object-contain ${className}`}
+        style={{ width: size, height: size, ...style }}
+      />
+    )
+  }
+  const IconComponent = icon
+  return <IconComponent size={size} className={className} style={style} />
+}
+

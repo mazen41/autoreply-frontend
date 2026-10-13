@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { Mail, Globe } from 'lucide-react'
 import { useLang } from '../../lib/LangContext'
 
 // ─── Lightweight visibility hook (IntersectionObserver, no framer-motion) ────
@@ -188,19 +189,30 @@ function ScreenCore({ isRTL }: { isRTL: boolean }) {
   )
 }
 
+export interface PlatformNode {
+  id?: string
+  label: string
+  icon: string | React.ComponentType<{ size?: number; className?: string }>
+  stat: string
+  statEn: string
+  color?: string
+}
+
+export const PLATFORM_NODES: PlatformNode[] = [
+  { id: 'whatsapp', label: 'WhatsApp', icon: '/icons/whatsapp.svg', stat: '340 ردود اليوم', statEn: '340 replies today', color: '#25D366' },
+  { id: 'instagram', label: 'Instagram', icon: '/icons/instagram.svg', stat: '128 تعليق رُدّ', statEn: '128 comments replied', color: '#E4405F' },
+  { id: 'gmail',    label: 'Email',     icon: Mail,                  stat: '56 بريد معالج',  statEn: '56 emails handled',   color: '#EA4335' },
+  { id: 'website',  label: 'Website',   icon: Globe,                 stat: '89 محادثة مباشرة', statEn: '89 live chats',      color: '#8B3FFB' },
+]
+
 // ─── SCREEN 02 — UNIFIED INBOX ─────────────────────────────────────────────
 function ScreenInbox({ isRTL }: { isRTL: boolean }) {
-  const channels = [
-    { icon: '💬', label: 'WhatsApp',  stat: '340 ردود اليوم',   statEn: '340 replies today' },
-    { icon: '📸', label: 'Instagram', stat: '128 تعليق رُدّ',   statEn: '128 comments replied' },
-    { icon: '📧', label: 'Email',     stat: '56 بريد معالج',    statEn: '56 emails handled' },
-    { icon: '🌐', label: 'Website',   stat: '89 محادثة مباشرة', statEn: '89 live chats' },
-  ]
+  const channels = PLATFORM_NODES
   const messages = [
-    { icon: '💬', name: 'Ahmed K.',  platform: 'WhatsApp',  msgAr: 'هل التوصيل متاح؟',         msgEn: 'Is delivery available?',   status: 'AI ✓', ok: true },
-    { icon: '📸', name: 'سارة م.',  platform: 'Instagram', msgAr: 'ما هي ساعات العمل؟',        msgEn: 'What are the hours?',      status: '⏳',   ok: false },
-    { icon: '📧', name: 'Nora H.',   platform: 'Email',     msgAr: 'حجز طاولة لـ 4 أشخاص',    msgEn: 'Table for 4 please',       status: 'AI ✓', ok: true },
-    { icon: '🌐', name: 'خالد ع.',   platform: 'Website',   msgAr: 'كم سعر الباقة؟',            msgEn: 'Business plan price?',     status: '⚡',   ok: true },
+    { icon: '/icons/whatsapp.svg', name: 'Ahmed K.',  platform: 'WhatsApp',  msgAr: 'هل التوصيل متاح؟',         msgEn: 'Is delivery available?',   status: 'AI ✓', ok: true },
+    { icon: '/icons/instagram.svg', name: 'سارة م.',  platform: 'Instagram', msgAr: 'ما هي ساعات العمل؟',        msgEn: 'What are the hours?',      status: '⏳',   ok: false },
+    { icon: Mail,                  name: 'Nora H.',   platform: 'Email',     msgAr: 'حجز طاولة لـ 4 أشخاص',    msgEn: 'Table for 4 please',       status: 'AI ✓', ok: true },
+    { icon: Globe,                 name: 'خالد ع.',   platform: 'Website',   msgAr: 'كم سعر الباقة؟',            msgEn: 'Business plan price?',     status: '⚡',   ok: true },
   ]
 
   return (
@@ -223,7 +235,17 @@ function ScreenInbox({ isRTL }: { isRTL: boolean }) {
           {channels.map((ch, i) => (
             <FadeIn key={i} delay={i * 70}>
               <div className="rounded-2xl p-4 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-                <div className="text-3xl mb-2">{ch.icon}</div>
+                <div className="w-10 h-10 mx-auto mb-2 flex items-center justify-center">
+                  {typeof ch.icon === 'string' ? (
+                    ch.icon.startsWith('/') || ch.icon.endsWith('.svg') || ch.icon.endsWith('.png') ? (
+                      <img src={ch.icon} alt={ch.label} className="w-8 h-8 object-contain" />
+                    ) : (
+                      <span className="text-3xl">{ch.icon}</span>
+                    )
+                  ) : (
+                    <ch.icon size={28} />
+                  )}
+                </div>
                 <div className="font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>{ch.label}</div>
                 <div className="text-[11px]" style={{ color: 'var(--accent)' }}>{isRTL ? ch.stat : ch.statEn}</div>
               </div>
@@ -238,7 +260,15 @@ function ScreenInbox({ isRTL }: { isRTL: boolean }) {
               <div className="flex items-center gap-3 p-3.5 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                   style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
-                  {m.icon}
+                  {typeof m.icon === 'string' ? (
+                    m.icon.startsWith('/') || m.icon.endsWith('.svg') || m.icon.endsWith('.png') ? (
+                      <img src={m.icon} alt={m.name} className="w-5 h-5 object-contain" />
+                    ) : (
+                      <span>{m.icon}</span>
+                    )
+                  ) : (
+                    <m.icon size={18} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">

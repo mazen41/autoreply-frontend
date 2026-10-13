@@ -6,7 +6,7 @@ import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Badge from '../ui/Badge'
 import ChannelIcon from '../ui/ChannelIcon'
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, ShieldCheck, Mail, Music } from 'lucide-react'
 
 export interface ChannelOption {
   id: string
@@ -15,14 +15,15 @@ export interface ChannelOption {
   category: 'messaging' | 'social' | 'ecommerce' | 'email'
   brandColor: string
   isPopular?: boolean
+  icon?: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }> | string
 }
 
 export const ALL_CHANNELS: ChannelOption[] = [
-  { id: 'instagram', name: 'Instagram', description: 'Direct Messages, Story mentions & Comment replies', category: 'social', brandColor: '#E4405F', isPopular: true },
-  { id: 'facebook', name: 'Facebook Messenger', description: 'Facebook Page messages and automated post replies', category: 'social', brandColor: '#1877F2', isPopular: true },
-  { id: 'gmail', name: 'Gmail & Google Workspace', description: 'Customer email ticketing and AI draft auto-responder', category: 'email', brandColor: '#EA4335' },
-  { id: 'salla', name: 'Salla', description: 'Connect a Salla store and sync commerce activity', category: 'ecommerce', brandColor: '#00B4D8', isPopular: true },
-  { id: 'tiktok', name: 'TikTok Direct Messages', description: 'Engage TikTok shop buyers and direct messages', category: 'social', brandColor: '#FF0050' },
+  { id: 'instagram', name: 'Instagram', description: 'Direct Messages, Story mentions & Comment replies', category: 'social', brandColor: '#E4405F', isPopular: true, icon: '/icons/instagram.svg' },
+  { id: 'facebook', name: 'Facebook Messenger', description: 'Facebook Page messages and automated post replies', category: 'social', brandColor: '#1877F2', isPopular: true, icon: '/icons/facebook.svg' },
+  { id: 'gmail', name: 'Gmail & Google Workspace', description: 'Customer email ticketing and AI draft auto-responder', category: 'email', brandColor: '#EA4335', icon: Mail },
+  { id: 'salla', name: 'Salla', description: 'Connect a Salla store and sync commerce activity', category: 'ecommerce', brandColor: '#00B4D8', isPopular: true, icon: '/icons/sllla.svg' },
+  { id: 'tiktok', name: 'TikTok Direct Messages', description: 'Engage TikTok shop buyers and direct messages', category: 'social', brandColor: '#FF0050', icon: Music },
 ]
 
 export interface ChannelConnectWizardProps {
@@ -108,7 +109,13 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2.5">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center p-2 bg-surface-card border" style={{ borderColor: `color-mix(in srgb, ${channel.brandColor} 30%, var(--border))` }}>
-                      <ChannelIcon type={channel.id as any} size={22} />
+                      {typeof channel.icon === 'string' ? (
+                        <img src={channel.icon} alt={channel.name} className="w-[22px] h-[22px] object-contain" />
+                      ) : channel.icon ? (
+                        <channel.icon size={22} className="w-[22px] h-[22px]" style={{ color: channel.brandColor }} />
+                      ) : (
+                        <ChannelIcon type={channel.id as any} size={22} />
+                      )}
                     </div>
                     {channel.isPopular && <Badge variant="brand" size="xs">Popular</Badge>}
                   </div>
@@ -126,7 +133,13 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
         <div className="p-6 space-y-5">
           <div className="flex items-center gap-3.5 p-4 rounded-xl bg-surface-elevated border border-border">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2.5 bg-surface-card border" style={{ borderColor: `color-mix(in srgb, ${selectedChannel.brandColor} 30%, var(--border))` }}>
-              <ChannelIcon type={selectedChannel.id as any} size={28} />
+              {typeof selectedChannel.icon === 'string' ? (
+                <img src={selectedChannel.icon} alt={selectedChannel.name} className="w-7 h-7 object-contain" />
+              ) : selectedChannel.icon ? (
+                <selectedChannel.icon size={28} className="w-7 h-7" style={{ color: selectedChannel.brandColor }} />
+              ) : (
+                <ChannelIcon type={selectedChannel.id as any} size={28} />
+              )}
             </div>
             <div><h4 className="text-sm font-bold text-text-primary">Connect {selectedChannel.name} to NazBiz</h4><p className="text-xs text-text-secondary mt-0.5">You will authorize access directly with {selectedChannel.name}.</p></div>
           </div>

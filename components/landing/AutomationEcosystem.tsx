@@ -1,9 +1,36 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { Mail, Globe } from 'lucide-react'
 import { useLang } from '../../lib/LangContext'
 
-const FLOW_STEPS = [
+export interface ChannelItem {
+  id: string
+  name: string
+  nameAr?: string
+  icon: string | React.ComponentType<{ size?: number; className?: string }>
+  color: string
+}
+
+export const CHANNELS: ChannelItem[] = [
+  { id: 'whatsapp',    name: 'WhatsApp',    nameAr: 'واتساب',       icon: '/icons/whatsapp.svg',         color: '#25D366' },
+  { id: 'instagram',   name: 'Instagram',   nameAr: 'إنستغرام',     icon: '/icons/instagram.svg',        color: '#E4405F' },
+  { id: 'facebook',    name: 'Facebook',    nameAr: 'فيسبوك',       icon: '/icons/facebook.svg',         color: '#1877F2' },
+  { id: 'telegram',    name: 'Telegram',    nameAr: 'تيليجرام',     icon: '/icons/telegram.svg',         color: '#2AABEE' },
+  { id: 'shopify',     name: 'Shopify',     nameAr: 'شوبيفاي',      icon: '/icons/shopify.svg',          color: '#96BF48' },
+  { id: 'woocommerce', name: 'WooCommerce', nameAr: 'ووكومرس',      icon: '/icons/woocommerce-icon.svg', color: '#96588A' },
+  { id: 'salla',       name: 'Salla',       nameAr: 'سلة',          icon: '/icons/sllla.svg',            color: '#00B4D8' },
+  { id: 'gmail',       name: 'Gmail',       nameAr: 'جيميل',        icon: Mail,                          color: '#EA4335' },
+  { id: 'webchat',     name: 'Webchat',     nameAr: 'محادثة الويب', icon: Globe,                         color: '#8B3FFB' },
+]
+
+const FLOW_STEPS: Array<{
+  icon: string | React.ComponentType<{ size?: number; className?: string }>
+  labelAr: string
+  labelEn: string
+  desc_ar: string
+  desc_en: string
+}> = [
   { icon: '💬', labelAr: 'رسالة واردة',     labelEn: 'Incoming Message',  desc_ar: 'واتساب، انستغرام، إيميل', desc_en: 'WhatsApp, Instagram, Email' },
   { icon: '🧠', labelAr: 'تحليل الذكاء',     labelEn: 'AI Analysis',       desc_ar: 'النية، السياق، الأولوية', desc_en: 'Intent, context, priority' },
   { icon: '⚡', labelAr: 'إجراء تلقائي',     labelEn: 'Auto Action',       desc_ar: 'رد، تصنيف، إشعار', desc_en: 'Reply, classify, notify' },
@@ -93,6 +120,26 @@ export default function AutomationEcosystem() {
           </p>
         </div>
 
+        {/* Channels bar */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap mb-14">
+          {CHANNELS.map((ch) => (
+            <div
+              key={ch.id}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold glass"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+            >
+              {typeof ch.icon === 'string' ? (
+                <img src={ch.icon} alt={ch.name} className="w-4 h-4 object-contain" />
+              ) : (
+                <ch.icon size={16} />
+              )}
+              <span style={{ color: 'var(--text-secondary)' }}>
+                {isRTL ? (ch.nameAr || ch.name) : ch.name}
+              </span>
+            </div>
+          ))}
+        </div>
+
         {/* Main flow diagram */}
         <div className="relative mb-20">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
@@ -116,7 +163,15 @@ export default function AutomationEcosystem() {
                       boxShadow: activeStep === i ? '0 0 40px color-mix(in srgb, var(--accent) 30%, transparent)' : 'none',
                     }}
                   >
-                    {step.icon}
+                    {typeof step.icon === 'string' ? (
+                      step.icon.startsWith('/') || step.icon.endsWith('.svg') || step.icon.endsWith('.png') ? (
+                        <img src={step.icon} alt="" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+                      ) : (
+                        step.icon
+                      )
+                    ) : (
+                      <step.icon size={30} />
+                    )}
                   </div>
                   <div className="text-center">
                     <div

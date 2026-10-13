@@ -8,6 +8,7 @@ import { useLang } from '../../lib/LangContext'
 import WhatsAppConnect from '../channels/WhatsAppConnect'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import { Mail, Star, Share2, Music, MessageCircleMore } from 'lucide-react'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface OnboardingData {
@@ -55,13 +56,28 @@ const REPLY_STYLES = [
   { id: 'auto',     ar: 'حسب لغة العميل',        en: 'Auto-detect Language', icon: '🌍' },
 ]
 
+export const CHANNEL_ICONS: Record<string, string | React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>> = {
+  facebook: '/icons/facebook.svg',
+  instagram: '/icons/instagram.svg',
+  whatsapp: '/icons/whatsapp.svg',
+  telegram: '/icons/telegram.svg',
+  shopify: '/icons/shopify.svg',
+  woocommerce: '/icons/woocommerce-icon.svg',
+  salla: '/icons/sllla.svg',
+  gmail: Mail,
+  reviews: Star,
+  twitter: Share2,
+  tiktok: Music,
+  webchat: MessageCircleMore,
+}
+
 const CHANNELS = [
-  { id: 'whatsapp', icon: '💬', label: 'WhatsApp',        color: '#25D366', note: '' },
-  { id: 'salla',    icon: '🛍️', label: 'Salla',           color: '#00B4D8', note: '' },
-  { id: 'gmail',    icon: '📧', label: 'Gmail',           color: 'var(--brand)', note: '' },
-  { id: 'instagram',icon: '📸', label: 'Instagram',       color: 'var(--brand)', note: '' },
-  { id: 'facebook', icon: '🔵', label: 'Facebook',        color: 'var(--brand)', note: '' },
-  { id: 'reviews',  icon: '⭐', label: 'Google Reviews',  color: 'var(--brand)', note: '' },
+  { id: 'whatsapp', icon: CHANNEL_ICONS.whatsapp, label: 'WhatsApp',        color: '#25D366', note: '' },
+  { id: 'salla',    icon: CHANNEL_ICONS.salla,    label: 'Salla',           color: '#00B4D8', note: '' },
+  { id: 'gmail',    icon: CHANNEL_ICONS.gmail,    label: 'Gmail',           color: 'var(--brand)', note: '' },
+  { id: 'instagram',icon: CHANNEL_ICONS.instagram,label: 'Instagram',       color: 'var(--brand)', note: '' },
+  { id: 'facebook', icon: CHANNEL_ICONS.facebook, label: 'Facebook',        color: 'var(--brand)', note: '' },
+  { id: 'reviews',  icon: CHANNEL_ICONS.reviews,  label: 'Google Reviews',  color: 'var(--brand)', note: '' },
 ]
 
 const COUNTRIES = ['السعودية','الإمارات','مصر','الكويت','البحرين','قطر','الأردن','المغرب','تونس','Other']
@@ -620,9 +636,17 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 border: `1px solid ${connected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
               }}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center p-2"
                   style={{ background: `${ch.color}15`, border: `1px solid ${ch.color}25` }}>
-                  {ch.icon}
+                  {typeof ch.icon === 'string' ? (
+                    ch.icon.startsWith('/') ? (
+                      <img src={ch.icon} alt={ch.label} className="w-5 h-5 object-contain" />
+                    ) : (
+                      <span className="text-xl">{ch.icon}</span>
+                    )
+                  ) : ch.icon ? (
+                    <ch.icon size={20} className="w-5 h-5" style={{ color: ch.color }} />
+                  ) : null}
                 </div>
                 <div>
                   <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{ch.label}</div>

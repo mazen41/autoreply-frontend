@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { MessageSquare, Camera, Mail, MessageCircle, Share2, ShoppingBag, Send, Music, ShoppingCart, Package, Globe, Star, MessageCircleMore } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Share2, Music, Star, MessageCircleMore } from 'lucide-react'
 
 type ChannelType = 'facebook' | 'instagram' | 'gmail' | 'whatsapp' | 'twitter' | 'salla' | 'telegram' | 'tiktok' | 'shopify' | 'woocommerce' | 'reviews' | 'webchat'
 
@@ -26,31 +27,65 @@ const channelColors: Record<ChannelType, string> = {
   webchat: '#8B3FFB',
 }
 
-const iconComponents: Record<ChannelType, React.ComponentType<{ size?: number; className?: string }>> = {
-  facebook: MessageSquare,
-  instagram: Camera,
+/** Channels that have custom SVG icons in /public/icons/ */
+const svgIcons: Partial<Record<ChannelType, string>> = {
+  facebook: '/icons/facebook.svg',
+  instagram: '/icons/instagram.svg',
+  whatsapp: '/icons/whatsapp.svg',
+  telegram: '/icons/telegram.svg',
+  shopify: '/icons/shopify.svg',
+  woocommerce: '/icons/woocommerce-icon.svg',
+  salla: '/icons/sllla.svg',
+}
+
+/** Fallback lucide icons for channels without custom SVGs */
+const fallbackIcons: Partial<Record<ChannelType, React.ComponentType<{ size?: number; className?: string }>>> = {
   gmail: Mail,
-  whatsapp: MessageCircle,
   twitter: Share2,
-  salla: ShoppingBag,
-  telegram: Send,
   tiktok: Music,
-  shopify: ShoppingCart,
-  woocommerce: Package,
   reviews: Star,
   webchat: MessageCircleMore,
 }
 
 export default function ChannelIcon({ type, size = 24, className = '' }: ChannelIconProps) {
-  const IconComponent = iconComponents[type]
+  const svgSrc = svgIcons[type]
   const color = channelColors[type]
 
+  if (svgSrc) {
+    return (
+      <div
+        className={`inline-flex items-center justify-center ${className}`}
+        style={{ width: size, height: size }}
+      >
+        <Image
+          src={svgSrc}
+          alt={`${type} icon`}
+          width={size}
+          height={size}
+          className="object-contain"
+          unoptimized
+        />
+      </div>
+    )
+  }
+
+  const FallbackIcon = fallbackIcons[type]
+  if (FallbackIcon) {
+    return (
+      <div
+        className={`inline-flex items-center justify-center ${className}`}
+        style={{ width: size, height: size, color }}
+      >
+        <FallbackIcon size={size} />
+      </div>
+    )
+  }
+
+  // Ultimate fallback
   return (
     <div
-      className={`inline-flex items-center justify-center ${className}`}
-      style={{ width: size, height: size, color }}
-    >
-      <IconComponent size={size} />
-    </div>
+      className={`inline-flex items-center justify-center rounded-full ${className}`}
+      style={{ width: size, height: size, backgroundColor: color }}
+    />
   )
 }

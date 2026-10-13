@@ -7,24 +7,6 @@ import { useLang } from '../../lib/LangContext'
 
 // ─── SVG ICON SET ─────────────────────────────────────────────────────────────
 const IC = {
-  WhatsApp: ({ c = 'var(--accent)', s = 20 }) => (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
-      <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.524 3.657 1.435 5.163L2 22l4.926-1.41A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/>
-      <path d="M8.5 9.5c.5 1 1.5 2.5 3 3.5s2.5 1.5 3 1l.5-.5c.3-.3.3-.7 0-1l-1-1c-.3-.3-.7-.3-1 0l-.3.3c-.7-.4-1.3-1-1.7-1.7l.3-.3c.3-.3.3-.7 0-1l-1-1c-.3-.3-.7-.3-1 0L8.5 8c-.5.5 0 1.5 0 1.5z" fill={c}/>
-    </svg>
-  ),
-  Instagram: ({ c = 'var(--accent)', s = 20 }) => (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5"/>
-      <circle cx="12" cy="12" r="4"/>
-      <circle cx="17.5" cy="6.5" r="1" fill={c} stroke="none"/>
-    </svg>
-  ),
-  Facebook: ({ c = 'var(--accent)', s = 20 }) => (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill={c}>
-      <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
-    </svg>
-  ),
   Mail: ({ c = 'var(--text-secondary)', s = 20 }) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -107,12 +89,22 @@ const IC = {
 }
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const CHANNELS = [
-  { id: 'wa',  label: 'WhatsApp',  Icon: IC.WhatsApp,  color: 'var(--accent)', angle: -130, dist: 145 },
-  { id: 'ig',  label: 'Instagram', Icon: IC.Instagram, color: 'var(--accent-secondary)', angle: -60,  dist: 140 },
-  { id: 'em',  label: 'Gmail',     Icon: IC.Mail,      color: 'var(--accent)', angle:  60,  dist: 140 },
-  { id: 'web', label: 'Website',   Icon: IC.Globe,     color: 'var(--accent-secondary)', angle:  130, dist: 145 },
-  { id: 'fb',  label: 'Facebook',  Icon: IC.Facebook,  color: 'var(--accent)', angle:  180, dist: 138 },
+export interface OSChannel {
+  id: string
+  label: string
+  icon: string | React.ComponentType<{ c?: string; s?: number; size?: number; className?: string }>
+  Icon?: string | React.ComponentType<{ c?: string; s?: number; size?: number; className?: string }>
+  color: string
+  angle: number
+  dist: number
+}
+
+const CHANNELS: OSChannel[] = [
+  { id: 'wa',  label: 'WhatsApp',  icon: '/icons/whatsapp.svg',  Icon: '/icons/whatsapp.svg',  color: 'var(--accent)', angle: -130, dist: 145 },
+  { id: 'ig',  label: 'Instagram', icon: '/icons/instagram.svg', Icon: '/icons/instagram.svg', color: 'var(--accent-secondary)', angle: -60,  dist: 140 },
+  { id: 'em',  label: 'Gmail',     icon: IC.Mail,                Icon: IC.Mail,                color: 'var(--accent)', angle:  60,  dist: 140 },
+  { id: 'web', label: 'Website',   icon: IC.Globe,               Icon: IC.Globe,               color: 'var(--accent-secondary)', angle:  130, dist: 145 },
+  { id: 'fb',  label: 'Facebook',  icon: '/icons/facebook.svg',  Icon: '/icons/facebook.svg',  color: 'var(--accent)', angle:  180, dist: 138 },
 ]
 
 const CAPS = [
@@ -124,12 +116,21 @@ const CAPS = [
   { id: 'inbox',   ar: 'الوارد الموحد',      en: 'Unified Inbox',      Icon: IC.Inbox,        angle: -168, dist: 175, color: 'var(--accent-secondary)' },
 ]
 
-const MSGS = [
-  { from: 'Ahmed K.', Icon: IC.WhatsApp, color: 'var(--accent)', ar: 'هل التوصيل متاح؟',      en: 'Is delivery available?',  status: 'Replied',    sc: 'var(--accent)' },
-  { from: 'سارة م.',  Icon: IC.Instagram,color: 'var(--accent-secondary)', ar: 'ما هي ساعات العمل؟',    en: 'What are your hours?',    status: 'Processing', sc: 'var(--accent-secondary)' },
-  { from: 'Nora H.',  Icon: IC.Mail,     color: 'var(--accent)', ar: 'أريد حجز طاولة لـ 4',   en: 'Table for 4 please',      status: 'Replied',    sc: 'var(--accent)' },
-  { from: 'خالد ع.',  Icon: IC.Globe,    color: 'var(--accent-secondary)', ar: 'كم سعر الباقة؟',         en: 'Business plan price?',    status: 'Lead ⚡',   sc: 'var(--accent-secondary)' },
-  { from: 'Omar F.',  Icon: IC.WhatsApp, color: 'var(--accent)', ar: 'شكراً على الرد السريع!', en: 'Thanks for quick reply!', status: 'Closed',    sc: 'var(--text-tertiary)' },
+const MSGS: Array<{
+  from: string
+  icon: string | React.ComponentType<{ c?: string; s?: number; size?: number; className?: string }>
+  Icon?: string | React.ComponentType<{ c?: string; s?: number; size?: number; className?: string }>
+  color: string
+  ar: string
+  en: string
+  status: string
+  sc: string
+}> = [
+  { from: 'Ahmed K.', icon: '/icons/whatsapp.svg',  Icon: '/icons/whatsapp.svg',  color: 'var(--accent)', ar: 'هل التوصيل متاح؟',      en: 'Is delivery available?',  status: 'Replied',    sc: 'var(--accent)' },
+  { from: 'سارة م.',  icon: '/icons/instagram.svg', Icon: '/icons/instagram.svg', color: 'var(--accent-secondary)', ar: 'ما هي ساعات العمل؟',    en: 'What are your hours?',    status: 'Processing', sc: 'var(--accent-secondary)' },
+  { from: 'Nora H.',  icon: IC.Mail,                Icon: IC.Mail,                color: 'var(--accent)', ar: 'أريد حجز طاولة لـ 4',   en: 'Table for 4 please',      status: 'Replied',    sc: 'var(--accent)' },
+  { from: 'خالد ع.',  icon: IC.Globe,               Icon: IC.Globe,               color: 'var(--accent-secondary)', ar: 'كم سعر الباقة؟',         en: 'Business plan price?',    status: 'Lead ⚡',   sc: 'var(--accent-secondary)' },
+  { from: 'Omar F.',  icon: '/icons/whatsapp.svg',  Icon: '/icons/whatsapp.svg',  color: 'var(--accent)', ar: 'شكراً على الرد السريع!', en: 'Thanks for quick reply!', status: 'Closed',    sc: 'var(--text-tertiary)' },
 ]
 
 const OUTCOMES = [
@@ -291,7 +292,14 @@ function ChannelsSection({ isRTL }: { isRTL: boolean }) {
                     backdropFilter: 'blur(8px)',
                     transition: 'all 0.3s ease',
                   }}>
-                  <ch.Icon c={ch.color} s={22} />
+                  {(() => {
+                    const icon = ch.icon || ch.Icon
+                    if (typeof icon === 'string') {
+                      return <img src={icon} alt={ch.label} className="w-[22px] h-[22px] object-contain" />
+                    }
+                    const IconComp = icon
+                    return IconComp ? <IconComp c={ch.color} s={22} /> : null
+                  })()}
                 </div>
                 <span className="text-[10px] font-bold whitespace-nowrap" style={{ color: isHot ? ch.color : 'var(--text-tertiary)', transition: 'color 0.3s' }}>{ch.label}</span>
               </div>
@@ -354,7 +362,14 @@ function MessagesSection({ isRTL }: { isRTL: boolean }) {
                   style={{ background: activeMsg === i ? 'var(--accent-subtle)' : 'var(--surface-elevated)', borderLeft: activeMsg === i ? '2px solid var(--accent-subtle)' : '2px solid transparent' }}>
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: `${msg.color}12`, border: `1px solid ${msg.color}20` }}>
-                    <msg.Icon c={msg.color} s={14} />
+                    {(() => {
+                      const icon = msg.icon || msg.Icon
+                      if (typeof icon === 'string') {
+                        return <img src={icon} alt={msg.from} className="w-3.5 h-3.5 object-contain" />
+                      }
+                      const IconComp = icon
+                      return IconComp ? <IconComp c={msg.color} s={14} /> : null
+                    })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>{msg.from}</div>
