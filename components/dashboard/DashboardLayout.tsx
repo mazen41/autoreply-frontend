@@ -70,6 +70,7 @@ const NAV_GROUPS: NavGroupDef[] = [
     items: [
       { icon: LayoutDashboard, href: '/dashboard', labelEn: 'Dashboard', labelAr: 'الرئيسية' },
       { icon: Inbox, href: '/inbox', labelEn: 'Inbox', labelAr: 'الرسائل', badge: 3, badgeVariant: 'brand' },
+      { icon: MessageCircle, href: '/dashboard/comments', labelEn: 'Comments', labelAr: 'التعليقات' },
       { icon: Radio, href: '/dashboard/channels', labelEn: 'Channels', labelAr: 'القنوات' },
       { icon: MessageCircle, href: '/dashboard/whatsapp', labelEn: 'WhatsApp', labelAr: 'واتساب' },
     ],

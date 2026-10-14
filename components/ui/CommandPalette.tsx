@@ -29,6 +29,7 @@ export default function CommandPalette({ isOpen, onClose }: CommandPaletteProps)
     // Navigation
     { id: 'nav-dash', title: 'Dashboard', description: 'Overview and analytics command center', category: 'Navigation', href: '/dashboard' },
     { id: 'nav-inbox', title: 'Inbox', description: 'Live omnichannel conversations', category: 'Navigation', href: '/inbox', shortcut: 'G I' },
+    { id: 'nav-comments', title: 'Comments', description: 'Facebook and Instagram post comments', category: 'Navigation', href: '/dashboard/comments' },
     { id: 'nav-channels', title: 'Channels', description: 'Connected social & messaging channels', category: 'Navigation', href: '/dashboard/channels', shortcut: 'G C' },
     { id: 'nav-whatsapp', title: 'WhatsApp Hub', description: 'WhatsApp Business API & templates', category: 'Navigation', href: '/dashboard/whatsapp' },
     { id: 'nav-bots', title: 'AI Bots', description: 'Agent configurations & testing playground', category: 'Navigation', href: '/dashboard/bots' },
