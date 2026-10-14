@@ -91,7 +91,7 @@ function initialCommentSettings(bot?: BotWizardRecord | null): Record<number, Co
     state[channel.id] = {
       enabled: Boolean(pivot.comment_automation_enabled),
       public_reply_enabled: pivot.public_comment_reply_enabled !== false,
-      private_reply_enabled: Boolean(pivot.private_comment_reply_enabled),
+      private_reply_enabled: false,
       settings: {
         public_information: Array.isArray(settings.public_information) ? settings.public_information.filter((value): value is PublicInfoCategory => PUBLIC_INFO_CATEGORIES.includes(value as PublicInfoCategory)) : [],
         fallback_response: typeof settings.fallback_response === 'string' ? settings.fallback_response : '',
@@ -721,7 +721,6 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                         <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.enabled} onChange={(event) => update({ enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentEnable}</label>
                         {value.enabled && <div className="space-y-4 border-s border-border ps-4">
                           <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.public_reply_enabled} onChange={(event) => update({ public_reply_enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentPublicReply}</label>
-                          <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.private_reply_enabled} onChange={(event) => update({ private_reply_enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentPrivateReply}</label>
                           <fieldset><legend className="mb-2 text-xs font-semibold text-text-secondary">{copy.commentPublicInfo}</legend><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {categories.map(([category, label]) => <label key={category} className="flex items-center gap-2 text-xs text-text-secondary"><input type="checkbox" checked={value.settings.public_information.includes(category)} onChange={(event) => updateSettings({ public_information: event.target.checked ? [...value.settings.public_information, category] : value.settings.public_information.filter((item) => item !== category) })} className="size-3.5 accent-[var(--accent)]" />{label}</label>)}
                           </div></fieldset>

@@ -1,507 +1,656 @@
 'use client'
 
-import React, { useState, useCallback, useRef } from 'react'
-import { useLang } from '../../lib/LangContext'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Zap, Clock, GitBranch, Send, Tag, User, Webhook,
-  Plus, Trash2, Save, X, ChevronDown, ChevronUp, Loader2
+  AlertCircle,
+  ChevronDown,
+  ChevronLeft,
+  MessageSquare,
+  Plus,
+  Sliders,
+  Tag,
+  Trash2,
+  UserCheck,
+  Zap,
 } from 'lucide-react'
-import Select from '../ui/Select'
+import toast from 'react-hot-toast'
+import Button from '../../../components/ui/Button'
+import Input from '../../../components/ui/Input'
+import Select from '../../../components/ui/Select'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface WorkflowNode {
+interface WorkflowLike {
+  id: number
+  name: string
+  description: string | null
+  trigger: { type: string; config?: any; conditions?: any }
+  conditions: Array<{ type: string; config: any; operator?: string; comparison?: string }>
+  actions: Array<any>
+}
+
+type TriggerType = 'first_contact' | 'message_received' | 'keyword' | 'business_hours' | 'tag_added'
+type ActionType = 'send_message' | 'add_tag' | 'assign_agent'
+
+interface Cond {
   id: string
-  type: 'trigger' | 'condition' | 'delay' | 'action'
-  label: string
-  icon: React.ElementType
+  type: string
+  comparison: string
+  config: { value?: string }
+}
+interface Act {
+  id: string
+  type: ActionType
   config: Record<string, any>
-  position: { x: number; y: number }
+  delay: number
 }
 
-interface WorkflowConnection {
-  from: string
-  to: string
-  label?: string
+const uid = () => Math.random().toString(36).slice(2, 9)
+
+const TRIGGERS: { value: TriggerType; label: string; description: string; icon: string }[] = [
+  { value: 'first_contact', label: 'First message from a customer', description: 'Runs once, when a new customer writes', icon: '👋' },
+  { value: 'message_received', label: 'Any incoming message', description: 'Runs on every customer message', icon: '💬' },
+  { value: 'keyword', label: 'Message contains a keyword', description: 'e.g. refund, price, cancel', icon: '🔎' },
+  { value: 'business_hours', label: 'Message arrives outside business hours', description: 'Great for after-hours replies', icon: '🌙' },
+  { value: 'tag_added', label: 'A tag is added to a customer', description: 'e.g. when someone becomes VIP', icon: '🏷️' },
+]
+
+const CONDITION_TYPES = [
+  { value: 'conversation_status', label: 'Conversation status', placeholder: 'e.g. open' },
+  { value: 'customer_tag', label: 'Customer tag', placeholder: 'e.g. VIP' },
+  { value: 'message_contains', label: 'Message contains', placeholder: 'e.g. discount' },
+]
+
+const COMPARISONS = [
+  { value: 'equals', label: 'is' },
+  { value: 'not_equals', label: "isn't" },
+  { value: 'contains', label: 'contains' },
+]
+
+const ACTION_META: Record<ActionType, { label: string; hint: string; icon: React.ElementType }> = {
+  send_message: { label: 'Send a message', hint: 'Reply automatically', icon: MessageSquare },
+  add_tag: { label: 'Add a tag', hint: 'Label the customer', icon: Tag },
+  assign_agent: { label: 'Assign to an agent', hint: 'Hand over to your team', icon: UserCheck },
 }
 
-interface WorkflowBuilderProps {
-  initialNodes?: WorkflowNode[]
-  initialConnections?: WorkflowConnection[]
-  onSave?: (nodes: WorkflowNode[], connections: WorkflowConnection[]) => Promise<boolean>
-  availableAgents?: Array<{ id: number; name: string }>
-  availableBots?: Array<{ id: number; name: string }>
-  availableSequences?: Array<{ id: number; name: string }>
+interface Recipe {
+  id: string
+  emoji: string
+  name: string
+  description: string
+  trigger: TriggerType
+  keyword?: string
+  actions: () => Act[]
 }
 
-// ─── Default Nodes ─────────────────────────────────────────────────────────────
-
-const createDefaultNodes = (): WorkflowNode[] => [
+const RECIPES: Recipe[] = [
   {
-    id: 'trigger-1',
-    type: 'trigger',
-    label: 'Trigger',
-    icon: Zap,
-    config: { type: 'keyword', keywords: [] },
-    position: { x: 50, y: 50 },
+    id: 'welcome',
+    emoji: '👋',
+    name: 'Welcome first-time customers',
+    description: 'Greet every new customer automatically.',
+    trigger: 'first_contact',
+    actions: () => [
+      { id: uid(), type: 'send_message', delay: 0, config: { message: 'Hi! 👋 Thanks for reaching out. How can we help you today?' } },
+    ],
+  },
+  {
+    id: 'after_hours',
+    emoji: '🌙',
+    name: 'After-hours auto-reply',
+    description: 'Let customers know when you will be back.',
+    trigger: 'business_hours',
+    actions: () => [
+      { id: uid(), type: 'send_message', delay: 0, config: { message: "Thanks for your message! We're closed right now and will reply as soon as we're back." } },
+    ],
+  },
+  {
+    id: 'keyword_tag',
+    emoji: '🏷️',
+    name: 'Tag customers by keyword',
+    description: 'Label conversations that mention certain words.',
+    trigger: 'keyword',
+    keyword: 'refund, return',
+    actions: () => [{ id: uid(), type: 'add_tag', delay: 0, config: { tag: 'Refund request' } }],
   },
 ]
 
-// ─── Node Config Panel ─────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function NodeConfigPanel({
-  node,
-  onClose,
-  onUpdate,
-  availableAgents,
-  availableBots,
-  availableSequences,
-}: {
-  node: WorkflowNode
-  onClose: () => void
-  onUpdate: (config: Record<string, any>) => void
-  availableAgents?: Array<{ id: number; name: string }>
-  availableBots?: Array<{ id: number; name: string }>
-  availableSequences?: Array<{ id: number; name: string }>
-}) {
-  const { isRTL } = useLang()
-  const L = (en: string, ar: string) => isRTL ? ar : en
-  const [config, setConfig] = useState(node.config)
+function summarizeAction(a: Act): string {
+  if (a.type === 'send_message') return a.config.message?.trim() ? a.config.message.trim().replace(/\s+/g, ' ') : 'Empty message — click to write it'
+  if (a.type === 'add_tag') return a.config.tag?.trim() ? `Add tag "${a.config.tag.trim()}"` : 'Add a tag — click to name it'
+  return 'Assign to an agent'
+}
 
-  const updateField = (field: string, value: any) => {
-    const newConfig = { ...config, [field]: value }
-    setConfig(newConfig)
-    onUpdate(newConfig)
-  }
+const getToken = () => decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
 
+function Block({ n, tone, title, children }: { n: number; tone: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative ml-auto w-full max-w-md bg-surface-elevated border-l border-border shadow-2xl flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="font-bold text-text-primary">{node.label}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface text-text-tertiary">
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Config Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Trigger Config */}
-          {node.type === 'trigger' && (
-            <>
-              <div>
-                <Select
-                  label={L('Trigger Type', 'نوع المحفز')}
-                  value={config.type || 'keyword'}
-                  onChange={e => updateField('type', e.target.value)}
-                  options={[
-                    { value: 'keyword', label: L('Keyword Match', 'تطابق الكلمات') },
-                    { value: 'first_contact', label: L('First Contact', 'أول اتصال') },
-                  { value: 'tag_added', label: L('Tag Added', 'إضافة علامة') },
-                  { value: 'order_status_changed', label: L('Order Status', 'حالة الطلب') },
-                    { value: 'message_received', label: L('Message Received', 'استلام رسالة') },
-                    { value: 'time', label: L('Scheduled Time', 'وقت مجدول') },
-                  ]}
-                />
-              </div>
-              {(config.type === 'keyword') && (
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Keywords', 'الكلمات المفتاحية')}</label>
-                  <textarea
-                    value={(config.keywords || []).join('\n')}
-                    onChange={e => updateField('keywords', e.target.value.split('\n').filter(Boolean))}
-                    placeholder={L('One keyword per line', 'كلمة واحدة في كل سطر')}
-                    rows={4}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent resize-none"
-                  />
-                </div>
-              )}
-              {config.type === 'tag_added' && (
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Tag name', 'اسم العلامة')}</label>
-                  <input
-                    value={(config.tags || [])[0] || ''}
-                    onChange={e => updateField('tags', e.target.value ? [e.target.value] : [])}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  />
-                </div>
-              )}
-              {config.type === 'time' && (
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-text-secondary">{L('Business local-time window', 'نافذة وقت العمل المحلي')}</label>
-                  <div className="flex gap-2">
-                    <input type="time" value={config.time_range?.start || '09:00'} onChange={e => updateField('time_range', { ...(config.time_range || {}), start: e.target.value, end: config.time_range?.end || '17:00' })} className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary" />
-                    <input type="time" value={config.time_range?.end || '17:00'} onChange={e => updateField('time_range', { ...(config.time_range || {}), start: config.time_range?.start || '09:00', end: e.target.value })} className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary" />
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Condition Config */}
-          {node.type === 'condition' && (
-            <>
-              <div>
-                <Select
-                  label={L('Field', 'الحقل')}
-                  value={config.field || 'customer_tag'}
-                  onChange={e => updateField('field', e.target.value)}
-                  options={[
-                    { value: 'customer_tag', label: L('Customer Tag', 'علامة العميل') },
-                    { value: 'conversation_status', label: L('Conversation Status', 'حالة المحادثة') },
-                    { value: 'message_contains', label: L('Message Contains', 'تحتوي الرسالة') },
-                  ]}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1">{L('Value', 'القيمة')}</label>
-                <input
-                  type="text"
-                  value={config.value || ''}
-                  onChange={e => updateField('value', e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                />
-              </div>
-            </>
-          )}
-
-          {/* Delay Config */}
-          {node.type === 'delay' && (
-            <>
-              <div>
-                <label className="block text-xs font-bold text-text-secondary mb-1">{L('Duration', 'المدة')}</label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={config.value || 1}
-                    onChange={e => updateField('value', parseInt(e.target.value) || 1)}
-                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  />
-                  <div className="w-32 shrink-0">
-                    <Select
-                      value={config.unit || 'hours'}
-                      onChange={e => updateField('unit', e.target.value)}
-                      options={[
-                        { value: 'minutes', label: L('Minutes', 'دقائق') },
-                        { value: 'hours', label: L('Hours', 'ساعات') },
-                        { value: 'days', label: L('Days', 'أيام') },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Action Config */}
-          {node.type === 'action' && (
-            <>
-              <div>
-                <Select
-                  label={L('Action Type', 'نوع الإجراء')}
-                  value={config.type || 'send_message'}
-                  onChange={e => updateField('type', e.target.value)}
-                  options={[
-                    { value: 'send_message', label: L('Send Message', 'إرسال رسالة') },
-                    { value: 'add_tag', label: L('Add Tag', 'إضافة علامة') },
-                    { value: 'remove_tag', label: L('Remove Tag', 'إزالة علامة') },
-                    { value: 'assign_agent', label: L('Assign Agent', 'تعيين وكيل') },
-                    { value: 'send_webhook', label: L('Send Webhook', 'إرسال Webhook') },
-                    { value: 'update_custom_field', label: L('Update Custom Field', 'تحديث حقل مخصص') },
-                    { value: 'toggle_ai', label: L('Toggle AI', 'تبديل AI') },
-                    { value: 'start_sequence', label: L('Start Sequence', 'بدء تسلسل') },
-                    { value: 'stop_sequence', label: L('Stop Sequence', 'إيقاف تسلسل') },
-                  ]}
-                />
-              </div>
-
-              {config.type === 'send_message' && (
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Message', 'الرسالة')}</label>
-                  <textarea
-                    value={config.message || ''}
-                    onChange={e => updateField('message', e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent resize-none"
-                  />
-                </div>
-              )}
-
-              {(config.type === 'add_tag' || config.type === 'remove_tag') && (
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Tag', 'العلامة')}</label>
-                  <input
-                    type="text"
-                    value={config.tag || ''}
-                    onChange={e => updateField('tag', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  />
-                </div>
-              )}
-
-              {config.type === 'assign_agent' && availableAgents && (
-                <div>
-                  <Select
-                    label={L('Agent', 'الوكيل')}
-                    value={config.agent_id ? String(config.agent_id) : ''}
-                    onChange={e => updateField('agent_id', parseInt(e.target.value) || null)}
-                    placeholder={L('Select Agent', 'اختر وكيل')}
-                    options={[
-                      { value: '', label: L('Select Agent', 'اختر وكيل') },
-                      ...availableAgents.map(a => ({ value: String(a.id), label: a.name })),
-                    ]}
-                  />
-                </div>
-              )}
-
-              {config.type === 'send_webhook' && (
-                <div>
-                  <label className="block text-xs font-bold text-text-secondary mb-1">{L('Webhook URL', 'رابط Webhook')}</label>
-                  <input
-                    type="url"
-                    value={config.url || ''}
-                    onChange={e => updateField('url', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                  />
-                </div>
-              )}
-
-              {config.type === 'update_custom_field' && (
-                <>
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1">{L('Field Name', 'اسم الحقل')}</label>
-                    <input
-                      type="text"
-                      value={config.field || ''}
-                      onChange={e => updateField('field', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-text-secondary mb-1">{L('Value', 'القيمة')}</label>
-                    <input
-                      type="text"
-                      value={config.value || ''}
-                      onChange={e => updateField('value', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-sm text-text-primary outline-none focus:border-accent"
-                    />
-                  </div>
-                </>
-              )}
-
-              {config.type === 'toggle_ai' && (
-                <div>
-                  <Select
-                    label={L('AI Enabled', 'تفعيل AI')}
-                    value={config.ai_enabled !== undefined ? String(config.ai_enabled) : 'true'}
-                    onChange={e => updateField('ai_enabled', e.target.value === 'true')}
-                    options={[
-                      { value: 'true', label: L('Enable', 'تفعيل') },
-                      { value: 'false', label: L('Disable', 'تعطيل') },
-                    ]}
-                  />
-                </div>
-              )}
-
-              {(config.type === 'start_sequence' || config.type === 'stop_sequence') && availableSequences && (
-                <div>
-                  <Select
-                    label={L('Sequence', 'التسلسل')}
-                    value={config.sequence_id ? String(config.sequence_id) : ''}
-                    onChange={e => updateField('sequence_id', parseInt(e.target.value) || null)}
-                    placeholder={L('Select Sequence', 'اختر تسلسل')}
-                    options={[
-                      { value: '', label: L('Select Sequence', 'اختر تسلسل') },
-                      ...availableSequences.map(s => ({ value: String(s.id), label: s.name })),
-                    ]}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <button
-            onClick={onClose}
-            className="w-full py-2 rounded-lg bg-accent text-white text-sm font-bold hover:brightness-110 transition-all"
-          >
-            {L('Done', 'تم')}
-          </button>
-        </div>
-      </div>
+  <section className="rounded-2xl border border-border bg-surface-elevated p-5">
+    <div className="mb-3 flex items-center gap-2.5">
+      <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${tone}`}>{n}</span>
+      <h3 className="text-sm font-bold text-text-primary">{title}</h3>
     </div>
+    {children}
+  </section>
   )
 }
 
-// ─── Main Builder ──────────────────────────────────────────────────────────────
+const Connector = () => <div className="mx-auto h-4 w-px bg-border" />
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function WorkflowBuilder({
-  initialNodes,
-  initialConnections = [],
+  workflow,
   onSave,
-  availableAgents = [],
-  availableBots = [],
-  availableSequences = [],
-}: WorkflowBuilderProps) {
-  const { isRTL } = useLang()
-  const L = (en: string, ar: string) => isRTL ? ar : en
-  const [nodes, setNodes] = useState<WorkflowNode[]>(initialNodes || createDefaultNodes())
-  const [connections, setConnections] = useState<WorkflowConnection[]>(initialConnections)
-  const [selectedNode, setSelectedNode] = useState<WorkflowNode | null>(null)
-  const [saving, setSaving] = useState(false)
-  const canvasRef = useRef<HTMLDivElement>(null)
+  onCancel,
+}: {
+  workflow: WorkflowLike | null
+  onSave: () => void
+  onCancel: () => void
+}) {
+  const isEditing = !!workflow
+  const [stage, setStage] = useState<'pick' | 'edit'>(isEditing ? 'edit' : 'pick')
 
-  const addNode = useCallback((type: WorkflowNode['type']) => {
-    const icons: Record<string, React.ElementType> = {
-      trigger: Zap,
-      condition: GitBranch,
-      delay: Clock,
-      action: Send,
-    }
-    const labels: Record<string, string> = {
-      trigger: L('Trigger', 'محفز'),
-      condition: L('Condition', 'شرط'),
-      delay: L('Delay', 'تأخير'),
-      action: L('Action', 'إجراء'),
-    }
-    const newNode: WorkflowNode = {
-      id: `${type}-${Date.now()}`,
+  const initial = useMemo(() => {
+    const saved = workflow?.trigger
+    const sc = saved?.conditions || {}
+    let type = ((saved?.type as TriggerType) || 'message_received') as TriggerType
+    // The API stores "outside business hours" as message_received + time_condition.
+    if (type === 'message_received' && sc.time_condition === 'outside_hours') type = 'business_hours'
+    return {
       type,
-      label: labels[type],
-      icon: icons[type],
-      config: type === 'trigger' ? { type: 'keyword', keywords: [] } : {},
-      position: { x: 100 + Math.random() * 200, y: 100 + nodes.length * 120 },
+      keyword: Array.isArray(sc.keywords) ? sc.keywords.join(', ') : '',
+      tag: Array.isArray(sc.tags) ? sc.tags[0] || '' : '',
+      conditions: (workflow?.conditions || []).map((c) => ({
+        id: uid(),
+        type: c.type,
+        comparison: c.comparison || (c as any).operator || 'equals',
+        config: { value: c.config?.value || '' },
+      })) as Cond[],
+      actions: (workflow?.actions || []).map((a: any) => {
+        const { type: aType, config, delay, ...rest } = a
+        return { id: uid(), type: aType as ActionType, config: { ...rest, ...(config || {}) }, delay: delay || 0 }
+      }) as Act[],
     }
-    setNodes(prev => [...prev, newNode])
-  }, [nodes.length, L])
+  }, [workflow])
 
-  const removeNode = useCallback((nodeId: string) => {
-    setNodes(prev => prev.filter(n => n.id !== nodeId))
-    setConnections(prev => prev.filter(c => c.from !== nodeId && c.to !== nodeId))
-    if (selectedNode?.id === nodeId) setSelectedNode(null)
-  }, [selectedNode])
+  const [name, setName] = useState(workflow?.name || '')
+  const [description, setDescription] = useState(workflow?.description || '')
+  const [showDescription, setShowDescription] = useState(!!workflow?.description)
+  const [triggerType, setTriggerType] = useState<TriggerType>(initial.type)
+  const [keyword, setKeyword] = useState(initial.keyword)
+  const [tag, setTag] = useState(initial.tag)
+  const [conditions, setConditions] = useState<Cond[]>(initial.conditions)
+  const [actions, setActions] = useState<Act[]>(initial.actions)
+  const [openAction, setOpenAction] = useState<string | null>(null)
+  const [addMenu, setAddMenu] = useState(false)
+  const [attempted, setAttempted] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
 
-  const updateNodeConfig = useCallback((nodeId: string, config: Record<string, any>) => {
-    setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, config } : n))
-    if (selectedNode?.id === nodeId) {
-      setSelectedNode(prev => prev ? { ...prev, config } : null)
+  // Dirty tracking
+  const snapshot = useMemo(
+    () => JSON.stringify({ name, description, triggerType, keyword, tag, conditions, actions }),
+    [name, description, triggerType, keyword, tag, conditions, actions]
+  )
+  const baselineRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (stage === 'edit' && baselineRef.current === null) baselineRef.current = snapshot
+  }, [stage, snapshot])
+  const dirty = stage === 'edit' && baselineRef.current !== null && baselineRef.current !== snapshot
+
+  useEffect(() => {
+    if (!dirty) return
+    const h = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
     }
-  }, [selectedNode])
+    window.addEventListener('beforeunload', h)
+    return () => window.removeEventListener('beforeunload', h)
+  }, [dirty])
 
-  const handleSave = useCallback(async () => {
-    if (!onSave) return
+  // Validation
+  const errors = useMemo(() => {
+    const e: { name?: string; trigger?: string; actions?: string; cond: Record<string, string>; act: Record<string, string>; list: string[]; first?: string } = {
+      cond: {}, act: {}, list: [],
+    }
+    if (!name.trim()) { e.name = 'Give your workflow a name'; e.list.push(e.name); e.first ||= 'wf-name' }
+    if (triggerType === 'keyword' && !keyword.trim()) { e.trigger = 'Enter at least one keyword'; e.list.push(e.trigger); e.first ||= 'wf-trigger' }
+    if (triggerType === 'tag_added' && !tag.trim()) { e.trigger = 'Enter the tag to watch for'; e.list.push(e.trigger); e.first ||= 'wf-trigger' }
+    conditions.forEach((c, i) => {
+      if (!c.config.value?.trim()) { e.cond[c.id] = 'Enter a value'; e.list.push(`Filter ${i + 1}: enter a value`); e.first ||= `wf-cond-${c.id}` }
+    })
+    if (actions.length === 0) { e.actions = 'Add at least one action'; e.list.push(e.actions); e.first ||= 'wf-actions' }
+    actions.forEach((a, i) => {
+      let msg = ''
+      if (a.type === 'send_message' && !a.config.message?.trim()) msg = 'Write the message to send'
+      if (a.type === 'add_tag' && !a.config.tag?.trim()) msg = 'Enter the tag name'
+      if (msg) { e.act[a.id] = msg; e.list.push(`Action ${i + 1}: ${msg}`); e.first ||= `wf-act-${a.id}` }
+    })
+    return e
+  }, [name, triggerType, keyword, tag, conditions, actions])
+  const showErrors = attempted && errors.list.length > 0
+
+  const applyRecipe = (r: Recipe | null) => {
+    if (r) {
+      const acts = r.actions()
+      setName(r.name)
+      setTriggerType(r.trigger)
+      setKeyword(r.keyword || '')
+      setActions(acts)
+      setOpenAction(acts[0]?.id ?? null)
+    } else {
+      const a: Act = { id: uid(), type: 'send_message', delay: 0, config: { message: '' } }
+      setActions([a])
+      setOpenAction(a.id)
+    }
+    setStage('edit')
+  }
+
+  const updateAction = (id: string, patch: Partial<Act>) => setActions((p) => p.map((a) => (a.id === id ? { ...a, ...patch } : a)))
+  const updateActionConfig = (id: string, patch: Record<string, any>) =>
+    setActions((p) => p.map((a) => (a.id === id ? { ...a, config: { ...a.config, ...patch } } : a)))
+  const addAction = (type: ActionType) => {
+    const a: Act = { id: uid(), type, delay: 0, config: type === 'send_message' ? { message: '' } : type === 'add_tag' ? { tag: '' } : {} }
+    setActions((p) => [...p, a])
+    setOpenAction(a.id)
+    setAddMenu(false)
+  }
+
+  const handleSave = async () => {
+    setAttempted(true)
+    setApiError(null)
+    if (errors.list.length > 0) {
+      const firstAct = actions.find((a) => errors.act[a.id])
+      if (firstAct) setOpenAction(firstAct.id)
+      setTimeout(() => document.getElementById(errors.first || '')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60)
+      return
+    }
+
     setSaving(true)
     try {
-      await onSave(nodes, connections)
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const url = workflow ? `${api}/api/workflows/${workflow.id}` : `${api}/api/workflows`
+
+      const keywords = keyword.split(',').map((k) => k.trim()).filter(Boolean)
+      const normalizedTrigger =
+        triggerType === 'keyword'
+          ? { type: 'keyword', conditions: { keywords, match_type: 'any' } }
+          : triggerType === 'business_hours'
+            ? { type: 'message_received', conditions: { time_condition: 'outside_hours' } }
+            : triggerType === 'tag_added'
+              ? { type: 'tag_added', conditions: { tags: [tag.trim()] } }
+              : { type: triggerType, conditions: {} }
+
+      const response = await fetch(url, {
+        method: workflow ? 'PATCH' : 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          description,
+          trigger: normalizedTrigger,
+          conditions: conditions.map((c) => ({
+            type: c.type,
+            config: { value: c.config.value },
+            operator: 'and',
+            comparison: c.comparison || 'equals',
+          })),
+          actions: actions.map((a) => ({ type: a.type, config: a.config, delay: a.delay || 0 })),
+        }),
+      })
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        const validation = payload?.errors ? Object.values(payload.errors).flat().join(' ') : ''
+        throw new Error(payload?.error || validation || payload?.message || `Workflow could not be saved (HTTP ${response.status}).`)
+      }
+      baselineRef.current = snapshot
+      toast.success(workflow ? 'Workflow updated' : 'Workflow created')
+      onSave()
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Failed to save workflow')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setSaving(false)
     }
-  }, [nodes, connections, onSave])
-
-  const nodeColors: Record<string, string> = {
-    trigger: 'border-warning/50 bg-warning/10',
-    condition: 'border-info/50 bg-info/10',
-    delay: 'border-brand/50 bg-brand/10',
-    action: 'border-success/50 bg-success/10',
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-surface">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-text-primary">{L('Workflow Builder', 'منشئ سير العمل')}</span>
+  const handleBack = () => {
+    if (dirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
+    onCancel()
+  }
+
+  // ─── Recipe picker ──────────────────────────────────────────────────────────
+  if (stage === 'pick') {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft size={14} />}>
+          Workflows
+        </Button>
+        <div>
+          <h2 className="text-xl font-bold text-text-primary">How do you want to start?</h2>
+          <p className="mt-1 text-sm text-text-secondary">Pick a recipe and tweak the text — or build your own.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {RECIPES.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => applyRecipe(r)}
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-elevated p-4 text-left transition-colors hover:border-brand/50"
+            >
+              <span className="text-2xl">{r.emoji}</span>
+              <div>
+                <p className="text-sm font-bold text-text-primary">{r.name}</p>
+                <p className="mt-0.5 text-xs text-text-secondary">{r.description}</p>
+              </div>
+            </button>
+          ))}
           <button
-            onClick={() => addNode('condition')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-border hover:bg-surface-elevated transition-colors text-text-secondary"
+            type="button"
+            onClick={() => applyRecipe(null)}
+            className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border p-4 text-left transition-colors hover:border-brand/50"
           >
-            <GitBranch size={12} /> {L('Condition', 'شرط')}
-          </button>
-          <button
-            onClick={() => addNode('delay')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-border hover:bg-surface-elevated transition-colors text-text-secondary"
-          >
-            <Clock size={12} /> {L('Delay', 'تأخير')}
-          </button>
-          <button
-            onClick={() => addNode('action')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-border hover:bg-surface-elevated transition-colors text-text-secondary"
-          >
-            <Plus size={12} /> {L('Action', 'إجراء')}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent text-white hover:brightness-110 transition-all disabled:opacity-50"
-          >
-            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-            {L('Save', 'حفظ')}
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-text-secondary">
+              <Plus size={16} />
+            </span>
+            <div>
+              <p className="text-sm font-bold text-text-primary">Start from scratch</p>
+              <p className="mt-0.5 text-xs text-text-secondary">Choose your own trigger and actions.</p>
+            </div>
           </button>
         </div>
       </div>
+    )
+  }
 
-      {/* Canvas */}
-      <div ref={canvasRef} className="flex-1 overflow-auto bg-background relative" style={{ minHeight: '500px' }}>
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: 'radial-gradient(circle, var(--border) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }} />
+  // ─── Builder ────────────────────────────────────────────────────────────────
 
-        {/* Nodes */}
-        {nodes.map(node => {
-          const Icon = node.icon
-          const isSelected = selectedNode?.id === node.id
-          return (
-            <div
-              key={node.id}
-              className={`absolute cursor-pointer transition-all ${isSelected ? 'ring-2 ring-accent' : ''}`}
-              style={{ left: node.position.x, top: node.position.y }}
-              onClick={() => setSelectedNode(node)}
-            >
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 shadow-lg ${nodeColors[node.type]}`}>
-                <Icon size={14} className="text-text-primary" />
-                <span className="text-xs font-bold text-text-primary whitespace-nowrap">{node.label}</span>
-                {node.type !== 'trigger' && (
-                  <button
-                    onClick={e => { e.stopPropagation(); removeNode(node.id) }}
-                    className="p-0.5 rounded hover:bg-error/20 text-text-tertiary hover:text-error transition-colors"
-                  >
-                    <Trash2 size={10} />
-                  </button>
-                )}
-              </div>
-            </div>
-          )
-        })}
+  return (
+    <div className="mx-auto max-w-3xl space-y-4 pb-16">
+      <div className="sticky top-0 z-30 -mx-1 flex items-center justify-between gap-3 border-b border-border bg-[var(--background)]/90 px-1 py-3 backdrop-blur">
+        <div className="flex min-w-0 items-center gap-3">
+          <Button variant="outline" size="sm" onClick={handleBack} icon={<ChevronLeft size={14} />}>
+            Workflows
+          </Button>
+          <h2 className="hidden truncate text-sm font-bold text-text-primary sm:block">
+            {isEditing ? name || 'Edit workflow' : 'New workflow'}
+          </h2>
+          {dirty && <span className="text-xs font-medium text-warning">Unsaved changes</span>}
+        </div>
+        <Button variant="primary" size="sm" onClick={handleSave} loading={saving}>
+          {isEditing ? 'Save changes' : 'Publish workflow'}
+        </Button>
+      </div>
 
-        {/* Empty state */}
-        {nodes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <Zap size={48} className="mx-auto mb-3 text-text-tertiary" />
-              <p className="text-sm text-text-secondary">{L('Add nodes to build your workflow', 'أضف عقد لبناء سير العمل')}</p>
-            </div>
+      {apiError && (
+        <div role="alert" className="rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
+          {apiError}
+        </div>
+      )}
+      {showErrors && (
+        <div role="alert" className="rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm">
+          <p className="font-semibold text-error">
+            Fix {errors.list.length} {errors.list.length === 1 ? 'issue' : 'issues'} to save
+          </p>
+          <ul className="mt-1 list-disc pl-5 text-xs text-text-secondary">
+            {errors.list.slice(0, 5).map((m, i) => (
+              <li key={i}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <section className="space-y-3 rounded-2xl border border-border bg-surface-elevated p-5">
+        <Input
+          id="wf-name"
+          label="Workflow name"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. VIP route to sales"
+          error={attempted ? errors.name : undefined}
+        />
+        {showDescription ? (
+          <Input
+            label="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What does this workflow do?"
+          />
+        ) : (
+          <button type="button" onClick={() => setShowDescription(true)} className="text-xs font-medium text-brand hover:underline">
+            + Add description
+          </button>
+        )}
+      </section>
+
+      <Block n={1} tone="bg-warning/15 text-warning" title="When this happens">
+        <div id="wf-trigger" className="space-y-3">
+          <Select
+            value={triggerType}
+            onChange={(e) => setTriggerType(e.target.value as TriggerType)}
+            options={TRIGGERS.map((t) => ({ value: t.value, label: t.label, description: t.description, icon: <span>{t.icon}</span> }))}
+          />
+          {triggerType === 'keyword' && (
+            <Input
+              label="Keywords"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="refund, cancel, discount"
+              helperText="Separate several keywords with commas — any of them will trigger this."
+              error={attempted ? errors.trigger : undefined}
+            />
+          )}
+          {triggerType === 'tag_added' && (
+            <Input
+              label="Tag"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="e.g. VIP"
+              error={attempted ? errors.trigger : undefined}
+            />
+          )}
+        </div>
+      </Block>
+
+      <Connector />
+
+      <Block n={2} tone="bg-info/15 text-info" title="Only if… (optional)">
+        {conditions.length === 0 ? (
+          <p className="mb-3 text-xs text-text-tertiary">No filters — runs every time the trigger happens.</p>
+        ) : (
+          <div className="mb-3 space-y-2">
+            {conditions.map((c, idx) => {
+              const meta = CONDITION_TYPES.find((t) => t.value === c.type)
+              return (
+                <div key={c.id} id={`wf-cond-${c.id}`} className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface p-2">
+                    <span className="px-1 text-xs font-semibold text-text-tertiary">{idx === 0 ? 'If' : 'and'}</span>
+                    <div className="w-44">
+                      <Select
+                        size="sm"
+                        value={c.type}
+                        onChange={(e) => setConditions((p) => p.map((x) => (x.id === c.id ? { ...x, type: e.target.value } : x)))}
+                        options={CONDITION_TYPES.map((t) => ({ value: t.value, label: t.label }))}
+                      />
+                    </div>
+                    <div className="w-28">
+                      <Select
+                        size="sm"
+                        value={c.comparison}
+                        onChange={(e) => setConditions((p) => p.map((x) => (x.id === c.id ? { ...x, comparison: e.target.value } : x)))}
+                        options={COMPARISONS}
+                      />
+                    </div>
+                    <Input
+                      className="!h-8 min-w-[120px] flex-1"
+                      value={c.config.value || ''}
+                      onChange={(e) => setConditions((p) => p.map((x) => (x.id === c.id ? { ...x, config: { value: e.target.value } } : x)))}
+                      placeholder={meta?.placeholder || 'Value…'}
+                      error={attempted ? errors.cond[c.id] : undefined}
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove filter"
+                      onClick={() => setConditions((p) => p.filter((x) => x.id !== c.id))}
+                      className="rounded-md p-1.5 text-text-tertiary hover:bg-error/10 hover:text-error"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
-      </div>
+        <Button
+          variant="outline"
+          size="xs"
+          icon={<Plus size={12} />}
+          onClick={() => setConditions((p) => [...p, { id: uid(), type: 'customer_tag', comparison: 'equals', config: { value: '' } }])}
+        >
+          Add filter
+        </Button>
+      </Block>
 
-      {/* Config Panel */}
-      {selectedNode && (
-        <NodeConfigPanel
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-          onUpdate={(config) => updateNodeConfig(selectedNode.id, config)}
-          availableAgents={availableAgents}
-          availableBots={availableBots}
-          availableSequences={availableSequences}
-        />
-      )}
+      <Connector />
+
+      <Block n={3} tone="bg-brand/15 text-brand" title="Then do this">
+        <div id="wf-actions" className="space-y-2">
+          {actions.map((a, idx) => {
+            const meta = ACTION_META[a.type]
+            const Icon = meta.icon
+            const open = openAction === a.id
+            const err = errors.act[a.id]
+            return (
+              <div
+                key={a.id}
+                id={`wf-act-${a.id}`}
+                className={`rounded-xl border bg-surface ${attempted && err ? 'border-error/50' : open ? 'border-brand/40' : 'border-border'}`}
+              >
+                <div
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={open}
+                  onClick={() => setOpenAction(open ? null : a.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setOpenAction(open ? null : a.id)
+                    }
+                  }}
+                  className="flex cursor-pointer items-center gap-3 p-3"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10 text-brand">
+                    <Icon size={14} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
+                      Action {idx + 1} · {meta.label}
+                    </p>
+                    <p className="truncate text-sm text-text-primary">{summarizeAction(a)}</p>
+                  </div>
+                  {attempted && err && !open && <AlertCircle size={15} className="shrink-0 text-error" />}
+                  <button
+                    type="button"
+                    aria-label="Remove action"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setActions((p) => p.filter((x) => x.id !== a.id))
+                    }}
+                    className="rounded-md p-1.5 text-text-tertiary hover:bg-error/10 hover:text-error"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                  <ChevronDown size={16} className={`shrink-0 text-text-tertiary transition-transform ${open ? 'rotate-180' : ''}`} />
+                </div>
+
+                {open && (
+                  <div className="space-y-3 border-t border-border/60 px-4 pb-4 pt-3">
+                    <Select
+                      label="Action"
+                      size="sm"
+                      value={a.type}
+                      onChange={(e) => {
+                        const type = e.target.value as ActionType
+                        updateAction(a.id, { type, config: type === 'send_message' ? { message: a.config.message || '' } : type === 'add_tag' ? { tag: a.config.tag || '' } : {} })
+                      }}
+                      options={(Object.keys(ACTION_META) as ActionType[]).map((t) => ({ value: t, label: ACTION_META[t].label }))}
+                    />
+                    {a.type === 'send_message' && (
+                      <div>
+                        <textarea
+                          value={a.config.message || ''}
+                          onChange={(e) => updateActionConfig(a.id, { message: e.target.value })}
+                          rows={3}
+                          placeholder="Write the reply your customer will receive…"
+                          className={`w-full resize-y rounded-lg border bg-surface-elevated p-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 ${
+                            attempted && err ? 'border-error focus:border-error focus:ring-error/20' : 'border-border focus:border-brand focus:ring-brand/30'
+                          }`}
+                        />
+                        {attempted && err && <p className="mt-1 text-xs font-medium text-error">{err}</p>}
+                      </div>
+                    )}
+                    {a.type === 'add_tag' && (
+                      <Input
+                        label="Tag name"
+                        value={a.config.tag || ''}
+                        onChange={(e) => updateActionConfig(a.id, { tag: e.target.value })}
+                        placeholder="e.g. VIP, Wholesale"
+                        error={attempted ? err : undefined}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+
+          {addMenu ? (
+            <div className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface p-2 sm:grid-cols-3">
+              {(Object.keys(ACTION_META) as ActionType[]).map((t) => {
+                const m = ACTION_META[t]
+                const Icon = m.icon
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => addAction(t)}
+                    className="flex items-center gap-2.5 rounded-lg p-2 text-left hover:bg-surface-elevated"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10 text-brand">
+                      <Icon size={14} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-semibold text-text-primary">{m.label}</span>
+                      <span className="block truncate text-[11px] text-text-tertiary">{m.hint}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddMenu(true)}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-xs font-semibold text-text-secondary transition-colors hover:border-brand/50 hover:text-brand"
+            >
+              <Plus size={14} /> Add action
+            </button>
+          )}
+          {attempted && errors.actions && <p className="text-xs font-medium text-error">{errors.actions}</p>}
+        </div>
+      </Block>
     </div>
   )
 }
