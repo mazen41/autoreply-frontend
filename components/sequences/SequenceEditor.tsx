@@ -104,7 +104,8 @@ export default function SequenceEditor({ sequenceId }: Props) {
       }
 
       const s = seq.settings || {}
-      const savedChannels: ChannelType[] = Array.isArray(s.channels) && s.channels.length ? s.channels : []
+      const configuredChannels = Array.isArray(s.target_channels) ? s.target_channels : s.channels
+      const savedChannels: ChannelType[] = Array.isArray(configuredChannels) && configuredChannels.length ? configuredChannels : []
       setChannels(savedChannels.length ? savedChannels : seq.channel ? [seq.channel as ChannelType] : ['whatsapp'])
       setAllowReentry(!!s.allow_reentry)
       setStopOnReply(!!s.stop_on_reply)
@@ -253,6 +254,10 @@ export default function SequenceEditor({ sequenceId }: Props) {
       }, 60)
       return
     }
+    if (channels.length === 0) {
+      setApiError('Select at least one channel before saving this sequence.')
+      return
+    }
 
     setSaving(activate ? 'activate' : 'draft')
     try {
@@ -263,7 +268,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
         trigger_type: triggerType,
         trigger_config: buildTriggerConfig(),
         channel: channels.find((c) => ['whatsapp', 'telegram', 'email'].includes(c)) || undefined,
-        settings: { channels, allow_reentry: allowReentry, stop_on_reply: stopOnReply },
+        settings: { target_channels: channels, allow_reentry: allowReentry, stop_on_reply: stopOnReply },
         steps: ordered,
       }
 
