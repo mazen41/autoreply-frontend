@@ -14,10 +14,10 @@ import {
   Zap,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import Button from '../../../components/ui/Button'
-import Input from '../../../components/ui/Input'
-import Select from '../../../components/ui/Select'
-import { getBusinessHeaders } from '../../../lib/businessContext'
+import Button from '../ui/Button'
+import Input from '../ui/Input'
+import Select from '../ui/Select'
+import { getBusinessHeaders } from '../../lib/businessContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -181,8 +181,8 @@ export default function WorkflowBuilder({
   const [description, setDescription] = useState(workflow?.description || '')
   const [showDescription, setShowDescription] = useState(!!workflow?.description)
   const [triggerType, setTriggerType] = useState<TriggerType>(initial.type)
-  const [keyword, setKeyword] = useState(initial.keyword)
-  const [tag, setTag] = useState(initial.tag)
+  const [keyword, setKeyword] = useState<string>(initial.keyword)
+  const [tag, setTag] = useState<string>(initial.tag)
   const [conditions, setConditions] = useState<Cond[]>(initial.conditions)
   const [actions, setActions] = useState<Act[]>(initial.actions)
   const [openAction, setOpenAction] = useState<string | null>(null)

@@ -1,6 +1,6 @@
 'use client'
 
-import SequenceEditor from '../../../../components/sequences/SequenceEditor'
+import SequenceEditor from '../sequences/SequenceEditor'
 
 export default function NewSequencePage() {
   return <SequenceEditor />
