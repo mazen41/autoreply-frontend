@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ApiConversation } from '../../hooks/useInbox'
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, ShoppingBag,
@@ -41,9 +41,12 @@ interface CustomerPanelProps {
   }>
   onAddNote?: (content: string) => void
   isAddingNote?: boolean
+  getConversationTags?: (conversationId: number) => Promise<Array<{ id: number; tag: string }>>
+  onAddTag?: (conversationId: number, tag: string) => Promise<{ id: number; tag: string } | null>
+  onRemoveTag?: (conversationId: number, tagId: number) => Promise<boolean>
 }
 
-export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = [], onAddNote, isAddingNote = false }: CustomerPanelProps) {
+export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = [], onAddNote, isAddingNote = false, getConversationTags, onAddTag, onRemoveTag }: CustomerPanelProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     details: true,
     orders: true,
@@ -51,7 +54,52 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
     notes: true
   })
   const [newNoteContent, setNewNoteContent] = useState('')
+  const [conversationTags, setConversationTags] = useState<Array<{ id: number; tag: string }>>([])
+  const [tagInputOpen, setTagInputOpen] = useState(false)
+  const [newTag, setNewTag] = useState('')
+  const [tagBusy, setTagBusy] = useState(false)
+  const [tagError, setTagError] = useState('')
   const L = (en: string, ar: string) => isRTL ? ar : en
+
+  useEffect(() => {
+    let active = true
+    setConversationTags([])
+    setTagError('')
+    getConversationTags?.(conv.id).then(tags => {
+      if (active) setConversationTags(Array.isArray(tags) ? tags : [])
+    }).catch(() => {
+      if (active) setTagError(L('Could not load tags', 'تعذر تحميل العلامات'))
+    })
+    return () => { active = false }
+  }, [conv.id, getConversationTags])
+
+  const handleAddTag = async () => {
+    const value = newTag.trim()
+    if (!value || !onAddTag || tagBusy) return
+    setTagBusy(true)
+    setTagError('')
+    const created = await onAddTag(conv.id, value)
+    if (created) {
+      setConversationTags(current => current.some(item => item.id === created.id) ? current : [...current, created])
+      setNewTag('')
+      setTagInputOpen(false)
+    } else {
+      setTagError(L('Could not add tag. Please try again.', 'تعذرت إضافة العلامة. حاول مرة أخرى.'))
+    }
+    setTagBusy(false)
+  }
+
+  const handleRemoveTag = async (tagId: number) => {
+    if (!onRemoveTag || tagBusy) return
+    setTagBusy(true)
+    setTagError('')
+    if (await onRemoveTag(conv.id, tagId)) {
+      setConversationTags(current => current.filter(item => item.id !== tagId))
+    } else {
+      setTagError(L('Could not remove tag. Please try again.', 'تعذر حذف العلامة. حاول مرة أخرى.'))
+    }
+    setTagBusy(false)
+  }
 
   const toggleSection = (key: string) => {
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -144,18 +192,31 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{L('Tags', 'العلامات')}</h3>
-            <button className="text-brand p-1 hover:bg-brand/10 rounded transition-colors"><Plus size={12} /></button>
+            <button type="button" onClick={() => { setTagInputOpen(open => !open); setTagError('') }} className="text-brand p-1 hover:bg-brand/10 rounded transition-colors" aria-label={L('Add tag', 'إضافة علامة')} title={L('Add tag', 'إضافة علامة')}><Plus size={12} /></button>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {customerTags.map(t => (
+            {conversationTags.map(({ id, tag }) => (
+              <span key={id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-secondary border border-border rounded-md text-[10px] font-medium text-text-primary">
+                {tag}
+                <button type="button" onClick={() => handleRemoveTag(id)} disabled={tagBusy} aria-label={L(`Remove ${tag}`, `إزالة ${tag}`)} className="text-text-muted hover:text-danger disabled:opacity-50"><X size={10} /></button>
+              </span>
+            ))}
+            {conversationTags.length === 0 && customerTags.map(t => (
               <span key={t} className="px-2 py-0.5 bg-surface-secondary border border-border rounded-md text-[10px] font-medium text-text-primary">
                 {t}
               </span>
             ))}
-            {customerTags.length === 0 && (
+            {conversationTags.length === 0 && customerTags.length === 0 && (
               <span className="text-[10px] text-text-muted italic">{L('No tags', 'لا توجد علامات')}</span>
             )}
           </div>
+          {tagInputOpen && (
+            <form className="flex gap-1.5" onSubmit={event => { event.preventDefault(); void handleAddTag() }}>
+              <input autoFocus value={newTag} onChange={event => setNewTag(event.target.value)} maxLength={50} placeholder={L('Tag name', 'اسم العلامة')} className="min-w-0 flex-1 rounded-md border border-border bg-surface px-2 py-1 text-xs text-text-primary outline-none focus:border-brand" />
+              <button type="submit" disabled={!newTag.trim() || tagBusy} className="rounded-md bg-brand px-2 py-1 text-xs font-medium text-white disabled:opacity-50">{tagBusy ? '…' : L('Add', 'إضافة')}</button>
+            </form>
+          )}
+          {tagError && <p role="alert" className="text-[10px] text-danger">{tagError}</p>}
         </div>
 
         {/* Details Section */}

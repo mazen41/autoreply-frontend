@@ -30,7 +30,8 @@ export default function InboxPage() {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
     fetchConversations, selectConversation, sendReply, sendMediaReply,
-    toggleAi, updateConversationStatus, updateConversationBot, reactToMessage, submitFeedback
+    toggleAi, updateConversationStatus, updateConversationBot, reactToMessage, submitFeedback,
+    getConversationTags, addTag, removeTag
   } = useInbox()
 
   // Panel visibility state
@@ -298,6 +299,9 @@ export default function InboxPage() {
               conv={selectedConv}
               isRTL={isRTL}
               onClose={() => setRightCollapsed(true)}
+              getConversationTags={getConversationTags}
+              onAddTag={addTag}
+              onRemoveTag={removeTag}
             />
           )}
         </div>
@@ -314,6 +318,9 @@ export default function InboxPage() {
                 conv={selectedConv}
                 isRTL={isRTL}
                 onClose={() => setContextDrawerOpen(false)}
+                getConversationTags={getConversationTags}
+                onAddTag={addTag}
+                onRemoveTag={removeTag}
               />
             </div>
           </>
@@ -436,6 +443,9 @@ export default function InboxPage() {
                 conv={selectedConv}
                 isRTL={isRTL}
                 onClose={() => setMobileView('thread')}
+                getConversationTags={getConversationTags}
+                onAddTag={addTag}
+                onRemoveTag={removeTag}
               />
             </div>
           </div>
