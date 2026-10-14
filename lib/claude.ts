@@ -75,40 +75,27 @@ export async function askClaude(
     return { success: false, limitReached: true };
   }
   
-  const apiKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
-  
-  if (!apiKey) {
-    console.error('ANTHROPIC_API_KEY not set');
-    return { success: false };
-  }
-  
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/tools/ai-call`, {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
+        system_prompt: systemPrompt,
+        user_message: userMessage,
       }),
     });
     
     if (!response.ok) {
-      console.error('Claude API error:', response.status, await response.text());
+      console.error('Admin-configured AI API error:', response.status);
       return { success: false };
     }
     
     const data = await response.json();
-    const content = data.content[0]?.text;
-    
-    return { success: true, result: content || '' };
+    return { success: true, result: data.result || '' };
   } catch (error) {
-    console.error('Claude API error:', error);
+    console.error('Admin-configured AI API error:', error);
     return { success: false };
   }
 }

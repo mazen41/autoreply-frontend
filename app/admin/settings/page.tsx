@@ -8,7 +8,7 @@ import { AdminShell, Badge, Button, Field, PageHeader, Panel, SkeletonRows, inpu
 import { useLang } from '../../../lib/LangContext'
 import Select from '../../../components/ui/Select'
 
-type Provider = 'gemini' | 'claude'
+type Provider = 'gemini' | 'groq' | 'claude'
 
 type Settings = {
   app_name: string
@@ -23,9 +23,22 @@ type Settings = {
   gemini_api_key: string | null
   gemini_model: string | null
   gemini_configured: boolean
+  groq_api_key: string | null
+  groq_model: string | null
+  groq_configured: boolean
+  openai_api_key: string | null
+  openai_configured: boolean
   claude_api_key: string | null
   claude_model: string | null
   claude_configured: boolean
+  vision_provider: 'openai' | 'gemini'
+  vision_openai_model: string
+  vision_gemini_model: string
+  vision_openai_configured: boolean
+  vision_gemini_configured: boolean
+  voice_transcription_provider: 'openai'
+  voice_transcription_model: string
+  attachments_read_enabled: boolean
   meta_app_id: string | null
   meta_app_secret: string | null
   google_client_id: string | null
@@ -50,8 +63,17 @@ const defaults = {
   ai_streaming: false,
   gemini_api_key: '',
   gemini_model: 'gemini-2.5-flash',
+  groq_api_key: '',
+  groq_model: 'openai/gpt-oss-120b',
+  openai_api_key: '',
   claude_api_key: '',
   claude_model: 'claude-haiku-4-5-20251001',
+  vision_provider: 'openai' as 'openai' | 'gemini',
+  vision_openai_model: 'gpt-4o',
+  vision_gemini_model: 'gemini-3.8-flash',
+  voice_transcription_provider: 'openai' as const,
+  voice_transcription_model: 'whisper-1',
+  attachments_read_enabled: false,
   meta_app_id: '',
   meta_app_secret: '',
   google_client_id: '',
@@ -95,7 +117,14 @@ export default function AdminSettingsPage() {
         ai_retries: Number(data.ai_retries ?? 3),
         ai_streaming: Boolean(data.ai_streaming),
         gemini_model: data.gemini_model || 'gemini-2.5-flash',
+        groq_model: data.groq_model || 'openai/gpt-oss-120b',
         claude_model: data.claude_model || 'claude-haiku-4-5-20251001',
+        vision_provider: data.vision_provider || 'openai',
+        vision_openai_model: data.vision_openai_model || 'gpt-4o',
+        vision_gemini_model: data.vision_gemini_model || 'gemini-3.8-flash',
+        voice_transcription_provider: data.voice_transcription_provider || 'openai',
+        voice_transcription_model: data.voice_transcription_model || 'whisper-1',
+        attachments_read_enabled: Boolean(data.attachments_read_enabled),
         meta_app_id: data.meta_app_id || '',
         google_client_id: data.google_client_id || '',
         pusher_app_id: data.pusher_app_id || '',
@@ -138,8 +167,11 @@ export default function AdminSettingsPage() {
 
   if (loading) return <AdminShell><PageHeader title={isRTL ? '?????????' : 'Settings'} description={isRTL ? '???? ????? ??????? ??????.' : 'Loading platform configuration.'} /><SkeletonRows rows={8} /></AdminShell>
 
-  const primaryConfigured = formData.ai_provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
-  const fallbackConfigured = formData.ai_fallback_provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
+  const providerReady = (provider: Provider) => provider === 'groq'
+    ? settings?.groq_configured
+    : provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
+  const primaryConfigured = providerReady(formData.ai_provider)
+  const fallbackConfigured = providerReady(formData.ai_fallback_provider)
 
   return (
     <AdminShell>
@@ -156,10 +188,10 @@ export default function AdminSettingsPage() {
         <Panel>
           <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-white/70 dark:text-white">{isRTL ? '???? ?????? ?????????' : 'AI Provider'}</h2><p className="text-sm text-white/70 dark:text-white/70">{isRTL ? '?? ????? ?????? ????????? ?????? ??? ????????.' : 'All system AI requests follow this selection.'}</p></div><Bot className="text-white/50" /></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(['gemini', 'claude'] as Provider[]).map((provider) => {
+            {(['gemini', 'groq', 'claude'] as Provider[]).map((provider) => {
               const selected = formData.ai_provider === provider
-              const configured = provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
-              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-white/40 bg-white/50 shadow-lg shadow-black/30 dark:bg-white/40' : 'border-white/10 bg-white hover:border-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-white/70 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? '????' : 'Ready') : (isRTL ? '????' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-white/70 dark:text-white/70">{provider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'}</p></button>
+              const configured = providerReady(provider)
+              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-white/40 bg-white/50 shadow-lg shadow-black/30 dark:bg-white/40' : 'border-white/10 bg-white hover:border-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-white/70 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? '????' : 'Ready') : (isRTL ? '????' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-white/70 dark:text-white/70">{provider === 'gemini' ? 'Google Gemini' : provider === 'groq' ? 'Groq' : 'Anthropic Claude'}</p></button>
             })}
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -169,6 +201,7 @@ export default function AdminSettingsPage() {
                 onChange={(e) => update('ai_fallback_provider', e.target.value)}
                 options={[
                   { value: 'gemini', label: 'Google Gemini' },
+                  { value: 'groq', label: 'Groq' },
                   { value: 'claude', label: 'Anthropic Claude' },
                 ]}
               />
@@ -181,6 +214,7 @@ export default function AdminSettingsPage() {
           <div className="mb-5 flex items-center gap-3"><SlidersHorizontal className="text-white/50" /><div><h2 className="text-xl font-black text-white/70 dark:text-white">{isRTL ? '???? ???????' : 'Model Behavior'}</h2><p className="text-sm text-white/70 dark:text-white/70">{isRTL ? '???????? ??????? ??????? ?????? ????????.' : 'Temperature, tokens, timeout, and retry policy.'}</p></div></div>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Gemini Model"><input className={inputClass} value={formData.gemini_model} onChange={(e) => update('gemini_model', e.target.value)} /></Field>
+            <Field label="Groq Model"><input className={inputClass} value={formData.groq_model} onChange={(e) => update('groq_model', e.target.value)} /></Field>
             <Field label="Claude Model"><input className={inputClass} value={formData.claude_model} onChange={(e) => update('claude_model', e.target.value)} /></Field>
             <Field label={isRTL ? '???? ???????' : 'Temperature'}><input className={inputClass} type="number" min="0" max="2" step="0.1" value={formData.ai_temperature} onChange={(e) => update('ai_temperature', Number(e.target.value))} /></Field>
             <Field label={isRTL ? '???? ?????? ??????' : 'Max tokens'}><input className={inputClass} type="number" min="50" max="8000" value={formData.ai_max_tokens} onChange={(e) => update('ai_max_tokens', Number(e.target.value))} /></Field>
@@ -191,11 +225,27 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Panel><SectionTitle icon={<KeyRound />} title={isRTL ? '?????? API ??????' : 'Secure API Keys'} /><div className="grid gap-4 md:grid-cols-2"><Field label="Gemini API Key" hint={settings?.gemini_configured ? (isRTL ? '????? ????? ?????? ??? ??????? ??????.' : 'Leave blank to keep the current key.') : undefined}><input type="password" className={inputClass} value={formData.gemini_api_key} onChange={(e) => update('gemini_api_key', e.target.value)} placeholder={settings?.gemini_configured ? 'Configured' : 'AIza...'} /></Field><Field label="Claude API Key" hint={settings?.claude_configured ? (isRTL ? '????? ????? ?????? ??? ??????? ??????.' : 'Leave blank to keep the current key.') : undefined}><input type="password" className={inputClass} value={formData.claude_api_key} onChange={(e) => update('claude_api_key', e.target.value)} placeholder={settings?.claude_configured ? 'Configured' : 'sk-ant-...'} /></Field></div></Panel>
+        <Panel><SectionTitle icon={<KeyRound />} title={isRTL ? '?????? API ??????' : 'Secure API Keys'} /><div className="grid gap-4 md:grid-cols-2"><Field label="Gemini API Key" hint={settings?.gemini_configured ? (isRTL ? '????? ????? ?????? ??? ??????? ??????.' : 'Leave blank to keep the current key.') : undefined}><input type="password" className={inputClass} value={formData.gemini_api_key} onChange={(e) => update('gemini_api_key', e.target.value)} placeholder={settings?.gemini_configured ? 'Configured' : 'AIza...'} /></Field><Field label="Groq API Key" hint={settings?.groq_configured ? 'Leave blank to keep the current key.' : undefined}><input type="password" className={inputClass} value={formData.groq_api_key} onChange={(e) => update('groq_api_key', e.target.value)} placeholder={settings?.groq_configured ? 'Configured' : 'gsk_...'} /></Field><Field label="Claude API Key" hint={settings?.claude_configured ? (isRTL ? '????? ????? ?????? ??? ??????? ??????.' : 'Leave blank to keep the current key.') : undefined}><input type="password" className={inputClass} value={formData.claude_api_key} onChange={(e) => update('claude_api_key', e.target.value)} placeholder={settings?.claude_configured ? 'Configured' : 'sk-ant-...'} /></Field><Field label="OpenAI API Key" hint={settings?.openai_configured ? 'Shared by image analysis and voice transcription. Leave blank to keep it.' : 'Shared by image analysis and voice transcription.'}><input type="password" className={inputClass} value={formData.openai_api_key} onChange={(e) => update('openai_api_key', e.target.value)} placeholder={settings?.openai_configured ? 'Configured' : 'sk-...'} /></Field></div></Panel>
         <Panel><SectionTitle icon={<Zap />} title={isRTL ? '??? ??????' : 'Provider Health'} /><div className="grid gap-3 sm:grid-cols-2"><Health label={isRTL ? '???????' : 'Primary'} provider={formData.ai_provider} ready={Boolean(primaryConfigured)} /><Health label={isRTL ? '?????????' : 'Fallback'} provider={formData.ai_fallback_provider} ready={Boolean(fallbackConfigured)} /></div></Panel>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
+        <Panel>
+          <SectionTitle icon={<Settings2 />} title={isRTL ? '???? ??????? ???????' : 'Images, Voice and Attachments'} />
+          <p className="mb-4 text-sm text-white/60">When enabled, incoming images are analyzed and voice notes are transcribed before the AI replies. OpenAI credentials are shared for image analysis and Whisper transcription.</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Image analysis provider"><Select value={formData.vision_provider} onChange={(e) => update('vision_provider', e.target.value)} options={[{ value: 'openai', label: `OpenAI${settings?.vision_openai_configured ? ' · Ready' : ' · Needs key'}` }, { value: 'gemini', label: `Google Gemini${settings?.vision_gemini_configured ? ' · Ready' : ' · Needs key'}` }]} /></Field>
+            {formData.vision_provider === 'openai'
+              ? <Field label="OpenAI Vision model"><input className={inputClass} value={formData.vision_openai_model} onChange={(e) => update('vision_openai_model', e.target.value)} /></Field>
+              : <Field label="Gemini Vision model"><input className={inputClass} value={formData.vision_gemini_model} onChange={(e) => update('vision_gemini_model', e.target.value)} /></Field>}
+            <Field label="Voice transcription provider"><Select value={formData.voice_transcription_provider} onChange={(e) => update('voice_transcription_provider', e.target.value)} options={[{ value: 'openai', label: 'OpenAI Whisper' }]} /></Field>
+            <Field label="Voice transcription model"><input className={inputClass} value={formData.voice_transcription_model} onChange={(e) => update('voice_transcription_model', e.target.value)} /></Field>
+          </div>
+          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+            <input type="checkbox" className="mt-1 h-4 w-4 accent-emerald-500" checked={formData.attachments_read_enabled} onChange={(e) => update('attachments_read_enabled', e.target.checked)} />
+            <span><span className="block font-bold text-white">Analyze customer attachments</span><span className="mt-1 block text-sm text-white/60">Allows image analysis, voice transcription, and supported location extraction for incoming attachments.</span></span>
+          </label>
+        </Panel>
         <Panel><SectionTitle icon={<Settings2 />} title={isRTL ? '????????? ?????? ??????????' : 'General and Integrations'} /><div className="grid gap-4 md:grid-cols-2"><Field label={isRTL ? '??? ???????' : 'App name'}><input className={inputClass} value={formData.app_name} onChange={(e) => update('app_name', e.target.value)} /></Field><Field label={isRTL ? '???? ???????' : 'App URL'}><input className={inputClass} value={settings?.app_url || ''} disabled /></Field><Field label="Meta App ID"><input className={inputClass} value={formData.meta_app_id} onChange={(e) => update('meta_app_id', e.target.value)} /></Field><Field label="Meta App Secret"><input type="password" className={inputClass} value={formData.meta_app_secret} onChange={(e) => update('meta_app_secret', e.target.value)} /></Field><Field label="Google Client ID"><input className={inputClass} value={formData.google_client_id} onChange={(e) => update('google_client_id', e.target.value)} /></Field><Field label="Google Client Secret"><input type="password" className={inputClass} value={formData.google_client_secret} onChange={(e) => update('google_client_secret', e.target.value)} /></Field></div></Panel>
         <Panel><SectionTitle icon={<ShieldCheck />} title={isRTL ? '????? ????? ???????' : 'Payments and Realtime'} /><div className="grid gap-4 md:grid-cols-2"><Field label="Pusher App ID"><input className={inputClass} value={formData.pusher_app_id} onChange={(e) => update('pusher_app_id', e.target.value)} /></Field><Field label="Pusher Key"><input className={inputClass} value={formData.pusher_app_key} onChange={(e) => update('pusher_app_key', e.target.value)} /></Field><Field label="Pusher Secret"><input type="password" className={inputClass} value={formData.pusher_secret} onChange={(e) => update('pusher_secret', e.target.value)} /></Field><Field label="Pusher Cluster"><input className={inputClass} value={formData.pusher_cluster} onChange={(e) => update('pusher_cluster', e.target.value)} /></Field><Field label="Paymob Secret Key"><input type="password" className={inputClass} value={formData.paymob_secret_key} onChange={(e) => update('paymob_secret_key', e.target.value)} placeholder="egy_sk_test_..." /></Field><Field label="Paymob Public Key"><input className={inputClass} value={formData.paymob_public_key} onChange={(e) => update('paymob_public_key', e.target.value)} placeholder="egy_pk_test_..." /></Field><Field label="Paymob HMAC Key"><input type="password" className={inputClass} value={formData.paymob_hmac_key} onChange={(e) => update('paymob_hmac_key', e.target.value)} placeholder="FA0D..." /></Field></div></Panel>
       </div>
