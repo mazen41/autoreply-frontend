@@ -319,7 +319,6 @@ export default function CommentsPage() {
       const rows = Array.isArray(body.data) ? body.data : []
       setComments(rows)
       setStats({
-        total: body.total || 0,
         replied: 0,
         skipped: 0,
         cancelled: 0,
@@ -328,6 +327,7 @@ export default function CommentsPage() {
         pending: 0,
         needs_attention: 0,
         ...(body.stats || {}),
+        total: body.total || 0,
       })
       setLastPage(body.last_page || 1)
       setSelectedId((current) => rows.some((row) => row.id === current) ? current : rows[0]?.id ?? null)
