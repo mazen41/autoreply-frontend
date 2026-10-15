@@ -318,17 +318,8 @@ export default function CommentsPage() {
       if (!response.ok) throw new Error(body.message || `Could not load comments (HTTP ${response.status}).`)
       const rows = Array.isArray(body.data) ? body.data : []
       setComments(rows)
-      setStats({
-        replied: 0,
-        skipped: 0,
-        cancelled: 0,
-        failed: 0,
-        retryable: 0,
-        pending: 0,
-        needs_attention: 0,
-        ...(body.stats || {}),
-        total: body.total || 0,
-      })
+      const defaults = { total: 0, replied: 0, skipped: 0, cancelled: 0, failed: 0, retryable: 0, pending: 0, needs_attention: 0 }
+      setStats({ ...defaults, ...(body.stats || {}), total: body.total || 0 })
       setLastPage(body.last_page || 1)
       setSelectedId((current) => rows.some((row) => row.id === current) ? current : rows[0]?.id ?? null)
     } catch (cause) {
