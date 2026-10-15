@@ -1,6 +1,6 @@
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import BotWizardModal from '../../components/bots/BotWizardModal'
 import { translations } from '../../lib/i18n'
 
@@ -35,6 +35,7 @@ describe('BotWizardModal channel mapping', () => {
   })
 
   afterEach(() => {
+    cleanup()
     vi.unstubAllGlobals()
   })
 
@@ -53,7 +54,8 @@ describe('BotWizardModal channel mapping', () => {
     expect(channelGrid.getAllByText('Instagram Account').length).toBeGreaterThan(0)
     expect(channelGrid.queryByText('Salla Boutique')).toBeNull()
     expect(channelGrid.queryByText('Shopify Store')).toBeNull()
-    expect(screen.getByText('Salla Boutique')).not.toBeNull()
+
+    expect(within(container).getAllByText(/SALLA — Salla Boutique/i).length).toBeGreaterThan(0)
   })
 
   it('clears a legacy store primary assignment and shows the notice', async () => {

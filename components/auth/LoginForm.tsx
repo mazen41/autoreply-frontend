@@ -8,6 +8,7 @@ import { useLang } from '../../lib/LangContext'
 import { springs } from '../../lib/motion'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
+import Checkbox from '../ui/Checkbox'
 import { Mail, Lock, Eye, EyeOff, Check, Loader2, Play } from 'lucide-react'
 
 type LoginField = 'email' | 'password'
@@ -200,16 +201,7 @@ export default function LoginForm() {
           })}
 
           <div className="flex items-center justify-between gap-3 pt-1">
-            <label htmlFor="login-remember" className="flex items-center gap-2 text-xs font-medium cursor-pointer text-text-secondary hover:text-text-primary transition-colors">
-              <input 
-                id="login-remember" 
-                type="checkbox" 
-                checked={rememberMe} 
-                onChange={e => setRememberMe(e.target.checked)} 
-                className="w-4 h-4 rounded border-border bg-surface text-brand focus:ring-brand/40 focus:ring-offset-surface cursor-pointer" 
-              />
-              <span>{isRTL ? 'تذكرني' : 'Remember me'}</span>
-            </label>
+            <Checkbox id="login-remember" checked={rememberMe} onChange={setRememberMe} label={isRTL ? 'تذكرني' : 'Remember me'} className="text-xs font-medium" />
             <Link href="/forgot-password" className="text-xs font-medium text-brand hover:text-brand-hover hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-colors">
               {t.auth.forgotPassword}
             </Link>

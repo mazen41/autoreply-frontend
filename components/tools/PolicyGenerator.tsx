@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
 import { useAuth } from '@/lib/AuthContext'
 import Link from 'next/link'
+import Checkbox from '../ui/Checkbox'
 
 export default function PolicyGenerator() {
   const { user } = useAuth()
@@ -93,19 +94,9 @@ export default function PolicyGenerator() {
               { key: 'privacy', labelAr: 'سياسة الخصوصية', labelEn: 'Privacy Policy' },
               { key: 'shipping', labelAr: 'سياسة الشحن', labelEn: 'Shipping Policy' },
             ].map((policy) => (
-              <label key={policy.key} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: policies[policy.key as keyof typeof policies] ? 'var(--accent-subtle)' : 'var(--surface)', border: '1px solid var(--border)' }}>
-                <input
-                  type="checkbox"
-                  checked={policies[policy.key as keyof typeof policies]}
-                  onChange={(e) => setPolicies({ ...policies, [policy.key]: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <div className="text-sm">
-                  <div style={{ color: 'var(--text-primary)' }}>{policy.labelAr}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{policy.labelEn}</div>
-                </div>
-              </label>
+              <div key={policy.key} className="rounded-lg p-3" style={{ background: policies[policy.key as keyof typeof policies] ? 'var(--accent-subtle)' : 'var(--surface)', border: '1px solid var(--border)' }}>
+                <Checkbox checked={policies[policy.key as keyof typeof policies]} onChange={(checked) => setPolicies({ ...policies, [policy.key]: checked })} label={<span className="text-sm"><span className="block" style={{ color: 'var(--text-primary)' }}>{policy.labelAr}</span><span className="block text-xs" style={{ color: 'var(--text-tertiary)' }}>{policy.labelEn}</span></span>} />
+              </div>
             ))}
           </div>
         </div>

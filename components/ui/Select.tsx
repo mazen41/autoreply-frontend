@@ -368,11 +368,19 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
     switch (e.key) {
       case 'Enter':
       case ' ':
+        e.preventDefault()
+        if (!isOpen) {
+          openMenu()
+        } else {
+          const highlighted = flatOptions[highlightedIndex]
+          if (highlighted && !highlighted.disabled) selectOptionValue(highlighted.value)
+        }
+        break
       case 'ArrowDown':
         e.preventDefault()
         if (!isOpen) {
           openMenu()
-        } else if (e.key === 'ArrowDown') {
+        } else {
           // Move highlight
           setHighlightedIndex((prev) => {
             let next = prev + 1
@@ -437,7 +445,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
       `[data-option-index="${highlightedIndex}"]`
     ) as HTMLElement | null
     if (el) {
-      el.scrollIntoView({ block: 'nearest' })
+      el.scrollIntoView?.({ block: 'nearest' })
     }
   }, [isOpen, highlightedIndex])
 
@@ -467,6 +475,10 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
     md: 'h-9 text-sm px-3 gap-2',
     lg: 'h-10 text-sm px-3.5 gap-2.5',
   }[size]
+
+  const activeOptionId = isOpen && highlightedIndex >= 0
+    ? `${listboxId}-option-${highlightedIndex}`
+    : undefined
 
   // Render the Dropdown Content
   const dropdownContent = (
@@ -572,6 +584,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
                             return (
                               <div
                                 key={opt.value}
+                                id={`${listboxId}-option-${thisIdx}`}
                                 data-option-index={thisIdx}
                                 role="option"
                                 aria-selected={isSelected}
@@ -634,6 +647,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
                     return (
                       <div
                         key={opt.value}
+                        id={`${listboxId}-option-${thisIdx}`}
                         data-option-index={thisIdx}
                         role="option"
                         aria-selected={isSelected}
@@ -726,6 +740,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
           role="combobox"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-activedescendant={activeOptionId}
           aria-controls={listboxId}
           aria-labelledby={label ? labelId : undefined}
           aria-invalid={!!error}

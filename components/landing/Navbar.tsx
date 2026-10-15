@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
@@ -20,6 +21,8 @@ export default function Navbar() {
   const { toggleLang, lang, isRTL, t } = useLang()
   const { theme, toggleTheme } = useTheme()
   const { user } = useAuth()
+  const pathname = usePathname()
+  const previousPathname = useRef(pathname)
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [hoveredLink, setHoveredLink] = useState<string | null>(null)
@@ -30,11 +33,27 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  const linkLabels: Record<string, string> = {
-    commandCenter: isRTL ? 'مركز التحكم' : 'Command Center',
-    aiNetwork:     isRTL ? 'شبكة الذكاء' : 'AI Network',
-    pricing:       isRTL ? 'الأسعار'      : 'Pricing',
-  }
+  useEffect(() => {
+    if (!mobileOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMobileOpen(false) }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (previousPathname.current === pathname) return
+    previousPathname.current = pathname
+    if (!mobileOpen) return
+    const closeOnNavigation = window.setTimeout(() => setMobileOpen(false), 0)
+    return () => window.clearTimeout(closeOnNavigation)
+  }, [mobileOpen, pathname])
+
+  const linkLabel = (key: string) => key === 'commandCenter' ? t.nav.commandCenter : key === 'aiNetwork' ? t.nav.aiNetwork : t.pricing.title
 
   return (
     <nav
@@ -75,7 +94,7 @@ export default function Navbar() {
                 transition={springs.snap}
                 onMouseEnter={() => setHoveredLink(href)}
               >
-                {linkLabels[labelKey]}
+                {linkLabel(labelKey)}
                 {hoveredLink === href && (
                   <motion.div
                     layoutId="nav-underline"
@@ -140,6 +159,9 @@ export default function Navbar() {
           <button
             className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-transparent hover:border-accent-secondary hover:text-accent-secondary transition-colors duration-200 text-text-secondary"
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label={mobileOpen ? (isRTL ? 'إغلاق القائمة' : 'Close menu') : (isRTL ? 'فتح القائمة' : 'Open menu')}
+            aria-expanded={mobileOpen}
+            aria-controls="landing-mobile-menu"
           >
             {mobileOpen ? '✕' : '☰'}
           </button>
@@ -150,6 +172,9 @@ export default function Navbar() {
           {mobileOpen && (
             <motion.div
               key="mobile-menu"
+              id="landing-mobile-menu"
+              role="region"
+              aria-label={isRTL ? 'قائمة التنقل' : 'Navigation menu'}
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -163,7 +188,7 @@ export default function Navbar() {
                   className="block py-2.5 px-3 text-sm font-medium rounded-lg text-text-secondary hover:text-accent-secondary"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {linkLabels[labelKey]}
+                  {linkLabel(labelKey)}
                 </a>
               ))}
               <div className="flex gap-2 px-3 pt-3">

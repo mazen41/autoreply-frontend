@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Clock, Save, X } from 'lucide-react';
 import Select from './ui/Select';
+import Switch from './ui/Switch';
+import Checkbox from './ui/Checkbox';
 
 export default function AwayMessageBuilder({ businessId }: { businessId: number }) {
   const [enabled, setEnabled] = useState(false);
@@ -103,25 +105,7 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
 
       {/* Enable Toggle */}
       <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <label className="flex items-center justify-between cursor-pointer">
-          <div>
-            <span className="font-medium text-gray-900 dark:text-white">
-              Enable Away Messages
-            </span>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              Send automatic replies outside business hours
-            </p>
-          </div>
-          <div className="relative">
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => setEnabled(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-info dark:peer-focus:ring-info rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-info" />
-          </div>
-        </label>
+        <Switch checked={enabled} onChange={setEnabled} label="Enable Away Messages" description="Send automatic replies outside business hours" />
       </div>
 
       {/* Away Message */}
@@ -186,19 +170,13 @@ export default function AwayMessageBuilder({ businessId }: { businessId: number 
                 }}
                 className="p-2 border border-gray-300 dark:border-gray-600 rounded dark:bg-gray-600 dark:text-white"
               />
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hour.active}
-                  onChange={(e) => {
+              <div className="flex items-center gap-2">
+                <Checkbox label="Active" checked={hour.active} onChange={(checked) => {
                     const newHours = [...hours];
-                    newHours[hour.day].active = e.target.checked;
+                    newHours[hour.day].active = checked;
                     setHours(newHours);
-                  }}
-                  className="w-4 h-4 text-info rounded"
-                />
-                <span className="text-sm text-gray-600 dark:text-gray-300">Active</span>
-              </label>
+                  }} />
+              </div>
             </div>
           ))}
         </div>

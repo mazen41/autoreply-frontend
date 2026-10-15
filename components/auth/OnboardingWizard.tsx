@@ -260,9 +260,7 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
             {isRTL ? 'العملة' : 'Currency'}
-            <select value={data.currency} onChange={e => setData({ ...data, currency: e.target.value })} className="mt-1.5 w-full px-3 py-3 rounded-xl text-sm" style={inputStyle}>
-              {['SAR','EGP','AED','KWD','BHD','QAR','OMR','JOD','MAD','TND','USD','EUR','GBP'].map(code => <option key={code} value={code}>{code}</option>)}
-            </select>
+            <Select value={data.currency} onChange={e => setData({ ...data, currency: e.target.value })} options={['SAR','EGP','AED','KWD','BHD','QAR','OMR','JOD','MAD','TND','USD','EUR','GBP'].map(code => ({ value: code, label: code }))} />
           </label>
           <label className="block text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
             {isRTL ? 'المنطقة الزمنية' : 'Timezone'}

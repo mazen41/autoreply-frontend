@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useId, useRef, useState } from 'react'
 
 export interface ModalProps {
   isOpen: boolean
@@ -11,6 +11,7 @@ export interface ModalProps {
   footer?: React.ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
   className?: string
+  ariaLabel?: string
 }
 
 export default function Modal({
@@ -22,28 +23,64 @@ export default function Modal({
   footer,
   size = 'md',
   className = '',
+  ariaLabel,
 }: ModalProps) {
-  useEffect(() => {
-    if (!isOpen) return
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  const titleId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const returnFocusRef = useRef<HTMLElement | null>(null)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const onCloseRef = useRef(onClose)
+  const [shouldRender, setShouldRender] = useState(isOpen)
+
+  useEffect(() => { onCloseRef.current = onClose }, [onClose])
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    // A modal reopened after its exit timer has unmounted it must remount for the entry animation.
+    if (isOpen) setShouldRender(true) // eslint-disable-line react-hooks/set-state-in-effect -- exit animation lifecycle state
+    else if (shouldRender) closeTimerRef.current = setTimeout(() => setShouldRender(false), 180)
+    return () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current) }
+  }, [isOpen, shouldRender])
+
+  useEffect(() => {
+    if (!isOpen) return
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const focusInitial = window.setTimeout(() => {
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusables = dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ;(focusables[0] || dialog).focus()
+    }, 0)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onCloseRef.current(); return }
+      if (e.key !== 'Tab') return
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusables = Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+      if (!focusables.length) { e.preventDefault(); dialog.focus(); return }
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) { e.preventDefault(); first.focus() }
     }
+    window.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.body.style.overflow = ''
+      window.clearTimeout(focusInitial)
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = previousOverflow
+      window.setTimeout(() => returnFocusRef.current?.focus(), 0)
     }
   }, [isOpen])
 
-  if (!isOpen) return null
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
+  if (!shouldRender) return null
 
   const sizeStyles = {
     sm: 'max-w-md',
@@ -55,10 +92,10 @@ export default function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-150 motion-reduce:transition-none ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} aria-hidden={!isOpen}>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-150 motion-reduce:transition-none ${isOpen ? 'opacity-100' : 'opacity-0'}`}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -67,13 +104,17 @@ export default function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full ${sizeStyles[size]} bg-surface-overlay border border-border rounded-2xl shadow-lg overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={!title ? ariaLabel || 'Dialog' : undefined}
+        tabIndex={-1}
+        ref={dialogRef}
+        className={`relative w-full ${sizeStyles[size]} bg-surface-overlay border border-border rounded-2xl shadow-lg overflow-hidden z-10 transition-all duration-150 motion-reduce:transition-none ${isOpen ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-[0.98] opacity-0'} ${className}`}
       >
         {(title || description) && (
           <div className="px-6 pt-5 pb-4 border-b border-border/60 flex items-start justify-between gap-4">
             <div>
               {title && (
-                <h3 className="text-base font-semibold text-text-primary tracking-tight">
+                <h3 id={titleId} className="text-base font-semibold text-text-primary tracking-tight">
                   {title}
                 </h3>
               )}

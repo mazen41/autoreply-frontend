@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useLang } from '../../../../lib/LangContext'
 import { RefreshCw, Copy, AlertTriangle, Info, Bug, AlertCircle } from 'lucide-react'
 import Select from '../../../../components/ui/Select'
+import Checkbox from '../../../../components/ui/Checkbox'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -94,15 +95,7 @@ export default function SystemLogsPage() {
           <p className="text-xs text-[var(--text-secondary)]">{L('Real-time application log stream', 'بث سجلات التطبيق في الوقت الفعلي')}</p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="flex items-center gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={e => setAutoRefresh(e.target.checked)}
-              className="rounded"
-            />
-            {L('Auto-refresh', 'تحديث تلقائي')}
-          </label>
+          <Checkbox checked={autoRefresh} onChange={setAutoRefresh} label={L('Auto-refresh', 'تحديث تلقائي')} className="text-xs" />
           <button
             onClick={fetchLogs}
             disabled={loading}

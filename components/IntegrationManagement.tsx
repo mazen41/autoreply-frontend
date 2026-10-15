@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, Plus, Trash2, TestTube, Globe } from 'lucide-react';
+import Checkbox from './ui/Checkbox';
 
 function authHeaders(json = false) {
   const token = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '';
@@ -142,27 +143,12 @@ export default function IntegrationManagement({ businessId }: { businessId: numb
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {availableEvents.map((event) => (
-                  <label key={event} className="flex items-center gap-2 p-2 border border-gray-200 dark:border-gray-600 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={newWebhook.events.includes(event)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewWebhook({
-                            ...newWebhook,
-                            events: [...newWebhook.events, event],
-                          });
-                        } else {
-                          setNewWebhook({
-                            ...newWebhook,
-                            events: newWebhook.events.filter((e) => e !== event),
-                          });
-                        }
-                      }}
-                      className="w-4 h-4 text-info rounded"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{event}</span>
-                  </label>
+                  <div key={event} className="p-2 border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+                    <Checkbox label={event} checked={newWebhook.events.includes(event)} onChange={(checked) => setNewWebhook({
+                      ...newWebhook,
+                      events: checked ? [...newWebhook.events, event] : newWebhook.events.filter((item) => item !== event),
+                    })} />
+                  </div>
                 ))}
               </div>
             </div>

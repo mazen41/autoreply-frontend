@@ -16,6 +16,7 @@ import TelegramConnect from '../../../components/channels/TelegramConnect'
 import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 import ShopifyConnect from '../../../components/channels/ShopifyConnect'
 import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
+import Checkbox from '../../../components/ui/Checkbox'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import {
   Radio,
@@ -576,10 +577,7 @@ export default function ChannelsPage() {
             ))}
           </ul>
           <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
-            <label className="flex items-start gap-2 text-xs text-text-secondary">
-              <input type="checkbox" className="mt-0.5" checked={goLiveSettings.consent_policy_acknowledged} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: event.target.checked })} />
-              <span>I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored. <a className="text-brand underline" href="/privacy">Privacy policy</a></span>
-            </label>
+            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored. <a className="text-brand underline" href="/privacy">Privacy policy</a></>} className="text-xs" />
             <label className="space-y-1 text-xs text-text-secondary">Human handoff notification email
               <input type="email" className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm" value={goLiveSettings.handoff_notification_email || ''} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, handoff_notification_email: event.target.value })} placeholder="support@example.com" />
             </label>

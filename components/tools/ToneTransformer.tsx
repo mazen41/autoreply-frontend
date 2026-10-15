@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
 import { useAuth } from '@/lib/AuthContext'
 import Link from 'next/link'
+import RadioGroup from '../ui/Radio'
 
 const transformations = [
   { value: 'formal-gulf', labelAr: 'عربي فصحى → لهجة خليجية', labelEn: 'Formal Arabic → Gulf Dialect' },
@@ -83,25 +84,7 @@ export default function ToneTransformer() {
           <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
             نوع التحويل / Transformation Type
           </label>
-          <div className="grid grid-cols-1 gap-2">
-            {transformations.map((t) => (
-              <label key={t.value} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: transformation === t.value ? 'var(--accent-subtle)' : 'var(--surface)', border: transformation === t.value ? '1px solid var(--accent-focus)' : '1px solid var(--border)' }}>
-                <input
-                  type="radio"
-                  name="transformation"
-                  value={t.value}
-                  checked={transformation === t.value}
-                  onChange={(e) => setTransformation(e.target.value)}
-                  className="w-4 h-4"
-                />
-                <div className="text-sm">
-                  <div style={{ color: 'var(--text-primary)' }}>{t.labelAr}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{t.labelEn}</div>
-                </div>
-              </label>
-            ))}
-          </div>
+          <RadioGroup orientation="vertical" value={transformation} onChange={setTransformation} options={transformations.map((item) => ({ value: item.value, label: item.labelAr, description: item.labelEn }))} className="grid grid-cols-1 gap-2" />
         </div>
 
         <div>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Select from '../ui/Select'
+import Checkbox from '../ui/Checkbox'
 
 interface WorkflowStep {
   id: string
@@ -82,12 +83,7 @@ export default function AutomationBuilder({ onSave }: AutomationBuilderProps) {
 
       <div style={{ marginBottom: '20px' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
-          <input
-            type="checkbox"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-          />
-          Active
+          <Checkbox checked={isActive} onChange={setIsActive} label="Active" />
         </label>
       </div>
 

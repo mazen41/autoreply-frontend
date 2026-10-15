@@ -5,6 +5,9 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Bot, Check, ChevronLeft, ChevronRight, LoaderCircle, Search, Store, X } from 'lucide-react'
 import ChannelIcon from '../ui/ChannelIcon'
 import Select from '../ui/Select'
+import Checkbox from '../ui/Checkbox'
+import RadioGroup from '../ui/Radio'
+import Switch from '../ui/Switch'
 import { useLang } from '../../lib/LangContext'
 import { translations } from '../../lib/i18n'
 import { getCommunicationChannels, isCommunicationChannel } from './botWizardUtils'
@@ -130,10 +133,7 @@ const ChannelCard = memo(function ChannelCard({
               <h3 className="truncate text-sm font-semibold text-text-primary">{channel.page_name || channel.page_id || `Account #${channel.id}`}</h3>
               <p className="mt-1 truncate text-xs text-text-muted">{channel.type} · {channel.page_id || channel.id}</p>
             </div>
-            <label className="flex shrink-0 items-center gap-2 text-xs font-medium text-text-secondary">
-              <span className="sr-only">{channel.page_name || channel.type}</span>
-              <input type="checkbox" checked={selected} onChange={() => onToggle(channel.id)} className="size-4 accent-[var(--accent)]" />
-            </label>
+            <Checkbox checked={selected} onChange={() => onToggle(channel.id)} label={channel.page_name || channel.type} className="shrink-0" />
           </div>
           {selected && (
             <div className="mt-4 space-y-3 border-t border-border/70 pt-3">
@@ -150,14 +150,11 @@ const ChannelCard = memo(function ChannelCard({
                 </div>
               )}
               {communicationChannel && <div>
-                <label htmlFor={`channel-store-${channel.id}`} className="mb-1.5 block text-xs font-medium text-text-secondary">{copy.storeRoute}</label>
-                <select id={`channel-store-${channel.id}`} value={routeId ?? ''}
-                  onChange={(event) => onRouteChange(channel.id, event.target.value ? Number(event.target.value) : null)}
-                  className="w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40">
-                  <option value="">{enabledStoreIds.length === 1 ? copy.automatic : copy.useBotDefault}</option>
-                  {invalidRoute && <option value={String(routeId)} disabled>{copy.invalidRoute}</option>}
-                  {stores.filter((store) => enabledStoreIds.includes(store.id)).map((store) => <option key={store.id} value={store.id}>{getStoreLabel(store)}</option>)}
-                </select>
+                <Select id={`channel-store-${channel.id}`} label={copy.storeRoute} value={routeId ?? ''} onChange={(event) => onRouteChange(channel.id, event.target.value ? Number(event.target.value) : null)} options={[
+                  { value: '', label: enabledStoreIds.length === 1 ? copy.automatic : copy.useBotDefault },
+                  ...(invalidRoute ? [{ value: String(routeId), label: copy.invalidRoute, disabled: true }] : []),
+                  ...stores.filter((store) => enabledStoreIds.includes(store.id)).map((store) => ({ value: String(store.id), label: getStoreLabel(store) })),
+                ]} />
                 <p role={invalidRoute ? 'alert' : undefined} className={`mt-2 text-xs ${invalidRoute ? 'text-error' : 'text-text-muted'}`}>
                   {invalidRoute ? copy.invalidRoute : effectiveStore ? `${copy.effectiveStore} ${getStoreLabel(effectiveStore)}` : copy.unresolved}
                 </p>
@@ -602,10 +599,9 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                       {touched.name && fieldErrors.name && <p id="bot-name-error" className="mt-1 text-xs text-error">{fieldErrors.name}</p>}
                     </div>
                     <div>
-                      <label htmlFor="bot-status" className="mb-1.5 block text-sm font-medium text-text-secondary">{copy.status}</label>
-                      <select id="bot-status" value={status} onChange={(event) => { setStatus(event.target.value as 'active' | 'inactive' | 'draft'); markDirty() }} className="w-full rounded-xl border border-border bg-surface px-3.5 py-3 text-sm text-text-primary outline-none focus:border-accent">
-                        <option value="active">{copy.active}</option><option value="inactive">{copy.inactive}</option><option value="draft">{copy.draft}</option>
-                      </select>
+                      <Select id="bot-status" label={copy.status} value={status} onChange={(event) => { setStatus(event.target.value as 'active' | 'inactive' | 'draft'); markDirty() }} options={[
+                        { value: 'active', label: copy.active }, { value: 'inactive', label: copy.inactive }, { value: 'draft', label: copy.draft },
+                      ]} />
                     </div>
                   </div>
                 </section>
@@ -675,23 +671,20 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                     {connectedCommerceStores.map((store) => {
                       const selected = ecommerceConnectionIds.includes(store.id)
                       return <div key={store.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3.5">
-                        <label className="flex min-w-0 flex-1 items-center gap-3 text-sm text-text-primary">
-                          <input type="checkbox" checked={selected} onChange={() => {
+                        <div className="flex min-w-0 flex-1 items-center gap-3 text-sm text-text-primary">
+                          <Checkbox checked={selected} onChange={() => {
                             markDirty()
                             const next = selected ? ecommerceConnectionIds.filter((id) => id !== store.id) : [...ecommerceConnectionIds, store.id]
                             setEcommerceConnectionIds(next)
                             if (selected && defaultEcommerceConnectionId === store.id) setDefaultEcommerceConnectionId(next[0] ?? null)
                             else if (!selected && defaultEcommerceConnectionId === null) setDefaultEcommerceConnectionId(store.id)
-                          }} className="size-4 accent-[var(--accent)]" />
+                          }} label={getStoreLabel(store)} />
                           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface-elevated text-[10px] font-bold uppercase text-text-secondary">{store.type.slice(0, 2)}</span>
-                          <span className="min-w-0"><span className="block truncate font-medium">{store.page_name || store.page_id || `Store #${store.id}`}</span><span className="mt-0.5 block truncate text-xs text-text-muted">{store.page_id || store.type}</span></span>
-                        </label>
-                        <label className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs ${selected && defaultEcommerceConnectionId === store.id ? 'bg-accent/10 font-semibold text-accent' : 'text-text-muted'}`}>
-                          <input type="radio" name="default-commerce-connection" aria-label={`${copy.default}: ${store.page_name || store.type}`} checked={selected && defaultEcommerceConnectionId === store.id} disabled={!selected} onChange={() => { setDefaultEcommerceConnectionId(store.id); markDirty() }} className="accent-[var(--accent)]" />
-                          {selected && defaultEcommerceConnectionId === store.id ? copy.default : copy.setDefault}
-                        </label>
+                          <span className="min-w-0"><span className="block truncate text-xs text-text-muted">{store.page_id || store.type}</span></span>
+                        </div>
                       </div>
                     })}
+                    <div className="rounded-xl border border-border p-3"><p className="mb-3 text-xs font-semibold text-text-secondary">{copy.default}</p><RadioGroup orientation="horizontal" value={String(defaultEcommerceConnectionId ?? '')} onChange={(value) => { setDefaultEcommerceConnectionId(Number(value)); markDirty() }} options={connectedCommerceStores.filter((store) => ecommerceConnectionIds.includes(store.id)).map((store) => ({ value: String(store.id), label: getStoreLabel(store) }))} /></div>
                   </div>}
                   {defaultEcommerceConnectionId !== null && !connectedCommerceStores.some((store) => store.id === defaultEcommerceConnectionId && ecommerceConnectionIds.includes(store.id)) && <div role="alert" className="mt-2 flex flex-wrap items-center gap-2 text-xs text-error"><span>{copy.invalidRoute}</span><button type="button" onClick={() => { setDefaultEcommerceConnectionId(null); markDirty() }} className="font-semibold underline">{copy.clearDefault}</button></div>}
                 </section>
@@ -718,11 +711,11 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                     return <article key={`comments-${channel.id}`} className="mt-4 rounded-2xl border border-border bg-surface p-4">
                       <div className="mb-3"><h4 className="text-sm font-semibold text-text-primary">{copy.commentAutomation}: {channel.page_name || channel.type}</h4><p className="mt-1 text-xs text-text-muted">{copy.commentAutomationHint}</p></div>
                       <div className="space-y-3">
-                        <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.enabled} onChange={(event) => update({ enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentEnable}</label>
+                        <Switch checked={value.enabled} onChange={(enabled) => update({ enabled })} label={copy.commentEnable} />
                         {value.enabled && <div className="space-y-4 border-s border-border ps-4">
-                          <label className="flex items-start gap-2 text-sm text-text-secondary"><input type="checkbox" checked={value.public_reply_enabled} onChange={(event) => update({ public_reply_enabled: event.target.checked })} className="mt-0.5 size-4 accent-[var(--accent)]" />{copy.commentPublicReply}</label>
+                          <Switch checked={value.public_reply_enabled} onChange={(enabled) => update({ public_reply_enabled: enabled })} label={copy.commentPublicReply} />
                           <fieldset><legend className="mb-2 text-xs font-semibold text-text-secondary">{copy.commentPublicInfo}</legend><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                            {categories.map(([category, label]) => <label key={category} className="flex items-center gap-2 text-xs text-text-secondary"><input type="checkbox" checked={value.settings.public_information.includes(category)} onChange={(event) => updateSettings({ public_information: event.target.checked ? [...value.settings.public_information, category] : value.settings.public_information.filter((item) => item !== category) })} className="size-3.5 accent-[var(--accent)]" />{label}</label>)}
+                            {categories.map(([category, label]) => <Checkbox key={category} checked={value.settings.public_information.includes(category)} onChange={(checked) => updateSettings({ public_information: checked ? [...value.settings.public_information, category] : value.settings.public_information.filter((item) => item !== category) })} label={label} />)}
                           </div></fieldset>
                           <label className="block text-xs font-medium text-text-secondary">{copy.commentFallback}<textarea value={value.settings.fallback_response} maxLength={300} onChange={(event) => updateSettings({ fallback_response: event.target.value })} className="mt-1.5 min-h-20 w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" /></label>
                           <label className="block text-xs font-medium text-text-secondary">{copy.commentTriggers}<input value={commentKeywordDrafts[channel.id]?.trigger ?? value.settings.trigger_keywords.join(', ')} onChange={(event) => { markDirty(); setCommentKeywordDrafts((current) => ({ ...current, [channel.id]: { trigger: event.target.value, excluded: current[channel.id]?.excluded ?? value.settings.excluded_keywords.join(', ') } })) }} placeholder={copy.commentKeywordsPlaceholder} className="mt-1.5 w-full rounded-xl border border-border bg-surface-elevated px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/40" /></label>
@@ -756,35 +749,33 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                     const assignedChannelIds = existing.map((assignment) => assignment.channel_id).filter((channelId): channelId is number => channelId !== null)
                     return <article key={file.id} className="bg-surface p-4">
                       <div className="flex items-start gap-3">
-                        <input aria-label={`${copy.enableFile} ${file.filename}`} type="checkbox" checked={isAssigned} onChange={() => {
+                        <Checkbox label={`${copy.enableFile} ${file.filename}`} checked={isAssigned} onChange={() => {
                           markDirty()
                           setAssignments((current) => isAssigned ? current.filter((assignment) => assignment.file_id !== file.id) : [...current, { file_id: file.id, channel_id: null }])
-                        }} className="mt-1 size-4 accent-[var(--accent)]" />
+                        }} className="mt-1" />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2"><h4 className="truncate text-sm font-medium text-text-primary">{file.filename}</h4><span className="rounded-md bg-surface-elevated px-2 py-0.5 text-[10px] uppercase text-text-muted">{file.file_type || copy.fileType}</span></div>
                           <p className="mt-1 text-xs text-text-muted">{copy.chunks} {file.chunks_count || 0}</p>
                           {isAssigned && <div className="mt-3 space-y-3">
-                            <label className="flex items-center gap-2 text-xs text-text-secondary">
-                              <input type="checkbox" checked={sharedAssigned} onChange={() => {
+                            <div className="text-xs text-text-secondary">
+                              <Checkbox label={copy.shared} checked={sharedAssigned} onChange={() => {
                                 markDirty()
                                 setAssignments((current) => sharedAssigned
                                   ? current.filter((assignment) => !(assignment.file_id === file.id && assignment.channel_id === null))
                                   : [...current, { file_id: file.id, channel_id: null }])
-                              }} className="size-4 accent-[var(--accent)]" />
-                              {copy.shared}
-                            </label>
+                              }} />
+                            </div>
                             {assignedChannelIds.length > 0 && <div className="max-w-sm">
                               <label htmlFor={`knowledge-scope-${file.id}`} className="mb-1.5 block text-xs font-medium text-text-secondary">{copy.channelScope}</label>
-                              <select id={`knowledge-scope-${file.id}`} multiple size={Math.min(4, Math.max(2, communicationChannels.filter((channel) => selectedChannelIds.includes(channel.id)).length))} value={assignedChannelIds.map(String)} onChange={(event) => {
-                                const channelIds = Array.from(event.target.selectedOptions).map((option) => Number(option.value))
-                                markDirty()
-                                setAssignments((current) => [
-                                  ...current.filter((assignment) => assignment.file_id !== file.id || assignment.channel_id === null),
-                                  ...channelIds.map((channelId) => ({ file_id: file.id, channel_id: channelId })),
-                                ])
-                              }} className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary">
-                                {communicationChannels.filter((channel) => selectedChannelIds.includes(channel.id)).map((channel) => <option key={channel.id} value={channel.id}>{channel.page_name || channel.type}</option>)}
-                              </select>
+                              <div id={`knowledge-scope-${file.id}`} className="mt-2 space-y-2 rounded-lg border border-border bg-surface-elevated p-3" role="group" aria-label={copy.channelScope}>
+                                {communicationChannels.filter((channel) => selectedChannelIds.includes(channel.id)).map((channel) => <Checkbox key={channel.id} checked={assignedChannelIds.includes(channel.id)} onChange={(checked) => {
+                                  markDirty()
+                                  setAssignments((current) => [
+                                    ...current.filter((assignment) => assignment.file_id !== file.id || assignment.channel_id === null || assignment.channel_id !== channel.id || checked),
+                                    ...(checked && !assignedChannelIds.includes(channel.id) ? [{ file_id: file.id, channel_id: channel.id }] : []),
+                                  ])
+                                }} label={`${channel.page_name || channel.page_id || channel.type} · ${channel.type}`} />)}
+                              </div>
                               <p className="mt-1 text-[11px] text-text-muted">{copy.selectChannels}</p>
                             </div>}
                             {assignedChannelIds.length === 0 && communicationChannels.some((channel) => selectedChannelIds.includes(channel.id)) && <button type="button" onClick={() => {

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useLang } from '../../../lib/LangContext'
+import Checkbox from '../../../components/ui/Checkbox'
+import Switch from '../../../components/ui/Switch'
 
 interface Package {
   id: number
@@ -488,24 +490,8 @@ export default function AdminPackagesPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_popular}
-                    onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'الأكثر طلباً' : 'Popular'}</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'نشط' : 'Active'}</span>
-                </label>
+                <Checkbox checked={formData.is_popular} onChange={(checked) => setFormData({ ...formData, is_popular: checked })} label={isRTL ? 'الأكثر طلباً' : 'Popular'} />
+                <Switch checked={formData.is_active} onChange={(checked) => setFormData({ ...formData, is_active: checked })} label={isRTL ? 'نشط' : 'Active'} />
                 <div>
                   <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'الترتيب' : 'Sort Order'}

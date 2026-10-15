@@ -4,15 +4,20 @@ import React from 'react'
 export interface CheckboxProps {
   checked: boolean
   onChange: (checked: boolean) => void
-  label?: string
+  label?: React.ReactNode
   description?: string
   disabled?: boolean
   indeterminate?: boolean
   id?: string
   className?: string
+  name?: string
+  required?: boolean
+  onBlur?: React.FocusEventHandler<HTMLInputElement>
+  ariaInvalid?: boolean
+  ariaDescribedBy?: string
 }
 
-export default function Checkbox({ checked, onChange, label, description, disabled = false, indeterminate = false, id, className = '' }: CheckboxProps) {
+export default function Checkbox({ checked, onChange, label, description, disabled = false, indeterminate = false, id, className = '', name, required, onBlur, ariaInvalid, ariaDescribedBy }: CheckboxProps) {
   const generatedId = React.useId()
   const checkId = id || generatedId
   const ref = React.useRef<HTMLInputElement>(null)
@@ -30,6 +35,11 @@ export default function Checkbox({ checked, onChange, label, description, disabl
           id={checkId}
           checked={checked}
           disabled={disabled}
+          name={name}
+          required={required}
+          onBlur={onBlur}
+          aria-invalid={ariaInvalid}
+          aria-describedby={ariaDescribedBy}
           onChange={e => onChange(e.target.checked)}
           className="sr-only"
         />

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Image as ImageIcon, UploadCloud } from 'lucide-react'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import toast from 'react-hot-toast'
+import Checkbox from '../../../components/ui/Checkbox'
 
 interface ImageAnalysis {
   description?: string
@@ -119,15 +120,7 @@ export default function MultimodalContent() {
             {disclosureLoading ? (
               <p className="mt-3 text-sm text-text-tertiary">Loading disclosure status…</p>
             ) : (
-              <label className="mt-4 flex items-center gap-2 text-sm text-text-primary">
-                <input
-                  type="checkbox"
-                  checked={disclosureAcknowledged}
-                  disabled={disclosureSaving}
-                  onChange={event => saveDisclosure(event.target.checked)}
-                />
-                I acknowledge this media processing disclosure for this business.
-              </label>
+              <Checkbox checked={disclosureAcknowledged} disabled={disclosureSaving} onChange={saveDisclosure} label="I acknowledge this media processing disclosure for this business." className="mt-4 text-sm" />
             )}
           </div>
           {disclosureAcknowledged && <CheckCircle2 className="h-5 w-5 text-success" aria-label="Acknowledged" />}

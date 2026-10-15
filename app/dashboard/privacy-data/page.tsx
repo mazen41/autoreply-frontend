@@ -7,6 +7,7 @@ import { Card, CardContent } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
+import { Select } from '../../../components/ui/Select'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 type Retention = { message_retention_days: number; media_retention_days: number; consent_retention_days: number | null }
@@ -140,7 +141,7 @@ export default function PrivacyDataPage() {
     <Card><CardContent className="space-y-4 p-5">
       <div className="flex items-center gap-3"><Trash2 className="text-error" /><div><h2 className="font-semibold">{t('Erase customer data', 'حذف بيانات العميل')}</h2><p className="text-sm text-muted-foreground">{t('Deletes the customer profile, notes, conversations, messages, media, and consent records. Synced order records remain with customer details anonymized; a suppression record remains.', 'يحذف ملف العميل والملاحظات والمحادثات والرسائل والوسائط وسجلات الموافقة. تبقى الطلبات المتزامنة بعد إزالة بيانات العميل الشخصية، ويُحتفظ بسجل منع التواصل.')}</p></div></div>
       <div className="flex flex-col gap-3 sm:flex-row"><input className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2" placeholder={t('Search name, email, or phone', 'ابحث بالاسم أو البريد أو الهاتف')} value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} /><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy}>{t('Search customers', 'بحث عن العملاء')}</Button></div>
-      <div className="flex flex-col gap-3 sm:flex-row"><select className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2" value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}><option value="">{t('Select a customer', 'اختر عميلًا')}</option>{customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name || t('Unnamed', 'بدون اسم')}{customer.email ? ` · ${customer.email}` : ''}{customer.phone ? ` · ${customer.phone}` : ''}</option>)}</select><Button variant="destructive" onClick={eraseCustomer} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
+      <div className="flex flex-col gap-3 sm:flex-row"><Select className="min-w-0 flex-1" label={t('Customer', 'العميل')} value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)} options={[{ value: '', label: t('Select a customer', 'اختر عميلًا') }, ...customers.map((customer) => ({ value: String(customer.id), label: `${customer.name || t('Unnamed', 'بدون اسم')}${customer.email ? ` · ${customer.email}` : ''}${customer.phone ? ` · ${customer.phone}` : ''}` }))]} /><Button variant="destructive" onClick={eraseCustomer} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
     </CardContent></Card>
 
     <Card><CardContent className="space-y-4 p-5">

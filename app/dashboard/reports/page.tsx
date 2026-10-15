@@ -11,6 +11,7 @@ import MetricCard from '../../../components/ui/MetricCard'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
+import { Select } from '../../../components/ui/Select'
 import Tabs from '../../../components/ui/Tabs'
 import EmptyState from '../../../components/ui/EmptyState'
 import { SkeletonCard } from '../../../components/ui/Skeleton'
@@ -204,12 +205,7 @@ export default function ReportsPage() {
             Hourly rate
             <input type="number" min={0} step="0.01" max={1000000} value={hourlyRate} onChange={(event) => setHourlyRate(Number(event.target.value))} className="h-9 w-36 rounded-md border border-border bg-surface px-2 text-sm text-text-primary" />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-text-secondary">
-            Currency
-            <select value={hourlyRateCurrency} onChange={(event) => setHourlyRateCurrency(event.target.value)} className="h-9 rounded-md border border-border bg-surface px-2 text-sm text-text-primary">
-              {['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => <option key={currency} value={currency}>{currency}</option>)}
-            </select>
-          </label>
+          <Select label="Currency" value={hourlyRateCurrency} onChange={(event) => setHourlyRateCurrency(event.target.value)} options={['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => ({ value: currency, label: currency }))} />
           <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates}>Save estimates</Button>
         </CardContent>
       </Card>

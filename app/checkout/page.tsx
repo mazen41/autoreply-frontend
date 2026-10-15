@@ -6,6 +6,7 @@ import { useLang } from '../../lib/LangContext'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import Switch from '../../components/ui/Switch'
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -187,15 +188,7 @@ function CheckoutContent() {
 
             <div className="mb-6 rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
               {billingCycle === 'monthly' ? (
-                <label className="flex items-start gap-3 text-sm" style={{ color: 'var(--text-primary)' }}>
-                  <input type="checkbox" checked={autoRenew} onChange={event => setAutoRenew(event.target.checked)} className="mt-1" />
-                  <span>
-                    <strong>{isRTL ? 'تجديد تلقائي شهرياً' : 'Automatically renew monthly'}</strong>
-                    <span className="mt-1 block" style={{ color: 'var(--text-secondary)' }}>
-                      {isRTL ? 'اختياري. سيعالج MyFatoorah الدفعات المتكررة. يمكنك إيقاف التجديد من صفحة الفوترة.' : 'Optional. MyFatoorah will process recurring payments. You can turn renewal off from Billing.'}
-                    </span>
-                  </span>
-                </label>
+                <Switch checked={autoRenew} onChange={setAutoRenew} label={isRTL ? 'تجديد تلقائي شهرياً' : 'Automatically renew monthly'} description={isRTL ? 'اختياري. سيعالج MyFatoorah الدفعات المتكررة. يمكنك إيقاف التجديد من صفحة الفوترة.' : 'Optional. MyFatoorah will process recurring payments. You can turn renewal off from Billing.'} />
               ) : (
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                   {isRTL ? 'التجديد السنوي يدوي حالياً. يمكنك التجديد من صفحة الأسعار قبل انتهاء خطتك.' : 'Annual plans renew manually for now. You can renew from Pricing before your plan ends.'}

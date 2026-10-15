@@ -18,6 +18,7 @@ import {
   Lock
 } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
+import Checkbox from '../../../components/ui/Checkbox'
 import MetricCard from '../../../components/ui/MetricCard'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
@@ -453,22 +454,13 @@ export default function ApiKeysContent() {
                         return (
                           <div
                             key={s.id}
-                            onClick={() => toggleScope(s.id)}
-                            className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
+                            className={`p-3 rounded-xl border text-xs transition-all ${
                               isChecked
                                 ? 'bg-brand/10 border-brand/40 text-text-primary'
                                 : 'bg-surface-elevated/40 border-border text-text-secondary hover:border-border-hover'
                             }`}
                           >
-                            <div className="flex items-center justify-between font-semibold mb-1">
-                              <span>{s.label}</span>
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {}} // handled by parent div
-                                className="rounded border-border accent-brand cursor-pointer"
-                              />
-                            </div>
+                            <div className="mb-1"><Checkbox checked={isChecked} onChange={() => toggleScope(s.id)} label={s.label} /></div>
                             <span className="text-[11px] text-text-tertiary block leading-snug">
                               {s.desc}
                             </span>

@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
+import Checkbox from '../ui/Checkbox'
 
 type RegisterField = 'name' | 'email' | 'password' | 'confirm'
 
@@ -168,8 +169,7 @@ export default function RegisterForm() {
 
           <motion.div initial={{ opacity: 0, y: 18, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1, x: termsError ? [0, -7, 7, -5, 5, 0] : 0 }} transition={{ delay: 0.58, duration: termsError ? 0.3 : 0.45 }}>
             <label htmlFor="register-terms" className="flex items-start gap-2.5 text-xs leading-relaxed cursor-pointer" style={{ color: 'var(--text-secondary)' }}>
-              <input id="register-terms" type="checkbox" required checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} onBlur={() => setTouched({ ...touched, terms: true })} aria-invalid={!!termsError} aria-describedby={termsError ? 'register-terms-error' : undefined} className="mt-0.5 h-4 w-4 rounded focus-visible:outline-none focus-visible:ring-2" style={{ accentColor: 'var(--accent)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties} />
-              <span>{isRTL ? 'أوافق على ' : 'I agree to the '}<Link href="/terms" className="font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2" style={{ color: 'var(--accent-secondary)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>{isRTL ? 'شروط الخدمة' : 'Terms of Service'}</Link>{isRTL ? ' و' : ' and '}<Link href="/privacy" className="font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2" style={{ color: 'var(--accent-secondary)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</Link></span>
+              <Checkbox id="register-terms" required checked={termsAccepted} onChange={setTermsAccepted} onBlur={() => setTouched({ ...touched, terms: true })} ariaInvalid={!!termsError} ariaDescribedBy={termsError ? 'register-terms-error' : undefined} label={<>{isRTL ? 'أوافق على ' : 'I agree to the '}<Link href="/terms" className="font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2" style={{ color: 'var(--accent-secondary)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>{isRTL ? 'شروط الخدمة' : 'Terms of Service'}</Link>{isRTL ? ' و' : ' and '}<Link href="/privacy" className="font-bold hover:underline rounded focus-visible:outline-none focus-visible:ring-2" style={{ color: 'var(--accent-secondary)', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</Link></>} />
             </label>
             <AnimatePresence>{termsError && <motion.p id="register-terms-error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mt-1.5 text-xs" style={{ color: 'var(--accent-pink)' }}>{termsError}</motion.p>}</AnimatePresence>
           </motion.div>

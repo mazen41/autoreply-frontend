@@ -20,6 +20,8 @@ export const translations = {
       campaigns: 'الحملات',
       sequences: 'التسلسلات',
       analytics: 'التحليلات',
+      commandCenter: 'مركز التحكم',
+      aiNetwork: 'شبكة الذكاء',
     },
     hero: {
       badge: 'ذكاء اصطناعي · AI Automation',
@@ -390,6 +392,8 @@ export const translations = {
       campaigns: 'Campaigns',
       sequences: 'Sequences',
       analytics: 'Analytics',
+      commandCenter: 'Command Center',
+      aiNetwork: 'AI Network',
     },
     hero: {
       badge: 'AI Automation · ذكاء اصطناعي',

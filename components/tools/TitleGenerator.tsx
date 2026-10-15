@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { callToolsAI, getToolUsageInfo } from '@/lib/ToolsAIService'
 import { useAuth } from '@/lib/AuthContext'
 import Link from 'next/link'
+import RadioGroup from '../ui/Radio'
 
 const titleTypes = [
   { value: 'email', labelAr: 'عنوان بريد إلكتروني', labelEn: 'Email Subject' },
@@ -88,25 +89,7 @@ export default function TitleGenerator() {
           <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
             نوع العنوان / Title Type
           </label>
-          <div className="grid grid-cols-2 gap-2">
-            {titleTypes.map((type) => (
-              <label key={type.value} className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all"
-                style={{ background: titleType === type.value ? 'var(--accent-subtle)' : 'var(--surface)', border: titleType === type.value ? '1px solid var(--accent-focus)' : '1px solid var(--border)' }}>
-                <input
-                  type="radio"
-                  name="titleType"
-                  value={type.value}
-                  checked={titleType === type.value}
-                  onChange={(e) => setTitleType(e.target.value)}
-                  className="w-4 h-4"
-                />
-                <div className="text-sm">
-                  <div style={{ color: 'var(--text-primary)' }}>{type.labelAr}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{type.labelEn}</div>
-                </div>
-              </label>
-            ))}
-          </div>
+          <RadioGroup orientation="horizontal" value={titleType} onChange={setTitleType} options={titleTypes.map((item) => ({ value: item.value, label: item.labelAr, description: item.labelEn }))} className="grid grid-cols-2 gap-2" />
         </div>
 
         <div>

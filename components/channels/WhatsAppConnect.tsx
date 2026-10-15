@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MessageSquare, Check, RefreshCw, X, AlertCircle, Unlink } from 'lucide-react'
 import { useLang } from '../../lib/LangContext'
+import Checkbox from '../ui/Checkbox'
 
 interface WhatsAppConnectProps {
   isConnected: boolean
@@ -247,10 +248,7 @@ export default function WhatsAppConnect({
                     ? 'هذا اتصال WhatsApp Web غير رسمي وقد يؤدي إلى تقييد الرقم. أكد فهمك للمخاطر قبل استئناف الإرسال.'
                     : 'This is an unofficial WhatsApp Web connection and may result in number restrictions. Acknowledge the risk before messaging resumes.'}
                 </p>
-                <label className="flex items-start gap-2 text-[10px] text-text-secondary cursor-pointer">
-                  <input type="checkbox" checked={unofficialRiskAccepted} onChange={event => setUnofficialRiskAccepted(event.target.checked)} className="mt-0.5" />
-                  <span>{isRTL ? 'أفهم المخاطر وأوافق على المتابعة.' : 'I understand the risks and agree to continue.'}</span>
-                </label>
+                <Checkbox checked={unofficialRiskAccepted} onChange={setUnofficialRiskAccepted} label={isRTL ? 'أفهم المخاطر وأوافق على المتابعة.' : 'I understand the risks and agree to continue.'} className="text-[10px]" />
                 <button onClick={saveExistingRiskAcceptance} disabled={!unofficialRiskAccepted || savingRiskAcceptance} className="px-3 py-2 rounded-lg text-[10px] font-bold text-white disabled:opacity-50" style={{ background: '#25D366' }}>
                   {savingRiskAcceptance ? (isRTL ? 'جارٍ الحفظ...' : 'Saving...') : (isRTL ? 'تأكيد المخاطر' : 'Acknowledge risk')}
                 </button>
@@ -293,19 +291,7 @@ export default function WhatsAppConnect({
                   ? 'يربط هذا الخيار عبر جلسة WhatsApp Web وقد يخالف شروط واتساب أو يؤدي إلى تقييد الرقم.'
                   : 'This links through a WhatsApp Web session. It may violate WhatsApp terms or result in number restrictions.'}
               </p>
-              <label className="flex items-start gap-2 text-[10px] text-text-secondary cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={unofficialRiskAccepted}
-                  onChange={(event) => setUnofficialRiskAccepted(event.target.checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  {isRTL
-                    ? 'أفهم المخاطر وأوافق على متابعة الاتصال غير الرسمي.'
-                    : 'I understand these risks and agree to continue with the unofficial connection.'}
-                </span>
-              </label>
+              <Checkbox checked={unofficialRiskAccepted} onChange={setUnofficialRiskAccepted} label={isRTL ? 'أفهم المخاطر وأوافق على متابعة الاتصال غير الرسمي.' : 'I understand these risks and agree to continue with the unofficial connection.'} className="text-[10px]" />
             </div>
 
             {!loading && !qrcode && unofficialRiskAccepted && !error && (

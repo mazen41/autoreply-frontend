@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import Button from '../../../components/ui/Button'
+import { Select } from '../../../components/ui/Select'
+import Checkbox from '../../../components/ui/Checkbox'
 import { Card, CardContent } from '../../../components/ui/Card'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 
@@ -93,9 +95,9 @@ export default function HandoffsPage() {
     <PageHeader title="Handoff inbox" description="Assign customer escalations, set priority and SLA due times, and record how each request was resolved." breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Handoffs' }]} />
     {error && <p role="alert" className="rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error">{error}</p>}
     <Card><CardContent className="flex flex-col gap-3 md:flex-row md:items-end">
-      <label className="text-xs text-text-secondary">Status<select className="mt-1 block w-full rounded-md border bg-surface px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}><option value="open">Open</option><option value="resolved">Resolved</option></select></label>
-      <label className="text-xs text-text-secondary">Priority<select className="mt-1 block w-full rounded-md border bg-surface px-3 py-2 text-sm" value={priority} onChange={(e) => setPriority(e.target.value)}><option value="">All priorities</option><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select></label>
-      <label className="flex h-10 items-center gap-2 rounded-md border px-3 text-sm"><input type="checkbox" checked={overdue} onChange={(e) => setOverdue(e.target.checked)} />Overdue only</label>
+      <Select label="Status" className="min-w-32" value={status} onChange={(e) => setStatus(e.target.value)} options={[{ value: 'open', label: 'Open' }, { value: 'resolved', label: 'Resolved' }]} />
+      <Select label="Priority" className="min-w-40" value={priority} onChange={(e) => setPriority(e.target.value)} options={[{ value: '', label: 'All priorities' }, { value: 'urgent', label: 'Urgent' }, { value: 'high', label: 'High' }, { value: 'normal', label: 'Normal' }, { value: 'low', label: 'Low' }]} />
+      <Checkbox checked={overdue} onChange={setOverdue} label="Overdue only" className="self-center rounded-md border px-3 py-2" />
       <input className="min-w-0 flex-1 rounded-md border bg-surface px-3 py-2 text-sm" placeholder="Search customer or reason" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void load() }} />
       <Button variant="outline" onClick={() => void load()} disabled={loading}><RefreshCw size={15} /> Apply filters</Button>
     </CardContent></Card>
@@ -109,8 +111,8 @@ export default function HandoffsPage() {
           {task.status === 'open' && <Button variant="outline" size="sm" onClick={() => void resolve(task.id)} disabled={busyTask === task.id}><CheckCircle2 size={15} /> Resolve</Button>}
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="text-xs text-text-secondary">Priority<select className="mt-1 block w-full rounded-md border bg-surface px-3 py-2 text-sm" value={task.priority} disabled={task.status !== 'open' || busyTask === task.id} onChange={(e) => void updateTask(task.id, { priority: e.target.value })}><option value="urgent">Urgent</option><option value="high">High</option><option value="normal">Normal</option><option value="low">Low</option></select></label>
-          <label className="text-xs text-text-secondary">Assigned to<select className="mt-1 block w-full rounded-md border bg-surface px-3 py-2 text-sm" value={task.assigned_to || ''} disabled={task.status !== 'open' || busyTask === task.id} onChange={(e) => e.target.value && void fetch(`${API}/handoff-tasks/${task.id}/assign`, { method: 'PATCH', headers: headers(), body: JSON.stringify({ assigned_to: Number(e.target.value) }) }).then(load).catch(() => setError('Could not assign this handoff.'))}><option value="">Unassigned</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name} · {member.role}</option>)}</select></label>
+          <Select label="Priority" className="min-w-32" value={task.priority} disabled={task.status !== 'open' || busyTask === task.id} onChange={(e) => void updateTask(task.id, { priority: e.target.value })} options={[{ value: 'urgent', label: 'Urgent' }, { value: 'high', label: 'High' }, { value: 'normal', label: 'Normal' }, { value: 'low', label: 'Low' }]} />
+          <Select label="Assigned to" className="min-w-48" value={task.assigned_to || ''} disabled={task.status !== 'open' || busyTask === task.id} onChange={(e) => e.target.value && void fetch(`${API}/handoff-tasks/${task.id}/assign`, { method: 'PATCH', headers: headers(), body: JSON.stringify({ assigned_to: Number(e.target.value) }) }).then(load).catch(() => setError('Could not assign this handoff.'))} options={[{ value: '', label: 'Unassigned' }, ...members.map((member) => ({ value: String(member.id), label: `${member.name} · ${member.role}` }))]} />
           <label className="text-xs text-text-secondary">SLA due time<div className="mt-1 flex gap-2"><input type="datetime-local" className="min-w-0 flex-1 rounded-md border bg-surface px-2 py-2 text-sm" value={toLocalDateTime(task.due_at)} disabled={task.status !== 'open' || busyTask === task.id} onChange={(e) => setTasks((current) => current.map((item) => item.id === task.id ? { ...item, due_at: e.target.value ? new Date(e.target.value).toISOString() : null } : item))} onBlur={(e) => void updateTask(task.id, { due_at: e.target.value ? new Date(e.target.value).toISOString() : null })} /></div></label>
         </div>
         {task.resolution_note && <p className="rounded-lg bg-surface-elevated p-3 text-sm"><strong>Resolution note:</strong> {task.resolution_note}</p>}
