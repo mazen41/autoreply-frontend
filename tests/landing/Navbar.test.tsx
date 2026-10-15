@@ -50,7 +50,7 @@ describe('landing navbar mobile navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'فتح القائمة' }))
     await screen.findByRole('region', { name: 'قائمة التنقل' })
     const mobileMenu = screen.getByRole('region', { name: 'قائمة التنقل' })
-    fireEvent.click(within(mobileMenu).getByRole('button', { name: 'EN', exact: true }))
+    fireEvent.click(within(mobileMenu).getByRole('button', { name: 'EN' }))
 
     expect(await within(mobileMenu).findByRole('link', { name: translations.en.nav.commandCenter })).toBeTruthy()
     expect(document.documentElement.dir).toBe('ltr')
