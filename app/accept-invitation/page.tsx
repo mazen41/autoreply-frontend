@@ -4,6 +4,12 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 
+const ROLE_LABELS: Record<string, string> = {
+  manager: 'Manager',
+  agent: 'Agent',
+  viewer: 'Viewer',
+}
+
 export default function AcceptInvitationPage() {
   const { t, isRTL } = useLang()
   const router = useRouter()
@@ -140,14 +146,19 @@ export default function AcceptInvitationPage() {
             {isRTL ? 'دعوتك للانضمام إلى:' : 'You are invited to join:'}
           </p>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {invitation?.business?.business_name}
+            {invitation?.business_name}
           </h3>
           <p className="text-sm text-gray-600 mb-2">
-            {isRTL ? 'بدعوة من:' : 'Invited by:'} {invitation?.inviter?.name}
+            {isRTL ? 'البريد:' : 'Email:'} {invitation?.email}
           </p>
-          <p className="text-sm text-gray-600">
-            {isRTL ? 'الدور:' : 'Role:'} {invitation?.role}
+          <p className="text-sm text-gray-600 mb-2">
+            {isRTL ? 'الدور:' : 'Role:'} {ROLE_LABELS[invitation?.role as string] ?? invitation?.role}
           </p>
+          {invitation?.requires_existing_account_password && (
+            <p className="text-sm text-gray-600">
+              {isRTL ? 'لديك حساب بهذا البريد. ستحتاج إلى كلمة مرورك لقبول الدعوة.' : 'You already have an account with this email. You will need its password to accept.'}
+            </p>
+          )}
         </div>
 
         <div className="space-y-3">

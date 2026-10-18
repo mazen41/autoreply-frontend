@@ -177,6 +177,10 @@ function useUser() {
             || options.find((business) => business.is_primary)
             || options[0]
           if (active) selectBusiness(active.id)
+          else window.localStorage.removeItem('naz_selected_business_id')
+        } else {
+          // Could not verify business list: never keep a stale id that may belong to a removed business.
+          window.localStorage.removeItem('naz_selected_business_id')
         }
       } catch {
         setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })

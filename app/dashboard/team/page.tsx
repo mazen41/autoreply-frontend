@@ -16,6 +16,7 @@ import EmptyState from '../../../components/ui/EmptyState'
 import { SkeletonRow } from '../../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
+import { useBusinessAccess } from '../../../lib/businessAccess'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -84,6 +85,8 @@ export default function TeamPage() {
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [search, setSearch] = useState('')
   const [sending, setSending] = useState(false)
+  const access = useBusinessAccess()
+  const canManageTeam = access.can('manage_team')
 
   useEffect(() => { fetchBusinessId() }, [])
 
@@ -192,14 +195,22 @@ export default function TeamPage() {
         title="Team"
         description="Manage access and permissions for your team members."
         primaryAction={
-          <Button
-            icon={<UserPlus size={14} />}
-            onClick={() => setShowInviteModal(true)}
-          >
-            Invite Member
-          </Button>
+          canManageTeam ? (
+            <Button
+              icon={<UserPlus size={14} />}
+              onClick={() => setShowInviteModal(true)}
+            >
+              Invite Member
+            </Button>
+          ) : undefined
         }
       />
+
+      {!access.loading && access.error && (
+        <div role="alert" className="border border-error/30 bg-error/5 px-4 py-3 text-sm">
+          {access.error} Choose another business from the selector.
+        </div>
+      )}
 
       {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchBusinessId()}>Retry</Button></div>}
 
@@ -301,7 +312,7 @@ export default function TeamPage() {
 
                     {/* Actions */}
                     <div className="flex justify-end">
-                      {member.role !== 'owner' && (
+                      {canManageTeam && member.role !== 'owner' && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -335,8 +346,8 @@ export default function TeamPage() {
                     <p className="text-xs text-text-secondary">{ROLE_CONFIG[invitation.role]?.label || invitation.role} · expires {new Date(invitation.expires_at).toLocaleDateString()}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => void handleInvitation(invitation.id, 'resend')}>Resend</Button>
-                    <Button variant="ghost" size="sm" onClick={() => void handleInvitation(invitation.id, 'revoke')} className="text-error">Revoke</Button>
+                    {canManageTeam && <Button variant="outline" size="sm" onClick={() => void handleInvitation(invitation.id, 'resend')}>Resend</Button>}
+                    {canManageTeam && <Button variant="ghost" size="sm" onClick={() => void handleInvitation(invitation.id, 'revoke')} className="text-error">Revoke</Button>}
                   </div>
                 </div>
               ))}
