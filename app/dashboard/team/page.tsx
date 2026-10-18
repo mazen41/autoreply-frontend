@@ -383,7 +383,11 @@ export default function TeamPage() {
                     <div className="text-left">
                       <div className="font-semibold">{rc.label}</div>
                       <div className="text-[10px] text-text-tertiary mt-0.5">
-                        {role === 'manager' ? 'Can manage settings and automations' : role === 'agent' ? 'Can manage conversations' : 'Read-only access'}
+                        {role === 'manager'
+                          ? 'Runs business operations and support. No team or billing.'
+                          : role === 'agent'
+                            ? 'Handles conversations and assigned work.'
+                            : 'Read-only. Cannot reply, assign, or change anything.'}
                       </div>
                     </div>
                   </button>
