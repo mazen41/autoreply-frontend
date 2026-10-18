@@ -87,6 +87,7 @@ export default function TeamPage() {
   const [sending, setSending] = useState(false)
   const access = useBusinessAccess()
   const canManageTeam = access.can('manage_team')
+  const [owner, setOwner] = useState<{ id: number; name: string; email: string } | null>(null)
 
   useEffect(() => { fetchBusinessId() }, [])
 
@@ -109,7 +110,8 @@ export default function TeamPage() {
       const res = await fetch(`${API}/businesses/${bid}/team`, { headers: authHeaders() })
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
-      setTeamMembers(Array.isArray(data) ? data : (data.data || []))
+      setTeamMembers(Array.isArray(data) ? data : (data.members || data.data || []))
+      setOwner(Array.isArray(data) ? null : (data.owner ?? null))
       const invitationsResponse = await fetch(`${API}/businesses/${bid}/team/invitations`, { headers: authHeaders() })
       if (invitationsResponse.ok) {
         const invitationData = await invitationsResponse.json()
@@ -179,14 +181,20 @@ export default function TeamPage() {
     }
   }
 
-  const filtered = teamMembers.filter(m =>
+  // Owner appears exactly once, as a non-removable row, ahead of team members.
+  const ownerRow: TeamMember | null = owner
+    ? { id: -1, business_id: businessId ?? 0, user_id: owner.id, role: 'owner', is_active: true, invited_at: null, joined_at: null, user: owner }
+    : null
+  const allRows: TeamMember[] = ownerRow ? [ownerRow, ...teamMembers] : teamMembers
+
+  const filtered = allRows.filter(m =>
     !search || m.user.name.toLowerCase().includes(search.toLowerCase()) || m.user.email.toLowerCase().includes(search.toLowerCase())
   )
 
   const stats = {
-    total: teamMembers.length,
+    total: allRows.length,
     agents: teamMembers.filter(m => m.role === 'agent').length,
-    active: teamMembers.filter(m => m.is_active).length,
+    active: allRows.filter(m => m.is_active).length,
   }
 
   return (
