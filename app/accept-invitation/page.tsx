@@ -10,86 +10,105 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Viewer',
 }
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
+
+interface InvitationInfo {
+  email: string
+  role: string
+  business_name: string | null
+  expires_at: string
+  requires_existing_account_password: boolean
+}
+
+function readToken(searchToken: string | null): string | null {
+  if (searchToken) return searchToken
+  if (typeof window === 'undefined') return null
+  return new URLSearchParams(window.location.hash.slice(1)).get('token')
+}
+
 export default function AcceptInvitationPage() {
-  const { t, isRTL } = useLang()
+  const { isRTL } = useLang()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [token, setToken] = useState<string | null>(null)
-  const [tokenReady, setTokenReady] = useState(false)
   const action = searchParams.get('action') // 'reject' if user clicked decline
+  const token = readToken(searchParams.get('token'))
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [invitation, setInvitation] = useState<any>(null)
+  const [invitation, setInvitation] = useState<InvitationInfo | null>(null)
   const [processing, setProcessing] = useState(false)
 
+  // Load once per token. State updates happen after the network call resolves.
   useEffect(() => {
-    const queryToken = searchParams.get('token')
-    const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get('token')
-    setToken(queryToken || fragmentToken)
-    setTokenReady(true)
-  }, [searchParams])
+    let cancelled = false
 
-  useEffect(() => {
-    if (!tokenReady) return
-    if (token) {
-      checkInvitation()
-    } else {
-      setError('Invalid invitation link')
-      setLoading(false)
-    }
-  }, [token, tokenReady])
-
-  const checkInvitation = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/team-invitations/check/${token}`, {
-        headers: { Accept: 'application/json' },
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Invalid invitation')
+    const rejectInvitation = async (tokenValue: string) => {
+      setProcessing(true)
+      try {
+        const response = await fetch(`${API_BASE}/team-invitations/${tokenValue}/reject`, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+        })
+        if (!response.ok) throw new Error('Failed to reject invitation')
+        router.push('/login?message=invitation_rejected')
+      } catch (cause) {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to reject invitation')
+      } finally {
+        if (!cancelled) setProcessing(false)
       }
-
-      const data = await response.json()
-      setInvitation(data)
-      
-      // If action is reject, handle rejection
-      if (action === 'reject') {
-        await handleReject()
-      }
-    } catch (error: any) {
-      setError(error.message || 'Failed to check invitation')
-    } finally {
-      setLoading(false)
     }
-  }
 
-  const handleReject = async () => {
+    const checkInvitation = async (tokenValue: string) => {
+      try {
+        const response = await fetch(`${API_BASE}/team-invitations/check/${tokenValue}`, {
+          headers: { Accept: 'application/json' },
+        })
+        const data = (await response.json().catch(() => ({}))) as { message?: string } & Partial<InvitationInfo>
+        if (!response.ok) throw new Error(data.message || 'Invalid invitation')
+        if (cancelled) return
+        setInvitation(data as InvitationInfo)
+        if (action === 'reject') await rejectInvitation(tokenValue)
+      } catch (cause) {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : 'Failed to check invitation')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    if (token) void checkInvitation(token)
+
+    return () => {
+      cancelled = true
+    }
+  }, [token, action, router])
+
+  const handleDecline = async () => {
+    if (!token) return
     setProcessing(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/team-invitations/${token}/reject`, {
+      const response = await fetch(`${API_BASE}/team-invitations/${token}/reject`, {
         method: 'POST',
         headers: { Accept: 'application/json' },
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to reject invitation')
-      }
-
+      if (!response.ok) throw new Error('Failed to reject invitation')
       router.push('/login?message=invitation_rejected')
-    } catch (error: any) {
-      setError(error.message || 'Failed to reject invitation')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Failed to reject invitation')
     } finally {
       setProcessing(false)
     }
   }
 
   const handleAccept = () => {
-    // Redirect to setup account page with the token
+    // Account setup page completes acceptance with the token.
     router.push(`/setup-account#token=${encodeURIComponent(token || '')}`)
   }
 
-  if (loading) {
+  // A missing token is shown as an invalid link, without waiting on a request.
+  const isLoading = token !== null && loading
+  const errorMessage = token ? error : 'Invalid invitation link'
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -100,7 +119,7 @@ export default function AcceptInvitationPage() {
     )
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg">
@@ -108,7 +127,7 @@ export default function AcceptInvitationPage() {
           <h1 className="text-2xl font-bold mb-2">
             {isRTL ? 'دعوة غير صالحة' : 'Invalid Invitation'}
           </h1>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">{errorMessage}</p>
           <button
             onClick={() => router.push('/login')}
             className="px-6 py-2 bg-info text-white rounded-lg hover:bg-info"
@@ -152,7 +171,7 @@ export default function AcceptInvitationPage() {
             {isRTL ? 'البريد:' : 'Email:'} {invitation?.email}
           </p>
           <p className="text-sm text-gray-600 mb-2">
-            {isRTL ? 'الدور:' : 'Role:'} {ROLE_LABELS[invitation?.role as string] ?? invitation?.role}
+            {isRTL ? 'الدور:' : 'Role:'} {ROLE_LABELS[invitation?.role ?? ''] ?? invitation?.role}
           </p>
           {invitation?.requires_existing_account_password && (
             <p className="text-sm text-gray-600">
@@ -169,9 +188,9 @@ export default function AcceptInvitationPage() {
           >
             {isRTL ? 'قبول الدعوة' : 'Accept Invitation'}
           </button>
-          
+
           <button
-            onClick={handleReject}
+            onClick={handleDecline}
             disabled={processing}
             className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-semibold"
           >
@@ -181,7 +200,7 @@ export default function AcceptInvitationPage() {
 
         <p className="text-xs text-gray-500 text-center mt-4">
           {isRTL ? 'تنتهي هذه الدعوة في:' : 'This invitation expires in:'}{' '}
-          {new Date(invitation?.expires_at).toLocaleDateString()}
+          {invitation ? new Date(invitation.expires_at).toLocaleDateString() : ''}
         </p>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   Users, UserPlus, Shield, Eye, Crown, Trash2,
-  MoreHorizontal, Mail, Search, X
+  Mail, Search
 } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import MetricCard from '../../../components/ui/MetricCard'
@@ -89,8 +89,6 @@ export default function TeamPage() {
   const canManageTeam = access.can('manage_team')
   const [owner, setOwner] = useState<{ id: number; name: string; email: string } | null>(null)
 
-  useEffect(() => { fetchBusinessId() }, [])
-
   const fetchBusinessId = async () => {
     try {
       const selectedBusinessId = getSelectedBusinessId()
@@ -123,6 +121,11 @@ export default function TeamPage() {
       setLoading(false)
     }
   }
+
+  // Mount-time load: the effect intentionally runs once. Its state updates happen
+  // after the request starts, not as a cascade on re-render.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(() => { void fetchBusinessId() }, [])
 
   const handleInvitation = async (invitationId: number, action: 'resend' | 'revoke') => {
     if (!businessId) return
