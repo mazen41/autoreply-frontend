@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { MessageSquare, Check, RefreshCw, X, AlertCircle, Unlink } from 'lucide-react'
 import { useLang } from '../../lib/LangContext'
 import Checkbox from '../ui/Checkbox'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../lib/businessContext'
 
 interface WhatsAppConnectProps {
   isConnected: boolean
@@ -52,8 +53,14 @@ export default function WhatsAppConnect({
     try {
       const token = getToken()
       if (!token) return
+      const businessId = channel?.business_id || getSelectedBusinessId()
       const res = await fetch(`${API}/api/whatsapp/status`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+          ...(businessId ? { 'X-Business-Id': String(businessId) } : {}),
+        },
       })
       if (res.ok) {
         const data = await res.json()
@@ -67,7 +74,7 @@ export default function WhatsAppConnect({
     } catch (e) {
       console.error('Failed to poll WhatsApp status:', e)
     }
-  }, [API, onConnected, stopPolling])
+  }, [API, channel?.business_id, onConnected, stopPolling])
 
   const startPolling = useCallback(() => {
     stopPolling()
@@ -90,10 +97,26 @@ export default function WhatsAppConnect({
         return
       }
 
+      const businessId = channel?.business_id || getSelectedBusinessId()
+      if (!businessId) {
+        setError(isRTL ? 'يرجى اختيار النشاط التجاري أولاً من القائمة العلوية قبل الربط.' : 'Please select a business from the top workspace menu before connecting.')
+        setLoading(false)
+        return
+      }
+
       const res = await fetch(`${API}/api/whatsapp/connect`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unofficial_risk_accepted: true }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          ...getBusinessHeaders(),
+          'X-Business-Id': String(businessId),
+        },
+        body: JSON.stringify({
+          unofficial_risk_accepted: true,
+          business_id: businessId,
+        }),
       })
 
       const data = await res.json()
@@ -121,7 +144,7 @@ export default function WhatsAppConnect({
     } finally {
       setLoading(false)
     }
-  }, [API, checkStatus, onConnected, startPolling, unofficialRiskAccepted])
+  }, [API, channel?.business_id, checkStatus, isRTL, onConnected, startPolling, unofficialRiskAccepted])
 
   useEffect(() => {
     if (!initialIsConnected) {
@@ -143,9 +166,15 @@ export default function WhatsAppConnect({
         await onDisconnect()
       } else {
         const token = getToken()
+        const businessId = channel?.business_id || getSelectedBusinessId()
         const res = await fetch(`${API}/api/whatsapp/disconnect`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            ...getBusinessHeaders(),
+            ...(businessId ? { 'X-Business-Id': String(businessId) } : {}),
+          },
         })
         if (!res.ok) {
           const data = await res.json()
@@ -168,9 +197,16 @@ export default function WhatsAppConnect({
     setError('')
     try {
       const authToken = getToken()
+      const businessId = channel?.business_id || getSelectedBusinessId()
       const response = await fetch(`${API}/api/channels/whatsapp/${channel.id}/accept-unofficial-risk`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json', 'Content-Type': 'application/json' },
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          ...getBusinessHeaders(),
+          ...(businessId ? { 'X-Business-Id': String(businessId) } : {}),
+        },
       })
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.message || 'Could not save risk acknowledgment.')
