@@ -8,8 +8,9 @@ import { getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 
 const API = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api`
-type Contact = { id:number; name:string|null; phone:string|null; email:string|null; avatar:string|null; tags:string[]|null; lead_score:number; custom_fields:Record<string, unknown>|null; conversations_count:number; conversations_max_last_message_at:string|null; created_at:string }
+type Contact = { id:number; name:string|null; phone:string|null; email:string|null; avatar:string|null; tags:string[]|null; lead_score:number; assigned_to:number|null; assignee?:{id:number;name:string}|null; custom_fields:Record<string, unknown>|null; conversations_count:number; conversations_max_last_message_at:string|null; created_at:string }
 type Channel = { id:number; type:string; page_name:string|null; page_id:string; status:string }
+type Assignee = {id:number;name:string;email?:string|null;role:string}
 type ContactDetail = { customer:Contact & { conversations:Array<{id:number; channel?:Channel; status:string; sender_name:string|null; subject:string|null; last_message_at:string|null; created_at:string}>; notes:Array<{id:number; content:string; author?:{name:string}; created_at:string}> }; orders:Array<{id:number; order_number:string|null; status:string|null; fulfillment_status:string|null; total:string|number; currency:string|null; ordered_at:string|null; channel?:Channel}>; consents:Array<{channel:string; scope:string; status:string; source:string; captured_at:string|null}>; comments:Array<{id:number; channel_id:number; platform:string; comment_text:string|null; status:string; public_reply_id:string|null; platform_created_at:string|null}> }
 
 function authHeaders(businessId?:number|null): Record<string,string> {
@@ -23,6 +24,7 @@ export default function ContactsPage() {
   const [businessId,setBusinessId] = useState<number|null>(null)
   const [contacts,setContacts] = useState<Contact[]>([])
   const [channels,setChannels] = useState<Channel[]>([])
+  const [assignees,setAssignees] = useState<Assignee[]>([])
   const [detail,setDetail] = useState<ContactDetail|null>(null)
   const [search,setSearch] = useState('')
   const [stage,setStage] = useState('')
@@ -36,7 +38,7 @@ export default function ContactsPage() {
   const [note,setNote] = useState('')
   const [csvFile,setCsvFile] = useState<File|null>(null)
   const [importPreview,setImportPreview] = useState<{valid_rows:number;invalid_rows:number;errors:Array<{row:number;error:string}>}|null>(null)
-  const [edit,setEdit] = useState({name:'',email:'',phone:'',tags:'',lead_score:0,lifecycle_stage:'new_lead',language:'',source:''})
+  const [edit,setEdit] = useState({name:'',email:'',phone:'',tags:'',lead_score:0,lifecycle_stage:'new_lead',language:'',source:'',assigned_to:''})
   const loadSequence = useRef(0)
   const loadRef = useRef<(id:number,nextPage?:number)=>Promise<void>>(async()=>{})
 
@@ -50,9 +52,10 @@ export default function ContactsPage() {
       if (search.trim()) params.set('search',search.trim())
       if (stage) params.set('lifecycle_stage',stage)
       if (channelId) params.set('channel_id',channelId)
-      const [contactsResponse,channelsResponse] = await Promise.all([
+      const [contactsResponse,channelsResponse,assigneesResponse] = await Promise.all([
         fetch(`${API}/customers?${params}`,{headers}),
         fetch(`${API}/channels`,{headers}),
+        fetch(`${API}/customers/assignees`,{headers}),
       ])
       if (requestSequence !== loadSequence.current) return
       if (!contactsResponse.ok || !channelsResponse.ok) throw new Error(L('Could not load contacts for the selected workspace.','تعذر تحميل جهات الاتصال لمساحة العمل المحددة.'))
@@ -61,6 +64,8 @@ export default function ContactsPage() {
       setPage(contactPayload.current_page || 1); setLastPage(contactPayload.last_page || 1)
       const channelPayload = await channelsResponse.json()
       setChannels(Array.isArray(channelPayload) ? channelPayload.filter((c:Channel)=>!['salla','shopify','woocommerce'].includes(c.type)) : (channelPayload.data || []))
+      const assigneePayload = await assigneesResponse.json()
+      setAssignees(Array.isArray(assigneePayload.assignees) ? assigneePayload.assignees : [])
     } catch (cause) {
       if (requestSequence === loadSequence.current) setError(cause instanceof Error ? cause.message : L('Could not load contacts.','تعذر تحميل جهات الاتصال.'))
     }
@@ -75,7 +80,7 @@ export default function ContactsPage() {
     const value = payload as ContactDetail
     setDetail(value)
     const fields = value.customer.custom_fields || {}
-    setEdit({name:value.customer.name || '',email:value.customer.email || '',phone:value.customer.phone || '',tags:(value.customer.tags || []).join(', '),lead_score:value.customer.lead_score || 0,lifecycle_stage:String(fields.lifecycle_stage || 'new_lead'),language:String(fields.language || ''),source:String(fields.source || '')})
+    setEdit({name:value.customer.name || '',email:value.customer.email || '',phone:value.customer.phone || '',tags:(value.customer.tags || []).join(', '),lead_score:value.customer.lead_score || 0,lifecycle_stage:String(fields.lifecycle_stage || 'new_lead'),language:String(fields.language || ''),source:String(fields.source || ''),assigned_to:value.customer.assigned_to ? String(value.customer.assigned_to) : ''})
     setNotice('')
     void id
   },[headers,L])
@@ -91,7 +96,7 @@ export default function ContactsPage() {
     if(!detail) return
     setSaving(true);setError('');setNotice('')
     try {
-      const response=await fetch(`${API}/customers/${detail.customer.id}`,{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({...edit,tags:edit.tags.split(',').map(x=>x.trim()).filter(Boolean),lead_score:Number(edit.lead_score)})})
+      const response=await fetch(`${API}/customers/${detail.customer.id}`,{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({...edit,assigned_to:edit.assigned_to ? Number(edit.assigned_to) : null,tags:edit.tags.split(',').map(x=>x.trim()).filter(Boolean),lead_score:Number(edit.lead_score)})})
       const payload=await response.json().catch(()=>({}))
       if(!response.ok) throw new Error(payload.message||L('Could not save contact.','تعذر حفظ جهة الاتصال.'))
       setNotice(L('Contact updated.','تم تحديث جهة الاتصال.'));await load(businessId!,page);await loadDetail(detail.customer.id,detail.customer.id)
@@ -142,7 +147,7 @@ export default function ContactsPage() {
       <aside className="rounded-2xl border border-border bg-card p-4">
         {!detail?<div className="flex min-h-64 flex-col items-center justify-center text-center text-sm text-muted-foreground"><Users size={28} className="mb-3"/>{L('Select a contact to view its profile, consent, conversations, notes, and store orders.','اختر جهة اتصال لعرض ملفها وموافقتها ومحادثاتها وملاحظاتها وطلبات المتجر.')}</div>:<div className="space-y-5">
           <div className="flex items-start justify-between"><div><h2 className="text-lg font-semibold">{edit.name||L('Unnamed contact','جهة اتصال بلا اسم')}</h2><p className="text-xs text-muted-foreground">#{detail.customer.id} · {L('Added','تاريخ الإضافة')} {new Date(detail.customer.created_at).toLocaleDateString()}</p></div><button aria-label={L('Close profile','إغلاق الملف')} onClick={()=>setDetail(null)}><X size={18}/></button></div>
-          <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs">{L('Name','الاسم')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.name} onChange={e=>setEdit({...edit,name:e.target.value})}/></label><label className="text-xs">{L('Email','البريد')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.email} onChange={e=>setEdit({...edit,email:e.target.value})}/></label><label className="text-xs">{L('Phone','الهاتف')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.phone} onChange={e=>setEdit({...edit,phone:e.target.value})}/></label><label className="text-xs">{L('Lifecycle stage','مرحلة العميل')}<select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.lifecycle_stage} onChange={e=>setEdit({...edit,lifecycle_stage:e.target.value})}>{['new_lead','qualified','customer','lost'].map(s=><option key={s} value={s}>{s.replace('_',' ')}</option>)}</select></label><label className="text-xs">{L('Tags, comma separated','العلامات، افصل بينها بفاصلة')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.tags} onChange={e=>setEdit({...edit,tags:e.target.value})}/></label><label className="text-xs">{L('Lead score','تقييم العميل')}<input type="number" min="0" max="100" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.lead_score} onChange={e=>setEdit({...edit,lead_score:Number(e.target.value)})}/></label><label className="text-xs">{L('Language','اللغة')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.language} onChange={e=>setEdit({...edit,language:e.target.value})}/></label><label className="text-xs">{L('Source','المصدر')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.source} onChange={e=>setEdit({...edit,source:e.target.value})}/></label></div>
+          <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs">{L('Name','الاسم')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.name} onChange={e=>setEdit({...edit,name:e.target.value})}/></label><label className="text-xs">{L('Email','البريد')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.email} onChange={e=>setEdit({...edit,email:e.target.value})}/></label><label className="text-xs">{L('Phone','الهاتف')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.phone} onChange={e=>setEdit({...edit,phone:e.target.value})}/></label><label className="text-xs">{L('Lifecycle stage','مرحلة العميل')}<select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.lifecycle_stage} onChange={e=>setEdit({...edit,lifecycle_stage:e.target.value})}>{['new_lead','qualified','customer','lost'].map(s=><option key={s} value={s}>{s.replace('_',' ')}</option>)}</select></label><label className="text-xs">{L('Assigned to','مسند إلى')}<select aria-label={L('Assigned to','مسند إلى')} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.assigned_to} onChange={e=>setEdit({...edit,assigned_to:e.target.value})}><option value="">{L('Unassigned','غير مسند')}</option>{assignees.map(person=><option key={person.id} value={person.id}>{person.name} · {person.role}</option>)}</select></label><label className="text-xs">{L('Tags, comma separated','العلامات، افصل بينها بفاصلة')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.tags} onChange={e=>setEdit({...edit,tags:e.target.value})}/></label><label className="text-xs">{L('Lead score','تقييم العميل')}<input type="number" min="0" max="100" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.lead_score} onChange={e=>setEdit({...edit,lead_score:Number(e.target.value)})}/></label><label className="text-xs">{L('Language','اللغة')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.language} onChange={e=>setEdit({...edit,language:e.target.value})}/></label><label className="text-xs">{L('Source','المصدر')}<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={edit.source} onChange={e=>setEdit({...edit,source:e.target.value})}/></label></div>
           <Button disabled={saving} onClick={saveContact}>{L('Save profile','حفظ الملف')}</Button>
           <div className="border-t pt-4"><h3 className="mb-2 flex items-center gap-2 font-medium"><ShoppingBag size={16}/>{L('Synced orders','الطلبات المتزامنة')}</h3>{detail.orders.length?detail.orders.map(o=><div key={o.id} className="border-t py-2 text-sm"><div>{o.order_number||o.id} · {o.status||'—'} · {o.total} {o.currency}</div><p className="text-xs text-muted-foreground">{o.channel?.page_name||o.channel?.type} · {o.ordered_at?new Date(o.ordered_at).toLocaleString():'—'}</p></div>):<p className="text-xs text-muted-foreground">{L('No synced orders matched this contact’s email or phone. Draft checkout state is not counted as an order.','لا توجد طلبات متزامنة تطابق بريد العميل أو هاتفه. لا تُحسب مسودة الدفع طلبًا.')}</p>}</div>
           <div className="border-t pt-4"><h3 className="mb-2 font-medium">{L('Communication consent','موافقة التواصل')}</h3>{detail.consents.length?detail.consents.map((c,i)=><p key={`${c.channel}-${c.scope}-${i}`} className="py-1 text-xs">{c.channel} · {c.scope}: <b>{c.status}</b> · {c.source}</p>):<p className="text-xs text-muted-foreground">{L('No consent record found for this contact identity.','لا يوجد سجل موافقة لهوية جهة الاتصال.')}</p>}</div>
