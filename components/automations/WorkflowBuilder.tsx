@@ -157,7 +157,7 @@ export default function WorkflowBuilder({
   const initial = useMemo(() => {
     const saved = workflow?.trigger
     const sc = saved?.conditions || {}
-    let type = ((saved?.type as TriggerType) || 'message_received') as TriggerType
+    let type = ((saved?.type as TriggerType) || (workflow ? 'message_received' : 'keyword')) as TriggerType
     // The API stores "outside business hours" as message_received + time_condition.
     if (type === 'message_received' && sc.time_condition === 'outside_hours') type = 'business_hours'
     return {
@@ -243,9 +243,8 @@ export default function WorkflowBuilder({
       setActions(acts)
       setOpenAction(acts[0]?.id ?? null)
     } else {
-      const a: Act = { id: uid(), type: 'send_message', delay: 0, config: { message: '' } }
-      setActions([a])
-      setOpenAction(a.id)
+      setActions([])
+      setOpenAction(null)
     }
     setStage('edit')
   }

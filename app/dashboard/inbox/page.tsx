@@ -288,6 +288,7 @@ export default function InboxPage() {
               conversations={conversations}
               selectedId={selectedId}
               loading={loadingConvs}
+              error={error}
               isRTL={isRTL}
               onSelect={handleSelectConversation}
               onRefresh={() => fetchConversations()}
@@ -374,6 +375,7 @@ export default function InboxPage() {
               conversations={conversations}
               selectedId={selectedId}
               loading={loadingConvs}
+              error={error}
               isRTL={isRTL}
               onSelect={handleSelectConversation}
               onRefresh={() => fetchConversations()}

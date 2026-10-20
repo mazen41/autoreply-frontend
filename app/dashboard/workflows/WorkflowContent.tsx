@@ -43,7 +43,7 @@ interface Workflow {
   is_active: boolean
   trigger: { type: string; config?: any; conditions?: any }
   conditions: Array<{ type: string; config: any; operator?: string; comparison?: string }>
-  actions: Array<{ type: string; config: any; delay?: number }>
+  actions: Array<{ type: string; config?: any; delay?: number; message?: string; tag?: string; agent_id?: number }>
   execution_count: number
   last_executed_at: string | null
   created_at: string
@@ -516,38 +516,58 @@ function WorkflowBuilder({
   const [description, setDescription] = useState(workflow?.description || '')
   const [trigger, setTrigger] = useState<{ type: string; config: Record<string, any> }>(() => {
     const saved = workflow?.trigger
-    const type = saved?.type === 'first_contact' ? 'first_contact' : (saved?.type || 'message_received')
+    const type = saved?.type === 'first_contact'
+      ? 'first_contact'
+      : (saved?.type || (workflow ? 'message_received' : 'keyword'))
     const savedConditions = saved?.conditions || {}
     return {
       type,
       config: {
-        keyword: savedConditions.keywords?.[0] || '',
+        keyword: Array.isArray(savedConditions.keywords) ? savedConditions.keywords.join(', ') : savedConditions.keyword || '',
+        tag: Array.isArray(savedConditions.tags) ? savedConditions.tags.join(', ') : savedConditions.tag || '',
         time_condition: savedConditions.time_condition || '',
       },
     }
   })
   const [conditions, setConditions] = useState<Array<{ type: string; config: Record<string, any>; operator?: string; comparison?: string }>>(workflow?.conditions || [])
-  const [actions, setActions] = useState(
-    workflow?.actions?.map((action: any) => {
-      const { type, ...config } = action
-      return { type, config, delay: 0 }
-    }) || [{ type: 'send_message', config: { message: 'Welcome to our store!' }, delay: 0 }]
+  const [actions, setActions] = useState<Array<{ type: string; config: Record<string, any>; delay: number }>>(() =>
+    (workflow?.actions || []).map((action) => {
+      const { type, config, delay, ...rest } = action
+      return { type, config: { ...rest, ...(config || {}) }, delay: delay || 0 }
+    })
   )
   const [saving, setSaving] = useState(false)
+  const [validationError, setValidationError] = useState('')
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      toast.error('Please assign a workflow name')
+    const triggerValues = (trigger.config?.keyword || '').split(',').map((value: string) => value.trim()).filter(Boolean)
+    const triggerTags = (trigger.config?.tag || '').split(',').map((value: string) => value.trim()).filter(Boolean)
+    const hasUnfilteredAutoReply = trigger.type === 'message_received'
+      && conditions.length === 0
+      && actions.some((action) => action.type === 'send_message')
+    const hasIncompleteCondition = conditions.some((condition) => !String(condition.config?.value || '').trim())
+    const invalidAction = actions.find((action) =>
+      (action.type === 'send_message' && !action.config?.message?.trim()) ||
+      (action.type === 'add_tag' && !action.config?.tag?.trim()) ||
+      (action.type === 'assign_agent' && !Number(action.config?.agent_id))
+    )
+    let problem = ''
+    if (!name.trim()) problem = 'Please assign a workflow name.'
+    else if (!trigger.type) problem = 'Please specify a trigger condition.'
+    else if (trigger.type === 'keyword' && triggerValues.length === 0) problem = 'Enter at least one keyword so this workflow has a specific trigger.'
+    else if (trigger.type === 'tag_added' && triggerTags.length === 0) problem = 'Enter the tag that should trigger this workflow.'
+    else if (hasUnfilteredAutoReply) problem = 'Add a condition before using an automatic reply for every inbound message.'
+    else if (hasIncompleteCondition) problem = 'Complete every condition before publishing.'
+    else if (actions.length === 0) problem = 'Add at least one action before publishing.'
+    else if (invalidAction?.type === 'send_message') problem = 'Write the automated message before publishing.'
+    else if (invalidAction?.type === 'add_tag') problem = 'Enter a tag name before publishing.'
+    else if (invalidAction?.type === 'assign_agent') problem = 'Enter an active team member user ID for the assignment action.'
+    if (problem) {
+      setValidationError(problem)
+      toast.error(problem)
       return
     }
-    if (!trigger.type) {
-      toast.error('Please specify a trigger condition')
-      return
-    }
-    if (actions.length === 0) {
-      toast.error('Please add at least one execution action')
-      return
-    }
+    setValidationError('')
 
     setSaving(true)
     try {
@@ -559,11 +579,11 @@ function WorkflowBuilder({
 
       if (!token) throw new Error('Your session expired. Sign in again.')
       const normalizedTrigger = trigger.type === 'keyword'
-        ? { type: 'keyword', conditions: { keywords: [trigger.config?.keyword || ''], match_type: 'any' } }
+        ? { type: 'keyword', conditions: { keywords: triggerValues, match_type: 'any' } }
         : trigger.type === 'business_hours'
           ? { type: 'message_received', conditions: { time_condition: 'outside_hours' } }
           : trigger.type === 'tag_added'
-            ? { type: 'tag_added', conditions: { tags: [trigger.config?.tag || ''].filter(Boolean) } }
+            ? { type: 'tag_added', conditions: { tags: triggerTags } }
           : { type: trigger.type, conditions: {} }
       const response = await fetch(url, {
           method,
@@ -586,11 +606,17 @@ function WorkflowBuilder({
             actions,
           }),
         })
-      if (!response.ok) throw new Error('Workflow could not be saved.')
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        const details = payload?.errors ? Object.values(payload.errors).flat().join(' ') : ''
+        throw new Error(payload?.error || details || payload?.message || `Workflow could not be saved (HTTP ${response.status}).`)
+      }
       toast.success(workflow ? 'Workflow updated' : 'Workflow created successfully')
       onSave()
-    } catch {
-      toast.error('Failed to save workflow')
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Failed to save workflow.'
+      setValidationError(message)
+      toast.error(message)
     } finally {
       setSaving(false)
     }
@@ -621,6 +647,7 @@ function WorkflowBuilder({
       />
 
       <Card className="space-y-6 p-6">
+        {validationError && <p role="alert" className="rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error">{validationError}</p>}
         {/* Core Metadata */}
         <div className="space-y-4">
           <Input
@@ -668,10 +695,11 @@ function WorkflowBuilder({
           )}
           {trigger.type === 'tag_added' && (
             <Input
-              label="Tag to Match"
+              label="Tags to Match"
               value={trigger.config?.tag || ''}
               onChange={(e) => setTrigger({ ...trigger, config: { ...trigger.config, tag: e.target.value } })}
-              placeholder="e.g., VIP"
+              placeholder="e.g., VIP, prospect"
+              helperText="Separate several tags with commas."
             />
           )}
         </div>
@@ -813,6 +841,21 @@ function WorkflowBuilder({
                       setActions(updated)
                     }}
                     placeholder="Tag name (e.g. VIP, Inactive, Wholesale)..."
+                  />
+                )}
+                {act.type === 'assign_agent' && (
+                  <Input
+                    type="number"
+                    min="1"
+                    label="Agent user ID"
+                    helperText="Use the ID of an active team member in this business."
+                    value={act.config?.agent_id || ''}
+                    onChange={(e) => {
+                      const updated = [...actions]
+                      updated[idx].config = { ...updated[idx].config, agent_id: e.target.value ? Number(e.target.value) : '' }
+                      setActions(updated)
+                    }}
+                    placeholder="Active team member user ID"
                   />
                 )}
               </div>

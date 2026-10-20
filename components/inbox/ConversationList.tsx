@@ -35,6 +35,7 @@ interface ConversationListProps {
   conversations: ApiConversation[]
   selectedId: number | null
   loading: boolean
+  error: string | null
   isRTL: boolean
   onSelect: (id: number) => void
   onRefresh: () => void
@@ -46,7 +47,7 @@ interface ConversationListProps {
 }
 
 export default function ConversationList({
-  conversations, selectedId, loading, isRTL, onSelect, onRefresh, onFilterChange, collapsed, onToggleCollapse,
+  conversations, selectedId, loading, error, isRTL, onSelect, onRefresh, onFilterChange, collapsed, onToggleCollapse,
   bots = [], channels = []
 }: ConversationListProps) {
   const [activeTab, setActiveTab] = useState('all')
@@ -290,6 +291,22 @@ export default function ConversationList({
         </div>
       </div>
 
+      {error && sorted.length > 0 && (
+        <div role="alert" className="flex items-center justify-between gap-3 border-b border-amber-500/20 bg-amber-500/5 px-3 py-2">
+          <p className="text-xs text-text-secondary">
+            {L('Could not refresh conversations. Showing the last loaded results.', 'تعذر تحديث المحادثات. يتم عرض آخر النتائج المحمّلة.')}
+          </p>
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            className="shrink-0 text-xs font-semibold text-brand hover:underline disabled:opacity-50"
+          >
+            {L('Retry', 'إعادة المحاولة')}
+          </button>
+        </div>
+      )}
+
       {/* Virtual list */}
       <div ref={parentRef} className="flex-1 overflow-y-auto overflow-x-hidden" style={{ contain: 'strict' }}>
         {loading && sorted.length === 0 ? (
@@ -297,6 +314,22 @@ export default function ConversationList({
             {[...Array(8)].map((_, i) => (
               <ConversationItemSkeleton key={i} />
             ))}
+          </div>
+        ) : sorted.length === 0 && error ? (
+          <div role="alert" className="flex flex-col items-center justify-center h-full py-16 px-4 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-3">
+              <AlertTriangle size={20} className="text-amber-500" />
+            </div>
+            <p className="text-sm font-semibold text-text-secondary mb-1">{L('Could not load conversations', 'تعذر تحميل المحادثات')}</p>
+            <p className="text-xs text-text-tertiary mb-3">{L('Check your connection and try again.', 'تحقق من الاتصال ثم حاول مرة أخرى.')}</p>
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+            >
+              {L('Retry', 'إعادة المحاولة')}
+            </button>
           </div>
         ) : sorted.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-16 px-4 text-center">

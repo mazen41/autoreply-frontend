@@ -105,6 +105,11 @@ export default function SettingsPanel({
           })}
         </div>
         <p className="text-xs text-text-tertiary">Contacts on other channels won&apos;t receive this sequence.</p>
+        {channels.length === 0 && (
+          <p role="status" className="text-xs font-medium text-amber-700">
+            Choose at least one channel before saving. No channel is selected by default.
+          </p>
+        )}
       </div>
 
       <div className="space-y-4 border-t border-border/60 pt-4">

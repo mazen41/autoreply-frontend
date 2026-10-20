@@ -53,7 +53,9 @@ export default function SequenceEditor({ sequenceId }: Props) {
   const [minOrderValue, setMinOrderValue] = useState('')
   const [noReplyValue, setNoReplyValue] = useState(24)
   const [noReplyUnit, setNoReplyUnit] = useState<DelayUnit>('hours')
-  const [channels, setChannels] = useState<ChannelType[]>(['whatsapp'])
+  // Require an explicit channel choice so a new sequence can never silently
+  // target WhatsApp just because the editor was opened.
+  const [channels, setChannels] = useState<ChannelType[]>([])
   const [allowReentry, setAllowReentry] = useState(false)
   const [stopOnReply, setStopOnReply] = useState(false)
   const [steps, setSteps] = useState<SequenceStepUI[]>([])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import PageHeader from '../../../components/ui/PageHeader'
 import { Card, CardContent } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
@@ -46,7 +46,10 @@ export default function AutomationControlsPage() {
   const [workflows, setWorkflows] = useState<Row[]>([])
   const [rolloutFlags, setRolloutFlags] = useState<RolloutFlag[]>([])
   const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const loadGeneration = useRef(0)
+  const lastBusinessId = useRef<number | null>(null)
 
   const headers = useCallback(() => ({ Authorization: `Bearer ${token()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() }), [])
   const request = useCallback(async (url: string, init?: RequestInit) => {
@@ -55,30 +58,62 @@ export default function AutomationControlsPage() {
     return response.json()
   }, [headers])
 
-  const load = useCallback(async (id: number) => {
+  const load = useCallback(async (id: number, clearExisting = false) => {
+    const generation = ++loadGeneration.current
     setError('')
-    const [control, campaignRows, emailRows, sequencePayload, workflowRows, rolloutPayload] = await Promise.all([
-      request(`/businesses/${id}/automation-run-control`),
-      request(`/businesses/${id}/campaigns`),
-      request('/email-campaigns'),
-      request('/sequences'),
-      request('/workflows'),
-      request(`/businesses/${id}/rollout-flags`),
-    ])
-    setPaused(Boolean(control.paused))
-    setCampaigns(Array.isArray(campaignRows) ? campaignRows : [])
-    setEmailCampaigns(emailRows.data || [])
-    setSequences(sequencePayload.data || [])
-    setWorkflows(Array.isArray(workflowRows) ? workflowRows : [])
-    setRolloutFlags(rolloutPayload.flags || [])
+    if (clearExisting) {
+      setPaused(false)
+      setCampaigns([])
+      setEmailCampaigns([])
+      setSequences([])
+      setWorkflows([])
+      setRolloutFlags([])
+    }
+    setLoading(true)
+    try {
+      const [control, campaignRows, emailRows, sequencePayload, workflowRows, rolloutPayload] = await Promise.all([
+        request(`/businesses/${id}/automation-run-control`),
+        request(`/businesses/${id}/campaigns`),
+        request('/email-campaigns'),
+        request('/sequences'),
+        request('/workflows'),
+        request(`/businesses/${id}/rollout-flags`),
+      ])
+      if (generation !== loadGeneration.current) return
+      setPaused(Boolean(control.paused))
+      setCampaigns(Array.isArray(campaignRows) ? campaignRows : [])
+      setEmailCampaigns(emailRows.data || [])
+      setSequences(sequencePayload.data || [])
+      setWorkflows(Array.isArray(workflowRows) ? workflowRows : [])
+      setRolloutFlags(rolloutPayload.flags || [])
+    } catch (cause) {
+      if (generation === loadGeneration.current) {
+        setError(cause instanceof Error ? cause.message : 'Could not load automation controls.')
+      }
+    } finally {
+      if (generation === loadGeneration.current) setLoading(false)
+    }
   }, [request])
 
   useEffect(() => {
     const sync = () => {
       const id = getSelectedBusinessId()
+      const businessChanged = lastBusinessId.current !== id
+      lastBusinessId.current = id
       setBusinessId(id)
-      if (!id) { setError('Select a business to manage automation runs.'); return }
-      load(id).catch((cause) => setError(cause instanceof Error ? cause.message : 'Could not load automation controls.'))
+      if (!id) {
+        loadGeneration.current += 1
+        setPaused(false)
+        setCampaigns([])
+        setEmailCampaigns([])
+        setSequences([])
+        setWorkflows([])
+        setRolloutFlags([])
+        setLoading(false)
+        setError('Select a business to manage automation runs.')
+        return
+      }
+      void load(id, businessChanged)
     }
     sync()
     window.addEventListener('naz:business-changed', sync)
@@ -132,7 +167,7 @@ export default function AutomationControlsPage() {
 
   function rows(title: string, kind: 'campaigns' | 'email-campaigns' | 'sequences' | 'workflows', items: Row[]) {
     return <Card><CardContent className="space-y-3 p-5"><h2 className="font-semibold">{title}</h2>
-      {items.length === 0 ? <p className="text-sm text-muted-foreground">{t('Nothing configured.', 'لا توجد عناصر مهيأة.')}</p> : items.map((row) => {
+      {loading ? <p className="text-sm text-muted-foreground">{t('Loading…', 'جارٍ التحميل…')}</p> : items.length === 0 && error ? <p className="text-sm text-muted-foreground">{t('Could not load automation data.', 'تعذر تحميل بيانات الأتمتة.')}</p> : items.length === 0 ? <p className="text-sm text-muted-foreground">{t('Nothing configured.', 'لا توجد عناصر مهيأة.')}</p> : items.map((row) => {
         const itemPaused = kind === 'sequences' ? row.status === 'paused' : kind === 'workflows' ? row.is_active === false : Boolean(row.paused_at)
         const canToggle = canToggleItem(kind, row)
         const stateLabel = kind === 'campaigns' || kind === 'email-campaigns'
@@ -142,7 +177,7 @@ export default function AutomationControlsPage() {
             : (row.is_active ? t('Active', 'نشط') : t('Paused', 'متوقف مؤقتًا'))
         return <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
           <div><p className="font-medium">{row.name}</p><p className="text-xs text-muted-foreground">{stateLabel}</p></div>
-          {canToggle && <Button variant={itemPaused ? 'outline' : 'destructive'} disabled={busy} onClick={() => toggleItem(kind, row)}>{itemPaused ? t('Resume', 'استئناف') : t('Pause', 'إيقاف مؤقت')}</Button>}
+          {canToggle && <Button variant={itemPaused ? 'outline' : 'destructive'} disabled={busy || loading || Boolean(error)} onClick={() => toggleItem(kind, row)}>{itemPaused ? t('Resume', 'استئناف') : t('Pause', 'إيقاف مؤقت')}</Button>}
         </div>
       })}
     </CardContent></Card>
@@ -153,13 +188,13 @@ export default function AutomationControlsPage() {
     {error && <p role="alert" className="rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error">{error}</p>}
     <Card><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
       <div><h2 className="font-semibold">{t('Business kill switch', 'إيقاف كل الأتمتة')}</h2><p className="text-sm text-muted-foreground">{paused ? t('Pending automated sends are paused and will continue after resume.', 'تم إيقاف الإرسالات الآلية مؤقتًا وستستأنف بعد إعادة التشغيل.') : t('Automated sends are enabled.', 'الإرسالات الآلية مفعلة.')}</p></div>
-      <Button variant={paused ? 'outline' : 'destructive'} disabled={busy || !businessId} onClick={toggleBusiness}>{paused ? t('Resume all', 'استئناف الكل') : t('Pause all', 'إيقاف الكل')}</Button>
+      <Button variant={paused ? 'outline' : 'destructive'} disabled={busy || loading || Boolean(error) || !businessId} onClick={toggleBusiness}>{paused ? t('Resume all', 'استئناف الكل') : t('Pause all', 'إيقاف الكل')}</Button>
     </CardContent></Card>
     <Card><CardContent className="space-y-3 p-5">
       <div><h2 className="font-semibold">{t('Safety behavior', 'سلوكيات الأمان')}</h2><p className="text-sm text-muted-foreground">{t('Platform-wide safety settings are managed globally. Business-specific settings can be managed here when available.', 'تتم إدارة إعدادات الأمان العامة على مستوى المنصة. ويمكن إدارة إعدادات النشاط عند توفرها.')}</p></div>
-      {rolloutFlags.length === 0 ? <p className="text-sm text-muted-foreground">{t('No rollout settings are available.', 'لا توجد إعدادات تفعيل متاحة.')}</p> : rolloutFlags.map((flag) => <div key={flag.key} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+      {loading ? <p className="text-sm text-muted-foreground">{t('Loading settings…', 'جارٍ تحميل الإعدادات…')}</p> : rolloutFlags.length === 0 && error ? <p className="text-sm text-muted-foreground">{t('Could not load safety settings.', 'تعذر تحميل إعدادات الأمان.')}</p> : rolloutFlags.length === 0 ? <p className="text-sm text-muted-foreground">{t('No rollout settings are available.', 'لا توجد إعدادات تفعيل متاحة.')}</p> : rolloutFlags.map((flag) => <div key={flag.key} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
         <div><p className="font-medium">{flag.name}</p><p className="text-sm text-muted-foreground">{flag.description || flag.key}</p><p className="text-xs text-muted-foreground">{flag.global ? t('Enabled globally', 'مفعل على مستوى المنصة') : flag.enabled ? t('Enabled for this business', 'مفعل لهذا النشاط') : t('Off by default', 'متوقف افتراضيًا')}</p></div>
-        {!flag.global && <Button variant={flag.enabled ? 'outline' : 'primary'} disabled={busy || !businessId} onClick={() => toggleRolloutFlag(flag)}>{flag.enabled ? t('Disable', 'تعطيل') : t('Enable', 'تفعيل')}</Button>}
+        {!flag.global && <Button variant={flag.enabled ? 'outline' : 'primary'} disabled={busy || loading || Boolean(error) || !businessId} onClick={() => toggleRolloutFlag(flag)}>{flag.enabled ? t('Disable', 'تعطيل') : t('Enable', 'تفعيل')}</Button>}
       </div>)}
     </CardContent></Card>
     {rows(t('Messaging campaigns', 'الحملات'), 'campaigns', campaigns)}
