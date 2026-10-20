@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect, useRef, useCallback, useId } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { springs } from '../../lib/motion'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -36,6 +36,8 @@ import {
   Rocket,
   HelpCircle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Menu,
   X,
   Search,
@@ -45,6 +47,8 @@ import {
   ExternalLink,
   Check,
   PauseCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -211,6 +215,81 @@ function useUser() {
   return { user, businesses, selectedBusinessId, selectBusiness, loading, authIssue, retry: loadUser }
 }
 
+// ─── NAV ITEM ────────────────────────────────────────────────────────────────
+interface NavItemProps {
+  item: NavItemDef
+  isActive: boolean
+  collapsed: boolean
+  isRTL: boolean
+  onClick: () => void
+}
+
+function NavItem({ item, isActive, collapsed, isRTL, onClick }: NavItemProps) {
+  const Icon = item.icon
+  const label = isRTL ? item.labelAr : item.labelEn
+
+  const linkEl = (
+    <Link
+      href={item.href}
+      onClick={onClick}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={collapsed ? label : undefined}
+      className={[
+        'group relative flex items-center rounded-lg text-xs font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]',
+        collapsed ? 'h-9 w-9 justify-center mx-auto' : `gap-2.5 px-2.5 py-[7px]`,
+        isActive
+          ? 'text-[var(--brand)] font-semibold'
+          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]',
+      ].join(' ')}
+    >
+      {/* Active background pill */}
+      {isActive && (
+        <motion.span
+          layoutId="sidebar-active-pill"
+          className="absolute inset-0 rounded-lg bg-[var(--brand)]/[0.08]"
+          transition={springs.standard}
+        />
+      )}
+
+      {/* Active left/right accent bar */}
+      {isActive && !collapsed && (
+        <motion.span
+          layoutId="sidebar-active-bar"
+          className={[
+            'absolute top-1 bottom-1 w-0.5 rounded-full bg-[var(--brand)]',
+            isRTL ? 'right-0' : 'left-0',
+          ].join(' ')}
+          transition={springs.standard}
+        />
+      )}
+
+      {/* Icon */}
+      <span className="relative z-10 flex shrink-0 items-center justify-center transition-transform duration-150 group-hover:scale-110 group-hover:-translate-y-px motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:translate-y-0">
+        <Icon
+          size={16}
+          className={isActive ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors'}
+        />
+      </span>
+
+      {/* Label */}
+      {!collapsed && (
+        <span className="relative z-10 truncate leading-tight">{label}</span>
+      )}
+    </Link>
+  )
+
+  if (collapsed) {
+    return (
+      <Tooltip content={label} position={isRTL ? 'left' : 'right'}>
+        {linkEl}
+      </Tooltip>
+    )
+  }
+
+  return linkEl
+}
+
+// ─── MAIN LAYOUT ─────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isRTL, toggleLang } = useLang()
   const pathname = usePathname()
@@ -227,18 +306,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userMenuRef = useRef<HTMLDivElement>(null)
   const workspaceMenuRef = useRef<HTMLDivElement>(null)
+  const mainContentId = useId()
 
   useEffect(() => {
     if (authIssue === 'unauthenticated') router.replace('/login')
     if (authIssue === 'verification_required') router.replace('/verify-email')
   }, [authIssue, router])
 
-  // Global Keyboard shortcuts: ⌘K or Ctrl+K for command palette
+  // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
         setCommandPaletteOpen((prev) => !prev)
+      }
+      if (e.key === 'Escape') {
+        setMobileOpen(false)
+        setUserMenuOpen(false)
+        setWorkspaceMenuOpen(false)
+        setHelpModalOpen(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -259,6 +345,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
   const logout = useCallback(() => {
     const token = document.cookie
       .split(';')
@@ -274,20 +365,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login')
   }, [router])
 
-  // Current page breadcrumb
   const currentItem = ALL_ITEMS.find((n) => pathname === n.href || (n.href !== '/dashboard' && pathname.startsWith(n.href)))
   const pageTitle = currentItem ? (isRTL ? currentItem.labelAr : currentItem.labelEn) : isRTL ? 'الرئيسية' : 'Dashboard'
 
+  const isInboxPage = pathname === '/dashboard/inbox'
+
+  // Loading / auth redirect states
   if (authLoading || authIssue === 'unauthenticated' || authIssue === 'verification_required') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-surface-secondary border border-border flex items-center justify-center shadow-xs">
-            <Sparkles className="w-5 h-5 text-brand" />
+          <div className="w-11 h-11 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center shadow-sm">
+            <Sparkles className="w-5 h-5 text-[var(--brand)]" />
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary tracking-wider uppercase">
-            <div className="w-2 h-2 rounded-full bg-brand animate-ping" />
-            Loading NazBiz...
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--text-tertiary)] tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] animate-pulse" />
+            Loading NazBiz…
           </div>
         </div>
       </div>
@@ -297,468 +390,557 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (authIssue === 'unavailable' || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div role="alert" className="max-w-md rounded-xl border border-border bg-surface p-6 text-center">
-          <h1 className="text-base font-bold text-text-primary">Could not load your account</h1>
-          <p className="mt-2 text-sm text-text-secondary">Check your connection and try again. Your dashboard is hidden until your account can be verified.</p>
-          <button type="button" onClick={() => void retryAuth()} className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-text">Try again</button>
+        <div role="alert" className="max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center shadow-md">
+          <h1 className="text-sm font-bold text-[var(--text-primary)]">Could not load your account</h1>
+          <p className="mt-2 text-xs text-[var(--text-secondary)] leading-relaxed">Check your connection and try again.</p>
+          <button type="button" onClick={() => void retryAuth()} className="mt-4 rounded-lg bg-[var(--brand)] px-4 py-2 text-xs font-semibold text-[var(--brand-text)]">
+            Try again
+          </button>
         </div>
       </div>
     )
   }
 
-  const sidebarWidth = collapsed ? 'w-[68px]' : 'w-[248px]'
+  const sidebarW = collapsed ? 68 : 248
 
+  // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background text-text-primary flex">
-      {/* ─── Mobile Sidebar Backdrop ────────────────────────────────────────── */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* ─── Sidebar ───────────────────────────────────────────────────────── */}
-      <aside
-        className={`fixed top-0 bottom-0 z-40 flex flex-col bg-surface border-r border-border transition-all duration-200 ease-out select-none ${
-          isRTL ? 'right-0 border-l border-r-0' : 'left-0'
-        } ${sidebarWidth} ${
-          mobileOpen
-            ? 'translate-x-0'
-            : isRTL
-            ? 'translate-x-full lg:translate-x-0'
-            : '-translate-x-full lg:translate-x-0'
-        }`}
+    <>
+      {/* Skip-to-content link for keyboard users */}
+      <a
+        href={`#${mainContentId}`}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:rounded-lg focus:bg-[var(--brand)] focus:px-4 focus:py-2 focus:text-xs focus:font-bold focus:text-[var(--brand-text)]"
       >
-        {/* Workspace & Brand Header */}
-        <div className="h-16 px-3.5 border-b border-border/80 flex items-center justify-between shrink-0 relative" ref={workspaceMenuRef}>
-          {!collapsed ? (
-            <button
-              type="button"
-              onClick={() => setWorkspaceMenuOpen((v) => !v)}
-              className="flex items-center gap-2.5 w-full p-1.5 -mx-1 rounded-xl hover:bg-surface-elevated transition-colors text-left group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-brand text-brand-text flex items-center justify-center font-black text-sm shadow-xs shrink-0">
-                N
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-text-primary truncate flex items-center gap-1.5">
-                  <span>{selectedBusiness?.name || 'Select business'}</span>
-                </div>
-                <div className="text-[10px] text-text-tertiary truncate">{user?.email || 'Business workspace'}</div>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-text-tertiary group-hover:text-text-primary shrink-0 transition-transform" />
-            </button>
-          ) : (
-            <div className="w-full flex items-center justify-center">
+        {isRTL ? 'انتقل إلى المحتوى' : 'Skip to content'}
+      </a>
+
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-background text-[var(--text-primary)] flex">
+
+        {/* ── Mobile backdrop ─────────────────────────────────────────── */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] lg:hidden"
+              onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ── Sidebar ─────────────────────────────────────────────────── */}
+        <aside
+          role="navigation"
+          aria-label={isRTL ? 'قائمة التنقل الرئيسية' : 'Main navigation'}
+          style={{ width: sidebarW }}
+          className={[
+            'fixed top-0 bottom-0 z-40 flex flex-col bg-[var(--surface)] border-[var(--border)] transition-[width,transform] duration-200 ease-out select-none will-change-transform',
+            isRTL
+              ? 'right-0 border-l translate-x-full lg:translate-x-0'
+              : 'left-0 border-r -translate-x-full lg:translate-x-0',
+            mobileOpen ? '!translate-x-0' : '',
+          ].join(' ')}
+        >
+          {/* ── Brand / Workspace header ──────────────────────────────── */}
+          <div
+            className="relative h-[60px] border-b border-[var(--border)] flex items-center px-3 shrink-0"
+            ref={workspaceMenuRef}
+          >
+            {!collapsed ? (
               <button
                 type="button"
-                onClick={() => setCollapsed(false)}
-                className="w-9 h-9 rounded-lg bg-brand text-brand-text flex items-center justify-center font-bold text-xs shadow-xs hover:bg-brand-hover transition-colors"
-                title="Expand sidebar"
+                onClick={() => setWorkspaceMenuOpen((v) => !v)}
+                aria-expanded={workspaceMenuOpen}
+                aria-haspopup="listbox"
+                aria-label={isRTL ? 'اختيار مساحة العمل' : 'Select workspace'}
+                className="flex items-center gap-2.5 w-full rounded-xl px-1.5 py-1.5 hover:bg-[var(--surface-elevated)] transition-colors text-left group"
               >
-                N
-              </button>
-            </div>
-          )}
-
-          {/* Workspace Dropdown Popover */}
-          {workspaceMenuOpen && !collapsed && (
-            <div className="absolute top-[62px] left-3 right-3 bg-surface-overlay border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-2.5 py-1.5 text-[10px] font-semibold text-text-tertiary uppercase tracking-wider">Businesses</div>
-              {businesses.length ? businesses.map((business) => (
-                <button key={business.id} type="button" onClick={() => { selectBusiness(business.id); setWorkspaceMenuOpen(false); window.location.reload() }}
-                  className={`w-full flex items-center justify-between gap-2 p-2 rounded-lg text-xs font-medium transition-colors ${business.id === selectedBusinessId ? 'bg-brand/10 text-brand' : 'hover:bg-surface-elevated text-text-secondary hover:text-text-primary'}`}>
-                  <span className="truncate">{business.name}</span>
-                  <span className="shrink-0 text-[10px] opacity-70">{business.role}</span>
-                  {business.id === selectedBusinessId && <Check className="w-3.5 h-3.5 shrink-0" />}
-                </button>
-              )) : <div className="px-2.5 py-2 text-xs text-text-tertiary">No businesses available</div>}
-            </div>
-          )}
-        </div>
-
-        {/* ─── Navigation Items ────────────────────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2.5 space-y-5 scrollbar-none">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.groupKey} className="space-y-0.5">
-              {!collapsed ? (
-                <div className="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
-                  {isRTL ? group.labelAr : group.labelEn}
+                {/* Brand mark */}
+                <div className="w-8 h-8 rounded-lg bg-[var(--brand)] text-[var(--brand-text)] flex items-center justify-center font-black text-sm shadow-sm shrink-0" aria-hidden="true">
+                  N
                 </div>
-              ) : (
-                <div className="my-2 border-t border-border/50 mx-2" />
-              )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-bold text-[var(--text-primary)] truncate leading-tight">
+                    {selectedBusiness?.name || (isRTL ? 'اختر عمل' : 'Select business')}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-tertiary)] truncate leading-tight mt-px">
+                    {user?.email || ''}
+                  </div>
+                </div>
+                <ChevronDown
+                  size={13}
+                  className={[
+                    'shrink-0 text-[var(--text-tertiary)] transition-transform duration-150',
+                    workspaceMenuOpen ? 'rotate-180' : '',
+                  ].join(' ')}
+                  aria-hidden="true"
+                />
+              </button>
+            ) : (
+              <Tooltip content={selectedBusiness?.name || 'NazBiz'} position={isRTL ? 'left' : 'right'}>
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(false)}
+                  aria-label={isRTL ? 'توسيع القائمة الجانبية' : 'Expand sidebar'}
+                  className="w-9 h-9 mx-auto rounded-lg bg-[var(--brand)] text-[var(--brand-text)] flex items-center justify-center font-bold text-xs shadow-sm hover:brightness-110 transition-[filter]"
+                >
+                  N
+                </button>
+              </Tooltip>
+            )}
 
-              {group.items.map((item) => {
-                const Icon = item.icon
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== '/dashboard' && pathname.startsWith(item.href))
-                const label = isRTL ? item.labelAr : item.labelEn
-
-                const content = (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium group nav-item ${
-                      collapsed ? 'justify-center px-0' : ''
-                    } ${
-                      isActive
-                        ? 'text-brand font-semibold'
-                        : 'text-text-secondary hover:text-text-primary'
-                    }`}
-                    style={{ transition: 'color 150ms ease' }}
-                  >
-                    {/* Magic Move active indicator — slides between items */}
-                    {isActive && (
-                      <motion.span
-                        layoutId="sidebar-active-indicator"
-                        className={`absolute inset-0 rounded-lg bg-brand/5 ${
-                          isRTL ? 'border-r-2 border-r-brand' : 'border-l-2 border-l-brand'
-                        }`}
-                        transition={springs.standard}
-                      />
-                    )}
-
-                    <motion.span
-                      className="relative z-10 shrink-0 nav-icon"
-                      whileHover={{ scale: 1.1, y: -1 }}
-                      transition={springs.snap}
+            {/* Workspace dropdown */}
+            <AnimatePresence>
+              {workspaceMenuOpen && !collapsed && (
+                <motion.div
+                  role="listbox"
+                  aria-label={isRTL ? 'قائمة الأعمال' : 'Businesses'}
+                  initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                  transition={{ duration: 0.14 }}
+                  className="absolute top-[62px] inset-x-2 bg-[var(--surface-overlay)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-50"
+                >
+                  <div className="px-2.5 py-1 text-[9px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.1em]">
+                    {isRTL ? 'الأعمال' : 'Businesses'}
+                  </div>
+                  {businesses.length ? businesses.map((biz) => (
+                    <button
+                      key={biz.id}
+                      role="option"
+                      aria-selected={biz.id === selectedBusinessId}
+                      type="button"
+                      onClick={() => { selectBusiness(biz.id); setWorkspaceMenuOpen(false); window.location.reload() }}
+                      className={[
+                        'w-full flex items-center justify-between gap-2 p-2 rounded-lg text-xs font-medium transition-colors',
+                        biz.id === selectedBusinessId
+                          ? 'bg-[var(--brand)]/10 text-[var(--brand)]'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-primary)]',
+                      ].join(' ')}
                     >
-                      <Icon
-                        size={18}
-                        className={isActive ? 'text-brand' : 'text-text-tertiary group-hover:text-text-primary transition-colors'}
-                      />
-                    </motion.span>
+                      <span className="truncate">{biz.name}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[9px] opacity-60">{biz.role}</span>
+                        {biz.id === selectedBusinessId && <Check size={12} />}
+                      </div>
+                    </button>
+                  )) : (
+                    <div className="px-2.5 py-2 text-xs text-[var(--text-tertiary)]">
+                      {isRTL ? 'لا توجد أعمال' : 'No businesses'}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-                    {!collapsed && (
-                      <span className="relative z-10 truncate flex-1">{label}</span>
-                    )}
-                  </Link>
+          {/* ── Navigation items ──────────────────────────────────────── */}
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 scrollbar-none">
+            <div className="px-2.5 space-y-4">
+              {NAV_GROUPS.map((group, groupIdx) => (
+                <div key={group.groupKey}>
+                  {/* Section divider in collapsed mode */}
+                  {collapsed ? (
+                    groupIdx > 0 ? <div className="h-px bg-[var(--border)] mx-1.5 mb-2" /> : null
+                  ) : (
+                    <div
+                      className="px-1 pb-1 pt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] select-none"
+                      aria-hidden="true"
+                    >
+                      {isRTL ? group.labelAr : group.labelEn}
+                    </div>
+                  )}
+
+                  <div className={collapsed ? 'flex flex-col items-center gap-0.5' : 'space-y-0.5'} role="list" aria-label={isRTL ? group.labelAr : group.labelEn}>
+                    {group.items.map((item) => {
+                      const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+                      return (
+                        <div key={item.href} role="listitem">
+                          <NavItem
+                            item={item}
+                            isActive={isActive}
+                            collapsed={collapsed}
+                            isRTL={isRTL}
+                            onClick={() => setMobileOpen(false)}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </nav>
+
+          {/* ── Bottom: fixed items + user ────────────────────────────── */}
+          <div className="border-t border-[var(--border)] px-2.5 pt-2 pb-2.5 space-y-0.5 shrink-0">
+            {/* Bottom nav items */}
+            <div role="list" aria-label={isRTL ? 'روابط الحساب' : 'Account links'} className={collapsed ? 'flex flex-col items-center gap-0.5' : 'space-y-0.5'}>
+              {NAV_BOTTOM.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <div key={item.href} role="listitem">
+                    <NavItem
+                      item={item}
+                      isActive={isActive}
+                      collapsed={collapsed}
+                      isRTL={isRTL}
+                      onClick={() => setMobileOpen(false)}
+                    />
+                  </div>
                 )
-
-                if (collapsed) {
-                  return (
-                    <Tooltip key={item.href} content={label} position={isRTL ? 'left' : 'right'}>
-                      {content}
-                    </Tooltip>
-                  )
-                }
-
-                return content
               })}
             </div>
-          ))}
-        </div>
 
-        {/* ─── Bottom Actions & User Profile ──────────────────────────────── */}
-        <div className="p-2.5 border-t border-border/80 shrink-0 space-y-1">
-          {NAV_BOTTOM.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            const label = isRTL ? item.labelAr : item.labelEn
-
-            const content = (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
-                  collapsed ? 'justify-center px-0' : ''
-                } ${
-                  isActive
-                    ? 'bg-brand/10 text-brand font-semibold'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated'
-                }`}
-              >
-                <Icon size={18} className={`shrink-0 transition-colors ${isActive ? 'text-brand' : 'text-text-tertiary group-hover:text-text-primary'}`} />
-                {!collapsed && <span className="truncate">{label}</span>}
-              </Link>
-            )
-
-            if (collapsed) {
-              return (
-                <Tooltip key={item.href} content={label} position={isRTL ? 'left' : 'right'}>
-                  {content}
-                </Tooltip>
-              )
-            }
-            return content
-          })}
-
-          {/* Help Button */}
-          {!collapsed ? (
-            <button
-              type="button"
-              onClick={() => setHelpModalOpen(true)}
-              className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-all"
-            >
-              <div className="flex items-center gap-2.5">
-                <HelpCircle size={18} className="text-text-tertiary" />
-                <span>{isRTL ? 'المساعدة' : 'Help & Support'}</span>
-              </div>
-              <kbd className="text-[10px] text-text-tertiary bg-surface-elevated px-1.5 py-0.5 rounded border border-border">
-                ?
-              </kbd>
-            </button>
-          ) : (
-            <Tooltip content={isRTL ? 'المساعدة' : 'Help & Support'} position={isRTL ? 'left' : 'right'}>
+            {/* Help */}
+            {!collapsed ? (
               <button
                 type="button"
                 onClick={() => setHelpModalOpen(true)}
-                className="w-full flex items-center justify-center p-2 rounded-lg text-text-tertiary hover:text-text-primary hover:bg-surface-elevated"
+                className="w-full flex items-center justify-between px-2.5 py-[7px] rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]"
               >
-                <HelpCircle size={18} />
+                <div className="flex items-center gap-2.5">
+                  <HelpCircle size={16} className="text-[var(--text-tertiary)] shrink-0" aria-hidden="true" />
+                  <span>{isRTL ? 'المساعدة والدعم' : 'Help & Support'}</span>
+                </div>
+                <kbd className="text-[9px] text-[var(--text-tertiary)] bg-[var(--surface-elevated)] px-1.5 py-0.5 rounded-md border border-[var(--border)] font-mono" aria-label="question mark key">?</kbd>
               </button>
-            </Tooltip>
-          )}
-
-          {/* User Account Card */}
-          <div className="pt-1.5 relative" ref={userMenuRef}>
-            <button
-              type="button"
-              onClick={() => setUserMenuOpen((v) => !v)}
-              className={`w-full flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-surface-elevated border border-transparent hover:border-border transition-all text-left ${
-                collapsed ? 'justify-center p-1' : ''
-              }`}
-            >
-              <Avatar
-                name={user.name}
-                size={collapsed ? 'sm' : 'md'}
-              />
-              {!collapsed && (
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-text-primary truncate">
-                    {user.name}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary truncate">
-                    {user.email}
-                  </div>
-                </div>
-              )}
-            </button>
-
-            {/* User Dropdown Menu */}
-            {userMenuOpen && (
-              <div
-                className={`absolute bottom-full mb-2 bg-surface-overlay border border-border rounded-xl shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 ${
-                  collapsed ? 'left-1 w-56' : 'left-0 right-0'
-                }`}
-              >
-                <div className="px-3 py-2 border-b border-border/60 mb-1">
-                  <div className="text-xs font-bold text-text-primary truncate">
-                    {user.name}
-                  </div>
-                  <div className="text-[10px] text-text-tertiary truncate">
-                    {user.email}
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard/settings"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  <Settings size={14} />
-                  <span>Account Settings</span>
-                </Link>
-                <Link
-                  href="/dashboard/billing"
-                  onClick={() => setUserMenuOpen(false)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  <CreditCard size={14} />
-                  <span>Manage Subscription</span>
-                </Link>
-                <div className="my-1 border-t border-border/60" />
+            ) : (
+              <Tooltip content={isRTL ? 'المساعدة' : 'Help & Support'} position={isRTL ? 'left' : 'right'}>
                 <button
                   type="button"
-                  onClick={logout}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-error hover:bg-error/10 rounded-lg transition-colors text-left"
+                  onClick={() => setHelpModalOpen(true)}
+                  aria-label={isRTL ? 'المساعدة والدعم' : 'Help & Support'}
+                  className="h-9 w-9 mx-auto flex items-center justify-center rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]"
                 >
-                  <LogOut size={14} />
-                  <span>Log out</span>
+                  <HelpCircle size={16} />
                 </button>
-              </div>
+              </Tooltip>
             )}
-          </div>
-        </div>
-      </aside>
 
-      {/* ─── Main Content Shell ────────────────────────────────────────────── */}
-      <div
-        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${
-          collapsed
-            ? isRTL
-              ? 'lg:mr-[68px]'
-              : 'lg:ml-[68px]'
-            : isRTL
-            ? 'lg:mr-[248px]'
-            : 'lg:ml-[248px]'
-        }`}
-      >
-        {/* ─── Top Bar ──────────────────────────────────────────────────────── */}
-        <header className="sticky top-0 z-30 h-14 bg-surface/90 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between gap-4">
-          {/* Left: Mobile Menu, Collapse, Breadcrumb */}
-          <div className="flex items-center gap-3">
-            {/* Mobile toggle button */}
-            <button
-              type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
-              aria-label="Toggle navigation menu"
-            >
-              <Menu size={18} />
-            </button>
+            {/* Divider before user */}
+            <div className="h-px bg-[var(--border)] my-1" />
 
-            {/* Desktop collapse toggle */}
-            <button
-              type="button"
-              onClick={() => setCollapsed((v) => !v)}
-              className="hidden lg:flex p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <Menu size={18} />
-            </button>
+            {/* User profile */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="menu"
+                aria-label={isRTL ? `قائمة المستخدم لـ ${user.name}` : `User menu for ${user.name}`}
+                className={[
+                  'w-full flex items-center rounded-xl border border-transparent hover:bg-[var(--surface-elevated)] hover:border-[var(--border)] transition-all focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]',
+                  collapsed ? 'justify-center p-1' : 'gap-2.5 px-1.5 py-1.5',
+                ].join(' ')}
+              >
+                <Avatar name={user.name} size={collapsed ? 'sm' : 'md'} />
+                {!collapsed && (
+                  <div className="min-w-0 flex-1 text-start">
+                    <div className="text-[11px] font-bold text-[var(--text-primary)] truncate leading-tight">
+                      {user.name}
+                    </div>
+                    <div className="text-[10px] text-[var(--text-tertiary)] truncate leading-tight mt-px">
+                      {user.email}
+                    </div>
+                  </div>
+                )}
+              </button>
 
-            {/* Page Context Breadcrumb */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-text-tertiary">NazBiz</span>
-              <span className="text-text-tertiary">/</span>
-              <span className="font-semibold text-text-primary tracking-tight">
-                {pageTitle}
-              </span>
+              {/* User dropdown */}
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div
+                    role="menu"
+                    aria-label={isRTL ? 'قائمة المستخدم' : 'User menu'}
+                    initial={{ opacity: 0, scale: 0.96, y: 4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.96, y: 4 }}
+                    transition={{ duration: 0.14 }}
+                    className={[
+                      'absolute bottom-full mb-2 bg-[var(--surface-overlay)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-50',
+                      collapsed ? (isRTL ? 'right-1 w-52' : 'left-1 w-52') : 'inset-x-0',
+                    ].join(' ')}
+                  >
+                    <div className="px-3 py-2 border-b border-[var(--border)]/60 mb-1">
+                      <div className="text-xs font-bold text-[var(--text-primary)] truncate">{user.name}</div>
+                      <div className="text-[10px] text-[var(--text-tertiary)] truncate">{user.email}</div>
+                    </div>
+                    <Link
+                      href="/dashboard/settings"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                    >
+                      <Settings size={13} aria-hidden="true" />
+                      <span>{isRTL ? 'إعدادات الحساب' : 'Account Settings'}</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/billing"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                    >
+                      <CreditCard size={13} aria-hidden="true" />
+                      <span>{isRTL ? 'إدارة الاشتراك' : 'Manage Subscription'}</span>
+                    </Link>
+                    <div className="my-1 border-t border-[var(--border)]/60" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={logout}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors text-start focus-visible:outline-2 focus-visible:outline-[var(--error)]"
+                    >
+                      <LogOut size={13} aria-hidden="true" />
+                      <span>{isRTL ? 'تسجيل الخروج' : 'Log out'}</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
+        </aside>
 
-          {/* Center: Command Palette Trigger Button */}
-          <button
-            type="button"
-            onClick={() => setCommandPaletteOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-elevated border border-border hover:border-border-hover text-text-tertiary hover:text-text-secondary text-xs transition-all w-64 justify-between group shadow-xs"
+        {/* ── Main content shell ───────────────────────────────────────── */}
+        <div
+          className="flex-1 flex flex-col min-w-0 transition-[margin] duration-200"
+          style={{ [isRTL ? 'marginRight' : 'marginLeft']: `${sidebarW}px` }}
+        >
+          {/* ── Topbar ──────────────────────────────────────────────────── */}
+          <header
+            role="banner"
+            className="sticky top-0 z-30 h-[56px] bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)] flex items-center gap-3 px-4 sm:px-5"
           >
-            <div className="flex items-center gap-2">
-              <Search size={14} className="text-text-tertiary group-hover:text-text-secondary" />
-              <span>Search or jump to...</span>
+            {/* Left cluster */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Mobile: open sidebar */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                aria-label={isRTL ? 'فتح القائمة' : 'Open navigation'}
+                aria-expanded={mobileOpen}
+                aria-controls="sidebar"
+                className="lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+              >
+                <Menu size={17} />
+              </button>
+
+              {/* Desktop: collapse/expand toggle */}
+              <Tooltip
+                content={collapsed ? (isRTL ? 'توسيع القائمة' : 'Expand sidebar') : (isRTL ? 'طي القائمة' : 'Collapse sidebar')}
+                position="bottom"
+              >
+                <button
+                  type="button"
+                  onClick={() => setCollapsed((v) => !v)}
+                  aria-label={collapsed ? (isRTL ? 'توسيع القائمة الجانبية' : 'Expand sidebar') : (isRTL ? 'طي القائمة الجانبية' : 'Collapse sidebar')}
+                  aria-pressed={collapsed}
+                  className="hidden lg:flex p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                >
+                  {collapsed
+                    ? (isRTL ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />)
+                    : (isRTL ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />)
+                  }
+                </button>
+              </Tooltip>
+
+              {/* Breadcrumb */}
+              <nav aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} className="flex items-center gap-1.5 text-xs">
+                <span className="hidden sm:inline text-[var(--text-tertiary)] font-medium">NazBiz</span>
+                <span className="hidden sm:inline text-[var(--text-tertiary)]" aria-hidden="true">/</span>
+                <span className="font-semibold text-[var(--text-primary)]" aria-current="page">
+                  {pageTitle}
+                </span>
+              </nav>
             </div>
-            <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-surface border border-border/80 rounded text-text-tertiary">
-              <Command size={10} />K
-            </kbd>
-          </button>
 
-          {/* Right: AI Status Pill, Language, Theme, Notifications */}
-          <div className="flex items-center gap-2.5">
-            {/* Product navigation label; no live-status or latency claim. */}
-            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-elevated border border-border text-text-secondary text-xs font-medium select-none shadow-xs">
-              <span className="text-[11px] text-text-primary font-semibold tracking-wide">AI Copilot</span>
+            {/* Center: global search (grows) */}
+            <div className="flex-1 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setCommandPaletteOpen(true)}
+                aria-label={isRTL ? 'البحث (Ctrl+K)' : 'Search (Ctrl+K)'}
+                aria-keyshortcuts="Control+k Meta+k"
+                className="hidden sm:flex items-center justify-between gap-2 px-3 py-1.5 w-full max-w-[360px] rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] text-xs transition-all shadow-xs group"
+              >
+                <div className="flex items-center gap-2">
+                  <Search size={13} aria-hidden="true" />
+                  <span>{isRTL ? 'بحث أو انتقل إلى...' : 'Search or jump to...'}</span>
+                </div>
+                <kbd
+                  className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-tertiary)]"
+                  aria-hidden="true"
+                >
+                  <Command size={9} />K
+                </kbd>
+              </button>
             </div>
 
-            {/* Language toggle */}
-            <button
-              type="button"
-              onClick={toggleLang}
-              className="px-2.5 py-1 text-xs font-bold text-text-secondary hover:text-text-primary rounded-lg border border-border hover:bg-surface-elevated transition-colors"
-              title={isRTL ? 'Switch to English' : 'التحويل للعربية'}
-            >
-              {isRTL ? 'EN' : 'عربي'}
-            </button>
-
-            {/* Dark / Light Mode */}
-            <DarkModeToggle />
-
-            {/* Notification Center */}
-            <NotificationCenter />
-          </div>
-        </header>
-
-        {/* ─── Page Workspace Content ────────────────────────────────────────── */}
-        <main className={`flex-1 w-full mx-auto flex flex-col ${pathname === '/dashboard/inbox' ? 'p-0 max-w-none h-[calc(100vh-3.5rem)]' : 'p-4 sm:p-6 lg:p-8 max-w-7xl'}`}>
-          {children}
-        </main>
-      </div>
-
-      {/* ─── Global Command Palette (⌘K) ─────────────────────────────────── */}
-      <CommandPalette
-        isOpen={commandPaletteOpen}
-        onClose={() => setCommandPaletteOpen(false)}
-      />
-
-      {/* ─── Help Center Modal ────────────────────────────────────────────── */}
-      {helpModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
-            onClick={() => setHelpModalOpen(false)}
-          />
-          <div className="relative w-full max-w-lg bg-surface-overlay border border-border rounded-2xl shadow-2xl p-6 z-10 animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-4 border-b border-border/80">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-brand/10 text-brand">
-                  <HelpCircle size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-text-primary">NazBiz Help & Documentation</h3>
-                  <p className="text-xs text-text-secondary">Get instant answers or connect with support</p>
-                </div>
+            {/* Right cluster */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* AI Copilot badge */}
+              <div
+                aria-label={isRTL ? 'مساعد الذكاء الاصطناعي' : 'AI Copilot'}
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--brand)]/[0.08] text-[var(--brand)] text-[10px] font-bold select-none border border-[var(--brand)]/[0.15]"
+              >
+                <Sparkles size={11} aria-hidden="true" />
+                <span>AI Copilot</span>
               </div>
+
+              {/* Search trigger — mobile only */}
               <button
                 type="button"
-                onClick={() => setHelpModalOpen(false)}
-                className="p-1 rounded-lg text-text-tertiary hover:text-text-primary"
+                onClick={() => setCommandPaletteOpen(true)}
+                aria-label={isRTL ? 'بحث' : 'Search'}
+                className="sm:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
               >
-                <X size={16} />
+                <Search size={17} />
               </button>
-            </div>
 
-            <div className="py-4 space-y-2.5">
-              <a
-                href="https://docs.nazbiz.io"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border transition-colors group"
-              >
-                <div>
-                  <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
-                    Official Documentation
-                  </div>
-                  <div className="text-[11px] text-text-tertiary">
-                    API references, Webhooks, and Omnichannel guides
-                  </div>
-                </div>
-                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand" />
-              </a>
-
-              <a
-                href="/dashboard/channels"
-                onClick={() => setHelpModalOpen(false)}
-                className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border transition-colors group"
-              >
-                <div>
-                  <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
-                    Channel Setup Walkthrough
-                  </div>
-                  <div className="text-[11px] text-text-tertiary">
-                    Step-by-step guides for Instagram, WhatsApp & Salla
-                  </div>
-                </div>
-                <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand" />
-              </a>
-            </div>
-
-            <div className="pt-3 border-t border-border/80 flex items-center justify-between text-xs text-text-tertiary">
-              <span>Support email: support@nazbiz.io</span>
+              {/* Language toggle */}
               <button
                 type="button"
-                onClick={() => setHelpModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg bg-brand text-brand-text font-semibold text-xs hover:bg-brand-hover"
+                onClick={toggleLang}
+                aria-label={isRTL ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
+                className="px-2.5 py-1 text-[10px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
               >
-                Close
+                {isRTL ? 'EN' : 'عربي'}
               </button>
+
+              {/* Dark mode */}
+              <DarkModeToggle />
+
+              {/* Notifications */}
+              <NotificationCenter />
             </div>
-          </div>
+          </header>
+
+          {/* ── Page content ──────────────────────────────────────────── */}
+          <main
+            id={mainContentId}
+            tabIndex={-1}
+            className={[
+              'flex-1 w-full mx-auto flex flex-col outline-none',
+              isInboxPage
+                ? 'p-0 max-w-none h-[calc(100vh-56px)]'
+                : 'p-4 sm:p-6 lg:p-8 max-w-7xl',
+            ].join(' ')}
+          >
+            {children}
+          </main>
         </div>
-      )}
-    </div>
+
+        {/* ── Global Command Palette (⌘K) ──────────────────────────────── */}
+        <CommandPalette
+          isOpen={commandPaletteOpen}
+          onClose={() => setCommandPaletteOpen(false)}
+        />
+
+        {/* ── Help modal ────────────────────────────────────────────────── */}
+        <AnimatePresence>
+          {helpModalOpen && (
+            <>
+              <motion.div
+                key="help-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+                className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm"
+                onClick={() => setHelpModalOpen(false)}
+                aria-hidden="true"
+              />
+              <motion.div
+                key="help-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="help-modal-title"
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+              >
+                <div className="pointer-events-auto w-full max-w-md bg-[var(--surface-overlay)] border border-[var(--border)] rounded-2xl shadow-2xl p-6">
+                  <div className="flex items-start justify-between pb-4 border-b border-[var(--border)]/70 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-[var(--brand)]/10 text-[var(--brand)]" aria-hidden="true">
+                        <HelpCircle size={19} />
+                      </div>
+                      <div>
+                        <h3 id="help-modal-title" className="text-sm font-bold text-[var(--text-primary)]">
+                          {isRTL ? 'مساعدة NazBiz والتوثيق' : 'NazBiz Help & Documentation'}
+                        </h3>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                          {isRTL ? 'احصل على إجابات فورية أو تواصل مع الدعم' : 'Get instant answers or connect with support'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setHelpModalOpen(false)}
+                      aria-label={isRTL ? 'إغلاق' : 'Close'}
+                      className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <a
+                      href="https://docs.nazbiz.io"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-card)] border border-[var(--border)] transition-colors group"
+                    >
+                      <div>
+                        <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">
+                          {isRTL ? 'التوثيق الرسمي' : 'Official Documentation'}
+                        </div>
+                        <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
+                          {isRTL ? 'مراجع API والمساعدة' : 'API references, Webhooks, and guides'}
+                        </div>
+                      </div>
+                      <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
+                    </a>
+
+                    <a
+                      href="/dashboard/channels"
+                      onClick={() => setHelpModalOpen(false)}
+                      className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-card)] border border-[var(--border)] transition-colors group"
+                    >
+                      <div>
+                        <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">
+                          {isRTL ? 'إعداد القنوات' : 'Channel Setup Walkthrough'}
+                        </div>
+                        <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
+                          {isRTL ? 'دليل خطوة بخطوة' : 'Step-by-step guides for Instagram, WhatsApp & Salla'}
+                        </div>
+                      </div>
+                      <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
+                    </a>
+                  </div>
+
+                  <div className="pt-4 border-t border-[var(--border)]/70 mt-4 flex items-center justify-between text-xs text-[var(--text-tertiary)]">
+                    <span>support@nazbiz.io</span>
+                    <button
+                      type="button"
+                      onClick={() => setHelpModalOpen(false)}
+                      className="px-3 py-1.5 rounded-lg bg-[var(--brand)] text-[var(--brand-text)] font-semibold text-xs hover:brightness-110 transition-[filter] focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                    >
+                      {isRTL ? 'إغلاق' : 'Close'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   )
 }
