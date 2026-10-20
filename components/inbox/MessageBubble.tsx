@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import VoiceMessagePlayer from './VoiceMessagePlayer'
 
 type MediaType = 'image' | 'audio' | 'video' | 'document' | null
 
@@ -114,7 +115,7 @@ function fileKind(mediaType?: MediaType, mimeType?: string | null, name?: string
   const mime = (mimeType || '').toLowerCase()
   const fileName = (name || '').toLowerCase()
   if (mediaType === 'image' || mime.startsWith('image/')) return 'image'
-  if (mediaType === 'audio' || mime.startsWith('audio/')) return 'audio'
+  if (mediaType === 'audio' || mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|opus|weba)$/i.test(fileName)) return 'audio'
   if (mediaType === 'video' || mime.startsWith('video/')) return 'video'
   if (mime === 'application/pdf' || fileName.endsWith('.pdf')) return 'pdf'
   if (/\.(zip|rar|7z|tar|gz)$/.test(fileName)) return 'archive'
@@ -132,7 +133,15 @@ function AttachmentIcon({ kind }: { kind: string }) {
   return <File className={className} />
 }
 
-function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; isOutgoing: boolean }) {
+function AttachmentCard({
+  msg,
+  isOutgoing,
+  isSolidBubble = isOutgoing,
+}: {
+  msg: MessageBubbleProps['msg']
+  isOutgoing: boolean
+  isSolidBubble?: boolean
+}) {
   const [previewError, setPreviewError] = useState(false)
   const [loading, setLoading] = useState(true)
   const [authenticatedMediaUrl, setAuthenticatedMediaUrl] = useState('')
@@ -193,8 +202,8 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
       title="Download original file"
       aria-label={`Download ${name}`}
       className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-[11px] font-semibold transition-colors ${
-        isOutgoing
-          ? 'border-white/25 bg-white/10 text-white hover:bg-white/20'
+        isSolidBubble
+          ? 'border-brand-text/25 bg-brand-text/10 text-brand-text hover:bg-brand-text/20'
           : 'border-border bg-surface text-text-secondary hover:text-text-primary'
       }`}
     >
@@ -224,10 +233,22 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
 
   if (kind === 'audio' && !previewError) {
     return (
-      <div className="w-[min(19rem,72vw)] space-y-2">
-        <audio src={inlineUrl} controls preload="metadata" onError={() => setPreviewError(true)} className="w-full" />
+      <div className="space-y-1.5">
+        {loading ? (
+          <div className="flex h-10 w-[min(17rem,68vw)] items-center justify-center">
+            <Loader2 className={`h-4 w-4 animate-spin ${isSolidBubble ? 'text-brand-text/60' : 'text-text-secondary'}`} />
+          </div>
+        ) : (
+          <VoiceMessagePlayer
+            src={inlineUrl}
+            hintDuration={msg.duration}
+            isOutgoing={isSolidBubble}
+            seed={String(msg.id || inlineUrl)}
+            onError={() => setPreviewError(true)}
+          />
+        )}
         <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-[11px] opacity-75">{name}</span>
+          <span className={`truncate text-[11px] ${isSolidBubble ? 'text-brand-text/60' : 'opacity-60'}`}>{name}</span>
           {downloadButton}
         </div>
       </div>
@@ -245,10 +266,10 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
 
   return (
     <div className={`flex w-[min(21rem,76vw)] items-center gap-3 rounded-xl border p-3 ${
-      isOutgoing ? 'border-white/20 bg-white/10' : 'border-border bg-surface-elevated'
+      isSolidBubble ? 'border-brand-text/20 bg-brand-text/10' : 'border-border bg-surface-elevated'
     }`}>
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-        isOutgoing ? 'bg-white/15 text-white' : 'bg-brand/10 text-brand'
+        isSolidBubble ? 'bg-brand-text/15 text-brand-text' : 'bg-brand/10 text-brand'
       }`}>
         {previewError ? <AlertCircle className="h-5 w-5" /> : <AttachmentIcon kind={kind} />}
       </div>
@@ -258,7 +279,7 @@ function AttachmentCard({ msg, isOutgoing }: { msg: MessageBubbleProps['msg']; i
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {kind === 'pdf' && (
-          <a href={inlineUrl} target="_blank" rel="noreferrer" title="Open PDF" aria-label={`Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isOutgoing ? 'border-white/25 bg-white/10 text-white' : 'border-border bg-surface text-text-secondary'}`}>
+          <a href={inlineUrl} target="_blank" rel="noreferrer" title="Open PDF" aria-label={`Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isSolidBubble ? 'border-brand-text/25 bg-brand-text/10 text-brand-text' : 'border-border bg-surface text-text-secondary'}`}>
             <ExternalLink size={14} />
           </a>
         )}
@@ -455,7 +476,7 @@ const MessageBubble = memo(function MessageBubble({
                 <Bot size={12} /> AI generated
               </div>
             )}
-            {hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn && msg.is_ai} />}
+            {hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isSolidBubble={!isIn && !msg.is_ai} />}
             {msg.content && (
               <div
                 dir={textDirection as React.HTMLAttributes<HTMLDivElement>['dir']}
