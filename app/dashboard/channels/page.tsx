@@ -17,6 +17,7 @@ import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 import ShopifyConnect from '../../../components/channels/ShopifyConnect'
 import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
 import Checkbox from '../../../components/ui/Checkbox'
+import Modal from '../../../components/ui/Modal'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import {
   Radio,
@@ -114,6 +115,7 @@ const CHANNELS_CATALOG: ChannelDef[] = [
 
 export default function ChannelsPage() {
   const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
+  const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
   const [testReplyLoading, setTestReplyLoading] = useState(false)
   const [testReply, setTestReply] = useState<string | null>(null)
@@ -483,7 +485,7 @@ export default function ChannelsPage() {
   }, [apiChannels])
 
   const totalNeedsAttention = useMemo(() => {
-    return apiChannels.filter((c) => c.status === 'warning' || c.status === 'error')
+    return apiChannels.filter((c) => c.status === 'warning' || c.status === 'error' || c.comment_webhook_status === 'error')
       .length
   }, [apiChannels])
 
@@ -509,7 +511,7 @@ export default function ChannelsPage() {
           matchesCategory = ch.connected
         } else if (selectedCategory === 'attention') {
           matchesCategory = ch.instances.some(
-            (i) => i.status === 'warning' || i.status === 'error'
+            (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error'
           )
         } else if (selectedCategory !== 'all') {
           matchesCategory = ch.category === selectedCategory
@@ -749,7 +751,8 @@ export default function ChannelsPage() {
                 fetchChannels()
               }}
               onManageSettings={(inst) => {
-                showToast(`Settings for ${inst.page_name || inst.id} opened`)
+                const selected = apiChannels.find((channel) => channel.id === inst.id)
+                if (selected) setSettingsInstance(selected)
               }}
             />
           ))}
@@ -763,6 +766,36 @@ export default function ChannelsPage() {
         initialChannel={selectedWizardChannel}
         onContinueConnection={handleChannelConnection}
       />
+
+      <Modal
+        isOpen={settingsInstance !== null}
+        onClose={() => setSettingsInstance(null)}
+        title={settingsInstance?.page_name || 'Account settings'}
+        description="Connection status and account controls for this channel."
+        size="md"
+        footer={settingsInstance ? <Button variant="outline" onClick={() => setSettingsInstance(null)}>Close</Button> : undefined}
+      >
+        {settingsInstance && <div className="space-y-4 text-sm">
+          <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-4 gap-y-3">
+            <dt className="text-text-muted">Channel</dt><dd className="font-medium capitalize">{settingsInstance.type}</dd>
+            <dt className="text-text-muted">Account ID</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
+            <dt className="text-text-muted">Connection</dt><dd className="capitalize">{settingsInstance.status || 'Connected'}</dd>
+            <dt className="text-text-muted">AI replies</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? 'Enabled' : 'Paused'}</dd>
+            {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">Pause reason</dt><dd>{settingsInstance.ai_pause_reason}</dd></>}
+            {settingsInstance.comment_webhook_status && <><dt className="text-text-muted">Comment webhook</dt><dd className="capitalize">{settingsInstance.comment_webhook_status}{settingsInstance.comment_webhook_error_code ? ` (${settingsInstance.comment_webhook_error_code})` : ''}</dd></>}
+            {settingsInstance.integration?.store_url && <><dt className="text-text-muted">Store URL</dt><dd className="break-all">{settingsInstance.integration.store_url}</dd></>}
+            {settingsInstance.integration?.sync_status && <><dt className="text-text-muted">Store sync</dt><dd className="capitalize">{settingsInstance.integration.sync_status}</dd></>}
+            {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">Sync issue</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
+          </dl>
+          {settingsInstance.status_message && <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-warning">{settingsInstance.status_message}</p>}
+          <div className="flex justify-end border-t border-border pt-4">
+            <Button variant={settingsInstance.ai_enabled ? 'outline' : 'primary'} onClick={() => {
+              void handleToggleAI(settingsInstance.id, settingsInstance.ai_enabled)
+              setSettingsInstance(null)
+            }}>{settingsInstance.ai_enabled ? 'Pause AI replies' : 'Enable AI replies'}</Button>
+          </div>
+        </div>}
+      </Modal>
 
       {/* ─── Direct WhatsApp Connect Modal ───────────────────────────────── */}
       {activeModalChannel?.id === 'whatsapp' && (

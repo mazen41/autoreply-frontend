@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import PageHeader from '../../../components/ui/PageHeader'
 import MetricCard from '../../../components/ui/MetricCard'
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
@@ -29,12 +29,15 @@ import {
   ExternalLink,
 } from 'lucide-react'
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 interface KnowledgeFile {
   id: number
   filename: string
   file_type: string
   uploaded_at: string
   status?: string
+  retryable?: boolean
   chunks_count?: number
   error_message?: string | null
 }
@@ -46,6 +49,7 @@ export default function AIKnowledgeContent() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [retryingFileId, setRetryingFileId] = useState<number | null>(null)
   const [savingInstructions, setSavingInstructions] = useState(false)
 
   // Testing AI Sandbox
@@ -64,9 +68,8 @@ export default function AIKnowledgeContent() {
     typeof document !== 'undefined'
       ? document.cookie.split(';').find((c) => c.trim().startsWith('naz_token='))?.split('=')[1]
       : ''
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-  const fetchKnowledge = async () => {
+  const fetchKnowledge = useCallback(async () => {
     setLoading(true)
     setLoadError(null)
     try {
@@ -89,11 +92,11 @@ export default function AIKnowledgeContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    fetchKnowledge()
-  }, [])
+    queueMicrotask(() => { void fetchKnowledge() })
+  }, [fetchKnowledge])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -134,6 +137,23 @@ export default function AIKnowledgeContent() {
       setFiles((prev) => prev.filter((f) => f.id !== id))
       toast.success('File deleted from knowledge index')
     } catch (error) { toast.error(error instanceof Error ? error.message : 'File deletion failed.') }
+  }
+
+  const handleRetryFile = async (id: number) => {
+    setRetryingFileId(id)
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/knowledge/files/${id}/retry`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.message || 'Could not retry document indexing.')
+      toast.success(result.message || 'Document indexing queued')
+      await fetchKnowledge()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not retry document indexing.')
+    } finally {
+      setRetryingFileId(null)
+    }
   }
 
   const handleSaveInstructions = async () => {
@@ -353,6 +373,7 @@ export default function AIKnowledgeContent() {
                       <Badge variant={file.status === 'active' ? 'success' : file.status === 'failed' ? 'error' : 'warning'} dot size="xs">
                         {file.status === 'active' ? 'Indexed' : file.status === 'failed' ? 'Indexing failed' : file.status || 'Pending'}
                       </Badge>
+                      {file.retryable && <Button variant="outline" size="sm" loading={retryingFileId === file.id} disabled={retryingFileId !== null} onClick={() => void handleRetryFile(file.id)}>Retry indexing</Button>}
                       <button
                         type="button"
                         onClick={() => handleDeleteFile(file.id)}

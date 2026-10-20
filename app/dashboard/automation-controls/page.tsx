@@ -11,6 +11,25 @@ const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api
 type Row = { id: number; name: string; status?: string; is_active?: boolean; paused_at?: string | null }
 type RolloutFlag = { key: string; name: string; description: string | null; enabled: boolean; global: boolean }
 
+const TERMINAL_CAMPAIGN_STATUSES = new Set(['sent', 'dispatched', 'completed', 'failed', 'partially_sent', 'partially_failed', 'cancelled'])
+
+function campaignStateLabel(status: string | undefined, pausedAt: string | null | undefined, t: (en: string, ar: string) => string) {
+  const labels: Record<string, [string, string]> = {
+    sent: ['Sent', 'تم الإرسال'], dispatched: ['Dispatched', 'تم الإرسال'], completed: ['Completed', 'مكتمل'],
+    failed: ['Failed', 'فشل'], partially_sent: ['Partially sent', 'تم الإرسال جزئيًا'],
+    partially_failed: ['Partially failed', 'فشل جزئيًا'], cancelled: ['Cancelled', 'ملغي'],
+    draft: ['Draft', 'مسودة'], scheduled: ['Scheduled', 'مجدول'], sending: ['Sending', 'قيد الإرسال'],
+    active: ['Active', 'نشط'],
+  }
+  if (status && TERMINAL_CAMPAIGN_STATUSES.has(status)) {
+    const [en, ar] = labels[status] || [status, status]
+    return t(en, ar)
+  }
+  if (pausedAt) return t('Paused', 'متوقف مؤقتًا')
+  const [en, ar] = labels[status || ''] || ['Status unavailable', 'الحالة غير متاحة']
+  return t(en, ar)
+}
+
 function token() {
   if (typeof document === 'undefined') return ''
   return decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
@@ -78,7 +97,7 @@ export default function AutomationControlsPage() {
   }
 
   async function toggleItem(kind: 'campaigns' | 'email-campaigns' | 'sequences' | 'workflows', row: Row) {
-    if (!businessId) return
+    if (!businessId || !canToggleItem(kind, row)) return
     setBusy(true); setError('')
     try {
       if (kind === 'campaigns') await request(`/businesses/${businessId}/campaigns/${row.id}/${row.paused_at ? 'resume' : 'pause'}`, { method: 'POST', body: '{}' })
@@ -88,6 +107,15 @@ export default function AutomationControlsPage() {
       await load(businessId)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not update automation controls.') }
     finally { setBusy(false) }
+  }
+
+  function canToggleItem(kind: 'campaigns' | 'email-campaigns' | 'sequences' | 'workflows', row: Row) {
+    if (kind === 'campaigns' || kind === 'email-campaigns') {
+      return !TERMINAL_CAMPAIGN_STATUSES.has(row.status || '')
+        && (row.status === 'sending' || row.status === 'scheduled' || Boolean(row.paused_at))
+    }
+    if (kind === 'sequences') return row.status === 'active' || row.status === 'paused'
+    return typeof row.is_active === 'boolean'
   }
 
   async function toggleRolloutFlag(flag: RolloutFlag) {
@@ -106,9 +134,15 @@ export default function AutomationControlsPage() {
     return <Card><CardContent className="space-y-3 p-5"><h2 className="font-semibold">{title}</h2>
       {items.length === 0 ? <p className="text-sm text-muted-foreground">{t('Nothing configured.', 'لا توجد عناصر مهيأة.')}</p> : items.map((row) => {
         const itemPaused = kind === 'sequences' ? row.status === 'paused' : kind === 'workflows' ? row.is_active === false : Boolean(row.paused_at)
+        const canToggle = canToggleItem(kind, row)
+        const stateLabel = kind === 'campaigns' || kind === 'email-campaigns'
+          ? campaignStateLabel(row.status, row.paused_at, t)
+          : kind === 'sequences'
+            ? (row.status === 'paused' ? t('Paused', 'متوقف مؤقتًا') : row.status === 'active' ? t('Active', 'نشط') : row.status || t('Status unavailable', 'الحالة غير متاحة'))
+            : (row.is_active ? t('Active', 'نشط') : t('Paused', 'متوقف مؤقتًا'))
         return <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-          <div><p className="font-medium">{row.name}</p><p className="text-xs text-muted-foreground">{itemPaused ? t('Paused', 'متوقف مؤقتًا') : t('Active', 'نشط')}</p></div>
-          <Button variant={itemPaused ? 'outline' : 'destructive'} disabled={busy} onClick={() => toggleItem(kind, row)}>{itemPaused ? t('Resume', 'استئناف') : t('Pause', 'إيقاف مؤقت')}</Button>
+          <div><p className="font-medium">{row.name}</p><p className="text-xs text-muted-foreground">{stateLabel}</p></div>
+          {canToggle && <Button variant={itemPaused ? 'outline' : 'destructive'} disabled={busy} onClick={() => toggleItem(kind, row)}>{itemPaused ? t('Resume', 'استئناف') : t('Pause', 'إيقاف مؤقت')}</Button>}
         </div>
       })}
     </CardContent></Card>

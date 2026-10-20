@@ -15,7 +15,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 function getToken() {
   if (typeof document === 'undefined') return ''
-  return decodeURIComponent(document.cookie.match(/(?:^|;\\s*)naz_token=([^;]*)/)?.[1] || '')
+  return decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
 }
 
 type Plan = { id?: number; name: string; price_monthly?: number; price_yearly?: number; ai_replies_limit?: number; outbound_messages_limit?: number; channels_limit?: number; features?: string[] }
@@ -54,7 +54,7 @@ export default function BillingPage() {
     } finally { setLoading(false) }
   }, [])
 
-  useEffect(() => { void fetchSubscription() }, [fetchSubscription])
+  useEffect(() => { queueMicrotask(() => { void fetchSubscription() }) }, [fetchSubscription])
 
   const handleCancel = async () => {
     if (!confirm('Cancel this subscription?')) return

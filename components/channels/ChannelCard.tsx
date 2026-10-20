@@ -25,6 +25,8 @@ export interface ChannelInstance {
   ai_pause_reason?: string | null
   status?: 'active' | 'connected' | 'warning' | 'error' | 'syncing'
   status_message?: string
+  comment_webhook_status?: string | null
+  comment_webhook_error_code?: string | null
   last_activity?: string
   integration?: {
     store_url?: string
@@ -68,7 +70,7 @@ export default function ChannelCard({
 
   // Check if any instance requires attention
   const hasWarning = instances.some(
-    (i) => i.status === 'warning' || i.status === 'error'
+    (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error'
   )
 
   const displayedInstances = expanded ? instances : instances.slice(0, 2)
@@ -157,7 +159,11 @@ export default function ChannelCard({
           <div className="space-y-2 mt-2">
             {displayedInstances.map((inst) => {
               const accountWarning =
-                inst.status === 'warning' || inst.status === 'error'
+                inst.status === 'warning' || inst.status === 'error' || inst.comment_webhook_status === 'error'
+              const accountWarningMessage = inst.status_message
+                || (inst.comment_webhook_status === 'error'
+                  ? `Comment webhook needs attention${inst.comment_webhook_error_code ? ` (${inst.comment_webhook_error_code})` : ''}`
+                  : null)
 
               return (
                 <div
@@ -178,7 +184,7 @@ export default function ChannelCard({
                       </div>
                       <div className="text-[10px] text-text-tertiary truncate">
                         ID: {inst.page_id || inst.id}
-                        {inst.status_message && ` • ${inst.status_message}`}
+                        {accountWarningMessage && ` • ${accountWarningMessage}`}
                       </div>
                       {inst.integration && (
                         <div className="text-[10px] text-text-tertiary mt-1">
@@ -226,8 +232,8 @@ export default function ChannelCard({
                   <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[11px]">
                     <span className="text-[10px] text-text-tertiary">
                       {accountWarning ? (
-                        <span className="text-warning font-medium" title={inst.status_message || undefined}>
-                          {inst.status_message || 'Connection needs attention'}
+                        <span className="text-warning font-medium" title={accountWarningMessage || undefined}>
+                          {accountWarningMessage || 'Connection needs attention'}
                         </span>
                       ) : inst.integration?.sync_status === 'syncing' || inst.integration?.sync_status === 'queued' ? (
                         'Store sync in progress'
