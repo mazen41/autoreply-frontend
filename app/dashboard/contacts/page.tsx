@@ -48,14 +48,18 @@ export default function ContactsPage() {
     const requestSequence = ++loadSequence.current
     setLoading(true); setError('')
     try {
+      // The workspace-change event calls load before React has committed the
+      // new businessId state. Build headers from this request's explicit ID
+      // so the first request and workspace switches are correctly scoped.
+      const requestHeaders = authHeaders(id)
       const params = new URLSearchParams({per_page:'25',page:String(nextPage)})
       if (search.trim()) params.set('search',search.trim())
       if (stage) params.set('lifecycle_stage',stage)
       if (channelId) params.set('channel_id',channelId)
       const [contactsResponse,channelsResponse,assigneesResponse] = await Promise.all([
-        fetch(`${API}/customers?${params}`,{headers}),
-        fetch(`${API}/channels`,{headers}),
-        fetch(`${API}/customers/assignees`,{headers}),
+        fetch(`${API}/customers?${params}`,{headers:requestHeaders}),
+        fetch(`${API}/channels`,{headers:requestHeaders}),
+        fetch(`${API}/customers/assignees`,{headers:requestHeaders}),
       ])
       if (requestSequence !== loadSequence.current) return
       if (!contactsResponse.ok || !channelsResponse.ok) throw new Error(L('Could not load contacts for the selected workspace.','تعذر تحميل جهات الاتصال لمساحة العمل المحددة.'))
@@ -70,7 +74,7 @@ export default function ContactsPage() {
       if (requestSequence === loadSequence.current) setError(cause instanceof Error ? cause.message : L('Could not load contacts.','تعذر تحميل جهات الاتصال.'))
     }
     finally { if (requestSequence === loadSequence.current) setLoading(false) }
-  },[page,search,stage,channelId,headers,L])
+  },[page,search,stage,channelId,L])
   useEffect(()=>{loadRef.current=load},[load])
 
   const loadDetail = useCallback(async (id:number, customerId:number) => {

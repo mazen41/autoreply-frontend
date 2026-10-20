@@ -49,6 +49,25 @@ describe('contacts workspace', () => {
     await waitFor(() => expect(requestedPages.at(-1)).toBe('2'))
   })
 
+  it('sends the selected workspace ID on the initial contacts requests', async () => {
+    document.cookie = 'naz_token=test-token'
+    const requestHeaders: HeadersInit[] = []
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?:RequestInit) => {
+      requestHeaders.push(init?.headers || {})
+      const url = String(input)
+      if (url.includes('/api/customers?')) return { ok: true, status: 200, json: async () => ({ data: [], current_page: 1, last_page: 1 }) }
+      if (url.endsWith('/api/channels')) return { ok: true, status: 200, json: async () => [] }
+      if (url.endsWith('/api/customers/assignees')) return { ok: true, status: 200, json: async () => ({ assignees: [] }) }
+      throw new Error(`Unexpected request: ${url}`)
+    }))
+
+    render(<ContactsPage />)
+    await waitFor(() => expect(requestHeaders).toHaveLength(3))
+    for (const headers of requestHeaders) {
+      expect(headers).toMatchObject({Authorization:'Bearer test-token',Accept:'application/json','X-Business-Id':'7'})
+    }
+  })
+
   it('saves a contact assignee selected from the active business team', async () => {
     document.cookie = 'naz_token=test-token'
     const contact = {
