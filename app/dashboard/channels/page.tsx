@@ -8,7 +8,7 @@ import FilterBar from '../../../components/ui/FilterBar'
 import MetricCard from '../../../components/ui/MetricCard'
 import Button from '../../../components/ui/Button'
 import EmptyState from '../../../components/ui/EmptyState'
-import Skeleton, { SkeletonCard } from '../../../components/ui/Skeleton'
+import { SkeletonCard } from '../../../components/ui/Skeleton'
 import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
 import ChannelCard, { ChannelDef, ChannelInstance } from '../../../components/channels/ChannelCard'
 import ChannelConnectWizard, { ALL_CHANNELS, ChannelOption } from '../../../components/channels/ChannelConnectWizard'
@@ -26,8 +26,6 @@ import {
   Layers,
   Sparkles,
   RefreshCw,
-  Search,
-  MessageSquare,
 } from 'lucide-react'
 
 function getToken(): string {
@@ -44,71 +42,78 @@ type AiSetupChecklist = {
   missing: string[]
 }
 type GoLiveSettings = { consent_policy_acknowledged: boolean; handoff_notification_email: string | null }
+type ApiChannel = ChannelInstance & {
+  type: string
+  metadata?: Record<string, unknown>
+  business_id?: number
+  integration?: ChannelInstance['integration'] & {
+    sync_warnings?: string[]
+    webhook_status?: string | null
+    webhooks_registered?: number | null
+  }
+}
 
 const CHANNELS_CATALOG: ChannelDef[] = [
   {
     id: 'instagram',
     name: 'Instagram',
-    description: 'Automate direct messages, story mentions, and customer comments with AI.',
+    description: 'Connect a professional account for supported direct messages and comment replies.',
     category: 'social',
     brandColor: '#E4405F',
-    badgeText: 'Top Performer',
   },
   {
     id: 'whatsapp',
     name: 'WhatsApp Business',
-    description: 'WhatsApp Business integration for 24/7 automated conversational support.',
+    description: 'Connect WhatsApp Cloud or a compatible WhatsApp instance; features depend on the provider.',
     category: 'messaging',
     brandColor: '#25D366',
-    badgeText: 'Highest CSAT',
   },
   {
     id: 'facebook',
     name: 'Facebook Messenger',
-    description: 'Sync your Facebook page messages and automate sales replies in real-time.',
+    description: 'Connect a Facebook Page for supported Messenger conversations and comment replies.',
     category: 'social',
     brandColor: '#1877F2',
   },
   {
     id: 'gmail',
     name: 'Gmail & Google Workspace',
-    description: 'Sync incoming customer emails and dispatch intelligent AI drafts and responses.',
+    description: 'Connect a mailbox to sync email conversations and send supported replies.',
     category: 'email',
     brandColor: '#EA4335',
   },
   {
     id: 'salla',
     name: 'Salla Store',
-    description: 'Saudi Arabia leading e-commerce platform. Sync orders, status, and buyer chat.',
+    description: 'Connect a Salla store to sync its catalog and order data for commerce-aware conversations.',
     category: 'ecommerce',
     brandColor: '#00B4D8',
-    badgeText: 'MENA E-Com',
   },
   {
     id: 'telegram',
     name: 'Telegram',
-    description: 'Connect Telegram bot channels for instant AI triage and community support.',
+    description: 'Connect a Telegram bot for customer conversations.',
     category: 'messaging',
     brandColor: '#0088CC',
   },
   {
     id: 'shopify',
     name: 'Shopify',
-    description: 'Sync customer carts, orders, order tracking, and abandoned cart messages.',
+    description: 'Connect a Shopify store to sync its catalog, customers and orders.',
     category: 'ecommerce',
     brandColor: '#96BF48',
   },
   {
     id: 'woocommerce',
     name: 'WooCommerce',
-    description: 'WordPress e-commerce integration for automated order queries and store AI.',
+    description: 'Connect a WooCommerce store to sync its catalog, customers and orders.',
     category: 'ecommerce',
     brandColor: '#96588A',
   },
 ]
 
 export default function ChannelsPage() {
-  const [apiChannels, setApiChannels] = useState<any[]>([])
+  const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
   const [testReplyLoading, setTestReplyLoading] = useState(false)
   const [testReply, setTestReply] = useState<string | null>(null)
@@ -121,7 +126,7 @@ export default function ChannelsPage() {
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortOption, setSortOption] = useState('popular')
+  const [sortOption, setSortOption] = useState('accounts')
 
   // Connect wizard modal
   const [wizardOpen, setWizardOpen] = useState(false)
@@ -151,7 +156,7 @@ export default function ChannelsPage() {
       } else {
         throw new Error(`Failed to load channels: ${res.status}`)
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setApiChannels([])
       setErrorState(e instanceof Error ? e.message : 'Could not load channels.')
     } finally {
@@ -185,9 +190,11 @@ export default function ChannelsPage() {
   }, [])
 
   useEffect(() => {
-    fetchChannels()
-    void fetchAiSetup()
-    void fetchGoLiveSettings()
+    void Promise.resolve().then(() => {
+      void fetchChannels()
+      void fetchAiSetup()
+      void fetchGoLiveSettings()
+    })
   }, [fetchChannels, fetchAiSetup, fetchGoLiveSettings])
 
   const saveGoLiveSettings = async () => {
@@ -267,7 +274,7 @@ export default function ChannelsPage() {
       const approved = params.get('success') !== '0'
       window.history.replaceState({}, '', window.location.pathname)
       if (!approved) {
-        showToast('WooCommerce authorization was cancelled.', 'error')
+        void Promise.resolve().then(() => showToast('WooCommerce authorization was cancelled.', 'error'))
         return
       }
 
@@ -296,10 +303,12 @@ export default function ChannelsPage() {
       })()
     } else if (params.get('success')) {
       const success = params.get('success')
-      showToast(success === 'shopify_connected'
-        ? 'Shopify connected. Initial store sync has started.'
-        : 'Channel connected successfully!', 'success')
-      fetchChannels()
+      void Promise.resolve().then(() => {
+        showToast(success === 'shopify_connected'
+          ? 'Shopify connected. Initial store sync has started.'
+          : 'Channel connected successfully!', 'success')
+        return fetchChannels()
+      })
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('error')) {
       const errors: Record<string, string> = {
@@ -312,10 +321,11 @@ export default function ChannelsPage() {
         shopify_connection_failed: 'Could not finish connecting Shopify. Please try again.',
         shopify_invalid_configuration: 'Shopify integration settings are incomplete.',
       }
-      showToast(errors[params.get('error') || ''] || 'Channel connection failed. Please try again.', 'error')
+      const errorMessage = errors[params.get('error') || ''] || 'Channel connection failed. Please try again.'
+      void Promise.resolve().then(() => showToast(errorMessage, 'error'))
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('connect') === 'true') {
-      setWizardOpen(true)
+      void Promise.resolve().then(() => setWizardOpen(true))
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [fetchChannels])
@@ -378,8 +388,15 @@ export default function ChannelsPage() {
     }
   }
 
-  // Trigger OAuth
-  const handleTriggerOAuth = async (ch: ChannelOption) => {
+  // Start the matching supported connection flow.
+  const handleChannelConnection = async (ch: ChannelOption) => {
+    if (['whatsapp', 'telegram', 'woocommerce', 'shopify'].includes(ch.id)) {
+      const channel = CHANNELS_CATALOG.find((item) => item.id === ch.id)
+      if (!channel) throw new Error(`The ${ch.name} connection flow is unavailable.`)
+      setActiveModalChannel(channel)
+      return
+    }
+
     const token = getToken()
     if (!token) throw new Error('Your session expired. Sign in again before connecting a channel.')
 
@@ -507,7 +524,7 @@ export default function ChannelsPage() {
         if (sortOption === 'alphabetical') {
           return a.name.localeCompare(b.name)
         }
-        // default: popular / most accounts
+        // Default to the integrations with the most connected accounts.
         return b.instances.length - a.instances.length
       })
   }, [channelCards, searchQuery, selectedCategory, sortOption])
@@ -682,7 +699,7 @@ export default function ChannelsPage() {
         activeTab={selectedCategory}
         onTabChange={setSelectedCategory}
         sortOptions={[
-          { value: 'popular', label: 'Most Active' },
+          { value: 'accounts', label: 'Most Connected Accounts' },
           { value: 'connected', label: 'Connected First' },
           { value: 'alphabetical', label: 'Alphabetical' },
         ]}
@@ -744,14 +761,14 @@ export default function ChannelsPage() {
         isOpen={wizardOpen}
         onClose={() => setWizardOpen(false)}
         initialChannel={selectedWizardChannel}
-        onTriggerOAuth={handleTriggerOAuth}
+        onContinueConnection={handleChannelConnection}
       />
 
       {/* ─── Direct WhatsApp Connect Modal ───────────────────────────────── */}
       {activeModalChannel?.id === 'whatsapp' && (
         <WhatsAppConnect
           isConnected={false}
-          channel={activeModalChannel as any}
+          channel={activeModalChannel}
           onConnected={() => {
             fetchChannels()
             setActiveModalChannel(null)

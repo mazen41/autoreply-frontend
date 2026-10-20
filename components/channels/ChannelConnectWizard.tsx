@@ -1,39 +1,43 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
-import Badge from '../ui/Badge'
 import ChannelIcon from '../ui/ChannelIcon'
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, ShieldCheck, Mail, Music } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, ShieldCheck, Mail } from 'lucide-react'
 
 export interface ChannelOption {
-  id: string
+  id: 'instagram' | 'facebook' | 'whatsapp' | 'telegram' | 'gmail' | 'salla' | 'shopify' | 'woocommerce'
   name: string
   description: string
   category: 'messaging' | 'social' | 'ecommerce' | 'email'
   brandColor: string
-  isPopular?: boolean
   icon?: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }> | string
 }
 
+type ChannelIconId = Parameters<typeof ChannelIcon>[0]['type']
+
 export const ALL_CHANNELS: ChannelOption[] = [
-  { id: 'instagram', name: 'Instagram', description: 'Direct Messages, Story mentions & Comment replies', category: 'social', brandColor: '#E4405F', isPopular: true, icon: '/icons/instagram.svg' },
-  { id: 'facebook', name: 'Facebook Messenger', description: 'Facebook Page messages and automated post replies', category: 'social', brandColor: '#1877F2', isPopular: true, icon: '/icons/facebook.svg' },
-  { id: 'gmail', name: 'Gmail & Google Workspace', description: 'Customer email ticketing and AI draft auto-responder', category: 'email', brandColor: '#EA4335', icon: Mail },
-  { id: 'salla', name: 'Salla', description: 'Connect a Salla store and sync commerce activity', category: 'ecommerce', brandColor: '#00B4D8', isPopular: true, icon: '/icons/sllla.svg' },
-  { id: 'tiktok', name: 'TikTok Direct Messages', description: 'Engage TikTok shop buyers and direct messages', category: 'social', brandColor: '#FF0050', icon: Music },
+  { id: 'instagram', name: 'Instagram', description: 'Supported direct messages and comment replies for professional accounts.', category: 'social', brandColor: '#E4405F', icon: '/icons/instagram.svg' },
+  { id: 'facebook', name: 'Facebook Messenger', description: 'Supported Page conversations and comment replies.', category: 'social', brandColor: '#1877F2', icon: '/icons/facebook.svg' },
+  { id: 'whatsapp', name: 'WhatsApp Business', description: 'Cloud API or compatible instance; available features depend on provider.', category: 'messaging', brandColor: '#25D366' },
+  { id: 'telegram', name: 'Telegram', description: 'Customer conversations through a connected Telegram bot.', category: 'messaging', brandColor: '#0088CC' },
+  { id: 'gmail', name: 'Gmail & Google Workspace', description: 'Sync email conversations and send supported replies.', category: 'email', brandColor: '#EA4335', icon: Mail },
+  { id: 'salla', name: 'Salla', description: 'Sync a store catalog and order data for commerce-aware conversations.', category: 'ecommerce', brandColor: '#00B4D8', icon: '/icons/sllla.svg' },
+  { id: 'shopify', name: 'Shopify', description: 'Sync a store catalog, customers and orders.', category: 'ecommerce', brandColor: '#96BF48' },
+  { id: 'woocommerce', name: 'WooCommerce', description: 'Sync a store catalog, customers and orders.', category: 'ecommerce', brandColor: '#96588A' },
 ]
 
 export interface ChannelConnectWizardProps {
   isOpen: boolean
   onClose: () => void
   initialChannel?: ChannelOption | null
-  onTriggerOAuth: (channel: ChannelOption) => Promise<void>
+  onContinueConnection: (channel: ChannelOption) => Promise<void>
 }
 
-export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, onTriggerOAuth }: ChannelConnectWizardProps) {
+export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, onContinueConnection }: ChannelConnectWizardProps) {
   const [step, setStep] = useState<1 | 2>(initialChannel ? 2 : 1)
   const [selectedChannel, setSelectedChannel] = useState<ChannelOption>(initialChannel || ALL_CHANNELS[0])
   const [authLoading, setAuthLoading] = useState(false)
@@ -51,7 +55,7 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
     setAuthLoading(true)
     setAuthError(null)
     try {
-      await onTriggerOAuth(selectedChannel)
+      await onContinueConnection(selectedChannel)
       onClose()
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'This integration could not be started.')
@@ -73,10 +77,10 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
           <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center font-bold text-xs">{step}</div>
           <div>
             <h3 className="text-sm font-bold text-text-primary tracking-tight">
-              {step === 1 ? 'Step 1: Choose Integration' : `Step 2: Authenticate ${selectedChannel.name}`}
+              {step === 1 ? 'Step 1: Choose Integration' : `Step 2: Connect ${selectedChannel.name}`}
             </h3>
             <p className="text-[11px] text-text-tertiary">
-              {step === 1 ? 'Select which channel or store you want to connect' : 'Continue to the provider to authorize this connection'}
+              {step === 1 ? 'Select a supported channel or store integration' : 'Continue with the secure setup for this integration'}
             </p>
           </div>
         </div>
@@ -110,14 +114,13 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
                   <div className="flex items-start justify-between gap-2 mb-2.5">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center p-2 bg-surface-card border" style={{ borderColor: `color-mix(in srgb, ${channel.brandColor} 30%, var(--border))` }}>
                       {typeof channel.icon === 'string' ? (
-                        <img src={channel.icon} alt={channel.name} className="w-[22px] h-[22px] object-contain" />
+                        <Image src={channel.icon} alt={channel.name} width={22} height={22} className="w-[22px] h-[22px] object-contain" unoptimized />
                       ) : channel.icon ? (
                         <channel.icon size={22} className="w-[22px] h-[22px]" style={{ color: channel.brandColor }} />
                       ) : (
-                        <ChannelIcon type={channel.id as any} size={22} />
+                        <ChannelIcon type={channel.id as ChannelIconId} size={22} />
                       )}
                     </div>
-                    {channel.isPopular && <Badge variant="brand" size="xs">Popular</Badge>}
                   </div>
                   <h4 className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">{channel.name}</h4>
                   <p className="text-[11px] text-text-tertiary mt-1 line-clamp-2 leading-relaxed">{channel.description}</p>
@@ -134,27 +137,27 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
           <div className="flex items-center gap-3.5 p-4 rounded-xl bg-surface-elevated border border-border">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center p-2.5 bg-surface-card border" style={{ borderColor: `color-mix(in srgb, ${selectedChannel.brandColor} 30%, var(--border))` }}>
               {typeof selectedChannel.icon === 'string' ? (
-                <img src={selectedChannel.icon} alt={selectedChannel.name} className="w-7 h-7 object-contain" />
+                <Image src={selectedChannel.icon} alt={selectedChannel.name} width={28} height={28} className="w-7 h-7 object-contain" unoptimized />
               ) : selectedChannel.icon ? (
                 <selectedChannel.icon size={28} className="w-7 h-7" style={{ color: selectedChannel.brandColor }} />
               ) : (
-                <ChannelIcon type={selectedChannel.id as any} size={28} />
+                <ChannelIcon type={selectedChannel.id as ChannelIconId} size={28} />
               )}
             </div>
-            <div><h4 className="text-sm font-bold text-text-primary">Connect {selectedChannel.name} to NazBiz</h4><p className="text-xs text-text-secondary mt-0.5">You will authorize access directly with {selectedChannel.name}.</p></div>
+            <div><h4 className="text-sm font-bold text-text-primary">Connect {selectedChannel.name} to NazBiz</h4><p className="text-xs text-text-secondary mt-0.5">Review the authorization or connection steps for this integration.</p></div>
           </div>
           <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border space-y-3">
             <div className="text-xs font-semibold text-text-primary flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-brand" /><span>Connection permissions</span></div>
             <ul className="space-y-2 text-xs text-text-secondary">
-              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Receive messages or store updates supported by this integration</span></li>
-              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Send replies or sync data allowed by the permissions you approve</span></li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Available messaging and store features depend on this integration.</span></li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Review provider permissions or connection details before continuing.</span></li>
             </ul>
           </div>
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs"><Lock className="w-4 h-4 shrink-0" /><span>Review the provider authorization screen to see the exact permissions requested.</span></div>
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs"><Lock className="w-4 h-4 shrink-0" /><span>Only continue if the displayed connection method and requested access are expected.</span></div>
           {authError && <div role="alert" className="rounded-lg border border-error/30 bg-error/5 px-3 py-2 text-xs text-error">{authError}</div>}
           <div className="flex items-center justify-between pt-2">
             <Button variant="outline" size="sm" icon={<ArrowLeft className="w-3.5 h-3.5" />} onClick={() => setStep(1)}>Back</Button>
-            <Button variant="primary" size="md" loading={authLoading} onClick={handleAuthenticate}>Continue to {selectedChannel.name}</Button>
+            <Button variant="primary" size="md" loading={authLoading} onClick={handleAuthenticate}>Continue setup</Button>
           </div>
         </div>
       )}

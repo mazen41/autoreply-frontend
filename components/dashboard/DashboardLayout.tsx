@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { springs, variants } from '../../lib/motion'
+import { motion } from 'framer-motion'
+import { springs } from '../../lib/motion'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import NotificationCenter from '../NotificationCenter'
@@ -32,6 +31,9 @@ import {
   CreditCard,
   ShieldCheck,
   ListTodo,
+  MessageSquarePlus,
+  BookOpen,
+  Rocket,
   HelpCircle,
   ChevronDown,
   Menu,
@@ -51,8 +53,6 @@ interface NavItemDef {
   href: string
   labelEn: string
   labelAr: string
-  badge?: string | number
-  badgeVariant?: 'brand' | 'ai' | 'warning'
 }
 
 interface NavGroupDef {
@@ -69,7 +69,8 @@ const NAV_GROUPS: NavGroupDef[] = [
     labelAr: 'الأساسية',
     items: [
       { icon: LayoutDashboard, href: '/dashboard', labelEn: 'Dashboard', labelAr: 'الرئيسية' },
-      { icon: Inbox, href: '/inbox', labelEn: 'Inbox', labelAr: 'الرسائل', badge: 3, badgeVariant: 'brand' },
+      { icon: Inbox, href: '/inbox', labelEn: 'Inbox', labelAr: 'الرسائل' },
+      { icon: Users, href: '/dashboard/contacts', labelEn: 'Contacts', labelAr: 'جهات الاتصال' },
       { icon: MessageCircle, href: '/dashboard/comments', labelEn: 'Comments', labelAr: 'التعليقات' },
       { icon: Radio, href: '/dashboard/channels', labelEn: 'Channels', labelAr: 'القنوات' },
       { icon: MessageCircle, href: '/dashboard/whatsapp', labelEn: 'WhatsApp', labelAr: 'واتساب' },
@@ -82,7 +83,7 @@ const NAV_GROUPS: NavGroupDef[] = [
     items: [
       { icon: Bot, href: '/dashboard/bots', labelEn: 'Bots', labelAr: 'البوتات' },
       { icon: Brain, href: '/dashboard/ai-knowledge', labelEn: 'AI Knowledge', labelAr: 'قاعدة المعرفة' },
-      { icon: GraduationCap, href: '/dashboard/training', labelEn: 'Training', labelAr: 'التدريب', badge: 12, badgeVariant: 'ai' },
+      { icon: GraduationCap, href: '/dashboard/training', labelEn: 'Training', labelAr: 'التدريب' },
       { icon: BarChart3, href: '/dashboard/analytics', labelEn: 'Analytics', labelAr: 'التحليلات' },
     ],
   },
@@ -94,6 +95,7 @@ const NAV_GROUPS: NavGroupDef[] = [
       { icon: Send, href: '/dashboard/campaigns', labelEn: 'Campaigns', labelAr: 'الحملات' },
       { icon: GitBranch, href: '/dashboard/sequences', labelEn: 'Sequences', labelAr: 'التسلسلات' },
       { icon: PauseCircle, href: '/dashboard/automation-controls', labelEn: 'Run controls', labelAr: 'التحكم في التشغيل' },
+      { icon: Rocket, href: '/dashboard/growth', labelEn: 'Growth tools', labelAr: 'أدوات النمو' },
     ],
   },
   {
@@ -103,6 +105,8 @@ const NAV_GROUPS: NavGroupDef[] = [
     items: [
       { icon: Users, href: '/dashboard/team', labelEn: 'Team', labelAr: 'الفريق' },
       { icon: ListTodo, href: '/dashboard/handoffs', labelEn: 'Handoffs', labelAr: 'التصعيدات' },
+      { icon: MessageSquarePlus, href: '/dashboard/cases', labelEn: 'Cases', labelAr: 'الحالات' },
+      { icon: BookOpen, href: '/dashboard/help-center', labelEn: 'Help Center', labelAr: 'مركز المساعدة' },
       { icon: Workflow, href: '/dashboard/workflows', labelEn: 'Workflows', labelAr: 'سير العمل' },
       { icon: FileSpreadsheet, href: '/dashboard/reports', labelEn: 'Reports', labelAr: 'التقارير' },
       { icon: Layers, href: '/dashboard/multimodal', labelEn: 'Multimodal', labelAr: 'متعدد الوسائط' },
@@ -134,6 +138,7 @@ function useUser() {
   const [businesses, setBusinesses] = useState<BusinessOption[]>([])
   const [selectedBusinessId, setSelectedBusinessIdState] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authIssue, setAuthIssue] = useState<'unauthenticated' | 'verification_required' | 'unavailable' | null>(null)
 
   const selectBusiness = useCallback((businessId: number) => {
     setSelectedBusinessIdState(businessId)
@@ -141,64 +146,76 @@ function useUser() {
     window.dispatchEvent(new CustomEvent('naz:business-changed', { detail: { businessId } }))
   }, [])
 
-  useEffect(() => {
+  const loadUser = useCallback(async () => {
+    setLoading(true)
+    setAuthIssue(null)
     const token = document.cookie
       .split(';')
       .find((c) => c.trim().startsWith('naz_token='))
       ?.split('=')[1]
 
     if (!token) {
-      // In dev environment, allow graceful fallback user if api is unreachable
-      setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })
+      setUser(null)
+      setAuthIssue('unauthenticated')
       setLoading(false)
       return
     }
 
-    const load = async () => {
-      try {
-        const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        })
-        const data = await r.json().catch(() => null)
-        if (!r.ok || data?.requires_verification || data?.email_verified === false) {
-          setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })
-          return
-        }
-        setUser(data)
-        const businessResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/businesses`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        })
-        if (businessResponse.ok) {
-          const result = await businessResponse.json()
-          const options: BusinessOption[] = Array.isArray(result.businesses) ? result.businesses : []
-          setBusinesses(options)
-          const stored = Number(window.localStorage.getItem('naz_selected_business_id'))
-          const active = options.find((business) => business.id === stored)
-            || options.find((business) => business.is_primary)
-            || options[0]
-          if (active) selectBusiness(active.id)
-          else window.localStorage.removeItem('naz_selected_business_id')
-        } else {
-          // Could not verify business list: never keep a stale id that may belong to a removed business.
-          window.localStorage.removeItem('naz_selected_business_id')
-        }
-      } catch {
-        setUser({ name: 'Alexander Wright', email: 'alex@nazbiz.io', onboarding_completed: true })
-      } finally {
-        setLoading(false)
+    try {
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/user`, { headers })
+      const data = await r.json().catch(() => null)
+      if (r.status === 401 || r.status === 403) {
+        setUser(null)
+        setAuthIssue(data?.requires_verification || data?.email_verified === false ? 'verification_required' : 'unauthenticated')
+        return
       }
+      if (!r.ok || !data || typeof data.email !== 'string') throw new Error('Unable to load the authenticated user')
+      if (data.requires_verification || data.email_verified === false) {
+        setUser(null)
+        setAuthIssue('verification_required')
+        return
+      }
+      setUser(data)
+
+      const businessResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/businesses`, { headers })
+      if (businessResponse.status === 401 || businessResponse.status === 403) {
+        setUser(null)
+        setAuthIssue('unauthenticated')
+        return
+      }
+      if (!businessResponse.ok) throw new Error('Unable to load workspaces')
+
+      const result = await businessResponse.json()
+      const options: BusinessOption[] = Array.isArray(result.businesses) ? result.businesses : []
+      setBusinesses(options)
+      const stored = Number(window.localStorage.getItem('naz_selected_business_id'))
+      const active = options.find((business) => business.id === stored)
+        || options.find((business) => business.is_primary)
+        || options[0]
+      if (active) selectBusiness(active.id)
+      else window.localStorage.removeItem('naz_selected_business_id')
+    } catch {
+      setUser(null)
+      setAuthIssue('unavailable')
+    } finally {
+      setLoading(false)
     }
-    void load()
   }, [selectBusiness])
 
-  return { user, businesses, selectedBusinessId, selectBusiness, loading }
+  useEffect(() => {
+    const task = window.setTimeout(() => { void loadUser() }, 0)
+    return () => window.clearTimeout(task)
+  }, [loadUser])
+
+  return { user, businesses, selectedBusinessId, selectBusiness, loading, authIssue, retry: loadUser }
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isRTL, toggleLang } = useLang()
   const pathname = usePathname()
   const router = useRouter()
-  const { user, businesses, selectedBusinessId, selectBusiness, loading: authLoading } = useUser()
+  const { user, businesses, selectedBusinessId, selectBusiness, loading: authLoading, authIssue, retry: retryAuth } = useUser()
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId)
 
   const [collapsed, setCollapsed] = useState(false)
@@ -210,6 +227,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userMenuRef = useRef<HTMLDivElement>(null)
   const workspaceMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (authIssue === 'unauthenticated') router.replace('/login')
+    if (authIssue === 'verification_required') router.replace('/verify-email')
+  }, [authIssue, router])
 
   // Global Keyboard shortcuts: ⌘K or Ctrl+K for command palette
   useEffect(() => {
@@ -256,7 +278,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentItem = ALL_ITEMS.find((n) => pathname === n.href || (n.href !== '/dashboard' && pathname.startsWith(n.href)))
   const pageTitle = currentItem ? (isRTL ? currentItem.labelAr : currentItem.labelEn) : isRTL ? 'الرئيسية' : 'Dashboard'
 
-  if (authLoading) {
+  if (authLoading || authIssue === 'unauthenticated' || authIssue === 'verification_required') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -267,6 +289,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="w-2 h-2 rounded-full bg-brand animate-ping" />
             Loading NazBiz...
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (authIssue === 'unavailable' || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div role="alert" className="max-w-md rounded-xl border border-border bg-surface p-6 text-center">
+          <h1 className="text-base font-bold text-text-primary">Could not load your account</h1>
+          <p className="mt-2 text-sm text-text-secondary">Check your connection and try again. Your dashboard is hidden until your account can be verified.</p>
+          <button type="button" onClick={() => void retryAuth()} className="mt-4 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-text">Try again</button>
         </div>
       </div>
     )
@@ -310,9 +344,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold text-text-primary truncate flex items-center gap-1.5">
                   <span>{selectedBusiness?.name || 'Select business'}</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-brand/10 text-brand font-bold border border-brand/20">
-                    PRO
-                  </span>
                 </div>
                 <div className="text-[10px] text-text-tertiary truncate">{user?.email || 'Business workspace'}</div>
               </div>
@@ -403,26 +434,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </motion.span>
 
                     {!collapsed && (
-                      <>
-                        <span className="relative z-10 truncate flex-1">{label}</span>
-                        <AnimatePresence>
-                          {item.badge !== undefined && (
-                            <motion.span
-                              initial={{ scale: 0.5, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              exit={{ scale: 0.5, opacity: 0 }}
-                              transition={springs.bouncy}
-                              className={`relative z-10 text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-tight ${
-                                item.badgeVariant === 'ai'
-                                  ? 'bg-brand/10 text-brand border border-brand/20'
-                                  : 'bg-surface-card border border-border text-text-secondary'
-                              }`}
-                            >
-                              {item.badge}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </>
+                      <span className="relative z-10 truncate flex-1">{label}</span>
                     )}
                   </Link>
                 )
@@ -513,17 +525,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}
             >
               <Avatar
-                name={user?.name || 'Alexander Wright'}
+                name={user.name}
                 size={collapsed ? 'sm' : 'md'}
-                status="online"
               />
               {!collapsed && (
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-text-primary truncate">
-                    {user?.name || 'Alexander Wright'}
+                    {user.name}
                   </div>
                   <div className="text-[10px] text-text-tertiary truncate">
-                    {user?.email || 'alex@nazbiz.io'}
+                    {user.email}
                   </div>
                 </div>
               )}
@@ -538,10 +549,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <div className="px-3 py-2 border-b border-border/60 mb-1">
                   <div className="text-xs font-bold text-text-primary truncate">
-                    {user?.name || 'Alexander Wright'}
+                    {user.name}
                   </div>
                   <div className="text-[10px] text-text-tertiary truncate">
-                    {user?.email || 'alex@nazbiz.io'}
+                    {user.email}
                   </div>
                 </div>
                 <Link
@@ -638,16 +649,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Right: AI Status Pill, Language, Theme, Notifications */}
           <div className="flex items-center gap-2.5">
-            {/* AI Status Badge */}
+            {/* Product navigation label; no live-status or latency claim. */}
             <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-elevated border border-border text-text-secondary text-xs font-medium select-none shadow-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
-              </span>
               <span className="text-[11px] text-text-primary font-semibold tracking-wide">AI Copilot</span>
-              <span className="text-[10px] text-text-tertiary border-l border-border pl-2">
-                1.2s avg
-              </span>
             </div>
 
             {/* Language toggle */}

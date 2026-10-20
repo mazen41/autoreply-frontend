@@ -44,7 +44,9 @@ export default function InboxPage() {
 
   const [showCopilot, setShowCopilot] = useState(false)
   const [composerInitialText, setComposerInitialText] = useState('')
-  const [bots, setBots] = useState<Array<{ id: number; name: string }>>([])
+  const [creatingFeedbackLink, setCreatingFeedbackLink] = useState(false)
+  const [feedbackNotice, setFeedbackNotice] = useState('')
+  const [bots, setBots] = useState<Array<{ id: number; name: string; status: string; channel_ids: number[] }>>([])
   const [channels, setChannels] = useState<Array<{ id: number; type: string; page_name: string | null; page_id?: string | null }>>([])
   const [isUpdatingBot, setIsUpdatingBot] = useState(false)
 
@@ -58,7 +60,14 @@ export default function InboxPage() {
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.bots) setBots(data.bots.map((b: any) => ({ id: b.id, name: b.name })))
+        if (Array.isArray(data?.bots)) {
+          setBots(data.bots.map((bot: { id: number; name: string; status?: string; channels?: Array<{ id: number }> }) => ({
+            id: bot.id,
+            name: bot.name,
+            status: bot.status ?? 'inactive',
+            channel_ids: Array.isArray(bot.channels) ? bot.channels.map(channel => channel.id) : [],
+          })))
+        }
       })
       .catch(() => {})
 
@@ -100,6 +109,24 @@ export default function InboxPage() {
     }
   }, [selectConversation])
 
+  const requestCustomerFeedback = useCallback(async () => {
+    if (!selectedConv) return
+    setCreatingFeedbackLink(true); setFeedbackNotice('')
+    try {
+      const response = await fetch(`${API}/api/conversations/${selectedConv.id}/csat-survey`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.message || 'Could not create a feedback link.')
+      const feedbackUrl = `${window.location.origin}/feedback/${body.token}`
+      setComposerInitialText(`Thanks for chatting with us. Please share quick feedback: ${feedbackUrl}`)
+      setFeedbackNotice('Feedback link added to the reply box. Review and send it using the normal channel reply controls.')
+    } catch (cause) {
+      setFeedbackNotice(cause instanceof Error ? cause.message : 'Could not create a feedback link.')
+    } finally { setCreatingFeedbackLink(false) }
+  }, [selectedConv])
+
   // Update copilot visibility — untouched logic
   useEffect(() => {
     if (selectedConv?.ai_enabled) setShowCopilot(true)
@@ -122,7 +149,7 @@ export default function InboxPage() {
 
   const availableBotsForConv = useMemo(() => {
     if (!selectedConv?.channel?.id) return []
-    return bots.filter(() => true)
+    return bots.filter(bot => bot.status === 'active' && bot.channel_ids.includes(selectedConv.channel.id!))
   }, [bots, selectedConv])
 
   const handleCorrectAI = useCallback(async (
@@ -175,6 +202,8 @@ export default function InboxPage() {
             conv={selectedConv}
             isRTL={isRTL}
             onToggleAI={() => toggleAi(selectedConv.id)}
+            onRequestFeedback={() => void requestCustomerFeedback()}
+            isCreatingFeedbackLink={creatingFeedbackLink}
             onStatusChange={(s) => updateConversationStatus(selectedConv.id, s)}
             onToggleLeftPanel={() => setLeftCollapsed(v => !v)}
             onToggleRightPanel={() => {
@@ -191,6 +220,8 @@ export default function InboxPage() {
             onBotChange={handleBotChange}
             isUpdatingBot={isUpdatingBot}
           />
+
+          {feedbackNotice && <p role="status" className="border-b border-border bg-surface px-3 py-2 text-xs text-text-secondary">{feedbackNotice}</p>}
 
           <AIStatusBar conv={selectedConv} isRTL={isRTL} />
 

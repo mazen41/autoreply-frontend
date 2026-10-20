@@ -6,12 +6,10 @@ import Button from '../ui/Button'
 import Badge from '../ui/Badge'
 import {
   Sparkles,
-  Settings,
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Trash2,
   Sliders,
   ShieldCheck,
@@ -43,7 +41,6 @@ export interface ChannelDef {
   description: string
   category: 'messaging' | 'social' | 'ecommerce' | 'email'
   brandColor: string
-  badgeText?: string
   disabled?: boolean
 }
 
@@ -117,11 +114,6 @@ export default function ChannelCard({
                 <h3 className="text-sm font-bold text-text-primary tracking-tight">
                   {channel.name}
                 </h3>
-                {channel.badgeText && (
-                  <Badge variant="brand" size="xs">
-                    {channel.badgeText}
-                  </Badge>
-                )}
               </div>
               <p className="text-xs text-text-tertiary mt-0.5 line-clamp-1">
                 {channel.description}
@@ -307,11 +299,13 @@ export default function ChannelCard({
         {!isConnected && (
           <div className="py-3 space-y-2">
             <div className="text-xs text-text-secondary leading-relaxed">
-              Integrate {channel.name} to receive customer messages, automate replies, and track conversation metrics directly in your central inbox.
+              {channel.category === 'ecommerce'
+                ? 'Connect this store to sync product and order data for commerce-aware conversations.'
+                : `Connect ${channel.name} to receive supported customer messages and send supported replies.`}
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary pt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-success/80" />
-              <span>Official API Partner • 2-minute setup</span>
+              <span>Connection method and features depend on the provider.</span>
             </div>
           </div>
         )}

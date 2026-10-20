@@ -5,7 +5,7 @@ import { ApiConversation, ApiBot } from '../../hooks/useInbox'
 import {
   Bot, User, AlertTriangle, ChevronDown, CheckCircle, Archive,
   Clock, UserPlus, ArrowRight, PanelLeft, PanelRight, Phone,
-  MoreHorizontal, Zap, X, Loader2
+  MoreHorizontal, Zap, X, Loader2, Star
 } from 'lucide-react'
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
@@ -34,13 +34,16 @@ interface ConversationHeaderProps {
   availableAgents?: Array<{ id: number; name: string }>
   onAgentChange?: (agentId: number | null) => void
   isUpdatingAgent?: boolean
+  onRequestFeedback?: () => void
+  isCreatingFeedbackLink?: boolean
 }
 
 export default function ConversationHeader({
   conv, isRTL, onToggleAI, onStatusChange,
   onToggleLeftPanel, onToggleRightPanel, leftCollapsed, rightCollapsed,
   availableBots = [], onBotChange, isUpdatingBot = false,
-  availableAgents = [], onAgentChange, isUpdatingAgent = false
+  availableAgents = [], onAgentChange, isUpdatingAgent = false,
+  onRequestFeedback, isCreatingFeedbackLink = false
 }: ConversationHeaderProps) {
   const [statusOpen, setStatusOpen] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -182,6 +185,10 @@ export default function ConversationHeader({
           </div>
         )}
       </div>
+
+      {conv.status === 'closed' && onRequestFeedback && <button type="button" onClick={onRequestFeedback} disabled={isCreatingFeedbackLink} className="flex flex-shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-[11px] font-semibold text-text-secondary hover:bg-surface-elevated disabled:opacity-50" title={isRTL ? 'إنشاء رابط تقييم للعميل' : 'Add a customer feedback link to the reply'}>
+        {isCreatingFeedbackLink ? <Loader2 size={12} className="animate-spin" /> : <Star size={12} />}{isRTL ? 'التقييم' : 'Ask for feedback'}
+      </button>}
 
       {/* Agent Assignment */}
       {availableAgents.length > 0 && onAgentChange && (

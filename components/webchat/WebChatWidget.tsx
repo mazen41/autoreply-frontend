@@ -1,51 +1,90 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useLang } from '../../lib/LangContext'
-import { useTheme } from '../../lib/ThemeContext'
 import { MessageSquare, X, Send, Minimize2, Maximize2 } from 'lucide-react'
 
-export default function WebChatWidget() {
-  const { t, isRTL } = useLang()
-  const { theme } = useTheme()
+const API = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api`
+
+export default function WebChatWidget({ businessId }: { businessId: number }) {
+  const { isRTL } = useLang()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Array<{ id: number; text: string; sender: 'user' | 'bot' }>>([])
   const [inputText, setInputText] = useState('')
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [hasStarted, setHasStarted] = useState(false)
+  const [visitorName, setVisitorName] = useState('')
+  const [visitorEmail, setVisitorEmail] = useState('')
+  const [sessionError, setSessionError] = useState('')
 
-  useEffect(() => {
-    // Create session when widget opens
-    if (isOpen && !sessionId) {
-      createSession()
-    }
-  }, [isOpen])
-
-  const createSession = async () => {
+  const createSession = useCallback(async () => {
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/web-chat/sessions`, {
+      const visitorSessionId = window.localStorage.getItem(`naz_web_chat_${businessId}`)
+      const pageUrl = window.location.href
+      const referrerUrl = document.referrer || pageUrl
+      const query = new URLSearchParams(window.location.search)
+      const siteUrl = query.get('embed') === '1' ? referrerUrl : pageUrl
+      const response = await fetch(`${API}/web-chat/sessions?business_id=${businessId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify({
-          page_url: window.location.href,
-          user_agent: navigator.userAgent,
+          business_id: businessId,
+          ...(visitorSessionId ? { session_id: visitorSessionId } : {}),
+          page_url: pageUrl,
+          referrer_url: referrerUrl,
+          site_url: siteUrl,
+          visitor_name: visitorName.trim() || null,
+          visitor_email: visitorEmail.trim() || null,
+          utm_source: query.get('utm_source'),
+          utm_medium: query.get('utm_medium'),
+          utm_campaign: query.get('utm_campaign'),
         }),
       })
       const data = await response.json()
+      if (!response.ok || !data.session_id) throw new Error(data.message || 'Could not start this chat.')
+      window.localStorage.setItem(`naz_web_chat_${businessId}`, data.session_id)
       setSessionId(data.session_id)
+      setSessionError('')
       
       // Add welcome message
       setMessages([
         { id: 1, text: isRTL ? 'مرحباً! كيف يمكنني مساعدتك؟' : 'Hello! How can I help you?', sender: 'bot' }
       ])
     } catch (error) {
+      setSessionError(error instanceof Error ? error.message : 'Could not start this chat.')
       console.error('Failed to create session:', error)
     }
-  }
+  }, [businessId, isRTL, visitorName, visitorEmail])
+
+  useEffect(() => {
+    if (isOpen && hasStarted && !sessionId) queueMicrotask(() => { void createSession() })
+  }, [isOpen, hasStarted, sessionId, createSession])
+
+  useEffect(() => {
+    if (!sessionId) return
+    const poll = async () => {
+      try {
+        const response = await fetch(`${API}/web-chat/sessions/${encodeURIComponent(sessionId)}/messages?business_id=${businessId}`)
+        if (!response.ok) return
+        const data = await response.json()
+        const nextMessages = (data.messages || []).map((message: { id: number; content: string; direction: string }) => ({
+          id: message.id,
+          text: message.content,
+          sender: message.direction === 'inbound' ? 'user' as const : 'bot' as const,
+        }))
+        setMessages((current) => {
+          const welcome = current.find((message) => message.id === 1 && message.sender === 'bot')
+          return [ ...(welcome ? [welcome] : []), ...nextMessages ]
+        })
+      } catch { /* Keep the conversation visible if a poll is temporarily unavailable. */ }
+    }
+    void poll()
+    const timer = window.setInterval(() => { void poll() }, 3000)
+    return () => window.clearInterval(timer)
+  }, [businessId, sessionId])
 
   const sendMessage = async () => {
     if (!inputText.trim() || !sessionId) return
@@ -55,12 +94,10 @@ export default function WebChatWidget() {
     setInputText('')
 
     try {
-      const token = document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1]
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/web-chat/messages`, {
+      const response = await fetch(`${API}/web-chat/messages?business_id=${businessId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify({
           session_id: sessionId,
@@ -70,6 +107,7 @@ export default function WebChatWidget() {
       
       const data = await response.json()
       
+      if (!response.ok) throw new Error(data.message || 'Message could not be sent.')
       if (data.reply) {
         setMessages(prev => [...prev, { id: Date.now() + 1, text: data.reply, sender: 'bot' }])
       }
@@ -147,7 +185,12 @@ export default function WebChatWidget() {
         <>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: '380px' }}>
-            {messages.map((msg) => (
+            {!hasStarted ? <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); setHasStarted(true) }}>
+              <p className="text-sm">{isRTL ? 'مرحباً! ابدأ المحادثة. يمكنك إضافة اسمك وبريدك الإلكتروني اختيارياً.' : 'Hello! Start a chat. You can optionally share your name and email.'}</p>
+              <input aria-label={isRTL ? 'الاسم' : 'Your name (optional)'} maxLength={191} value={visitorName} onChange={(event) => setVisitorName(event.target.value)} placeholder={isRTL ? 'الاسم (اختياري)' : 'Your name (optional)'} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input aria-label={isRTL ? 'البريد الإلكتروني' : 'Your email (optional)'} type="email" maxLength={191} value={visitorEmail} onChange={(event) => setVisitorEmail(event.target.value)} placeholder={isRTL ? 'البريد الإلكتروني (اختياري)' : 'Your email (optional)'} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <button type="submit" className="rounded-lg px-4 py-2 text-sm font-medium" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>{isRTL ? 'ابدأ المحادثة' : 'Start chat'}</button>
+            </form> : messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`max-w-[80%] p-3 rounded-2xl ${
@@ -163,10 +206,11 @@ export default function WebChatWidget() {
                 {msg.text}
               </div>
             ))}
+            {sessionError && <p role="alert" className="text-sm text-red-600">{sessionError} <button className="underline" onClick={() => void createSession()}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</button></p>}
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          {hasStarted && <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -193,7 +237,7 @@ export default function WebChatWidget() {
                 <Send size={20} />
               </button>
             </div>
-          </div>
+          </div>}
         </>
       )}
     </div>

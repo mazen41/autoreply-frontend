@@ -7,14 +7,13 @@ import OSExperience from '../components/landing/OSExperience'
 import { useLang } from '../lib/LangContext'
 import { useAuth } from '../lib/AuthContext'
 import { springs, variants } from '../lib/motion'
-import Link from 'next/link'
 import Image from 'next/image'
-import { Zap, MessageSquare, Bot, ArrowRight, CheckCircle } from 'lucide-react'
+import { Zap, MessageSquare, ArrowRight, CheckCircle } from 'lucide-react'
 
 const PROOF_POINTS = [
-  { icon: CheckCircle, text: '78% AI autonomy rate' },
-  { icon: Zap, text: '1.2s avg response time' },
-  { icon: MessageSquare, text: 'WhatsApp, Instagram, Telegram & more' },
+  { icon: CheckCircle, text: 'Automate common customer questions' },
+  { icon: Zap, text: 'Manage conversations in one inbox' },
+  { icon: MessageSquare, text: 'Connect supported messaging channels' },
 ]
 
 const CHANNEL_LOGOS = [
@@ -76,7 +75,7 @@ function Hero() {
           <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
             {isRTL
               ? 'منصة ذكاء اصطناعي ترد تلقائياً على عملائك عبر واتساب وإنستغرام وفيسبوك — 24/7.'
-              : 'NazBiz handles every customer message on WhatsApp, Instagram, Telegram, and Gmail — autonomously, in seconds, 24/7.'}
+              : 'NazBiz helps your team respond to customer messages across connected channels with AI-assisted automation.'}
           </p>
         </motion.div>
 
@@ -117,7 +116,7 @@ function Hero() {
 
         {/* Channel logos strip */}
         <motion.div variants={variants.fadeUp} transition={springs.standard} className="pt-4">
-          <p className="text-[11px] text-text-muted uppercase tracking-widest font-semibold mb-4">Works with every channel</p>
+          <p className="text-[11px] text-text-muted uppercase tracking-widest font-semibold mb-4">Available channel integrations</p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {CHANNEL_LOGOS.map((ch) => (
               <motion.div

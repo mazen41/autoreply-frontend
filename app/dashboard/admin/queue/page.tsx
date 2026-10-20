@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useLang } from '../../../../lib/LangContext'
 import {
   RefreshCw, AlertTriangle, CheckCircle, XCircle,
-  ChevronDown, ChevronUp, Trash2, RotateCw, Activity
+  ChevronDown, ChevronUp, Trash2, RotateCw, Activity, HeartPulse
 } from 'lucide-react'
+import Link from 'next/link'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -23,8 +24,9 @@ interface QueueStats {
     data: Array<{
       id: number
       queue: string
-      payload: string
-      exception: string
+      job_name: string
+      exception_type: string
+      retry_safe: boolean
       failed_at: string
     }>
   }
@@ -39,7 +41,6 @@ export default function QueueMonitorPage() {
   const [retrying, setRetrying] = useState<number | null>(null)
 
   const fetchStats = useCallback(async () => {
-    setLoading(true)
     try {
       const token = getToken()
       const res = await fetch(`${API}/api/admin/queue/stats`, {
@@ -56,6 +57,9 @@ export default function QueueMonitorPage() {
   }, [])
 
   useEffect(() => {
+    // This effect synchronizes the remote queue snapshot; state changes occur
+    // after the fetch promise settles, not during render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats()
   }, [fetchStats])
 
@@ -97,12 +101,15 @@ export default function QueueMonitorPage() {
           <p className="text-sm text-[var(--text-secondary)] mt-1">{L('Monitor queue workers and failed jobs', 'مراقبة عمال الانتظار والمهام الفاشلة')}</p>
         </div>
         <button
-          onClick={fetchStats}
+          onClick={() => { setLoading(true); void fetchStats() }}
           disabled={loading}
           className="p-2 rounded-lg border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
+        <Link href="/dashboard/admin/system-health" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] text-sm hover:bg-[var(--surface-elevated)]">
+          <HeartPulse size={16} /> {L('System health', 'صحة النظام')}
+        </Link>
       </div>
 
       {/* Summary Cards */}
@@ -183,16 +190,16 @@ export default function QueueMonitorPage() {
                   <div className="flex items-center gap-3">
                     <AlertTriangle size={16} className="text-error" />
                     <div>
-                      <p className="text-sm font-bold text-[var(--text-primary)]">Job #{job.id}</p>
+                      <p className="text-sm font-bold text-[var(--text-primary)]">{job.job_name || `Job #${job.id}`}</p>
                       <p className="text-xs text-[var(--text-tertiary)]">{job.queue} • {new Date(job.failed_at).toLocaleString()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={e => { e.stopPropagation(); retryJob(job.id) }}
-                      disabled={retrying === job.id}
+                      disabled={retrying === job.id || !job.retry_safe}
                       className="p-1.5 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors disabled:opacity-50"
-                      title={L('Retry', 'إعادة المحاولة')}
+                      title={job.retry_safe ? L('Retry safe job', 'إعادة محاولة آمنة') : L('Manual review required before retry', 'تتطلب إعادة المحاولة مراجعة يدوية')}
                     >
                       <RotateCw size={14} className={retrying === job.id ? 'animate-spin' : ''} />
                     </button>
@@ -208,10 +215,9 @@ export default function QueueMonitorPage() {
                 </div>
                 {expandedJob === job.id && (
                   <div className="p-4 border-t border-[var(--border)] bg-[var(--surface)]">
-                    <p className="text-xs font-bold text-[var(--text-tertiary)] mb-2">{L('Exception', 'الاستثناء')}</p>
-                    <pre className="text-xs text-error bg-error/5 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
-                      {job.exception || 'No exception details available'}
-                    </pre>
+                    <p className="text-xs font-bold text-[var(--text-tertiary)] mb-2">{L('Failure type', 'نوع الفشل')}</p>
+                    <p className="text-xs text-error bg-error/5 p-3 rounded-lg">{job.exception_type || L('Unclassified failure', 'فشل غير مصنف')}</p>
+                    {!job.retry_safe && <p className="text-xs text-[var(--text-secondary)] mt-2">{L('Retry is disabled until an operator verifies this job’s external side effects.', 'إعادة المحاولة متوقفة حتى يتحقق المسؤول من الآثار الخارجية للمهمة.')}</p>}
                   </div>
                 )}
               </div>

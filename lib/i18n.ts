@@ -467,7 +467,7 @@ export const translations = {
       items: [
         { q: 'Do I need technical experience to use Naz?', a: 'Not at all. Naz is designed to be easy for any business owner. Setup takes less than 10 minutes.' },
         { q: 'Will AI reply for me or suggest replies?', a: 'You can choose both modes — fully automatic replies or suggested replies for you to review and approve.' },
-        { q: 'Which channels are supported?', a: 'Instagram, Facebook, WhatsApp, Gmail, TikTok, and X (Twitter). Coming soon: Snapchat and Telegram.' },
+        { q: 'Which channels are supported?', a: 'Messaging: Instagram, Facebook Messenger, WhatsApp, Gmail, and Telegram. Store connections: Salla, Shopify, and WooCommerce. TikTok messaging and comment automation are not currently supported.' },
         { q: 'Is my data secure?', a: 'Yes. We use end-to-end SSL encryption and your data is never shared with any third party.' },
         { q: 'Can I cancel anytime?', a: 'Yes, you can cancel your subscription at any time with no additional fees.' },
         { q: 'Is there a free trial?', a: 'Yes! All plans come with a 14-day full free trial with no credit card required.' },
