@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, Search, Users, Upload, RefreshCw, MessageSquare, ShoppingBag, Plus, X } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import Button from '../../../components/ui/Button'
@@ -37,10 +37,12 @@ export default function ContactsPage() {
   const [csvFile,setCsvFile] = useState<File|null>(null)
   const [importPreview,setImportPreview] = useState<{valid_rows:number;invalid_rows:number;errors:Array<{row:number;error:string}>}|null>(null)
   const [edit,setEdit] = useState({name:'',email:'',phone:'',tags:'',lead_score:0,lifecycle_stage:'new_lead',language:'',source:''})
+  const loadSequence = useRef(0)
 
   const headers = useMemo(() => authHeaders(businessId), [businessId])
 
   const load = useCallback(async (id:number, nextPage=page) => {
+    const requestSequence = ++loadSequence.current
     setLoading(true); setError('')
     try {
       const params = new URLSearchParams({per_page:'25',page:String(nextPage)})
@@ -51,14 +53,17 @@ export default function ContactsPage() {
         fetch(`${API}/customers?${params}`,{headers}),
         fetch(`${API}/channels`,{headers}),
       ])
+      if (requestSequence !== loadSequence.current) return
       if (!contactsResponse.ok || !channelsResponse.ok) throw new Error(L('Could not load contacts for the selected workspace.','تعذر تحميل جهات الاتصال لمساحة العمل المحددة.'))
       const contactPayload = await contactsResponse.json()
       setContacts(Array.isArray(contactPayload.data) ? contactPayload.data : [])
       setPage(contactPayload.current_page || 1); setLastPage(contactPayload.last_page || 1)
       const channelPayload = await channelsResponse.json()
       setChannels(Array.isArray(channelPayload) ? channelPayload.filter((c:Channel)=>!['salla','shopify','woocommerce'].includes(c.type)) : (channelPayload.data || []))
-    } catch (cause) { setError(cause instanceof Error ? cause.message : L('Could not load contacts.','تعذر تحميل جهات الاتصال.')) }
-    finally { setLoading(false) }
+    } catch (cause) {
+      if (requestSequence === loadSequence.current) setError(cause instanceof Error ? cause.message : L('Could not load contacts.','تعذر تحميل جهات الاتصال.'))
+    }
+    finally { if (requestSequence === loadSequence.current) setLoading(false) }
   },[page,search,stage,channelId,headers,L])
 
   const loadDetail = useCallback(async (id:number, customerId:number) => {
