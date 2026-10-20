@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import NumberFlow from '@number-flow/react'
+import { motion } from 'framer-motion'
 import { springs, variants } from '../../lib/motion'
 import PageHeader from '../../components/ui/PageHeader'
 import MetricCard from '../../components/ui/MetricCard'
@@ -19,18 +18,10 @@ import {
   MessageSquare,
   Sparkles,
   Clock,
-  Users,
-  TrendingUp,
   Radio,
   ArrowUpRight,
-  AlertTriangle,
-  Send,
-  Zap,
-  CheckCircle2,
   ChevronRight,
-  Bot,
   Plus,
-  ExternalLink,
 } from 'lucide-react'
 
 function getToken(): string {
@@ -46,6 +37,35 @@ const SECTION_LABELS: Record<DashboardSection, string> = {
   stats: 'Message totals', ai: 'AI performance', channels: 'Connected channels', daily: 'Message chart', inbox: 'Recent activity',
 }
 
+type DashboardStats = { total_messages?: number }
+type DashboardAiPerformance = { ai_share_of_replies?: number; auto_replies?: number; median_response_time_formatted?: string }
+type DashboardChannelType = React.ComponentProps<typeof ChannelIcon>['type']
+type DashboardChannel = { id: number; type: DashboardChannelType; page_name?: string | null; page_id?: string | null; status: string }
+type DashboardBot = { id: number; name: string; status: string }
+type ApiConversation = {
+  id: number
+  sender_name?: string | null
+  sender_id?: string | null
+  channel?: { type?: DashboardChannelType | null }
+  latest_message?: { content?: string | null; is_ai?: boolean | null } | null
+  message_preview?: string | null
+  last_message?: string | null
+  ai_replied?: boolean | null
+  last_message_at?: string | null
+  updated_at?: string | null
+  created_at?: string | null
+  status?: string | null
+}
+type RecentConversation = {
+  id: number
+  sender_name: string
+  channel: DashboardChannelType
+  message: string
+  ai_replied: boolean
+  time: string | null
+  status: string | null
+}
+
 function SectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div role="alert" className="flex min-h-[116px] flex-col items-start justify-center gap-2 rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-text-primary">
@@ -56,12 +76,15 @@ function SectionError({ message, onRetry }: { message: string; onRetry: () => vo
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<any>(null)
-  const [recentConversations, setRecentConversations] = useState<any[]>([])
-  const [channels, setChannels] = useState<any[]>([])
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [recentConversations, setRecentConversations] = useState<RecentConversation[]>([])
+  const [channels, setChannels] = useState<DashboardChannel[]>([])
+  const [bots, setBots] = useState<DashboardBot[]>([])
+  const [selectedChannelId, setSelectedChannelId] = useState('')
+  const [selectedBotId, setSelectedBotId] = useState('')
   const [dailyMessages, setDailyMessages] = useState<number[]>([])
   const [dailyDates, setDailyDates] = useState<string[]>([])
-  const [aiPerformance, setAiPerformance] = useState<any>(null)
+  const [aiPerformance, setAiPerformance] = useState<DashboardAiPerformance | null>(null)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d')
   const [sectionLoading, setSectionLoading] = useState<Record<DashboardSection, boolean>>({ stats: true, ai: true, channels: true, daily: true, inbox: true })
   const [sectionErrors, setSectionErrors] = useState<Record<DashboardSection, string | null>>({ stats: null, ai: null, channels: null, daily: null, inbox: null })
@@ -86,31 +109,53 @@ export default function DashboardPage() {
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
   const days = Number.parseInt(timeRange, 10)
-  const loadStats = useCallback(() => loadSection('stats', `/api/stats?days=${days}&timezone=${encodeURIComponent(timezone)}`, setStats), [days, loadSection, timezone])
-  const loadAi = useCallback(() => loadSection('ai', `/api/reports/ai-performance?days=${days}&timezone=${encodeURIComponent(timezone)}`, setAiPerformance), [days, loadSection, timezone])
-  const loadDaily = useCallback(() => loadSection('daily', `/api/reports/daily-messages?days=${days}&timezone=${encodeURIComponent(timezone)}`, (data: any) => {
+  const dashboardParams = new URLSearchParams({ days: String(days), timezone })
+  if (selectedChannelId) dashboardParams.set('channel_id', selectedChannelId)
+  if (selectedBotId) dashboardParams.set('bot_id', selectedBotId)
+  const dashboardQuery = dashboardParams.toString()
+  const inboxParams = new URLSearchParams()
+  if (selectedChannelId) inboxParams.set('channel_id', selectedChannelId)
+  if (selectedBotId) inboxParams.set('bot_id', selectedBotId)
+  const inboxQuery = inboxParams.toString()
+  const loadStats = useCallback(() => loadSection('stats', `/api/stats?${dashboardQuery}`, setStats), [dashboardQuery, loadSection])
+  const loadAi = useCallback(() => loadSection('ai', `/api/reports/ai-performance?${dashboardQuery}`, setAiPerformance), [dashboardQuery, loadSection])
+  const loadDaily = useCallback(() => loadSection<{data?: number[]; dates?: string[]}>('daily', `/api/reports/daily-messages?${dashboardQuery}`, (data) => {
     setDailyMessages(Array.isArray(data.data) ? data.data.map(Number) : [])
     setDailyDates(Array.isArray(data.dates) ? data.dates : [])
-  }), [days, loadSection, timezone])
-  const loadChannels = useCallback(() => loadSection('channels', '/api/channels', (data: any) => {
+  }), [dashboardQuery, loadSection])
+  const loadChannels = useCallback(() => loadSection<DashboardChannel[] | {data?: DashboardChannel[]}>('channels', '/api/channels', (data) => {
     const channelList = Array.isArray(data) ? data : data.data || []
-    setChannels(channelList.filter((channel: any) => channel.status === 'connected'))
+    setChannels(channelList.filter((channel) => channel.status === 'connected'))
   }), [loadSection])
-  const loadInbox = useCallback(() => loadSection('inbox', '/api/inbox', (data: any) => {
+  const loadBots = useCallback(async () => {
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+      const response = await fetch(`${API}/api/bots`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
+      if (!response.ok) throw new Error(`Could not load bots (${response.status}).`)
+      const payload = await response.json()
+      const botList = Array.isArray(payload) ? payload as DashboardBot[] : (payload.bots || payload.data || []) as DashboardBot[]
+      setBots(botList)
+    } catch (cause) {
+      setSectionErrors(previous => ({ ...previous, channels: cause instanceof Error ? cause.message : 'Could not load bots.' }))
+    }
+  }, [])
+  const loadInbox = useCallback(() => loadSection<{data?: ApiConversation[]}>('inbox', `/api/inbox${inboxQuery ? `?${inboxQuery}` : ''}`, (data) => {
     const rows = Array.isArray(data.data) ? data.data : []
-    setRecentConversations(rows.slice(0, 5).map((item: any) => ({
+    setRecentConversations(rows.slice(0, 5).map((item) => ({
       id: item.id,
       sender_name: item.sender_name || item.sender_id || 'Unknown customer',
-      channel: item.channel?.type || 'unknown',
+      channel: item.channel?.type || 'webchat',
       message: item.latest_message?.content || item.message_preview || item.last_message || '',
       ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
-      time: item.last_message_at || item.updated_at || item.created_at,
-      status: item.status,
+      time: item.last_message_at || item.updated_at || item.created_at || null,
+      status: item.status || null,
     })))
-  }), [loadSection])
+  }), [inboxQuery, loadSection])
 
   useEffect(() => { void loadStats(); void loadAi(); void loadDaily() }, [loadStats, loadAi, loadDaily])
-  useEffect(() => { void loadChannels(); void loadInbox() }, [loadChannels, loadInbox])
+  useEffect(() => { void loadChannels(); void loadBots() }, [loadChannels, loadBots])
+  useEffect(() => { void loadInbox() }, [loadInbox])
 
   const maxDayVolume = Math.max(...dailyMessages, 1)
 
@@ -132,7 +177,18 @@ export default function DashboardPage() {
           </Link>
         }
         secondaryActions={
-          <div className="flex items-center gap-1 p-1 bg-surface-elevated border border-border rounded-lg">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="sr-only" htmlFor="dashboard-channel-filter">Channel or connected account</label>
+            <select id="dashboard-channel-filter" aria-label="Channel or connected account" className="h-9 max-w-52 rounded-lg border border-border bg-surface-elevated px-2 text-xs text-text-primary" value={selectedChannelId} onChange={event => setSelectedChannelId(event.target.value)}>
+              <option value="">All channels and accounts</option>
+              {channels.map(channel => <option key={channel.id} value={channel.id}>{channel.page_name || channel.page_id || channel.type}</option>)}
+            </select>
+            <label className="sr-only" htmlFor="dashboard-bot-filter">Bot</label>
+            <select id="dashboard-bot-filter" aria-label="Bot" className="h-9 max-w-44 rounded-lg border border-border bg-surface-elevated px-2 text-xs text-text-primary" value={selectedBotId} onChange={event => setSelectedBotId(event.target.value)}>
+              <option value="">All bots</option>
+              {bots.map(bot => <option key={bot.id} value={bot.id}>{bot.name}</option>)}
+            </select>
+            <div className="flex items-center gap-1 p-1 bg-surface-elevated border border-border rounded-lg">
             {(['7d', '30d', '90d'] as const).map((range) => (
               <button
                 key={range}
@@ -147,6 +203,7 @@ export default function DashboardPage() {
                 {range}
               </button>
             ))}
+            </div>
           </div>
         }
       />

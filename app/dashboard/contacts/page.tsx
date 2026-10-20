@@ -10,7 +10,7 @@ import { useLang } from '../../../lib/LangContext'
 const API = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api`
 type Contact = { id:number; name:string|null; phone:string|null; email:string|null; avatar:string|null; tags:string[]|null; lead_score:number; custom_fields:Record<string, unknown>|null; conversations_count:number; conversations_max_last_message_at:string|null; created_at:string }
 type Channel = { id:number; type:string; page_name:string|null; page_id:string; status:string }
-type ContactDetail = { customer:Contact & { conversations:Array<{id:number; channel?:Channel; status:string; sender_name:string|null; subject:string|null; last_message_at:string|null; created_at:string}>; notes:Array<{id:number; content:string; author?:{name:string}; created_at:string}> }; orders:Array<{id:number; order_number:string|null; status:string|null; fulfillment_status:string|null; total:string|number; currency:string|null; ordered_at:string|null; channel?:Channel}>; consents:Array<{channel:string; scope:string; status:string; source:string; captured_at:string|null}> }
+type ContactDetail = { customer:Contact & { conversations:Array<{id:number; channel?:Channel; status:string; sender_name:string|null; subject:string|null; last_message_at:string|null; created_at:string}>; notes:Array<{id:number; content:string; author?:{name:string}; created_at:string}> }; orders:Array<{id:number; order_number:string|null; status:string|null; fulfillment_status:string|null; total:string|number; currency:string|null; ordered_at:string|null; channel?:Channel}>; consents:Array<{channel:string; scope:string; status:string; source:string; captured_at:string|null}>; comments:Array<{id:number; channel_id:number; platform:string; comment_text:string|null; status:string; public_reply_id:string|null; platform_created_at:string|null}> }
 
 function authHeaders(businessId?:number|null): Record<string,string> {
   const match = typeof document === 'undefined' ? null : document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
@@ -38,6 +38,7 @@ export default function ContactsPage() {
   const [importPreview,setImportPreview] = useState<{valid_rows:number;invalid_rows:number;errors:Array<{row:number;error:string}>}|null>(null)
   const [edit,setEdit] = useState({name:'',email:'',phone:'',tags:'',lead_score:0,lifecycle_stage:'new_lead',language:'',source:''})
   const loadSequence = useRef(0)
+  const loadRef = useRef<(id:number,nextPage?:number)=>Promise<void>>(async()=>{})
 
   const headers = useMemo(() => authHeaders(businessId), [businessId])
 
@@ -65,6 +66,7 @@ export default function ContactsPage() {
     }
     finally { if (requestSequence === loadSequence.current) setLoading(false) }
   },[page,search,stage,channelId,headers,L])
+  useEffect(()=>{loadRef.current=load},[load])
 
   const loadDetail = useCallback(async (id:number, customerId:number) => {
     const response = await fetch(`${API}/customers/${customerId}`,{headers})
@@ -79,10 +81,10 @@ export default function ContactsPage() {
   },[headers,L])
 
   useEffect(()=>{
-    const sync=()=>{const id=getSelectedBusinessId(); setBusinessId(id); setDetail(null); setContacts([]); if(id) void load(id,1); else setError(L('Select a workspace to manage contacts.','اختر مساحة عمل لإدارة جهات الاتصال.'))}
+    const sync=()=>{const id=getSelectedBusinessId(); setBusinessId(id); setDetail(null); setContacts([]); if(id) void loadRef.current(id,1); else setError(L('Select a workspace to manage contacts.','اختر مساحة عمل لإدارة جهات الاتصال.'))}
     sync(); window.addEventListener('naz:business-changed',sync); window.addEventListener('storage',sync)
     return ()=>{window.removeEventListener('naz:business-changed',sync);window.removeEventListener('storage',sync)}
-  },[load,L])
+  },[L])
 
   async function openContact(contact:Contact) { try { await loadDetail(contact.id,contact.id) } catch(cause) {setError(cause instanceof Error?cause.message:'Could not load contact.')} }
   async function saveContact() {
@@ -103,7 +105,7 @@ export default function ContactsPage() {
   }
   async function exportCsv() {
     setError('');setNotice('')
-    try {const params=new URLSearchParams();if(search.trim())params.set('search',search.trim());const response=await fetch(`${API}/customers/export?${params}`,{headers});if(!response.ok)throw new Error('Could not export contacts.');const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='contacts.csv';a.click();URL.revokeObjectURL(url)}
+    try {const params=new URLSearchParams();if(search.trim())params.set('search',search.trim());if(stage)params.set('lifecycle_stage',stage);if(channelId)params.set('channel_id',channelId);const response=await fetch(`${API}/customers/export?${params}`,{headers});if(!response.ok)throw new Error('Could not export contacts.');const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='contacts.csv';a.click();URL.revokeObjectURL(url)}
     catch(cause){setError(cause instanceof Error?cause.message:'Could not export contacts.')}
   }
   async function importCsv(confirm:boolean) {
@@ -145,6 +147,7 @@ export default function ContactsPage() {
           <div className="border-t pt-4"><h3 className="mb-2 flex items-center gap-2 font-medium"><ShoppingBag size={16}/>{L('Synced orders','الطلبات المتزامنة')}</h3>{detail.orders.length?detail.orders.map(o=><div key={o.id} className="border-t py-2 text-sm"><div>{o.order_number||o.id} · {o.status||'—'} · {o.total} {o.currency}</div><p className="text-xs text-muted-foreground">{o.channel?.page_name||o.channel?.type} · {o.ordered_at?new Date(o.ordered_at).toLocaleString():'—'}</p></div>):<p className="text-xs text-muted-foreground">{L('No synced orders matched this contact’s email or phone. Draft checkout state is not counted as an order.','لا توجد طلبات متزامنة تطابق بريد العميل أو هاتفه. لا تُحسب مسودة الدفع طلبًا.')}</p>}</div>
           <div className="border-t pt-4"><h3 className="mb-2 font-medium">{L('Communication consent','موافقة التواصل')}</h3>{detail.consents.length?detail.consents.map((c,i)=><p key={`${c.channel}-${c.scope}-${i}`} className="py-1 text-xs">{c.channel} · {c.scope}: <b>{c.status}</b> · {c.source}</p>):<p className="text-xs text-muted-foreground">{L('No consent record found for this contact identity.','لا يوجد سجل موافقة لهوية جهة الاتصال.')}</p>}</div>
           <div className="border-t pt-4"><h3 className="mb-2 flex items-center gap-2 font-medium"><MessageSquare size={16}/>{L('Conversation history','سجل المحادثات')}</h3>{detail.customer.conversations.length?detail.customer.conversations.map(c=><div key={c.id} className="border-t py-2 text-xs">{c.channel?.page_name||c.channel?.type||L('Channel','قناة')} · {c.status} · {c.last_message_at?new Date(c.last_message_at).toLocaleString():'—'}</div>):<p className="text-xs text-muted-foreground">{L('No linked conversations.','لا توجد محادثات مرتبطة.')}</p>}</div>
+          <div className="border-t pt-4"><h3 className="mb-2 font-medium">{L('Comment history','سجل التعليقات')}</h3>{detail.comments?.length?detail.comments.map(comment=><div key={comment.id} className="border-t py-2 text-xs"><p>{comment.comment_text||L('Comment text unavailable','نص التعليق غير متاح')}</p><p className="mt-1 text-muted-foreground">{channels.find(channel=>channel.id===comment.channel_id)?.page_name||comment.platform} · {comment.status}{comment.public_reply_id?` · ${L('Replied','تم الرد')}`:''} · {comment.platform_created_at?new Date(comment.platform_created_at).toLocaleString():'—'}</p></div>):<p className="text-xs text-muted-foreground">{L('No comments are linked to this contact identity.','لا توجد تعليقات مرتبطة بهوية جهة الاتصال.')}</p>}</div>
           <div className="border-t pt-4"><h3 className="mb-2 font-medium">{L('Internal notes','ملاحظات داخلية')}</h3>{detail.customer.notes.map(n=><div key={n.id} className="border-t py-2 text-sm"><p>{n.content}</p><p className="text-xs text-muted-foreground">{n.author?.name||L('Team member','عضو الفريق')} · {new Date(n.created_at).toLocaleString()}</p></div>)}<textarea className="mt-2 w-full rounded-md border bg-background p-2 text-sm" rows={3} value={note} onChange={e=>setNote(e.target.value)} placeholder={L('Add a private note','أضف ملاحظة خاصة')}/><Button className="mt-2" disabled={saving||!note.trim()} onClick={addNote}><Plus size={15}/>{L('Add note','إضافة ملاحظة')}</Button></div>
         </div>}
       </aside>
