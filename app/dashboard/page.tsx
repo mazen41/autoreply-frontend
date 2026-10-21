@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../lib/motion'
-import PageHeader from '../../components/ui/PageHeader'
 import MetricCard from '../../components/ui/MetricCard'
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
@@ -25,19 +24,15 @@ import {
   AlertCircle,
   RefreshCw,
   Wifi,
+  TrendingUp,
+  BarChart2,
+  Inbox,
+  Zap,
 } from 'lucide-react'
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Helpers                                                                     */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-function getToken(): string {
-  if (typeof document === 'undefined') return ''
-  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
-  return match ? decodeURIComponent(match[1]) : ''
-}
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+/* ─────────────────────────────────────────────────────────────────────────────
+   Types
+───────────────────────────────────────────────────────────────────────────── */
 
 type DashboardSection = 'stats' | 'ai' | 'channels' | 'daily' | 'inbox'
 
@@ -48,10 +43,6 @@ const SECTION_LABELS: Record<DashboardSection, string> = {
   daily:    'Message chart',
   inbox:    'Recent activity',
 }
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Types                                                                       */
-/* ─────────────────────────────────────────────────────────────────────────── */
 
 type DashboardStats         = { total_messages?: number }
 type DashboardAiPerformance = { ai_share_of_replies?: number; auto_replies?: number; median_response_time_formatted?: string }
@@ -82,41 +73,19 @@ type RecentConversation = {
   status: string | null
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Sub-components                                                              */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Helpers
+───────────────────────────────────────────────────────────────────────────── */
 
-function SectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div
-      role="alert"
-      className="flex min-h-[100px] flex-col items-center justify-center gap-3 rounded-xl
-                 border border-error/20 bg-error/5 p-6 text-center"
-    >
-      <AlertCircle size={20} className="text-error/70" aria-hidden="true" />
-      <p className="text-sm text-text-secondary max-w-xs">{message}</p>
-      <Button variant="outline" size="sm" icon={<RefreshCw size={13} />} onClick={onRetry}>
-        Try again
-      </Button>
-    </div>
-  )
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
+function getToken(): string {
+  if (typeof document === 'undefined') return ''
+  const m = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
+  return m ? decodeURIComponent(m[1]) : ''
 }
 
-function EmptyState({ icon, message, action }: {
-  icon: React.ReactNode
-  message: string
-  action?: React.ReactNode
-}) {
-  return (
-    <div className="flex min-h-[100px] flex-col items-center justify-center gap-3 py-8 text-center">
-      <span className="text-text-disabled" aria-hidden="true">{icon}</span>
-      <p className="text-sm text-text-tertiary max-w-xs">{message}</p>
-      {action}
-    </div>
-  )
-}
-
-function formatTime(iso: string | null): string {
+function formatRelativeTime(iso: string | null): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
@@ -129,17 +98,80 @@ function formatTime(iso: string | null): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-function formatChartDate(iso: string): string {
+function formatChartDate(iso: string, total: number): string {
   const d = new Date(iso + 'T00:00:00')
+  // For 7d show day name, for 30d+ show M/D
+  if (total <= 7) return d.toLocaleDateString(undefined, { weekday: 'short' })
   return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
 }
 
+function fmtNum(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(n % 1_000 < 100 ? 1 : 0)}k`
+  return n.toLocaleString()
+}
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Bar chart component                                                         */
-/* ─────────────────────────────────────────────────────────────────────────── */
 
-function MessageVolumeChart({
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared inline sub-components
+───────────────────────────────────────────────────────────────────────────── */
+
+/** Centred error state for any section */
+function SectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-col items-center justify-center gap-3 min-h-[96px]
+                 rounded-xl border border-error/20 bg-error/5 p-6 text-center"
+    >
+      <AlertCircle size={18} className="text-error/60" aria-hidden />
+      <p className="text-sm text-text-secondary max-w-[24rem]">{message}</p>
+      <Button variant="outline" size="sm" icon={<RefreshCw size={13} />} onClick={onRetry}>
+        Try again
+      </Button>
+    </div>
+  )
+}
+
+/** Centred empty state */
+function EmptyState({
+  icon,
+  heading,
+  body,
+  action,
+}: {
+  icon: React.ReactNode
+  heading: string
+  body?: string
+  action?: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2.5 min-h-[108px] py-8 text-center px-4">
+      <span className="text-text-disabled/70" aria-hidden>{icon}</span>
+      <p className="text-sm font-medium text-text-secondary">{heading}</p>
+      {body && <p className="text-xs text-text-tertiary max-w-xs">{body}</p>}
+      {action && <div className="mt-1">{action}</div>}
+    </div>
+  )
+}
+
+/** Inline skeleton shimmer row */
+function SkeletonRow({ widths }: { widths: string[] }) {
+  return (
+    <div className="flex items-center gap-3 animate-pulse py-3 px-5">
+      {widths.map((w, i) => (
+        <div key={i} className="h-2.5 rounded bg-surface-elevated" style={{ width: w }} />
+      ))}
+    </div>
+  )
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Message volume bar chart
+───────────────────────────────────────────────────────────────────────────── */
+
+function VolumeChart({
   data,
   dates,
   loading,
@@ -154,87 +186,112 @@ function MessageVolumeChart({
 }) {
   if (loading) {
     return (
-      <div className="h-52 flex gap-3 animate-pulse" aria-busy="true" aria-label="Loading chart">
-        <div className="flex flex-col justify-between py-1 w-9 shrink-0 gap-1">
+      <div aria-busy aria-label="Loading chart" className="flex gap-3 pt-1" style={{ height: '11rem' }}>
+        {/* Y-axis */}
+        <div className="flex flex-col-reverse justify-between w-8 shrink-0 py-1 gap-1 animate-pulse">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-2 rounded bg-surface-elevated" />
           ))}
         </div>
-        <div className="flex-1 flex items-end gap-1.5">
+        {/* Bars */}
+        <div className="flex-1 flex items-end gap-1.5 animate-pulse">
           {[...Array(7)].map((_, i) => (
             <div
               key={i}
-              className="flex-1 rounded-t-sm bg-surface-elevated"
-              style={{ height: `${30 + (i * 11) % 60}%` }}
+              className="flex-1 rounded-t bg-surface-elevated"
+              style={{ height: `${25 + (i * 13 + 7) % 55}%` }}
             />
           ))}
         </div>
       </div>
     )
   }
+
   if (error) return <SectionError message={error} onRetry={onRetry} />
+
   if (data.length === 0) {
     return (
       <EmptyState
-        icon={<MessageSquare size={28} />}
-        message="No message history for this period."
+        icon={<BarChart2 size={30} />}
+        heading="No message data yet"
+        body="Volume will appear here once messages arrive in the selected period."
       />
     )
   }
 
-  const max  = Math.max(...data, 1)
-  const yMax = Math.ceil(max / 10) * 10
+  const max    = Math.max(...data, 1)
+  const yMax   = max <= 5 ? 5 : Math.ceil(max / Math.pow(10, Math.floor(Math.log10(max)))) * Math.pow(10, Math.floor(Math.log10(max)))
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(f * yMax))
-  const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(n % 1000 < 100 ? 1 : 0)}k` : String(n)
+  const total  = data.length
+
+  const summary = `Bar chart: ${total} day${total === 1 ? '' : 's'}, peak ${max.toLocaleString()} messages`
 
   return (
-    <figure aria-label={`Bar chart of daily message volume. ${data.length} days. Peak: ${max.toLocaleString()} messages.`}>
-      <div className="flex gap-2" style={{ height: '13rem' }}>
-        {/* Y-axis labels */}
+    <figure aria-label={summary}>
+      <div className="flex gap-2.5" style={{ height: '11rem' }}>
+        {/* Y axis */}
         <div
-          className="flex flex-col-reverse justify-between pb-px text-[10px] text-text-disabled shrink-0 text-end leading-none"
-          aria-hidden="true"
+          aria-hidden
+          className="flex flex-col-reverse justify-between shrink-0 text-[10px] leading-none text-text-disabled pb-px text-end"
           style={{ width: '2.25rem' }}
         >
-          {yTicks.map(v => <span key={v}>{fmt(v)}</span>)}
+          {yTicks.map(v => <span key={v}>{fmtNum(v)}</span>)}
         </div>
 
         {/* Chart area */}
         <div className="relative flex-1 flex flex-col">
-          {/* Horizontal grid lines */}
-          <div className="absolute inset-0 flex flex-col-reverse justify-between pointer-events-none" aria-hidden="true">
+          {/* Grid lines */}
+          <div aria-hidden className="absolute inset-0 flex flex-col-reverse justify-between pointer-events-none">
             {yTicks.map(v => (
-              <div key={v} className="border-t border-border/50 w-full" />
+              <div key={v} className="border-t border-border/40 w-full" />
             ))}
           </div>
 
           {/* Bars */}
-          <div className="relative flex-1 flex items-end gap-1 sm:gap-1.5">
+          <div className="relative flex-1 flex items-end gap-px sm:gap-0.5">
             {data.map((value, i) => {
-              const pct   = yMax > 0 ? (value / yMax) * 100 : 0
-              const date  = dates[i] ?? ''
+              const pct  = yMax > 0 ? (value / yMax) * 100 : 0
+              const date = dates[i] ?? ''
+              const lbl  = date ? formatChartDate(date, total) : `Day ${i + 1}`
+              const hide = total > 14 && i % 2 !== 0
               return (
-                <div key={`${date}-${i}`} className="flex-1 flex items-end justify-center h-full group">
+                <div
+                  key={`bar-${date}-${i}`}
+                  className="flex-1 flex flex-col items-center justify-end h-full group"
+                >
                   <div
                     className="relative w-full"
-                    style={{ height: `${Math.max(pct, 1.5)}%` }}
+                    style={{ height: `${Math.max(pct, 1)}%` }}
                     role="img"
-                    aria-label={`${date ? formatChartDate(date) : `Day ${i + 1}`}: ${value.toLocaleString()} messages`}
+                    aria-label={`${lbl}: ${value.toLocaleString()} messages`}
                   >
-                    <div className="absolute inset-0 rounded-t-sm bg-brand/60 group-hover:bg-brand transition-colors duration-150" />
-                    {/* Tooltip */}
+                    {/* Bar fill */}
                     <div
-                      className="opacity-0 group-hover:opacity-100 pointer-events-none
-                                 absolute -top-8 left-1/2 -translate-x-1/2
-                                 bg-surface-overlay border border-border shadow-md
-                                 text-[11px] font-semibold text-text-primary
-                                 px-2 py-1 rounded-md whitespace-nowrap z-10
-                                 transition-opacity duration-150"
+                      className="absolute inset-0 rounded-t-[3px] bg-brand/50
+                                 group-hover:bg-brand transition-colors duration-100"
+                    />
+                    {/* Hover tooltip */}
+                    <div
                       role="tooltip"
+                      className="pointer-events-none opacity-0 group-hover:opacity-100
+                                 absolute -top-9 left-1/2 -translate-x-1/2
+                                 whitespace-nowrap rounded-lg border border-border
+                                 bg-surface-overlay px-2.5 py-1.5 shadow-lg
+                                 text-[11px] font-semibold text-text-primary z-10
+                                 transition-opacity duration-100"
                     >
+                      <span className="block text-text-tertiary text-[10px] font-normal mb-px">{lbl}</span>
                       {value.toLocaleString()}
                     </div>
                   </div>
+                  {/* X label */}
+                  <span
+                    aria-hidden
+                    className={`mt-1 text-[10px] text-text-disabled truncate select-none leading-none max-w-full px-px
+                                ${hide ? 'opacity-0' : ''}`}
+                  >
+                    {lbl}
+                  </span>
                 </div>
               )
             })}
@@ -242,28 +299,12 @@ function MessageVolumeChart({
         </div>
       </div>
 
-      {/* X-axis labels */}
-      <div className="flex mt-1.5 gap-1 sm:gap-1.5" aria-hidden="true" style={{ paddingInlineStart: '2.5rem' }}>
-        {data.map((_, i) => {
-          const date  = dates[i] ?? ''
-          const label = date ? formatChartDate(date) : ''
-          const hide  = data.length > 14 && i % 2 !== 0
-          return (
-            <div
-              key={`lbl-${i}`}
-              className={`flex-1 text-center text-[10px] text-text-disabled truncate select-none
-                          ${hide ? 'opacity-0' : ''}`}
-            >
-              {label}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Accessible data table (screen readers) */}
+      {/* Hidden accessible table */}
       <table className="sr-only">
         <caption>Daily message volume</caption>
-        <thead><tr><th scope="col">Date</th><th scope="col">Messages</th></tr></thead>
+        <thead>
+          <tr><th scope="col">Date</th><th scope="col">Messages</th></tr>
+        </thead>
         <tbody>
           {data.map((v, i) => (
             <tr key={i}><td>{dates[i] ?? `Day ${i + 1}`}</td><td>{v}</td></tr>
@@ -275,11 +316,12 @@ function MessageVolumeChart({
 }
 
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Dashboard page                                                              */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dashboard page
+───────────────────────────────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
+
   /* ── state ── */
   const [stats,               setStats]               = useState<DashboardStats | null>(null)
   const [recentConversations, setRecentConversations] = useState<RecentConversation[]>([])
@@ -296,10 +338,10 @@ export default function DashboardPage() {
     { stats: true, ai: true, channels: true, daily: true, inbox: true },
   )
   const [sectionErrors, setSectionErrors] = useState<Record<DashboardSection, string | null>>(
-    { stats: null,  ai: null,  channels: null,  daily: null,  inbox: null },
+    { stats: null, ai: null, channels: null, daily: null, inbox: null },
   )
 
-  /* ── generic section loader ── */
+  /* ── generic loader ── */
   const loadSection = useCallback(async <T,>(
     section: DashboardSection,
     path: string,
@@ -318,7 +360,9 @@ export default function DashboardPage() {
     } catch (err) {
       setSectionErrors(prev => ({
         ...prev,
-        [section]: err instanceof Error ? err.message : `Could not load ${SECTION_LABELS[section].toLowerCase()}.`,
+        [section]: err instanceof Error
+          ? err.message
+          : `Could not load ${SECTION_LABELS[section].toLowerCase()}.`,
       }))
     } finally {
       setSectionLoading(prev => ({ ...prev, [section]: false }))
@@ -326,42 +370,46 @@ export default function DashboardPage() {
   }, [])
 
   /* ── query strings ── */
-  const timezone      = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-  const days          = Number.parseInt(timeRange, 10)
-  const dashboardParams = new URLSearchParams({ days: String(days), timezone })
-  if (selectedChannelId) dashboardParams.set('channel_id', selectedChannelId)
-  if (selectedBotId)     dashboardParams.set('bot_id',     selectedBotId)
-  const dashboardQuery  = dashboardParams.toString()
-  const inboxParams     = new URLSearchParams()
-  if (selectedChannelId) inboxParams.set('channel_id', selectedChannelId)
-  if (selectedBotId)     inboxParams.set('bot_id',     selectedBotId)
-  const inboxQuery = inboxParams.toString()
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+  const days     = Number.parseInt(timeRange, 10)
+  const dashQ    = (() => {
+    const p = new URLSearchParams({ days: String(days), timezone })
+    if (selectedChannelId) p.set('channel_id', selectedChannelId)
+    if (selectedBotId)     p.set('bot_id',     selectedBotId)
+    return p.toString()
+  })()
+  const inboxQ = (() => {
+    const p = new URLSearchParams()
+    if (selectedChannelId) p.set('channel_id', selectedChannelId)
+    if (selectedBotId)     p.set('bot_id',     selectedBotId)
+    return p.toString()
+  })()
 
-  /* ── section loaders ── */
+  /* ── loaders ── */
   const loadStats = useCallback(
-    () => loadSection('stats', `/api/stats?${dashboardQuery}`, setStats),
-    [dashboardQuery, loadSection],
+    () => loadSection('stats', `/api/stats?${dashQ}`, setStats),
+    [dashQ, loadSection],
   )
   const loadAi = useCallback(
-    () => loadSection('ai', `/api/reports/ai-performance?${dashboardQuery}`, setAiPerformance),
-    [dashboardQuery, loadSection],
+    () => loadSection('ai', `/api/reports/ai-performance?${dashQ}`, setAiPerformance),
+    [dashQ, loadSection],
   )
   const loadDaily = useCallback(
     () => loadSection<{ data?: number[]; dates?: string[] }>(
-      'daily', `/api/reports/daily-messages?${dashboardQuery}`,
-      data => {
-        setDailyMessages(Array.isArray(data.data)  ? data.data.map(Number)  : [])
-        setDailyDates   (Array.isArray(data.dates) ? data.dates              : [])
+      'daily', `/api/reports/daily-messages?${dashQ}`,
+      d => {
+        setDailyMessages(Array.isArray(d.data)  ? d.data.map(Number) : [])
+        setDailyDates   (Array.isArray(d.dates) ? d.dates             : [])
       },
     ),
-    [dashboardQuery, loadSection],
+    [dashQ, loadSection],
   )
   const loadChannels = useCallback(
     () => loadSection<DashboardChannel[] | { data?: DashboardChannel[] }>(
       'channels', '/api/channels',
-      data => {
-        const list = Array.isArray(data) ? data : (data.data ?? [])
-        setChannels(list.filter(ch => ch.status === 'connected'))
+      d => {
+        const list = Array.isArray(d) ? d : (d.data ?? [])
+        setChannels(list.filter(c => c.status === 'connected'))
       },
     ),
     [loadSection],
@@ -369,13 +417,13 @@ export default function DashboardPage() {
   const loadBots = useCallback(async () => {
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again.')
+      if (!token) throw new Error('Session expired.')
       const res = await fetch(`${API}/api/bots`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (!res.ok) throw new Error(`Could not load bots (${res.status}).`)
-      const payload = await res.json()
-      const list    = Array.isArray(payload) ? payload as DashboardBot[] : (payload.bots ?? payload.data ?? []) as DashboardBot[]
+      const p    = await res.json()
+      const list = Array.isArray(p) ? p as DashboardBot[] : (p.bots ?? p.data ?? []) as DashboardBot[]
       setBots(list)
     } catch (err) {
       setSectionErrors(prev => ({
@@ -386,23 +434,21 @@ export default function DashboardPage() {
   }, [])
   const loadInbox = useCallback(
     () => loadSection<{ data?: ApiConversation[] }>(
-      'inbox', `/api/inbox${inboxQuery ? `?${inboxQuery}` : ''}`,
-      data => {
-        const rows = Array.isArray(data.data) ? data.data : []
-        setRecentConversations(
-          rows.slice(0, 5).map(item => ({
-            id:          item.id,
-            sender_name: item.sender_name || item.sender_id || 'Unknown customer',
-            channel:     item.channel?.type || 'webchat',
-            message:     item.latest_message?.content || item.message_preview || item.last_message || '',
-            ai_replied:  Boolean(item.latest_message?.is_ai || item.ai_replied),
-            time:        item.last_message_at || item.updated_at || item.created_at || null,
-            status:      item.status || null,
-          })),
-        )
+      'inbox', `/api/inbox${inboxQ ? `?${inboxQ}` : ''}`,
+      d => {
+        const rows = Array.isArray(d.data) ? d.data : []
+        setRecentConversations(rows.slice(0, 6).map(item => ({
+          id:         item.id,
+          sender_name:item.sender_name || item.sender_id || 'Unknown',
+          channel:    item.channel?.type || 'webchat',
+          message:    item.latest_message?.content || item.message_preview || item.last_message || '',
+          ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
+          time:       item.last_message_at || item.updated_at || item.created_at || null,
+          status:     item.status || null,
+        })))
       },
     ),
-    [inboxQuery, loadSection],
+    [inboxQ, loadSection],
   )
 
   /* ── effects ── */
@@ -410,186 +456,259 @@ export default function DashboardPage() {
   useEffect(() => { void loadChannels(); void loadBots() }, [loadChannels, loadBots])
   useEffect(() => { void loadInbox() }, [loadInbox])
 
+  /* ── derived ── */
+  const aiShare    = aiPerformance?.ai_share_of_replies ?? 0
+  const autoReplies = aiPerformance?.auto_replies ?? 0
+
 
   /* ── render ── */
   return (
-    <div className="space-y-6 pb-8">
+    <div className="min-h-screen pb-12">
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* Page header                                                        */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      <PageHeader
-        title="Command Center"
-        description="Omnichannel engagement, AI agent performance, and recent conversation activity across connected channels."
-        breadcrumbs={[
-          { label: 'NazBiz', href: '/dashboard' },
-          { label: 'Dashboard' },
-        ]}
-        primaryAction={
-          <Link href="/dashboard/channels">
-            <Button variant="primary" size="md" icon={<Plus size={16} />}>
-              Connect Channel
-            </Button>
-          </Link>
-        }
-        secondaryActions={
-          /* Filters row — stacks on mobile, inline on sm+ */
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Channel selector */}
-            <label className="sr-only" htmlFor="dash-channel-filter">Channel or account</label>
-            <select
-              id="dash-channel-filter"
-              className="h-9 max-w-[11rem] rounded-lg border border-border bg-surface-elevated
-                         px-2.5 text-xs text-text-primary focus:outline-none
-                         focus-visible:ring-2 focus-visible:ring-brand/40"
-              value={selectedChannelId}
-              onChange={e => setSelectedChannelId(e.target.value)}
-            >
-              <option value="">All channels</option>
-              {channels.map(ch => (
-                <option key={ch.id} value={ch.id}>
-                  {ch.page_name || ch.page_id || ch.type}
-                </option>
-              ))}
-            </select>
-
-            {/* Bot selector */}
-            <label className="sr-only" htmlFor="dash-bot-filter">Bot</label>
-            <select
-              id="dash-bot-filter"
-              className="h-9 max-w-[9rem] rounded-lg border border-border bg-surface-elevated
-                         px-2.5 text-xs text-text-primary focus:outline-none
-                         focus-visible:ring-2 focus-visible:ring-brand/40"
-              value={selectedBotId}
-              onChange={e => setSelectedBotId(e.target.value)}
-            >
-              <option value="">All bots</option>
-              {bots.map(bot => (
-                <option key={bot.id} value={bot.id}>{bot.name}</option>
-              ))}
-            </select>
-
-            {/* Time-range toggle */}
+      {/* ═══════════════════════════════════════════════════════════════════════
+          HEADER BANNER
+          A deliberate top strip: title left, filters + CTA right.
+          Uses a hairline bottom border and a faint brand tint to separate
+          it from the metric rows below without a heavy card.
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-8">
+        {/* Title row */}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          {/* Left: title + sub-line */}
+          <div className="flex items-start gap-3">
+            {/* Brand accent */}
             <div
-              className="flex items-center gap-0.5 p-1 bg-surface-elevated border border-border rounded-lg"
-              role="group"
-              aria-label="Time range"
-            >
-              {(['7d', '30d', '90d'] as const).map(range => (
-                <button
-                  key={range}
-                  type="button"
-                  onClick={() => setTimeRange(range)}
-                  className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors
-                              focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none
-                              ${timeRange === range
-                                ? 'bg-surface-overlay text-text-primary shadow-sm'
-                                : 'text-text-tertiary hover:text-text-primary'}`}
-                  aria-pressed={timeRange === range}
-                >
-                  {range}
-                </button>
-              ))}
+              className="mt-1 w-[3px] self-stretch rounded-full bg-brand/70 shrink-0"
+              aria-hidden="true"
+            />
+            <div>
+              <h1 className="text-2xl sm:text-[1.75rem] font-bold tracking-tight text-text-primary leading-tight">
+                Command Center
+              </h1>
+              <p className="mt-1 text-[13px] text-text-tertiary leading-relaxed">
+                Omnichannel performance · AI agent metrics · real-time conversation feed
+              </p>
             </div>
           </div>
-        }
-      />
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* Handoff task alert                                                 */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      <HandoffTaskQueue />
+          {/* Right: primary CTA */}
+          <div className="shrink-0 self-start">
+            <Link href="/dashboard/channels">
+              <Button variant="primary" size="md" icon={<Plus size={15} />}>
+                Connect channel
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Filter bar — sits below the title, full-width, separated by a subtle rule */}
+        <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center gap-2">
+          {/* Channel selector */}
+          <label className="sr-only" htmlFor="dash-ch">Channel</label>
+          <select
+            id="dash-ch"
+            value={selectedChannelId}
+            onChange={e => setSelectedChannelId(e.target.value)}
+            className="h-8 rounded-lg border border-border bg-surface-elevated
+                       px-2.5 text-xs text-text-primary
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
+                       min-w-0 max-w-[10rem]"
+          >
+            <option value="">All channels</option>
+            {channels.map(ch => (
+              <option key={ch.id} value={ch.id}>
+                {ch.page_name || ch.page_id || ch.type}
+              </option>
+            ))}
+          </select>
+
+          {/* Bot selector */}
+          <label className="sr-only" htmlFor="dash-bot">Bot</label>
+          <select
+            id="dash-bot"
+            value={selectedBotId}
+            onChange={e => setSelectedBotId(e.target.value)}
+            className="h-8 rounded-lg border border-border bg-surface-elevated
+                       px-2.5 text-xs text-text-primary
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
+                       min-w-0 max-w-[9rem]"
+          >
+            <option value="">All bots</option>
+            {bots.map(b => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+
+          {/* Divider */}
+          <div className="hidden sm:block h-4 w-px bg-border/60" aria-hidden />
+
+          {/* Time-range pill toggle */}
+          <div
+            role="group"
+            aria-label="Time range"
+            className="flex items-center rounded-lg border border-border bg-surface-elevated p-0.5 gap-0.5"
+          >
+            {(['7d', '30d', '90d'] as const).map(r => (
+              <button
+                key={r}
+                type="button"
+                aria-pressed={timeRange === r}
+                onClick={() => setTimeRange(r)}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors
+                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
+                            ${timeRange === r
+                              ? 'bg-surface-overlay text-text-primary shadow-sm'
+                              : 'text-text-tertiary hover:text-text-secondary'}`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          {/* Spacer — push refresh hint to the end */}
+          <div className="flex-1" />
+
+          {/* Period label — subtle context */}
+          <span className="hidden md:inline text-[11px] text-text-disabled select-none">
+            {timeRange === '7d' ? 'Last 7 days' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'}
+          </span>
+        </div>
+      </div>
 
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* KPI metric cards                                                   */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4"
+      {/* ═══════════════════════════════════════════════════════════════════════
+          HANDOFF ALERT
+          Shown only when tasks exist. Given a raised treatment so agents
+          can't miss it, but it doesn't shout when the queue is clear.
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-6">
+        <HandoffTaskQueue />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          METRICS ROW
+          Visual hierarchy: Total Messages is the hero stat — wider, taller,
+          with the brand colour. The three supporting stats sit beside it in
+          a compact column on desktop and stack on mobile.
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <motion.section
+        aria-label="Key metrics"
+        className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
         variants={variants.staggerContainer}
         initial="hidden"
         animate="visible"
       >
-        {/* Total messages */}
-        <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.stats
-            ? <MetricCardSkeleton />
-            : sectionErrors.stats
-            ? <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} />
-            : <MetricCard
-                label="Total Messages"
-                value={(stats?.total_messages ?? 0).toLocaleString()}
-                subValue={`${timeRange} · across all channels`}
-                icon={<MessageSquare size={18} />}
-              />}
+        {/* ── Hero: Total messages ── */}
+        <motion.div
+          variants={variants.fadeUp}
+          transition={springs.standard}
+          className="sm:col-span-2 lg:col-span-1"
+        >
+          {sectionLoading.stats ? (
+            <MetricCardSkeleton />
+          ) : sectionErrors.stats ? (
+            <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} />
+          ) : (
+            <MetricCard
+              label="Total Messages"
+              value={(stats?.total_messages ?? 0).toLocaleString()}
+              subValue={`${timeRange} · all channels`}
+              variant="hero"
+              icon={<MessageSquare size={17} />}
+            />
+          )}
         </motion.div>
 
-        {/* AI share */}
+        {/* ── AI share ── */}
         <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.ai
-            ? <MetricCardSkeleton />
-            : sectionErrors.ai
-            ? <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
-            : <MetricCard
-                label="AI Share of Replies"
-                value={`${aiPerformance?.ai_share_of_replies ?? 0}%`}
-                subValue={`${(aiPerformance?.auto_replies ?? 0).toLocaleString()} AI replies · ${timeRange}`}
-                variant="ai"
-                icon={<Sparkles size={18} />}
-              />}
+          {sectionLoading.ai ? (
+            <MetricCardSkeleton />
+          ) : sectionErrors.ai ? (
+            <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
+          ) : (
+            <MetricCard
+              label="AI Reply Rate"
+              value={`${aiShare}%`}
+              subValue={`${autoReplies.toLocaleString()} auto-replies`}
+              variant="ai"
+              icon={<Sparkles size={17} />}
+            />
+          )}
         </motion.div>
 
-        {/* Median response time */}
+        {/* ── Response time ── */}
         <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.ai
-            ? <MetricCardSkeleton />
-            : sectionErrors.ai
-            ? <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
-            : <MetricCard
-                label="Median Response Time"
-                value={aiPerformance?.median_response_time_formatted || '—'}
-                subValue={`Message to first reply · ${timeRange}`}
-                icon={<Clock size={18} />}
-              />}
+          {sectionLoading.ai ? (
+            <MetricCardSkeleton />
+          ) : sectionErrors.ai ? (
+            <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
+          ) : (
+            <MetricCard
+              label="Median Response"
+              value={aiPerformance?.median_response_time_formatted || '—'}
+              subValue="Message to first reply"
+              icon={<Clock size={17} />}
+            />
+          )}
         </motion.div>
 
-        {/* Connected channels */}
+        {/* ── Channels ── */}
         <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.channels
-            ? <MetricCardSkeleton />
-            : sectionErrors.channels
-            ? <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
-            : <MetricCard
-                label="Connected Channels"
-                value={channels.length}
-                subValue="Active accounts"
-                icon={<Radio size={18} />}
-              />}
+          {sectionLoading.channels ? (
+            <MetricCardSkeleton />
+          ) : sectionErrors.channels ? (
+            <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
+          ) : (
+            <MetricCard
+              label="Active Channels"
+              value={channels.length}
+              subValue="Connected accounts"
+              icon={<Radio size={17} />}
+            />
+          )}
         </motion.div>
-      </motion.div>
+      </motion.section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* Main content grid                                                  */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* ═══════════════════════════════════════════════════════════════════════
+          MIDDLE ROW  —  Chart (2/3)  +  AI panel (1/3)
+          The chart is the primary analytical view. The AI panel surfaces
+          the two AI stats with extra context alongside the chart.
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
 
-        {/* ── Left 2 cols: Message volume chart ── */}
-        <Card className="lg:col-span-2">
+        {/* ── Message volume chart (2 cols) ── */}
+        <Card className="lg:col-span-2 flex flex-col">
           <CardHeader className="flex flex-row items-start justify-between pb-3 gap-4">
             <div className="min-w-0">
-              <CardTitle>Message volume</CardTitle>
-              <CardDescription>Daily totals for the selected period.</CardDescription>
+              <div className="flex items-center gap-2 mb-0.5">
+                <TrendingUp size={14} className="text-brand shrink-0" aria-hidden />
+                <CardTitle>Message volume</CardTitle>
+              </div>
+              <CardDescription>
+                Daily totals
+                {selectedChannelId
+                  ? ` for ${channels.find(c => String(c.id) === selectedChannelId)?.page_name ?? 'selected channel'}`
+                  : ' across all channels'}
+                {' '}· {timeRange === '7d' ? 'last 7 days' : timeRange === '30d' ? 'last 30 days' : 'last 90 days'}
+              </CardDescription>
             </div>
-            {/* Legend */}
-            <div className="flex items-center gap-1.5 shrink-0 text-[11px] text-text-tertiary mt-0.5">
-              <span className="w-3 h-3 rounded-sm bg-brand/60 border border-brand/30 shrink-0" />
-              <span>Messages</span>
+
+            {/* Legend chip */}
+            <div
+              className="flex items-center gap-1.5 shrink-0 self-center
+                         text-[10px] font-medium text-text-tertiary
+                         border border-border/60 bg-surface-elevated
+                         rounded-full px-2 py-1"
+              aria-hidden
+            >
+              <span className="w-2.5 h-2.5 rounded-sm bg-brand/50 shrink-0" />
+              Messages
             </div>
           </CardHeader>
 
-          <CardContent className="pt-2">
-            <MessageVolumeChart
+          <CardContent className="flex-1 pt-1 pb-5">
+            <VolumeChart
               data={dailyMessages}
               dates={dailyDates}
               loading={sectionLoading.daily}
@@ -599,59 +718,94 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* ── Right col: Connected channels ── */}
+        {/* ── AI performance panel (1 col) ── */}
         <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>Connected channels</CardTitle>
-            <CardDescription>Accounts active in this workspace.</CardDescription>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 mb-0.5">
+              <Sparkles size={14} className="text-brand shrink-0" aria-hidden />
+              <CardTitle>AI performance</CardTitle>
+            </div>
+            <CardDescription>Automation metrics for the period.</CardDescription>
           </CardHeader>
 
-          <CardContent className="flex-1 p-0">
-            {sectionLoading.channels ? (
-              <div className="p-5 space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center gap-2 animate-pulse">
-                    <div className="w-5 h-5 rounded-full bg-surface-elevated shrink-0" />
-                    <div className="h-3 flex-1 rounded bg-surface-elevated" />
-                    <div className="h-3 w-14 rounded bg-surface-elevated" />
+          <CardContent className="flex-1 flex flex-col gap-4 pt-0">
+            {sectionLoading.ai ? (
+              <div className="space-y-4 pt-1 animate-pulse">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-2.5 w-1/2 rounded bg-surface-elevated" />
+                    <div className="h-7 w-2/3 rounded bg-surface-elevated" />
+                    <div className="h-2 w-1/3 rounded bg-surface-elevated" />
                   </div>
                 ))}
               </div>
-            ) : sectionErrors.channels ? (
-              <div className="p-4">
-                <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
-              </div>
-            ) : channels.length === 0 ? (
-              <EmptyState
-                icon={<Wifi size={24} />}
-                message="No channels connected yet."
-                action={
-                  <Link href="/dashboard/channels">
-                    <Button variant="outline" size="sm" icon={<Plus size={13} />}>
-                      Connect a channel
-                    </Button>
-                  </Link>
-                }
-              />
+            ) : sectionErrors.ai ? (
+              <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
             ) : (
-              <ul className="divide-y divide-border/60 px-5">
-                {channels.map(ch => (
-                  <li key={ch.id} className="flex items-center gap-3 py-3">
-                    <ChannelIcon type={ch.type} size={18} />
-                    <span className="flex-1 truncate text-sm font-medium text-text-primary">
-                      {ch.page_name || ch.page_id || ch.type}
+              <>
+                {/* AI Share stat */}
+                <div
+                  className="rounded-xl border border-brand/15 bg-brand/5 p-4"
+                  aria-label={`AI reply rate: ${aiShare}%`}
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Zap size={12} className="text-brand" aria-hidden />
+                    <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
+                      AI reply rate
                     </span>
-                    <Badge variant="success" size="xs" dot>Connected</Badge>
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                  <div className="text-3xl font-bold text-text-primary tracking-tight">
+                    {aiShare}
+                    <span className="text-xl font-semibold text-text-secondary ms-0.5">%</span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-text-tertiary">
+                    {autoReplies.toLocaleString()} auto-replies · {timeRange}
+                  </p>
+                  {/* Progress bar */}
+                  <div
+                    className="mt-3 h-1.5 w-full rounded-full bg-brand/15"
+                    role="progressbar"
+                    aria-valuenow={aiShare}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`AI replied to ${aiShare}% of messages`}
+                  >
+                    <div
+                      className="h-full rounded-full bg-brand transition-all duration-500"
+                      style={{ width: `${Math.min(aiShare, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Response time stat */}
+                <div
+                  className="rounded-xl border border-border/70 bg-surface-elevated/60 p-4"
+                  aria-label={`Median response time: ${aiPerformance?.median_response_time_formatted ?? '—'}`}
+                >
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Clock size={12} className="text-text-secondary" aria-hidden />
+                    <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+                      Median response
+                    </span>
+                  </div>
+                  <div className="text-2xl font-bold text-text-primary tracking-tight">
+                    {aiPerformance?.median_response_time_formatted || '—'}
+                  </div>
+                  <p className="mt-1 text-[11px] text-text-tertiary">Message to first reply</p>
+                </div>
+              </>
             )}
           </CardContent>
 
-          <CardFooter className="mt-auto">
-            <Link href="/dashboard/channels" className="w-full">
-              <Button variant="ghost" size="sm" iconRight={<ChevronRight size={14} />} className="w-full justify-between">
-                Manage channels
+          <CardFooter>
+            <Link href="/dashboard/analytics" className="w-full">
+              <Button
+                variant="ghost"
+                size="sm"
+                iconRight={<ChevronRight size={13} />}
+                className="w-full justify-between text-text-secondary"
+              >
+                Full analytics
               </Button>
             </Link>
           </CardFooter>
@@ -659,120 +813,219 @@ export default function DashboardPage() {
       </div>
 
 
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      {/* Recent inbound activity (full width)                               */}
-      {/* ═══════════════════════════════════════════════════════════════════ */}
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between pb-3 gap-4">
-          <div className="min-w-0">
-            <CardTitle>Recent inbound activity</CardTitle>
-            <CardDescription>Latest conversations across connected platforms.</CardDescription>
-          </div>
-          <Link href="/inbox" className="shrink-0 self-center">
-            <Button variant="ghost" size="sm" iconRight={<ArrowUpRight size={14} />}>
-              View inbox
-            </Button>
-          </Link>
-        </CardHeader>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          BOTTOM ROW  —  Recent conversations (2/3)  +  Channels (1/3)
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
 
-        <CardContent className="p-0">
-          {sectionLoading.inbox ? (
-            /* Loading skeletons */
-            <ul aria-busy="true" aria-label="Loading recent activity">
-              {[...Array(5)].map((_, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3.5 px-5 py-3.5 border-b border-border/50 last:border-0 animate-pulse"
-                >
-                  <div className="w-8 h-8 rounded-full bg-surface-elevated shrink-0" />
-                  <div className="flex-1 space-y-2 min-w-0">
-                    <div className="h-2.5 w-1/3 rounded bg-surface-elevated" />
-                    <div className="h-2 w-2/3 rounded bg-surface-elevated" />
-                  </div>
-                  <div className="h-2.5 w-12 rounded bg-surface-elevated shrink-0" />
-                </li>
-              ))}
-            </ul>
-          ) : sectionErrors.inbox ? (
-            <div className="p-5">
-              <SectionError message={sectionErrors.inbox} onRetry={() => void loadInbox()} />
+        {/* ── Recent inbound conversations (2 cols) ── */}
+        <Card className="lg:col-span-2 flex flex-col">
+          <CardHeader className="flex flex-row items-start justify-between pb-3 gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <Inbox size={14} className="text-text-secondary shrink-0" aria-hidden />
+                <CardTitle>Recent conversations</CardTitle>
+              </div>
+              <CardDescription>Latest inbound messages across connected platforms.</CardDescription>
             </div>
-          ) : recentConversations.length === 0 ? (
-            <EmptyState
-              icon={<MessageSquare size={28} />}
-              message="No conversations yet. They'll appear here once messages arrive."
-            />
-          ) : (
-            <ul className="divide-y divide-border/60" aria-label="Recent conversations">
-              {recentConversations.map(item => (
-                <li key={item.id}>
-                  <Link
-                    href={`/inbox?id=${item.id}`}
-                    className="flex items-center gap-3.5 px-5 py-3.5
-                               hover:bg-surface-elevated/60 transition-colors
-                               focus-visible:outline-none focus-visible:ring-2
-                               focus-visible:ring-inset focus-visible:ring-brand/40
-                               group"
-                    aria-label={`Open conversation with ${item.sender_name}`}
-                  >
-                    {/* Avatar with channel badge */}
-                    <Avatar
-                      name={item.sender_name}
-                      size="md"
-                      channelIcon={<ChannelIcon type={item.channel} size={12} />}
-                    />
+            <Link href="/inbox" className="shrink-0 self-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                iconRight={<ArrowUpRight size={13} />}
+                className="text-text-tertiary hover:text-text-primary"
+              >
+                Open inbox
+              </Button>
+            </Link>
+          </CardHeader>
 
-                    {/* Name + message */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[13px] font-semibold text-text-primary truncate">
-                          {item.sender_name}
-                        </span>
-                        {item.ai_replied ? (
-                          <Badge variant="ai" size="xs">AI replied</Badge>
-                        ) : (
-                          <Badge variant="warning" size="xs" dot dotPulse>Needs agent</Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-text-secondary truncate leading-relaxed">
-                        {item.message || <span className="italic text-text-disabled">No message preview</span>}
-                      </p>
-                    </div>
-
-                    {/* Time + chevron */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      {item.time && (
-                        <time
-                          dateTime={item.time}
-                          className="text-[11px] text-text-disabled whitespace-nowrap"
-                          title={new Date(item.time).toLocaleString()}
-                        >
-                          {formatTime(item.time)}
-                        </time>
-                      )}
-                      <ChevronRight
-                        size={15}
-                        className="text-text-disabled group-hover:text-text-secondary transition-colors"
-                        aria-hidden="true"
+          <CardContent className="p-0 flex-1">
+            {sectionLoading.inbox ? (
+              <ul aria-busy aria-label="Loading recent conversations">
+                {[...Array(5)].map((_, i) => (
+                  <li key={i} className="border-b border-border/50 last:border-0">
+                    <SkeletonRow widths={['2rem', '30%', '1fr', '3rem']} />
+                  </li>
+                ))}
+              </ul>
+            ) : sectionErrors.inbox ? (
+              <div className="p-5">
+                <SectionError message={sectionErrors.inbox} onRetry={() => void loadInbox()} />
+              </div>
+            ) : recentConversations.length === 0 ? (
+              <EmptyState
+                icon={<MessageSquare size={28} />}
+                heading="No conversations yet"
+                body="They'll appear here once messages arrive on your connected channels."
+              />
+            ) : (
+              <ul
+                aria-label="Recent conversations"
+                className="divide-y divide-border/50"
+              >
+                {recentConversations.map(item => (
+                  <li key={item.id}>
+                    <Link
+                      href={`/inbox?id=${item.id}`}
+                      className="group flex items-center gap-3 px-5 py-3.5
+                                 hover:bg-surface-elevated/60 transition-colors duration-100
+                                 focus-visible:outline-none focus-visible:ring-2
+                                 focus-visible:ring-inset focus-visible:ring-brand/40"
+                      aria-label={`Conversation with ${item.sender_name}`}
+                    >
+                      {/* Avatar */}
+                      <Avatar
+                        name={item.sender_name}
+                        size="md"
+                        channelIcon={<ChannelIcon type={item.channel} size={11} />}
                       />
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
 
-        {!sectionLoading.inbox && !sectionErrors.inbox && recentConversations.length > 0 && (
+                      {/* Name + preview */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 min-w-0">
+                          <span className="text-[13px] font-semibold text-text-primary truncate leading-snug">
+                            {item.sender_name}
+                          </span>
+                          {item.ai_replied ? (
+                            <Badge variant="ai" size="xs" className="shrink-0">AI replied</Badge>
+                          ) : (
+                            <Badge variant="warning" size="xs" dot dotPulse className="shrink-0">
+                              Needs agent
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[12px] text-text-tertiary truncate leading-snug">
+                          {item.message
+                            ? item.message
+                            : <span className="italic text-text-disabled">No preview</span>}
+                        </p>
+                      </div>
+
+                      {/* Time + chevron */}
+                      <div className="flex items-center gap-1.5 shrink-0 ms-2">
+                        {item.time && (
+                          <time
+                            dateTime={item.time}
+                            title={new Date(item.time).toLocaleString()}
+                            className="text-[11px] text-text-disabled tabular-nums whitespace-nowrap"
+                          >
+                            {formatRelativeTime(item.time)}
+                          </time>
+                        )}
+                        <ChevronRight
+                          size={14}
+                          className="text-text-disabled/60 group-hover:text-text-tertiary
+                                     transition-colors duration-100 shrink-0"
+                          aria-hidden
+                        />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+
+          {!sectionLoading.inbox && !sectionErrors.inbox && recentConversations.length > 0 && (
+            <CardFooter>
+              <Link href="/inbox" className="w-full">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  iconRight={<ArrowUpRight size={13} />}
+                  className="w-full justify-center text-text-tertiary"
+                >
+                  View all conversations
+                </Button>
+              </Link>
+            </CardFooter>
+          )}
+        </Card>
+
+
+        {/* ── Connected channels panel (1 col) ── */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2 mb-0.5">
+              <Wifi size={14} className="text-text-secondary shrink-0" aria-hidden />
+              <CardTitle>Connected channels</CardTitle>
+            </div>
+            <CardDescription>Active accounts in this workspace.</CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex-1 p-0">
+            {sectionLoading.channels ? (
+              <div className="px-5 py-2 space-y-1">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2.5 py-2.5 animate-pulse"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-surface-elevated shrink-0" />
+                    <div className="h-2.5 flex-1 rounded bg-surface-elevated" />
+                    <div className="h-2.5 w-14 rounded bg-surface-elevated" />
+                  </div>
+                ))}
+              </div>
+            ) : sectionErrors.channels ? (
+              <div className="p-4">
+                <SectionError
+                  message={sectionErrors.channels}
+                  onRetry={() => void loadChannels()}
+                />
+              </div>
+            ) : channels.length === 0 ? (
+              <EmptyState
+                icon={<Wifi size={26} />}
+                heading="No channels yet"
+                body="Connect a channel to start receiving messages."
+                action={
+                  <Link href="/dashboard/channels">
+                    <Button variant="outline" size="sm" icon={<Plus size={13} />}>
+                      Connect channel
+                    </Button>
+                  </Link>
+                }
+              />
+            ) : (
+              <ul
+                aria-label="Connected channels"
+                className="divide-y divide-border/50"
+              >
+                {channels.map(ch => (
+                  <li key={ch.id} className="flex items-center gap-3 px-5 py-3">
+                    <ChannelIcon type={ch.type} size={17} />
+                    <span className="flex-1 truncate text-[13px] font-medium text-text-primary">
+                      {ch.page_name || ch.page_id || ch.type}
+                    </span>
+                    {/* Connected indicator — small dot is enough; don't need a full badge */}
+                    <span
+                      className="w-2 h-2 rounded-full bg-success shrink-0"
+                      aria-label="Connected"
+                      title="Connected"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+
           <CardFooter>
-            <Link href="/inbox" className="w-full">
-              <Button variant="ghost" size="sm" iconRight={<ArrowUpRight size={13} />} className="w-full justify-center">
-                View all conversations
+            <Link href="/dashboard/channels" className="w-full">
+              <Button
+                variant="ghost"
+                size="sm"
+                iconRight={<ChevronRight size={13} />}
+                className="w-full justify-between text-text-tertiary"
+              >
+                Manage channels
               </Button>
             </Link>
           </CardFooter>
-        )}
-      </Card>
+        </Card>
+
+      </div>{/* end bottom row */}
 
     </div>
   )
