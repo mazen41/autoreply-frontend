@@ -120,6 +120,8 @@ export default function CommentRulesManager({
               {isRTL ? 'الوكيل الذكي المكلّف' : 'Assigned Bot'}
             </label>
             <Select
+              dir={isRTL ? 'rtl' : 'ltr'}
+              ariaLabel={isRTL ? 'اختر الوكيل الذكي' : 'Select bot'}
               value={selectedBotId}
               disabled={bots.length === 0}
               onChange={(e) => setSelectedBotId(e.target.value)}
@@ -136,6 +138,8 @@ export default function CommentRulesManager({
               {isRTL ? 'الحساب الاجتماعي المرتبط' : 'Connected Social Account'}
             </label>
             <Select
+              dir={isRTL ? 'rtl' : 'ltr'}
+              ariaLabel={isRTL ? 'اختر الحساب الاجتماعي' : 'Select social account'}
               value={selectedChannelId}
               disabled={ruleChannels.length === 0}
               onChange={(e) => setSelectedChannelId(e.target.value)}

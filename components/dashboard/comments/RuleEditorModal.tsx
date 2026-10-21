@@ -200,6 +200,8 @@ export default function RuleEditorModal({
                 {isRTL ? 'طريقة المطابقة' : 'Match Mode'}
               </label>
               <Select
+                dir={isRTL ? 'rtl' : 'ltr'}
+                ariaLabel={isRTL ? 'اختر طريقة المطابقة' : 'Select match mode'}
                 value={match}
                 onChange={(e) => setMatch(e.target.value as 'contains' | 'equals')}
                 options={[

@@ -11,6 +11,8 @@ import {
 import { useLang } from '../../../lib/LangContext'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import Tabs, { TabItem } from '../../../components/ui/Tabs'
+import Button from '../../../components/ui/Button'
+import PageHeader from '../../../components/ui/PageHeader'
 import CommentsInbox from '../../../components/dashboard/comments/CommentsInbox'
 import CommentRulesManager from '../../../components/dashboard/comments/CommentRulesManager'
 import CommentTestCenter from '../../../components/dashboard/comments/CommentTestCenter'
@@ -82,6 +84,7 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
   const [platform, setPlatform] = useState('all')
   const [status, setStatus] = useState('all')
   const [search, setSearch] = useState('')
+  const [searchDraft, setSearchDraft] = useState('')
   const [page, setPage] = useState(1)
   const [lastPage, setLastPage] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -174,6 +177,14 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
   useEffect(() => {
     void loadBotRules()
   }, [loadBotRules])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPage(1)
+      setSearch(searchDraft.trim())
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [searchDraft])
 
   // Save rules to backend
   const saveRules = async () => {
@@ -420,37 +431,26 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
       className="mx-auto h-full max-w-[1520px] space-y-6 overflow-y-auto p-4 md:p-8"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      {/* 1. Calm, Professional Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary">
-              {isRTL ? 'مركز التعليقات والردود الآلية' : 'Comments Workspace'}
-            </h1>
-            <span className="inline-flex items-center gap-1 rounded-full border border-brand/20 bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">
-              <SlidersHorizontal size={11} />
-              {isRTL ? 'نشط' : 'Active'}
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-text-secondary leading-relaxed">
-            {isRTL
-              ? 'تابع تعليقات فيسبوك وإنستغرام الواردة، واضبط قواعد الردود الذكية، واختبر موثوقيتها بأمان.'
-              : 'Review incoming customer comments from connected pages, manage automated reply rules, and test automation.'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
-          <button
-            type="button"
-            onClick={() => void load()}
-            disabled={loading}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-border bg-surface px-3.5 text-xs font-medium text-text-primary transition hover:bg-surface-elevated disabled:opacity-50 shadow-sm"
-          >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-            <span>{isRTL ? 'تحديث' : 'Refresh'}</span>
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={isRTL ? 'التعليقات' : 'Comments'}
+        description={isRTL
+          ? 'راجع تعليقات صفحاتك، واضبط الردود العامة الآلية، واختبر قواعدك بأمان.'
+          : 'Review comments from your connected pages, manage public auto-replies, and safely test your rules.'}
+        breadcrumbs={[{ label: 'NazBiz', href: '/dashboard' }, { label: isRTL ? 'التعليقات' : 'Comments' }]}
+        badge={(
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-text-secondary">
+            <span className={`h-1.5 w-1.5 rounded-full ${ruleChannels.some((channel) => channel.enabled) ? 'bg-success' : 'bg-text-tertiary'}`} />
+            {ruleChannels.some((channel) => channel.enabled)
+              ? (isRTL ? 'الأتمتة مفعّلة' : 'Automation on')
+              : (isRTL ? 'الأتمتة متوقفة' : 'Automation off')}
+          </span>
+        )}
+        primaryAction={(
+          <Button variant="secondary" size="sm" onClick={() => void load()} loading={loading} icon={<RefreshCw size={14} />}>
+            {isRTL ? 'تحديث' : 'Refresh'}
+          </Button>
+        )}
+      />
 
       {/* 2. Workspace Tabs Navigation */}
       <div>
@@ -465,7 +465,8 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
 
       {/* Global Error Banner */}
       {error && (
-        <div role="alert" className="rounded-xl border border-error/30 bg-error/5 p-4 text-xs text-error">
+        <div role="alert" className="flex items-start gap-3 rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-error">
+          <span className="mt-0.5"><SlidersHorizontal size={15} /></span>
           {error}
         </div>
       )}
@@ -481,8 +482,8 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
           setPlatform={setPlatform}
           status={status}
           setStatus={setStatus}
-          search={search}
-          setSearch={setSearch}
+          search={searchDraft}
+          setSearch={setSearchDraft}
           page={page}
           setPage={setPage}
           lastPage={lastPage}

@@ -104,6 +104,8 @@ export default function CommentTestCenter({
                 {isRTL ? 'الوكيل' : 'Bot'}
               </label>
               <Select
+                dir={isRTL ? 'rtl' : 'ltr'}
+                ariaLabel={isRTL ? 'اختر الوكيل' : 'Select bot'}
                 value={selectedBotId}
                 disabled={bots.length === 0}
                 onChange={(e) => setSelectedBotId(e.target.value)}
@@ -119,6 +121,8 @@ export default function CommentTestCenter({
                 {isRTL ? 'الحساب' : 'Account'}
               </label>
               <Select
+                dir={isRTL ? 'rtl' : 'ltr'}
+                ariaLabel={isRTL ? 'اختر الحساب' : 'Select account'}
                 value={selectedChannelId}
                 disabled={ruleChannels.length === 0}
                 onChange={(e) => setSelectedChannelId(e.target.value)}
@@ -255,6 +259,8 @@ export default function CommentTestCenter({
                   {isRTL ? 'الإجراء المتوقع' : 'Expected Action'}
                 </label>
                 <Select
+                  dir={isRTL ? 'rtl' : 'ltr'}
+                  ariaLabel={isRTL ? 'اختر الإجراء المتوقع' : 'Select expected action'}
                   value={expectedAction}
                   onChange={(e) => setExpectedAction(e.target.value)}
                   options={[

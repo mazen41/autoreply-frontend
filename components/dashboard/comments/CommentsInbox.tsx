@@ -255,6 +255,9 @@ export default function CommentsInbox({
             {/* Platform dropdown */}
             <div className="w-36 shrink-0">
               <Select
+                dir={isRTL ? 'rtl' : 'ltr'}
+                ariaLabel={isRTL ? 'تصفية حسب المنصة' : 'Filter by platform'}
+                size="sm"
                 value={platform}
                 onChange={(e) => {
                   setPage(1)
