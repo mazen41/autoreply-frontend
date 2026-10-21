@@ -29,10 +29,13 @@ describe('home dashboard filters', () => {
     }))
 
     render(<DashboardPage />)
-    await screen.findByRole('option', { name: 'Facebook Page' })
-    await screen.findByRole('option', { name: 'Sales Bot' })
-    fireEvent.change(screen.getByLabelText('Channel or connected account'), { target: { value: '21' } })
-    fireEvent.change(screen.getByLabelText('Bot'), { target: { value: '31' } })
+    const channelFilter = screen.getByRole('combobox', { name: 'Channel account' })
+    const agentFilter = screen.getByRole('combobox', { name: 'AI agent' })
+
+    fireEvent.click(channelFilter)
+    fireEvent.click(await screen.findByRole('option', { name: /Facebook Page/ }))
+    fireEvent.click(agentFilter)
+    fireEvent.click(await screen.findByRole('option', { name: 'Sales Bot' }))
 
     await waitFor(() => {
       expect(requestedUrls.some(url => url.includes('/api/stats?') && url.includes('channel_id=21') && url.includes('bot_id=31'))).toBe(true)

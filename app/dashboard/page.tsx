@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../lib/motion'
 import MetricCard from '../../components/ui/MetricCard'
+import Select, { type SelectOption } from '../../components/ui/Select'
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
-import Avatar from '../../components/ui/Avatar'
 import ChannelIcon from '../../components/ui/ChannelIcon'
 import { MetricCardSkeleton } from '../../components/ui/Skeleton'
 import { getBusinessHeaders } from '../../lib/businessContext'
@@ -28,6 +28,8 @@ import {
   BarChart2,
   Inbox,
   Zap,
+  Bot,
+  CalendarDays,
 } from 'lucide-react'
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -163,6 +165,32 @@ function SkeletonRow({ widths }: { widths: string[] }) {
         <div key={i} className="h-2.5 rounded bg-surface-elevated" style={{ width: w }} />
       ))}
     </div>
+  )
+}
+
+/** A compact, square identity marker that keeps the channel recognizable
+ * without stacking a circular badge over a circular avatar. */
+function ConversationAvatar({ name, channel }: { name: string; channel: DashboardChannelType }) {
+  const normalizedName = name.trim()
+  const initial = normalizedName.charAt(0).toUpperCase() || '?'
+  const paletteIndex = (normalizedName.charCodeAt(0) || 0) % 5
+  const palette = [
+    'from-emerald-400/20 to-emerald-700/20 text-emerald-300',
+    'from-sky-400/20 to-blue-700/20 text-sky-300',
+    'from-amber-300/20 to-orange-700/20 text-amber-300',
+    'from-violet-400/20 to-purple-700/20 text-violet-300',
+    'from-rose-400/20 to-pink-700/20 text-rose-300',
+  ][paletteIndex]
+
+  return (
+    <span className="relative inline-flex h-10 w-10 shrink-0" aria-hidden="true">
+      <span className={`flex h-10 w-10 items-center justify-center rounded-xl border border-border/80 bg-gradient-to-br ${palette} text-sm font-semibold shadow-sm`}>
+        {initial}
+      </span>
+      <span className="absolute -bottom-1 -right-1 grid h-[18px] w-[18px] place-items-center rounded-md border border-border bg-surface-elevated shadow-sm">
+        <ChannelIcon type={channel} size={12} />
+      </span>
+    </span>
   )
 }
 
@@ -459,6 +487,27 @@ export default function DashboardPage() {
   /* ── derived ── */
   const aiShare    = aiPerformance?.ai_share_of_replies ?? 0
   const autoReplies = aiPerformance?.auto_replies ?? 0
+  const selectedChannel = channels.find(channel => String(channel.id) === selectedChannelId)
+  const selectedBot = bots.find(bot => String(bot.id) === selectedBotId)
+  const channelOptions: SelectOption[] = [
+    { value: '', label: 'All channels', icon: <Radio size={14} /> },
+    ...channels.map(channel => ({
+      value: String(channel.id),
+      label: channel.page_name || channel.page_id || channel.type,
+      icon: <ChannelIcon type={channel.type} size={14} />,
+      description: channel.type,
+    })),
+  ]
+  const botOptions: SelectOption[] = [
+    { value: '', label: 'All AI agents', icon: <Bot size={14} /> },
+    ...bots.map(bot => ({
+      value: String(bot.id),
+      label: bot.name,
+      icon: <Bot size={14} />,
+      badge: bot.status === 'active' ? 'Active' : undefined,
+    })),
+  ]
+  const periodLabel = timeRange === '7d' ? 'Last 7 days' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'
 
 
   /* ── render ── */
@@ -502,76 +551,59 @@ export default function DashboardPage() {
         </div>
 
         {/* Filter bar — sits below the title, full-width, separated by a subtle rule */}
-        <div className="mt-4 pt-4 border-t border-border/60 flex flex-wrap items-center gap-2">
-          {/* Channel selector */}
-          <label className="sr-only" htmlFor="dash-ch">Channel</label>
-          <select
-            id="dash-ch"
-            value={selectedChannelId}
-            onChange={e => setSelectedChannelId(e.target.value)}
-            className="h-8 rounded-lg border border-border bg-surface-elevated
-                       px-2.5 text-xs text-text-primary
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
-                       min-w-0 max-w-[10rem]"
-          >
-            <option value="">All channels</option>
-            {channels.map(ch => (
-              <option key={ch.id} value={ch.id}>
-                {ch.page_name || ch.page_id || ch.type}
-              </option>
-            ))}
-          </select>
+        <div className="mt-6 rounded-2xl border border-border/70 bg-surface/70 p-3 sm:p-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:w-[min(100%,34rem)]">
+              <Select
+                id="dashboard-channel-filter"
+                label="Channel account"
+                value={selectedChannelId}
+                options={channelOptions}
+                onValueChange={setSelectedChannelId}
+                size="md"
+                className="w-full"
+                triggerClassName="h-10 rounded-xl bg-background/70"
+              />
+              <Select
+                id="dashboard-agent-filter"
+                label="AI agent"
+                value={selectedBotId}
+                options={botOptions}
+                onValueChange={setSelectedBotId}
+                size="md"
+                className="w-full"
+                triggerClassName="h-10 rounded-xl bg-background/70"
+              />
+            </div>
 
-          {/* Bot selector */}
-          <label className="sr-only" htmlFor="dash-bot">Bot</label>
-          <select
-            id="dash-bot"
-            value={selectedBotId}
-            onChange={e => setSelectedBotId(e.target.value)}
-            className="h-8 rounded-lg border border-border bg-surface-elevated
-                       px-2.5 text-xs text-text-primary
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
-                       min-w-0 max-w-[9rem]"
-          >
-            <option value="">All bots</option>
-            {bots.map(b => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-
-          {/* Divider */}
-          <div className="hidden sm:block h-4 w-px bg-border/60" aria-hidden />
-
-          {/* Time-range pill toggle */}
-          <div
-            role="group"
-            aria-label="Time range"
-            className="flex items-center rounded-lg border border-border bg-surface-elevated p-0.5 gap-0.5"
-          >
-            {(['7d', '30d', '90d'] as const).map(r => (
-              <button
-                key={r}
-                type="button"
-                aria-pressed={timeRange === r}
-                onClick={() => setTimeRange(r)}
-                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors
-                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40
-                            ${timeRange === r
-                              ? 'bg-surface-overlay text-text-primary shadow-sm'
-                              : 'text-text-tertiary hover:text-text-secondary'}`}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between xl:justify-end">
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-text-tertiary">
+                <CalendarDays size={14} className="text-brand" aria-hidden="true" />
+                {periodLabel}
+              </span>
+              <div
+                role="group"
+                aria-label="Time range"
+                className="inline-flex w-fit items-center rounded-xl border border-border bg-background/70 p-1"
               >
-                {r}
-              </button>
-            ))}
+                {(['7d', '30d', '90d'] as const).map((range, index) => (
+                  <button
+                    key={range}
+                    type="button"
+                    aria-pressed={timeRange === range}
+                    onClick={() => setTimeRange(range)}
+                    className={`min-w-16 rounded-lg px-3 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${
+                      timeRange === range
+                        ? 'bg-surface-elevated text-text-primary shadow-sm ring-1 ring-border/70'
+                        : 'text-text-tertiary hover:bg-surface-hover hover:text-text-primary'
+                    }`}
+                  >
+                    {['7 days', '30 days', '90 days'][index]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          {/* Spacer — push refresh hint to the end */}
-          <div className="flex-1" />
-
-          {/* Period label — subtle context */}
-          <span className="hidden md:inline text-[11px] text-text-disabled select-none">
-            {timeRange === '7d' ? 'Last 7 days' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'}
-          </span>
         </div>
       </div>
 
@@ -612,7 +644,7 @@ export default function DashboardPage() {
             <MetricCard
               label="Total Messages"
               value={(stats?.total_messages ?? 0).toLocaleString()}
-              subValue={`${timeRange} · all channels`}
+              subValue={`${periodLabel.toLowerCase()} · ${selectedChannel?.page_name || selectedChannel?.type || 'all channels'}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
               variant="hero"
               icon={<MessageSquare size={17} />}
             />
@@ -688,9 +720,10 @@ export default function DashboardPage() {
               <CardDescription>
                 Daily totals
                 {selectedChannelId
-                  ? ` for ${channels.find(c => String(c.id) === selectedChannelId)?.page_name ?? 'selected channel'}`
+                  ? ` for ${selectedChannel?.page_name ?? 'selected channel'}`
                   : ' across all channels'}
-                {' '}· {timeRange === '7d' ? 'last 7 days' : timeRange === '30d' ? 'last 30 days' : 'last 90 days'}
+                {selectedBot ? ` · ${selectedBot.name}` : ''}
+                {' '}· {periodLabel.toLowerCase()}
               </CardDescription>
             </div>
 
@@ -759,7 +792,7 @@ export default function DashboardPage() {
                     <span className="text-xl font-semibold text-text-secondary ms-0.5">%</span>
                   </div>
                   <p className="mt-1 text-[11px] text-text-tertiary">
-                    {autoReplies.toLocaleString()} auto-replies · {timeRange}
+                    {autoReplies.toLocaleString()} auto-replies · {periodLabel.toLowerCase()}
                   </p>
                   {/* Progress bar */}
                   <div
@@ -875,11 +908,7 @@ export default function DashboardPage() {
                       aria-label={`Conversation with ${item.sender_name}`}
                     >
                       {/* Avatar */}
-                      <Avatar
-                        name={item.sender_name}
-                        size="md"
-                        channelIcon={<ChannelIcon type={item.channel} size={11} />}
-                      />
+                      <ConversationAvatar name={item.sender_name} channel={item.channel} />
 
                       {/* Name + preview */}
                       <div className="flex-1 min-w-0">
