@@ -1,18 +1,22 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { FileText, Image as ImageIcon, Paperclip, Send, Video, X } from 'lucide-react'
+import { FileText, Image as ImageIcon, Paperclip, Reply, Send, Video, X } from 'lucide-react'
+
+type ReplyTarget = { id: number; senderName: string; content: string; mediaType?: string | null }
 
 interface ChatComposerProps {
   channelType?: string
   isRTL: boolean
-  onSendText: (text: string) => Promise<boolean>
+  onSendText: (text: string, replyToMessageId?: number) => Promise<boolean>
   onSendMedia: (file: File, caption: string, type: string, isVoice: boolean) => Promise<boolean>
   disabled?: boolean
   initialText?: string
+  replyTo?: ReplyTarget | null
+  onClearReply?: () => void
 }
 
-export default function ChatComposer({ isRTL, onSendText, onSendMedia, disabled, initialText = '' }: ChatComposerProps) {
+export default function ChatComposer({ isRTL, onSendText, onSendMedia, disabled, initialText = '', replyTo, onClearReply }: ChatComposerProps) {
   const [text, setText] = useState(initialText)
   const [attachment, setAttachment] = useState<File | null>(null)
   const [sending, setSending] = useState(false)
@@ -46,11 +50,12 @@ export default function ChatComposer({ isRTL, onSendText, onSendMedia, disabled,
         const type = attachment.type.startsWith('image/') ? 'image' : attachment.type.startsWith('video/') ? 'video' : attachment.type.startsWith('audio/') ? 'audio' : 'document'
         success = await onSendMedia(attachment, message, type, false)
       } else {
-        success = await onSendText(message)
+        success = await onSendText(message, replyTo?.id)
       }
       if (success) {
         setText('')
         setAttachment(null)
+        onClearReply?.()
       }
     } finally {
       setSending(false)
@@ -71,6 +76,14 @@ export default function ChatComposer({ isRTL, onSendText, onSendMedia, disabled,
   }
 
   return <div className="border-t border-border bg-surface p-3">
+    {replyTo && <div dir={isRTL ? 'rtl' : 'ltr'} className="mb-2 flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2">
+      <Reply size={14} className="shrink-0 text-brand" />
+      <div className="min-w-0 flex-1 border-s-2 border-brand/50 ps-2">
+        <div className="text-[11px] font-semibold text-brand">{isRTL ? `الرد على ${replyTo.senderName}` : `Replying to ${replyTo.senderName}`}</div>
+        <p className="truncate text-xs text-text-secondary">{replyTo.content || (replyTo.mediaType ? `(${replyTo.mediaType})` : '')}</p>
+      </div>
+      <button type="button" onClick={onClearReply} aria-label={L('Cancel reply', 'إلغاء الرد')} className="rounded-lg p-1.5 text-text-tertiary hover:bg-surface hover:text-text-primary"><X size={14} /></button>
+    </div>}
     {attachment && <div className="mb-3 flex w-max items-center gap-3 rounded-lg border border-border bg-surface-elevated p-2">
       <div className="flex h-10 w-10 items-center justify-center rounded bg-surface text-text-secondary">{attachment.type.startsWith('image/') ? <ImageIcon size={20} /> : attachment.type.startsWith('video/') ? <Video size={20} /> : <FileText size={20} />}</div>
       <div><div className="max-w-[200px] truncate text-xs font-bold text-text-primary">{attachment.name}</div><div className="text-[10px] text-text-tertiary">{(attachment.size / 1024).toFixed(1)} KB</div></div>

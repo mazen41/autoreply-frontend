@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { ApiConversation, ApiBot } from '../../hooks/useInbox'
+import Select from '../ui/Select'
 import {
-  Bot, User, AlertTriangle, ChevronDown, CheckCircle, Archive,
-  Clock, UserPlus, ArrowRight, PanelLeft, PanelRight, Phone,
-  MoreHorizontal, Zap, X, Loader2, Star
+  Bot, User, AlertTriangle, CheckCircle, Archive,
+  Clock, PanelLeft, PanelRight,
+  MoreHorizontal, Zap, X, Loader2, Star, Ban, Trash2
 } from 'lucide-react'
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
@@ -36,6 +37,9 @@ interface ConversationHeaderProps {
   isUpdatingAgent?: boolean
   onRequestFeedback?: () => void
   isCreatingFeedbackLink?: boolean
+  onBlockChange?: (blocked: boolean) => void
+  onDeleteConversation?: () => void
+  isDeletingConversation?: boolean
 }
 
 export default function ConversationHeader({
@@ -43,12 +47,10 @@ export default function ConversationHeader({
   onToggleLeftPanel, onToggleRightPanel, leftCollapsed, rightCollapsed,
   availableBots = [], onBotChange, isUpdatingBot = false,
   availableAgents = [], onAgentChange, isUpdatingAgent = false,
-  onRequestFeedback, isCreatingFeedbackLink = false
+  onRequestFeedback, isCreatingFeedbackLink = false,
+  onBlockChange, onDeleteConversation, isDeletingConversation = false
 }: ConversationHeaderProps) {
-  const [statusOpen, setStatusOpen] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
-  const [botDropdownOpen, setBotDropdownOpen] = useState(false)
-  const [agentDropdownOpen, setAgentDropdownOpen] = useState(false)
   const L = (en: string, ar: string) => isRTL ? ar : en
 
   const ch = CHANNEL_LABELS[conv.channel?.type?.toLowerCase() || ''] ?? { label: conv.channel?.type ?? 'Chat', color: 'var(--accent)' }
@@ -66,10 +68,8 @@ export default function ConversationHeader({
     pending: { label: L('Pending', 'معلق'),    color: 'var(--warning)',  icon: <Clock size={12} /> },
     closed:  { label: L('Resolved','محلول'),   color: 'var(--success)', icon: <CheckCircle size={12} /> },
   }
-  const currentStatus = statusConfig[conv.status] ?? statusConfig.open
-
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-surface flex-shrink-0">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-surface flex-shrink-0">
       {/* Panel toggles */}
       <button
         onClick={onToggleLeftPanel}
@@ -81,7 +81,7 @@ export default function ConversationHeader({
 
       {/* Customer info */}
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-end flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+        <div className="w-8 h-8 rounded-xl border border-white/10 bg-gradient-to-br from-accent to-accent-end flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm">
           {(conv.sender_name?.charAt(0) || '?').toUpperCase()}
         </div>
         <div className="min-w-0">
@@ -95,50 +95,28 @@ export default function ConversationHeader({
             >
               {conv.channel?.page_name || conv.channel?.page_id || ch.label}
             </span>
-            {conv.bot?.name && (
-              <div className="relative flex items-center">
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-brand/10 border border-brand/30/20 text-brand flex items-center gap-1">
-                  <Bot size={10} />
-                  {conv.bot.name}
-                </span>
-                {availableBots.length > 0 && onBotChange && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setBotDropdownOpen(v => !v)}
-                      disabled={isUpdatingBot}
-                      className="ml-1 p-0.5 rounded hover:bg-surface-elevated text-text-tertiary hover:text-brand transition-colors disabled:opacity-50"
-                      title={isRTL ? 'تغيير البوت' : 'Switch Bot'}
-                    >
-                      {isUpdatingBot ? <Loader2 size={10} className="animate-spin" /> : <ChevronDown size={10} />}
-                    </button>
-                    {botDropdownOpen && (
-                      <div className="absolute left-0 top-full mt-1 w-44 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
-                        <button
-                          onClick={() => { onBotChange(null); setBotDropdownOpen(false) }}
-                          className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                            !conv.bot_id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
-                          }`}
-                        >
-                          {isRTL ? 'بدون بوت' : 'No Bot'}
-                        </button>
-                        {availableBots.map(bot => (
-                          <button
-                            key={bot.id}
-                            onClick={() => { onBotChange(bot.id); setBotDropdownOpen(false) }}
-                            className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                              conv.bot_id === bot.id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
-                            }`}
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <Bot size={11} />
-                              {bot.name}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+            {onBotChange && (availableBots.length > 0 || conv.bot_id) && (
+              <div className="w-36 shrink-0 sm:w-40">
+                <Select
+                  id={`conversation-${conv.id}-bot`}
+                  dir={isRTL ? 'rtl' : 'ltr'}
+                  ariaLabel={L('Assign a bot to this conversation', 'تعيين بوت لهذه المحادثة')}
+                  value={conv.bot_id ? String(conv.bot_id) : ''}
+                  onValueChange={value => onBotChange(value ? Number(value) : null)}
+                  options={[
+                    { value: '', label: L('Assign bot', 'تعيين بوت'), icon: <Bot size={13} /> },
+                    ...availableBots.map(bot => ({
+                      value: String(bot.id),
+                      label: bot.name,
+                      icon: <Bot size={13} />,
+                    })),
+                  ]}
+                  disabled={isUpdatingBot}
+                  loading={isUpdatingBot}
+                  size="sm"
+                  className="w-full"
+                  triggerClassName="h-8 rounded-lg bg-surface px-2 text-[11px]"
+                />
               </div>
             )}
           </div>
@@ -160,30 +138,22 @@ export default function ConversationHeader({
       </button>
 
       {/* Status dropdown */}
-      <div className="relative flex-shrink-0">
-        <button
-          onClick={() => setStatusOpen(v => !v)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-border hover:bg-surface-elevated transition-colors"
-          style={{ color: currentStatus.color }}
-        >
-          {currentStatus.icon}
-          {currentStatus.label}
-          <ChevronDown size={11} />
-        </button>
-        {statusOpen && (
-          <div className="absolute right-0 top-full mt-1 w-36 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
-            {Object.entries(statusConfig).map(([key, cfg]) => (
-              <button
-                key={key}
-                onClick={() => { onStatusChange(key as any); setStatusOpen(false) }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-surface transition-colors"
-                style={{ color: cfg.color }}
-              >
-                {cfg.icon} {cfg.label}
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="w-32 shrink-0">
+        <Select
+          id={`conversation-${conv.id}-status`}
+          dir={isRTL ? 'rtl' : 'ltr'}
+          ariaLabel={L('Conversation status', 'حالة المحادثة')}
+          value={conv.status}
+          onValueChange={value => onStatusChange(value as 'open' | 'closed' | 'pending')}
+          options={Object.entries(statusConfig).map(([value, config]) => ({
+            value,
+            label: config.label,
+            icon: config.icon,
+          }))}
+          size="sm"
+          className="w-full"
+          triggerClassName="h-8 rounded-lg bg-surface px-2 text-[11px]"
+        />
       </div>
 
       {conv.status === 'closed' && onRequestFeedback && <button type="button" onClick={onRequestFeedback} disabled={isCreatingFeedbackLink} className="flex flex-shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-[11px] font-semibold text-text-secondary hover:bg-surface-elevated disabled:opacity-50" title={isRTL ? 'إنشاء رابط تقييم للعميل' : 'Add a customer feedback link to the reply'}>
@@ -192,48 +162,23 @@ export default function ConversationHeader({
 
       {/* Agent Assignment */}
       {availableAgents.length > 0 && onAgentChange && (
-        <div className="relative flex-shrink-0">
-          <button
-            onClick={() => setAgentDropdownOpen(v => !v)}
+        <div className="w-36 shrink-0">
+          <Select
+            id={`conversation-${conv.id}-agent`}
+            dir={isRTL ? 'rtl' : 'ltr'}
+            ariaLabel={L('Assign conversation to an agent', 'تعيين المحادثة لموظف')}
+            value={conv.assigned_agent_id ? String(conv.assigned_agent_id) : ''}
+            onValueChange={value => onAgentChange(value ? Number(value) : null)}
+            options={[
+              { value: '', label: L('Unassigned', 'غير معين'), icon: <User size={13} /> },
+              ...availableAgents.map(agent => ({ value: String(agent.id), label: agent.name, icon: <User size={13} /> })),
+            ]}
             disabled={isUpdatingAgent}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border border-border hover:bg-surface-elevated transition-colors disabled:opacity-50"
-            style={{ color: conv.assigned_agent_id ? 'var(--accent)' : 'var(--text-tertiary)' }}
-          >
-            {isUpdatingAgent ? (
-              <Loader2 size={10} className="animate-spin" />
-            ) : (
-              <User size={10} />
-            )}
-            {conv.assigned_agent_id
-              ? (availableAgents.find(a => a.id === conv.assigned_agent_id)?.name ?? L('Assigned', 'معين'))
-              : L('Unassigned', 'غير معين')
-            }
-            <ChevronDown size={9} />
-          </button>
-          {agentDropdownOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
-              <button
-                onClick={() => { onAgentChange(null); setAgentDropdownOpen(false) }}
-                className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                  !conv.assigned_agent_id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
-                }`}
-              >
-                {L('Unassigned', 'غير معين')}
-              </button>
-              {availableAgents.map(agent => (
-                <button
-                  key={agent.id}
-                  onClick={() => { onAgentChange(agent.id); setAgentDropdownOpen(false) }}
-                  className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-1.5 ${
-                    conv.assigned_agent_id === agent.id ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
-                  }`}
-                >
-                  <User size={11} />
-                  {agent.name}
-                </button>
-              ))}
-            </div>
-          )}
+            loading={isUpdatingAgent}
+            size="sm"
+            className="w-full"
+            triggerClassName="h-8 rounded-lg bg-surface px-2 text-[11px]"
+          />
         </div>
       )}
 
@@ -242,23 +187,34 @@ export default function ConversationHeader({
         <button
           onClick={() => setActionsOpen(v => !v)}
           className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary transition-colors"
+          aria-label={L('Conversation actions', 'إجراءات المحادثة')}
+          title={L('Conversation actions', 'إجراءات المحادثة')}
         >
           <MoreHorizontal size={15} />
         </button>
         {actionsOpen && (
-          <div className="absolute right-0 top-full mt-1 w-44 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="absolute end-0 top-full mt-1 w-52 overflow-hidden rounded-xl border border-border bg-surface-elevated shadow-xl z-50">
             {[
-              { icon: UserPlus,    label: L('Assign',   'تعيين') },
-              { icon: ArrowRight,  label: L('Transfer', 'نقل') },
-              { icon: Clock,       label: L('Snooze',   'تأجيل') },
-              { icon: Archive,     label: L('Archive',  'أرشفة') },
+              { icon: Clock, label: L('Snooze', 'تأجيل'), action: () => onStatusChange('pending') },
+              { icon: Archive, label: L(conv.status === 'closed' ? 'Reopen conversation' : 'Archive conversation', conv.status === 'closed' ? 'إعادة فتح المحادثة' : 'أرشفة المحادثة'), action: () => onStatusChange(conv.status === 'closed' ? 'open' : 'closed') },
+              ...(conv.can_block_contact && onBlockChange ? [{
+                icon: Ban,
+                label: L(conv.is_blocked ? 'Unblock contact' : 'Block contact', conv.is_blocked ? 'إلغاء حظر جهة الاتصال' : 'حظر جهة الاتصال'),
+                action: () => onBlockChange(!conv.is_blocked),
+              }] : []),
+              ...(onDeleteConversation ? [{ icon: Trash2, label: L('Delete conversation', 'حذف المحادثة'), action: onDeleteConversation, destructive: true }] : []),
             ].map(item => (
               <button
                 key={item.label}
-                onClick={() => setActionsOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-text-secondary hover:text-text-primary hover:bg-surface transition-colors"
+                type="button"
+                disabled={isDeletingConversation}
+                onClick={() => { item.action(); setActionsOpen(false) }}
+                className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-start text-xs transition-colors hover:bg-surface disabled:opacity-50 ${'destructive' in item && item.destructive ? 'text-error hover:text-error' : 'text-text-secondary hover:text-text-primary'}`}
               >
-                <item.icon size={13} /> {item.label}
+                {'destructive' in item && item.destructive && isDeletingConversation
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : <item.icon size={13} />}
+                {item.label}
               </button>
             ))}
           </div>

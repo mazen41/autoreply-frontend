@@ -18,6 +18,8 @@ import {
   Image as ImageIcon,
   Loader2,
   MessageCircle,
+  Reply,
+  Trash2,
   Pencil,
   RefreshCw,
   XCircle,
@@ -31,7 +33,7 @@ import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import VoiceMessagePlayer from './VoiceMessagePlayer'
 
-type MediaType = 'image' | 'audio' | 'video' | 'document' | null
+type MediaType = 'image' | 'audio' | 'video' | 'document' | 'sticker' | null
 
 interface AiReplyAudit {
   agent: { id: number; name: string } | null
@@ -70,10 +72,16 @@ interface MessageBubbleProps {
     file_size?: number | null
     duration?: number | null
     whatsapp_message_id?: string | null
+    platform_message_id?: string | null
+    metadata?: Record<string, unknown> | null
   }
+  quotedMessage?: { senderName: string; content: string } | null
   channelType?: string
   isRTL: boolean
   onReact?: (messageId: number, emoji: string) => void
+  onReply?: (message: MessageBubbleProps['msg']) => void
+  canDeleteWhatsAppMessages?: boolean
+  onDeleteWhatsAppMessage?: (message: MessageBubbleProps['msg']) => void
   conv?: {
     sender_name: string | null
     sender_email: string | null
@@ -114,7 +122,13 @@ function formatFileSize(size?: number | null) {
 function fileKind(mediaType?: MediaType, mimeType?: string | null, name?: string | null) {
   const mime = (mimeType || '').toLowerCase()
   const fileName = (name || '').toLowerCase()
+  if (mediaType === 'sticker' && mime.startsWith('video/')) return 'video'
   if (mediaType === 'image' || mime.startsWith('image/')) return 'image'
+  if (mediaType === 'sticker') {
+    if (mime.startsWith('image/')) return 'image'
+    if (mime.startsWith('video/')) return 'video'
+    return 'sticker'
+  }
   if (mediaType === 'audio' || mime.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|opus|weba)$/i.test(fileName)) return 'audio'
   if (mediaType === 'video' || mime.startsWith('video/')) return 'video'
   if (mime === 'application/pdf' || fileName.endsWith('.pdf')) return 'pdf'
@@ -212,7 +226,7 @@ function AttachmentCard({
     </a>
   )
 
-  if (kind === 'image' && !previewError) {
+  if ((kind === 'image' || kind === 'sticker') && !previewError) {
     return (
       <div className="space-y-2">
         <a href={inlineUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-black/5 bg-black/5">
@@ -223,7 +237,7 @@ function AttachmentCard({
             loading="lazy"
             onLoad={() => setLoading(false)}
             onError={() => { setPreviewError(true); setLoading(false) }}
-            className={`${loading ? 'hidden' : 'block'} max-h-80 w-auto max-w-full object-contain`}
+            className={`${loading ? 'hidden' : 'block'} ${kind === 'sticker' ? 'max-h-48 max-w-48' : 'max-h-80 max-w-full'} w-auto object-contain`}
           />
         </a>
         <div className="flex items-center justify-between gap-2">{downloadButton}</div>
@@ -322,6 +336,10 @@ const MessageBubble = memo(function MessageBubble({
   channelType,
   isRTL,
   onReact,
+  onReply,
+  canDeleteWhatsAppMessages = false,
+  onDeleteWhatsAppMessage,
+  quotedMessage,
   conv,
   onSubmitFeedback,
   onCorrectAI,
@@ -329,6 +347,10 @@ const MessageBubble = memo(function MessageBubble({
   const isIn = msg.direction === 'inbound'
   const isGmail = channelType === 'gmail'
   const canReact = channelType === 'whatsapp' && !!msg.whatsapp_message_id
+  const isDeletedForEveryone = msg.metadata?.deleted_for_everyone === true
+  const canDeleteMessage = canDeleteWhatsAppMessages && channelType === 'whatsapp'
+    && !isIn && !!(msg.whatsapp_message_id || msg.platform_message_id)
+    && !isDeletedForEveryone
   const hasMedia = !!msg.media_url || !!msg.media_type
   const outboundStates = [msg.send_status, msg.delivery_status, msg.status].filter((value): value is string => !!value)
   const outboundState = ['blocked', 'failed', 'read', 'delivered', 'sent', 'queued', 'pending']
@@ -470,14 +492,22 @@ const MessageBubble = memo(function MessageBubble({
     <div className={`group flex w-full ${isIn ? 'justify-start' : 'justify-end'}`}>
       <div className={`flex max-w-[min(76%,42rem)] items-end gap-2 ${isIn ? 'flex-row' : 'flex-row-reverse'} sm:max-w-[min(72%,44rem)]`}>
         <div className="relative min-w-0">
-          <div className={`inline-block w-fit max-w-full rounded-2xl border px-3.5 py-2.5 text-[14px] leading-[1.58] shadow-xs ${bubbleTone} ${isIn ? 'rounded-bl-md' : 'rounded-br-md'}`}>
+          <div className={`inline-block w-fit max-w-full rounded-2xl border px-3.5 py-2.5 text-[14px] leading-[1.58] shadow-xs ${bubbleTone} ${isIn ? 'rounded-es-md' : 'rounded-ee-md'}`}>
             {msg.is_ai && (
               <div className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-brand/80 tracking-wider">
                 <Bot size={12} /> AI generated
               </div>
             )}
-            {hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isSolidBubble={!isIn && !msg.is_ai} />}
-            {msg.content && (
+            {quotedMessage && (
+              <div className="mb-2 rounded-lg border-s-2 border-brand/70 bg-black/5 px-2.5 py-1.5 text-start">
+                <div className="truncate text-[10px] font-semibold text-brand">{quotedMessage.senderName}</div>
+                <div className="truncate text-[11px] opacity-75">{quotedMessage.content || (isRTL ? 'رسالة مرفقة' : 'Attachment')}</div>
+              </div>
+            )}
+            {isDeletedForEveryone ? (
+              <span className="italic text-text-secondary">{isRTL ? 'تم حذف هذه الرسالة' : 'This message was deleted'}</span>
+            ) : hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isSolidBubble={!isIn && !msg.is_ai} />}
+            {!isDeletedForEveryone && msg.content && (
               <div
                 dir={textDirection as React.HTMLAttributes<HTMLDivElement>['dir']}
                 className={`${hasMedia ? 'mt-2' : ''} whitespace-pre-wrap text-start [overflow-wrap:anywhere] [word-break:normal]`}
@@ -594,6 +624,28 @@ const MessageBubble = memo(function MessageBubble({
         </div>
 
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          {onReply && (
+            <button
+              type="button"
+              onClick={() => onReply(msg)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-brand"
+              title={isRTL ? 'الرد على هذه الرسالة' : 'Reply to this message'}
+              aria-label={isRTL ? 'الرد على هذه الرسالة' : 'Reply to this message'}
+            >
+              <Reply size={14} className={isRTL ? 'scale-x-[-1]' : ''} />
+            </button>
+          )}
+          {canDeleteMessage && onDeleteWhatsAppMessage && (
+            <button
+              type="button"
+              onClick={() => onDeleteWhatsAppMessage(msg)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-error"
+              title={isRTL ? 'حذف للجميع' : 'Delete for everyone'}
+              aria-label={isRTL ? 'حذف الرسالة للجميع' : 'Delete message for everyone'}
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
           {msg.content && (
             <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title="Copy message" aria-label="Copy message">
               <Copy size={14} />

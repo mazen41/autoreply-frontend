@@ -108,7 +108,7 @@ export default function ConversationList({
 
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center py-3 gap-2 w-14 border-r border-border bg-surface h-full">
+      <div className="flex flex-col items-center py-3 gap-2 w-14 border-e border-border bg-surface h-full">
         <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-surface-elevated text-text-secondary">
           <Inbox size={18} />
         </button>
@@ -127,7 +127,7 @@ export default function ConversationList({
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-surface border-r border-border">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="flex flex-col h-full w-full bg-surface border-e border-border">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-sm font-black text-text-primary">{L('Inbox', 'الرسائل')}</h2>
@@ -158,16 +158,16 @@ export default function ConversationList({
       {/* Search */}
       <div className="px-3 py-2 border-b border-border">
         <div className="relative">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
+          <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-text-tertiary pointer-events-none" />
           <input
             type="search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={L('Search conversations...', 'بحث في المحادثات...')}
-            className="w-full h-8 bg-surface-elevated border border-border rounded-lg pl-7 pr-7 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand/30 transition-colors"
+            className="w-full h-8 bg-surface-elevated border border-border rounded-lg ps-7 pe-7 text-xs text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand/30 transition-colors"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary">
+            <button onClick={() => setSearch('')} className="absolute end-2 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary">
               <X size={12} />
             </button>
           )}
@@ -200,6 +200,7 @@ export default function ConversationList({
               <div className="w-36 shrink-0">
                 <Select
                   size="sm"
+                  dir={isRTL ? 'rtl' : 'ltr'}
                   value={channelIdFilter ? String(channelIdFilter) : ''}
                   onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
                   options={[
@@ -220,6 +221,7 @@ export default function ConversationList({
               <div className="w-32 shrink-0">
                 <Select
                   size="sm"
+                  dir={isRTL ? 'rtl' : 'ltr'}
                   value={botFilter ? String(botFilter) : ''}
                   onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
                   options={[
@@ -274,12 +276,12 @@ export default function ConversationList({
             <ChevronDown size={10} />
           </button>
           {showSortMenu && (
-            <div className="absolute right-0 top-full mt-1 w-36 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
+            <div className="absolute end-0 top-full mt-1 w-36 bg-surface-elevated border border-border rounded-xl shadow-lg z-50 overflow-hidden">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.key}
                   onClick={() => { setSortBy(opt.key); setShowSortMenu(false) }}
-                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
+                  className={`w-full text-start px-3 py-2 text-xs transition-colors ${
                     sortBy === opt.key ? 'text-brand bg-brand/10' : 'text-text-secondary hover:bg-surface'
                   }`}
                 >

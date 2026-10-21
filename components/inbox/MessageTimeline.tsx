@@ -14,6 +14,9 @@ interface MessageTimelineProps {
   reactToMessage: (id: number, emoji: string) => void
   submitFeedback: (id: number, type: 'positive'|'negative') => void
   onCorrectAI: (id: number, draft: string, corr: string, type: string) => Promise<void>
+  onReplyToMessage?: (message: ApiMessage) => void
+  canDeleteWhatsAppMessages?: boolean
+  onDeleteWhatsAppMessage?: (message: ApiMessage) => void
 }
 
 // Group messages by date
@@ -39,7 +42,8 @@ function groupMessages(messages: ApiMessage[]) {
 
 export default function MessageTimeline({
   messages, loading, isRTL, selectedConv, channelType,
-  reactToMessage, submitFeedback, onCorrectAI
+  reactToMessage, submitFeedback, onCorrectAI, onReplyToMessage,
+  canDeleteWhatsAppMessages = false, onDeleteWhatsAppMessage
 }: MessageTimelineProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -134,6 +138,19 @@ export default function MessageTimeline({
                   channelType={channelType}
                   isRTL={isRTL}
                   onReact={reactToMessage}
+                  onReply={onReplyToMessage}
+                  canDeleteWhatsAppMessages={canDeleteWhatsAppMessages}
+                  onDeleteWhatsAppMessage={onDeleteWhatsAppMessage}
+                  quotedMessage={(() => {
+                    const localId = Number(msg.metadata?.reply_to_message_id)
+                    const quoted = localId ? messages.find(candidate => candidate.id === localId) : null
+                    return quoted ? {
+                      senderName: quoted.direction === 'inbound'
+                        ? selectedConv.sender_name || L('Customer', 'العميل')
+                        : L('You', 'أنت'),
+                      content: quoted.content || '',
+                    } : null
+                  })()}
                   conv={selectedConv as any}
                   onSubmitFeedback={submitFeedback}
                   onCorrectAI={onCorrectAI}

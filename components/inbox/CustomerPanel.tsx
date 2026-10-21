@@ -107,7 +107,16 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
 
   // Use real customer data if available, fallback to conversation data
   const customerName = customer?.name || conv.sender_name || L('Unknown Contact', 'جهة اتصال غير معروفة')
-  const customerPhone = customer?.phone || conv.sender_id || ''
+  const isWhatsApp = conv.channel?.type?.toLowerCase() === 'whatsapp'
+  const senderId = conv.sender_id || ''
+  const isWhatsAppGroup = isWhatsApp && (
+    conv.is_group === true ||
+    conv.conversation_type?.toLowerCase() === 'group' ||
+    /@(g\.us|broadcast)$/i.test(senderId)
+  )
+  const customerPhone = isWhatsApp && !isWhatsAppGroup
+    ? customer?.phone || senderId
+    : ''
   const customerEmail = customer?.email || conv.sender_email || ''
   const customerTags = customer?.tags || []
   const leadScore = customer?.lead_score || 0
@@ -128,7 +137,7 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
     return countryCode ? `+${countryCode} ${formatted}` : formatted
   }
 
-  const displayPhone = formatPhone(customerPhone)
+  const displayPhone = customerPhone ? formatPhone(customerPhone) : ''
   const displayEmail = customerEmail || L('Not provided', 'غير متوفر')
 
   // Use real orders from customer prop, fallback to conversation checkout_state
@@ -154,17 +163,17 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
   }
 
   return (
-    <div className="flex flex-col h-full bg-surface border-l border-border overflow-y-auto w-[320px] flex-shrink-0">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="flex h-full w-[320px] flex-shrink-0 flex-col overflow-y-auto border-s border-border bg-surface">
       
       {/* Header Profile */}
       <div className="relative p-6 border-b border-border bg-surface-secondary/40 text-center">
         {onClose && (
-          <button onClick={onClose} className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors">
+          <button onClick={onClose} className="absolute end-4 top-4 rounded-lg p-1.5 text-text-muted transition-colors hover:bg-white/5 hover:text-text-primary" aria-label={L('Close contact panel', 'إغلاق لوحة جهة الاتصال')}>
             <X size={16} />
           </button>
         )}
         
-        <div className="w-16 h-16 mx-auto rounded-full bg-surface-secondary border border-border flex items-center justify-center text-text-primary text-xl font-bold shadow-xs mb-3">
+        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-gradient-to-br from-brand/15 to-surface-secondary text-xl font-bold text-text-primary shadow-xs">
           {(conv.sender_name?.charAt(0) || '?').toUpperCase()}
         </div>
         
@@ -175,14 +184,13 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
           {L('Customer since', 'عميل منذ')} {new Date().getFullYear()}
         </p>
 
-        <div className="flex justify-center gap-2 mt-4">
-          <button className="flex-1 bg-surface-secondary border border-border rounded-lg py-2 text-xs font-medium text-text-primary hover:border-brand/40 transition-colors">
-            {L('Edit Profile', 'تعديل الملف')}
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center bg-surface-secondary border border-border rounded-lg text-text-primary hover:border-brand/40 transition-colors">
-            <Phone size={14} />
-          </button>
-        </div>
+        {displayPhone && (
+          <div className="mt-4 flex justify-center">
+            <a href={`tel:${customerPhone.replace(/[^\d+]/g, '')}`} className="flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface-secondary px-3 text-xs font-medium text-text-primary transition-colors hover:border-brand/40">
+              <Phone size={14} />{L('Call customer', 'اتصال بالعميل')}
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Sections */}
@@ -222,7 +230,7 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
         {/* Details Section */}
         <Section title={L('Contact Details', 'تفاصيل الاتصال')} expanded={expandedSections.details} onToggle={() => toggleSection('details')}>
           <div className="space-y-3">
-            <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value={displayPhone} />
+            {displayPhone && <DetailRow icon={<Phone size={14} />} label={L('Phone', 'الهاتف')} value={displayPhone} />}
             <DetailRow icon={<Mail size={14} />} label={L('Email', 'البريد')} value={displayEmail} />
             <DetailRow icon={<User size={14} />} label={L('Lead Score', 'درجة العميل')} value={`${leadScore}/100`} />
           </div>

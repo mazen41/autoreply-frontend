@@ -42,12 +42,14 @@ export interface ApiMessage {
   error_details?: string | null
   created_at: string
   media_url?: string | null
-  media_type?: 'image' | 'audio' | 'video' | 'document' | null
+  media_type?: 'image' | 'audio' | 'video' | 'document' | 'sticker' | null
   mime_type?: string | null
   file_name?: string | null
   file_size?: number | null
   duration?: number | null
   whatsapp_message_id?: string | null
+  platform_message_id?: string | null
+  metadata?: Record<string, unknown> | null
   reactions?: Array<{
     emoji: string
     user_id?: number
@@ -75,6 +77,11 @@ export interface ApiConversation {
   sender_id: string
   sender_name: string | null
   sender_email: string | null
+  is_group?: boolean
+  conversation_type?: string | null
+  is_blocked?: boolean
+  can_block_contact?: boolean
+  can_delete_messages?: boolean
   subject: string | null
   status: string
   ai_enabled: boolean
@@ -109,6 +116,11 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     sender_id: raw.sender_id,
     sender_name: raw.sender_name,
     sender_email: raw.sender_email ?? null,
+    ...(raw.is_group !== undefined ? { is_group: raw.is_group } : {}),
+    conversation_type: raw.conversation_type ?? null,
+    is_blocked: raw.is_blocked ?? false,
+    ...(raw.can_block_contact !== undefined ? { can_block_contact: raw.can_block_contact } : {}),
+    ...(raw.can_delete_messages !== undefined ? { can_delete_messages: raw.can_delete_messages } : {}),
     subject: raw.subject ?? null,
     status: raw.status,
     ai_enabled: raw.ai_enabled ?? true,
@@ -219,13 +231,13 @@ export function useInbox() {
     }
   }, [fetchMessages, fetchConversations])
 
-  const sendReply = useCallback(async (convId: number, text: string): Promise<boolean> => {
+  const sendReply = useCallback(async (convId: number, text: string, replyToMessageId?: number): Promise<boolean> => {
     setSending(true)
     try {
       const res = await fetch(`${API}/inbox/${convId}/reply`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, reply_to_message_id: replyToMessageId }),
       })
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
@@ -328,6 +340,60 @@ export function useInbox() {
       return false
     }
   }, [conversations])
+
+  const updateConversationBlockStatus = useCallback(async (conversationId: number, blocked: boolean): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/inbox/${conversationId}/block`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ blocked }),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      setConversations(prev => prev.map(conversation => conversation.id === conversationId
+        ? { ...conversation, is_blocked: !!data.is_blocked }
+        : conversation))
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  const deleteConversation = useCallback(async (conversationId: number): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/inbox/${conversationId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      setConversations(prev => prev.filter(conversation => conversation.id !== conversationId))
+      setSelectedId(current => current === conversationId ? null : current)
+      if (selectedIdRef.current === conversationId) {
+        selectedIdRef.current = null
+        setMessages([])
+      }
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  const deleteWhatsAppMessage = useCallback(async (messageId: number): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/messages/${messageId}/whatsapp`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      if (data.message) {
+        setMessages(prev => prev.map(message => message.id === messageId ? data.message as ApiMessage : message))
+      }
+      return true
+    } catch {
+      return false
+    }
+  }, [])
 
   const reactToMessage = useCallback(async (messageId: number, emoji: string): Promise<boolean> => {
     try {
@@ -557,7 +623,7 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, updateConversationBot, reactToMessage,
+    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, updateConversationBot, updateConversationBlockStatus, deleteConversation, deleteWhatsAppMessage, reactToMessage,
     getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   }
 }

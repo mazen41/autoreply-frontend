@@ -70,16 +70,17 @@ const ConversationCard = memo(function ConversationCard({ conv, selected, onClic
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-3 py-3 border-b border-border/60 transition-all duration-150 hover:bg-surface-hover group relative ${
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className={`w-full text-start px-3 py-3 border-b border-border/60 transition-all duration-150 hover:bg-surface-hover group relative ${
         selected
-          ? 'bg-surface-secondary border-l-2 border-l-brand'
-          : 'bg-transparent border-l-2 border-l-transparent'
+          ? 'bg-surface-secondary border-s-2 border-s-brand'
+          : 'bg-transparent border-s-2 border-s-transparent'
       }`}
     >
       {/* Priority indicator */}
       {priorityColor !== 'transparent' && (
         <span
-          className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full"
+          className="absolute top-3 end-3 w-1.5 h-1.5 rounded-full"
           style={{ background: priorityColor }}
         />
       )}
@@ -92,7 +93,7 @@ const ConversationCard = memo(function ConversationCard({ conv, selected, onClic
           </div>
           {/* Channel badge */}
           <div
-            className="absolute -bottom-1 -right-1 w-4 h-4 rounded-md flex items-center justify-center text-white text-[7px] font-black shadow"
+            className="absolute -bottom-1 -end-1 w-4 h-4 rounded-md flex items-center justify-center text-white text-[7px] font-black shadow"
             style={{ background: ch.bg }}
           >
             {ch.label}
@@ -110,7 +111,7 @@ const ConversationCard = memo(function ConversationCard({ conv, selected, onClic
 
           <div className="flex items-center justify-between gap-2">
             <p className={`text-xs truncate ${unread > 0 ? 'text-text-secondary font-medium' : 'text-text-muted'}`}>
-              {conv.latest_message?.is_ai && <span className="text-brand font-semibold mr-1">AI:</span>}
+              {conv.latest_message?.is_ai && <span className="text-brand font-semibold me-1">AI:</span>}
               {preview || <span className="italic">No messages yet</span>}
             </p>
 

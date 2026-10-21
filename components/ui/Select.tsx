@@ -41,6 +41,8 @@ export interface SelectChangeEvent {
 
 export interface SelectProps {
   id?: string
+  dir?: 'ltr' | 'rtl' | 'auto'
+  ariaLabel?: string
   name?: string
   label?: string
   placeholder?: string
@@ -148,6 +150,8 @@ function flattenOptions(items: SelectItem[]): SelectOption[] {
 export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
   {
     id,
+    dir,
+    ariaLabel,
     name,
     label,
     placeholder = 'Select an option...',
@@ -488,7 +492,9 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
           ref={contentRef}
           id={listboxId}
           role="listbox"
+          dir={dir}
           aria-labelledby={label ? labelId : undefined}
+          aria-label={ariaLabel}
           initial={{ opacity: 0, y: menuPosition.openUpward ? 6 : -6, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: menuPosition.openUpward ? 4 : -4, scale: 0.98 }}
@@ -516,7 +522,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
           {/* Optional inline search bar */}
           {(searchable || flatOptions.length > 12) && (
             <div className="p-1.5 border-b border-border/60 mb-1 flex items-center gap-1.5 text-text-tertiary">
-              <Search className="w-3.5 h-3.5 shrink-0 ml-1 text-text-muted" />
+              <Search className="w-3.5 h-3.5 shrink-0 me-1 text-text-muted" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -606,7 +612,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
                                     : 'text-text-secondary hover:text-text-primary'
                                 }`}
                               >
-                                <div className="flex items-center gap-2 min-w-0 pr-2">
+                                <div className="flex items-center gap-2 min-w-0 pe-2">
                                   {opt.icon && (
                                     <span className="shrink-0 text-text-tertiary group-hover:text-text-primary">
                                       {opt.icon}
@@ -669,7 +675,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
                             : 'text-text-secondary hover:text-text-primary'
                         }`}
                       >
-                        <div className="flex items-center gap-2 min-w-0 pr-2">
+                        <div className="flex items-center gap-2 min-w-0 pe-2">
                           {opt.icon && (
                             <span className="shrink-0 text-text-tertiary group-hover:text-text-primary">
                               {opt.icon}
@@ -708,7 +714,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
   )
 
   return (
-    <div className={`flex flex-col gap-1.5 w-full ${className}`}>
+    <div dir={dir} className={`flex flex-col gap-1.5 w-full ${className}`}>
       {label && (
         <label
           id={labelId}
@@ -762,7 +768,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
           } ${triggerClassName}`}
         >
           {/* Left slot / icon / value */}
-          <div className="flex items-center gap-2 min-w-0 pr-1.5">
+          <div className="flex items-center gap-2 min-w-0 pe-1.5">
             {icon && (
               <span className="shrink-0 text-text-tertiary flex items-center">
                 {icon}
@@ -775,7 +781,7 @@ export const Select = forwardRef<SelectRef | any, SelectProps>(function Select(
             )}
 
             <span
-              className={`truncate text-left ${
+              className={`truncate text-start ${
                 selectedOption
                   ? 'text-text-primary'
                   : 'text-text-tertiary'

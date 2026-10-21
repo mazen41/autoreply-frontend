@@ -94,7 +94,7 @@ const ConversationListItem = memo(function ConversationListItem({
 
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="relative flex-shrink-0">
-          <ChannelIcon type={conv.channel.type as any} size={38} className="rounded-xl border border-border" />
+          <ChannelIcon type={conv.channel.type as any} size={38} className="rounded-xl border border-border bg-surface-elevated shadow-xs" />
           
           {/* Status indicator */}
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-background flex items-center justify-center">
