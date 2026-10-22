@@ -14,8 +14,7 @@ import {
   Sparkles,
   CheckCircle2,
   Bell,
-  Sliders,
-  Camera
+  Sliders
 } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
@@ -29,6 +28,7 @@ import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 import Skeleton from '../../../components/ui/Skeleton'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -39,9 +39,11 @@ function getToken() {
 }
 
 export default function SettingsPage() {
+  const { isRTL } = useLang()
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [loadError, setLoadError] = useState('')
 
   // Profile Form
   const [profile, setProfile] = useState({
@@ -72,12 +74,22 @@ export default function SettingsPage() {
   })
 
   useEffect(() => {
-    initSettings()
+    void initSettings()
+    const refreshForBusiness = () => { void initSettings() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
   }, [])
 
   async function initSettings() {
+    setLoading(true)
+    setLoadError('')
     const token = getToken()
     if (!token) {
+      setLoadError('Your session expired. Sign in again to load settings.')
       setLoading(false)
       return
     }
@@ -85,17 +97,12 @@ export default function SettingsPage() {
       const res = await fetch(`${API}/api/auth/user`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
-      if (res.ok) {
-        const data = await res.json()
-        setProfile(prev => ({
-          ...prev,
-          name: data.name || prev.name,
-          email: data.email || prev.email,
-        }))
-        await fetchBusiness(token)
-      }
-    } catch {
-      // Use defaults
+      if (!res.ok) throw new Error('Could not load your account settings.')
+      const data = await res.json()
+      setProfile(prev => ({ ...prev, name: data.name || prev.name, email: data.email || prev.email }))
+      await fetchBusiness(token)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not load settings.')
     } finally {
       setLoading(false)
     }
@@ -121,12 +128,8 @@ export default function SettingsPage() {
           services: data.services || prev.services,
           reply_style: data.reply_style || prev.reply_style,
         }))
-      } else {
-        throw new Error('Could not load the selected business profile')
-      }
-    } catch {
-      // silent
-    }
+      } else throw new Error('Could not load the selected business profile')
+    } catch (error) { throw error }
   }
 
   async function handleProfileSave(e: React.FormEvent) {
@@ -141,7 +144,7 @@ export default function SettingsPage() {
           body: JSON.stringify({ name: profile.name, email: profile.email }),
         })
         if (!response.ok) throw new Error('Profile update failed')
-      }
+      } else throw new Error('Your session expired. Sign in again.')
       toast.success('Personal profile updated successfully')
     } catch {
       toast.error('Failed to update profile')
@@ -162,7 +165,7 @@ export default function SettingsPage() {
           body: JSON.stringify(bizData),
         })
         if (!response.ok) throw new Error('Business profile update failed')
-      }
+      } else throw new Error('Your session expired. Sign in again.')
       toast.success('Business context and AI profile saved')
     } catch {
       toast.error('Failed to update business profile')
@@ -196,7 +199,7 @@ export default function SettingsPage() {
           }),
         })
         if (!res.ok) throw new Error('Password mismatch')
-      }
+      } else throw new Error('Your session expired. Sign in again.')
       toast.success('Security password successfully changed')
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
     } catch {
@@ -208,7 +211,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 max-w-5xl mx-auto p-4">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
         <Skeleton className="h-8 w-64 mb-2" />
         <Skeleton className="h-4 w-96 mb-6" />
         <Skeleton className="h-10 w-full mb-6" rounded="lg" />
@@ -223,8 +226,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <motion.div
-      className="space-y-6 max-w-5xl mx-auto"
+    <motion.main
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8"
       variants={variants.page}
       initial="hidden"
       animate="visible"
@@ -245,6 +249,8 @@ export default function SettingsPage() {
           onChange={setActiveTab}
         />
       </PageHeader>
+
+      {loadError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void initSettings()} disabled={loading}>Retry</Button></div>}
 
       {/* ── PROFILE TAB ── */}
       {activeTab === 'profile' && (
@@ -269,13 +275,6 @@ export default function SettingsPage() {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand to-brand flex items-center justify-center text-white text-xl font-black shadow-md">
                     {profile.name.charAt(0).toUpperCase()}
                   </div>
-                  <button
-                    type="button"
-                    className="absolute -bottom-1 -right-1 p-1.5 bg-surface-overlay border border-border rounded-lg text-text-secondary hover:text-text-primary shadow-xs transition-colors"
-                    title="Change picture"
-                  >
-                    <Camera size={12} />
-                  </button>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -415,6 +414,7 @@ export default function SettingsPage() {
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-text-primary">AI Tone & Reply Style</label>
                 <Select
+                  dir={isRTL ? 'rtl' : 'ltr'}
                   value={bizData.reply_style}
                   onChange={(e) => setBizData({ ...bizData, reply_style: e.target.value })}
                   options={[
@@ -503,6 +503,6 @@ export default function SettingsPage() {
           </form>
         </Card>
       )}
-    </motion.div>
+    </motion.main>
   )
 }
