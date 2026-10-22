@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { useLang } from '../../../lib/LangContext'
 import {
-  Search, Filter, RefreshCw, ShoppingBag, Package,
-  ExternalLink, ChevronDown, ChevronUp, X
+  Search, RefreshCw, ShoppingBag,
+  ExternalLink
 } from 'lucide-react'
 import Select from '../../../components/ui/Select'
 import { getBusinessHeaders } from '../../../lib/businessContext'
@@ -38,17 +39,26 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [storeFilter, setStoreFilter] = useState<string>('')
   const [statusFilter, setStatusFilter] = useState<string>('')
-  const L = (en: string, ar: string) => isRTL ? ar : en
+  const requestVersion = useRef(0)
+  const L = useCallback((en: string, ar: string) => isRTL ? ar : en, [isRTL])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300)
+    return () => window.clearTimeout(timer)
+  }, [search])
 
   const fetchOrders = useCallback(async () => {
+    const version = ++requestVersion.current
     setLoading(true)
     setLoadError('')
     try {
       const token = getToken()
+      if (!token) throw new Error(L('Your session expired. Sign in again.', 'انتهت جلستك. سجّل الدخول مجدداً.'))
       const params = new URLSearchParams()
-      if (search) params.append('search', search)
+      if (debouncedSearch) params.append('search', debouncedSearch)
       if (storeFilter) params.append('store_type', storeFilter)
       if (statusFilter) params.append('status', statusFilter)
 
@@ -57,22 +67,33 @@ export default function OrdersPage() {
       })
       if (res.ok) {
         const data = await res.json()
-        setOrders(data.data || data || [])
+        if (version === requestVersion.current) setOrders(Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [])
       } else {
-        setOrders([])
-        setLoadError(L('Orders could not be loaded for the selected business.', 'تعذر تحميل طلبات النشاط التجاري المحدد.'))
+        if (version === requestVersion.current) {
+          setOrders([])
+          setLoadError(L('Orders could not be loaded for the selected business.', 'تعذر تحميل طلبات النشاط التجاري المحدد.'))
+        }
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error)
-      setOrders([])
-      setLoadError(L('Orders could not be loaded. Check your connection and try again.', 'تعذر تحميل الطلبات. تحقق من الاتصال وحاول مرة أخرى.'))
+      if (version === requestVersion.current) {
+        setOrders([])
+        setLoadError(L('Orders could not be loaded. Check your connection and try again.', 'تعذر تحميل الطلبات. تحقق من الاتصال وحاول مرة أخرى.'))
+      }
     } finally {
-      setLoading(false)
+      if (version === requestVersion.current) setLoading(false)
     }
-  }, [search, storeFilter, statusFilter])
+  }, [debouncedSearch, storeFilter, statusFilter, L])
 
   useEffect(() => {
-    fetchOrders()
+    void fetchOrders()
+    const refreshForBusiness = () => { setOrders([]); void fetchOrders() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
   }, [fetchOrders])
 
   const statusColors: Record<string, string> = {
@@ -83,7 +104,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -97,7 +118,7 @@ export default function OrdersPage() {
         <button
           onClick={fetchOrders}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-bold hover:brightness-110 transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface-elevated px-4 py-2.5 text-sm font-semibold text-text-primary transition hover:border-brand hover:bg-brand/5 disabled:opacity-50"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           {L('Refresh', 'تحديث')}
@@ -107,19 +128,20 @@ export default function OrdersPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
+          <Search size={14} className="absolute top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] ltr:left-3 rtl:right-3" />
           <input
             type="search"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={L('Search orders...', 'بحث في الطلبات...')}
-            className="w-full h-10 pl-9 pr-4 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-tertiary)] outline-none focus:border-[var(--accent)] transition-colors"
+            className="h-10 w-full rounded-xl border border-border bg-surface-elevated/50 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-brand ltr:pl-9 ltr:pr-3 rtl:pl-3 rtl:pr-9"
           />
         </div>
         <div className="w-full sm:w-48 shrink-0">
           <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
             value={storeFilter}
-            onChange={e => setStoreFilter(e.target.value)}
+            onValueChange={setStoreFilter}
             options={[
               { value: '', label: L('All Stores', 'جميع المتاجر') },
               { value: 'salla', label: 'Salla' },
@@ -130,8 +152,9 @@ export default function OrdersPage() {
         </div>
         <div className="w-full sm:w-48 shrink-0">
           <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onValueChange={setStatusFilter}
             options={[
               { value: '', label: L('All Statuses', 'جميع الحالات') },
               { value: 'delivered', label: L('Delivered', 'تم التسليم') },
@@ -152,7 +175,7 @@ export default function OrdersPage() {
           </div>
         </div>
       ) : loadError ? (
-        <div role="alert" className="text-center py-16 text-sm text-[var(--text-secondary)]">{loadError}</div>
+        <div role="alert" className="flex flex-col items-center gap-3 rounded-2xl border border-error/25 bg-error/5 py-12 text-center text-sm text-text-secondary"><p>{loadError}</p><button type="button" onClick={() => void fetchOrders()} className="rounded-lg border border-border bg-surface px-3 py-2 font-medium text-text-primary hover:border-brand">{L('Retry', 'إعادة المحاولة')}</button></div>
       ) : orders.length === 0 ? (
         <div className="text-center py-24">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--accent-subtle)] to-[var(--surface-elevated)] flex items-center justify-center mx-auto mb-5 border border-[var(--border)]">
@@ -192,21 +215,21 @@ export default function OrdersPage() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="font-black text-lg text-[var(--text-primary)]">
-                    {order.total ? `${order.total} ${order.currency}` : '—'}
+                    {order.total != null ? `${order.total} ${order.currency}` : '—'}
                   </p>
-                  {order.conversation_id && <a
+                  {order.conversation_id && <Link
                     href={`/inbox?conversation_id=${order.conversation_id}`}
                     className="inline-flex items-center gap-1 text-[10px] text-[var(--accent)] hover:underline mt-1"
                   >
                     {L('View conversation', 'عرض المحادثة')}
                     <ExternalLink size={10} />
-                  </a>}
+                  </Link>}
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </main>
   )
 }
