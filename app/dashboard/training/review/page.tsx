@@ -2,9 +2,10 @@
 
 import React from 'react'
 import TrainingReview from '../../../../components/dashboard/TrainingReview'
-import { motion } from 'framer-motion'
 import { useLang } from '../../../../lib/LangContext'
 import { getBusinessHeaders } from '../../../../lib/businessContext'
+import PageHeader from '../../../../components/ui/PageHeader'
+import { Card, CardContent } from '../../../../components/ui/Card'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -54,23 +55,9 @@ export default function TrainingReviewPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-8 min-h-screen bg-gray-50/50 dark:bg-black/20">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-          {L('Review AI Corrections', 'مراجعة تصحيحات الذكاء الاصطناعي')}
-        </h1>
-        <p className="text-base text-gray-500 dark:text-gray-400 max-w-xl">
-          {L('Approve or reject agent overrides to train the AI and improve future responses.', 'وافق أو ارفض تعديلات الوكلاء لتدريب الذكاء الاصطناعي وتحسين الردود المستقبلية.')}
-        </p>
-      </motion.div>
-
-      <div className="bg-white dark:bg-[#1A1D21] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden">
-        <TrainingReview onApprove={handleApprove} onReject={handleReject} />
-      </div>
-    </div>
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+      <PageHeader title={L('Review AI Corrections', 'مراجعة تصحيحات الذكاء الاصطناعي')} description={L('Approve or reject agent overrides to train the AI and improve future responses.', 'وافق أو ارفض تعديلات الوكلاء لتدريب الذكاء الاصطناعي وتحسين الردود المستقبلية.')} breadcrumbs={[{ label: L('Training', 'التدريب'), href: '/dashboard/training' }, { label: L('Review corrections', 'مراجعة التصحيحات') }]} />
+      <Card><CardContent className="p-0"><TrainingReview onApprove={handleApprove} onReject={handleReject} /></CardContent></Card>
+    </main>
   )
 }
