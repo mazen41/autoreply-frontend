@@ -35,6 +35,7 @@ import FilterBar from '../../../components/ui/FilterBar'
 import EmptyState from '../../../components/ui/EmptyState'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 interface Workflow {
   id: number
@@ -63,6 +64,7 @@ interface WorkflowExecution {
 }
 
 export default function WorkflowContent() {
+  const { isRTL } = useLang()
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -75,11 +77,19 @@ export default function WorkflowContent() {
   const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
-    fetchWorkflows()
+    void fetchWorkflows()
+    const refreshForBusiness = () => { void fetchWorkflows() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
   }, [])
 
   const fetchWorkflows = async () => {
     try {
+      setLoading(true)
       setLoadError(null)
       const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
       if (!token) throw new Error('Your session expired. Sign in again to load workflows.')
@@ -205,9 +215,9 @@ export default function WorkflowContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface p-6">
         <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
-        <span className="text-xs text-text-tertiary">Loading workflow automations...</span>
+        <span className="text-sm text-text-tertiary">Loading workflow automations...</span>
       </div>
     )
   }
@@ -231,7 +241,7 @@ export default function WorkflowContent() {
 
   if (showExecutions && selectedWorkflow) {
     return (
-      <div className="space-y-6">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -309,7 +319,7 @@ export default function WorkflowContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
         title="Workflows & Rule Automations"
         description="Build event-driven if/then automation recipes to route chats, tag conversations, notify internal teams, and trigger AI actions automatically."
@@ -512,6 +522,7 @@ function WorkflowBuilder({
   onSave: () => void
   onCancel: () => void
 }) {
+  const { isRTL } = useLang()
   const [name, setName] = useState(workflow?.name || '')
   const [description, setDescription] = useState(workflow?.description || '')
   const [trigger, setTrigger] = useState<{ type: string; config: Record<string, any> }>(() => {
@@ -631,7 +642,7 @@ function WorkflowBuilder({
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-4xl space-y-6 p-4 md:p-8">
       <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft size={14} />}>
           Cancel & Return
@@ -675,6 +686,7 @@ function WorkflowBuilder({
             <h4 className="text-xs font-bold uppercase tracking-wider">Step 1: When Trigger Event Occurs</h4>
           </div>
           <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
             value={trigger.type}
             onChange={(e) => setTrigger({ ...trigger, type: e.target.value, config: {} })}
             options={[
@@ -725,6 +737,7 @@ function WorkflowBuilder({
               {conditions.map((cond, idx) => (
                 <div key={idx} className="flex items-center gap-2.5 p-3 rounded-lg bg-surface border border-border">
                   <Select
+                    dir={isRTL ? 'rtl' : 'ltr'}
                     className="flex-1"
                     value={cond.type}
                     onChange={(e) => {
@@ -739,6 +752,7 @@ function WorkflowBuilder({
                     ]}
                   />
                   <Select
+                    dir={isRTL ? 'rtl' : 'ltr'}
                     className="w-32"
                     value={cond.comparison || cond.operator}
                     onChange={(e) => {
@@ -805,6 +819,7 @@ function WorkflowBuilder({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Select
+                    dir={isRTL ? 'rtl' : 'ltr'}
                     value={act.type}
                     onChange={(e) => {
                       const updated = [...actions]
