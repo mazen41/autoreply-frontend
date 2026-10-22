@@ -19,6 +19,7 @@ import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
 import Checkbox from '../../../components/ui/Checkbox'
 import Modal from '../../../components/ui/Modal'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 import {
   Radio,
   Plus,
@@ -52,6 +53,14 @@ type ApiChannel = ChannelInstance & {
     webhook_status?: string | null
     webhooks_registered?: number | null
   }
+}
+
+function needsChannelAttention(channel: ApiChannel) {
+  return channel.status === 'warning'
+    || channel.status === 'error'
+    || channel.comment_webhook_status === 'error'
+    || Boolean(channel.integration?.sync_error)
+    || channel.integration?.sync_status === 'failed'
 }
 
 const CHANNELS_CATALOG: ChannelDef[] = [
@@ -114,6 +123,7 @@ const CHANNELS_CATALOG: ChannelDef[] = [
 ]
 
 export default function ChannelsPage() {
+  const { isRTL } = useLang()
   const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
   const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
@@ -485,8 +495,7 @@ export default function ChannelsPage() {
   }, [apiChannels])
 
   const totalNeedsAttention = useMemo(() => {
-    return apiChannels.filter((c) => c.status === 'warning' || c.status === 'error' || c.comment_webhook_status === 'error')
-      .length
+    return apiChannels.filter(needsChannelAttention).length
   }, [apiChannels])
 
   const totalAvailable = CHANNELS_CATALOG.length
@@ -502,7 +511,8 @@ export default function ChannelsPage() {
           ch.name.toLowerCase().includes(q) ||
           ch.description.toLowerCase().includes(q) ||
           ch.instances.some((inst) =>
-            (inst.page_name || '').toLowerCase().includes(q)
+            [inst.page_name, inst.page_id, inst.integration?.store_url]
+              .some((value) => (value || '').toLowerCase().includes(q))
           )
 
         // Category filter
@@ -510,9 +520,7 @@ export default function ChannelsPage() {
         if (selectedCategory === 'connected') {
           matchesCategory = ch.connected
         } else if (selectedCategory === 'attention') {
-          matchesCategory = ch.instances.some(
-            (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error'
-          )
+          matchesCategory = ch.instances.some((instance) => needsChannelAttention(instance as ApiChannel))
         } else if (selectedCategory !== 'all') {
           matchesCategory = ch.category === selectedCategory
         }
@@ -534,6 +542,7 @@ export default function ChannelsPage() {
   return (
     <motion.div
       className="space-y-6"
+      dir={isRTL ? 'rtl' : 'ltr'}
       variants={variants.page}
       initial="hidden"
       animate="visible"
@@ -541,11 +550,13 @@ export default function ChannelsPage() {
     >
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
-        title="Channels"
-        description="Connect your customer communication channels and manage AI-powered conversations from one place."
+        title={isRTL ? 'القنوات' : 'Channels'}
+        description={isRTL
+          ? 'اربط قنوات التواصل مع عملائك وأدر المحادثات المدعومة بالذكاء الاصطناعي من مكان واحد.'
+          : 'Connect your customer communication channels and manage AI-powered conversations from one place.'}
         breadcrumbs={[
           { label: 'NazBiz', href: '/dashboard' },
-          { label: 'Channels' },
+          { label: isRTL ? 'القنوات' : 'Channels' },
         ]}
         primaryAction={
           <Button
@@ -557,7 +568,7 @@ export default function ChannelsPage() {
               setWizardOpen(true)
             }}
           >
-            + Connect channel
+            {isRTL ? 'ربط قناة' : 'Connect channel'}
           </Button>
         }
         secondaryActions={
@@ -567,7 +578,7 @@ export default function ChannelsPage() {
             icon={<RefreshCw size={14} className={loading ? 'animate-spin' : ''} />}
             onClick={() => fetchChannels()}
           >
-            Refresh
+            {isRTL ? 'تحديث' : 'Refresh'}
           </Button>
         }
       />
@@ -624,30 +635,29 @@ export default function ChannelsPage() {
           <>
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Connected Accounts"
+                label={isRTL ? 'الحسابات المتصلة' : 'Connected Accounts'}
                 value={totalConnected}
-                subValue="Across all platforms"
+                subValue={isRTL ? 'عبر جميع المنصات' : 'Across all platforms'}
                 icon={<Radio size={18} />}
-                trend={{ value: 12, isPositive: true, label: 'vs last month' }}
               />
             </motion.div>
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Active AI Automations"
+                label={isRTL ? 'أتمتة الذكاء الاصطناعي النشطة' : 'Active AI Automations'}
                 value={totalActiveAI}
-                subValue="Handling customer DMs"
+                subValue={isRTL ? 'تتعامل مع رسائل العملاء' : 'Handling customer DMs'}
                 icon={<Sparkles size={18} />}
                 variant="ai"
               />
             </motion.div>
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Needs Attention"
+                label={isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
                 value={totalNeedsAttention}
                 subValue={
                   totalNeedsAttention > 0
-                    ? 'Token re-auth or alert'
-                    : 'All accounts healthy'
+                    ? (isRTL ? 'إعادة ربط أو تنبيه' : 'Re-authentication or alert')
+                    : (isRTL ? 'كل الحسابات سليمة' : 'All accounts healthy')
                 }
                 icon={<AlertTriangle size={18} />}
                 variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
@@ -655,9 +665,9 @@ export default function ChannelsPage() {
             </motion.div>
             <motion.div variants={variants.fadeUp} transition={springs.standard}>
               <MetricCard
-                label="Available Platforms"
+                label={isRTL ? 'المنصات المتاحة' : 'Available Platforms'}
                 value={totalAvailable}
-                subValue="Integrations ready"
+                subValue={isRTL ? 'تكاملات جاهزة' : 'Ready integrations'}
                 icon={<Layers size={18} />}
               />
             </motion.div>
@@ -667,43 +677,49 @@ export default function ChannelsPage() {
 
       {/* ─── Filter Bar ──────────────────────────────────────────────────── */}
       <FilterBar
+        dir={isRTL ? 'rtl' : 'ltr'}
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Search channels or accounts..."
+        searchPlaceholder={isRTL ? 'ابحث عن قناة أو حساب...' : 'Search channels or accounts...'}
         tabs={[
-          { id: 'all', label: 'All Channels', count: channelCards.length },
+          { id: 'all', label: isRTL ? 'كل القنوات' : 'All Channels', count: channelCards.length },
           {
             id: 'connected',
-            label: 'Connected',
+            label: isRTL ? 'متصلة' : 'Connected',
             count: channelCards.filter((c) => c.connected).length,
           },
           {
             id: 'messaging',
-            label: 'Messaging & Chat',
+            label: isRTL ? 'المراسلة والدردشة' : 'Messaging & Chat',
             count: channelCards.filter((c) => c.category === 'messaging').length,
           },
           {
             id: 'social',
-            label: 'Social & Reviews',
+            label: isRTL ? 'التواصل الاجتماعي والتقييمات' : 'Social & Reviews',
             count: channelCards.filter((c) => c.category === 'social').length,
           },
           {
             id: 'ecommerce',
-            label: 'E-Commerce',
+            label: isRTL ? 'التجارة الإلكترونية' : 'E-Commerce',
             count: channelCards.filter((c) => c.category === 'ecommerce').length,
           },
           {
+            id: 'email',
+            label: isRTL ? 'البريد الإلكتروني' : 'Email',
+            count: channelCards.filter((c) => c.category === 'email').length,
+          },
+          {
             id: 'attention',
-            label: 'Needs Attention',
+            label: isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention',
             count: totalNeedsAttention,
           },
         ]}
         activeTab={selectedCategory}
         onTabChange={setSelectedCategory}
         sortOptions={[
-          { value: 'accounts', label: 'Most Connected Accounts' },
-          { value: 'connected', label: 'Connected First' },
-          { value: 'alphabetical', label: 'Alphabetical' },
+          { value: 'accounts', label: isRTL ? 'الأكثر اتصالاً' : 'Most Connected Accounts' },
+          { value: 'connected', label: isRTL ? 'المتصلة أولاً' : 'Connected First' },
+          { value: 'alphabetical', label: isRTL ? 'أبجدياً' : 'Alphabetical' },
         ]}
         sortValue={sortOption}
         onSortChange={setSortOption}
@@ -719,10 +735,12 @@ export default function ChannelsPage() {
       ) : filteredChannels.length === 0 ? (
         <EmptyState
           icon={<Radio size={24} />}
-          title="No channels match your filter"
-          description="Try modifying your search keywords or change the selected category to view available channels."
+          title={isRTL ? 'لا توجد قنوات مطابقة' : 'No channels match your filter'}
+          description={isRTL
+            ? 'جرّب تعديل كلمات البحث أو تغيير الفئة المحددة لعرض القنوات المتاحة.'
+            : 'Try modifying your search keywords or change the selected category to view available channels.'}
           action={{
-            label: 'Clear Filters',
+            label: isRTL ? 'مسح عوامل التصفية' : 'Clear Filters',
             onClick: () => {
               setSearchQuery('')
               setSelectedCategory('all')
@@ -736,6 +754,7 @@ export default function ChannelsPage() {
               key={channel.id}
               channel={channel}
               instances={channel.instances}
+              isRTL={isRTL}
               onConnect={() => handleOpenConnect(channel)}
               onToggleAI={handleToggleAI}
               onDisconnect={handleDisconnect}

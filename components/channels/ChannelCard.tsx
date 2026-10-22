@@ -49,6 +49,7 @@ export interface ChannelDef {
 export interface ChannelCardProps {
   channel: ChannelDef
   instances: ChannelInstance[]
+  isRTL?: boolean
   onConnect: () => void
   onToggleAI: (instanceId: number, currentStatus: boolean) => void
   onDisconnect: (instanceId: number) => void
@@ -59,6 +60,7 @@ export interface ChannelCardProps {
 export default function ChannelCard({
   channel,
   instances,
+  isRTL = false,
   onConnect,
   onToggleAI,
   onDisconnect,
@@ -70,14 +72,18 @@ export default function ChannelCard({
 
   // Check if any instance requires attention
   const hasWarning = instances.some(
-    (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error'
+    (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error' || Boolean(i.integration?.sync_error) || i.integration?.sync_status === 'failed'
   )
+  const warningCount = instances.filter(
+    (i) => i.status === 'warning' || i.status === 'error' || i.comment_webhook_status === 'error' || Boolean(i.integration?.sync_error) || i.integration?.sync_status === 'failed'
+  ).length
 
   const displayedInstances = expanded ? instances : instances.slice(0, 2)
   const remainingCount = instances.length - 2
 
   return (
     <div
+      dir={isRTL ? 'rtl' : 'ltr'}
       className={`rounded-2xl border bg-surface-card transition-all duration-200 flex flex-col justify-between overflow-hidden shadow-xs hover:shadow-md relative group ${
         hasWarning
           ? 'border-warning/40 hover:border-warning/70'
@@ -126,15 +132,15 @@ export default function ChannelCard({
           {/* Connection Status Badge */}
           {hasWarning ? (
             <Badge variant="warning" dot dotPulse size="sm">
-              Needs Attention
+              {isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
             </Badge>
           ) : isConnected ? (
             <Badge variant="success" dot size="sm">
-              Connected
+              {isRTL ? 'متصلة' : 'Connected'}
             </Badge>
           ) : (
             <Badge variant="neutral" size="sm">
-              Available
+              {isRTL ? 'متاحة' : 'Available'}
             </Badge>
           )}
         </div>
@@ -144,12 +150,14 @@ export default function ChannelCard({
           <div className="flex items-center justify-between text-[11px] text-text-secondary px-3 py-1.5 rounded-lg bg-surface-elevated/50 border border-border/50 mb-3">
             <div className="flex items-center gap-1.5 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-              <span>
-                {instances.length} {instances.length === 1 ? 'account' : 'accounts'}
+                <span>
+                {instances.length} {isRTL ? 'حساب' : instances.length === 1 ? 'account' : 'accounts'}
               </span>
             </div>
             <span className="text-text-tertiary">
-              {hasWarning ? '1 alert active' : 'All systems healthy'}
+              {hasWarning
+                ? (isRTL ? `${warningCount} تنبيهات` : `${warningCount} ${warningCount === 1 ? 'alert' : 'alerts'} active`)
+                : (isRTL ? 'كل الأنظمة سليمة' : 'All systems healthy')}
             </span>
           </div>
         )}
@@ -159,8 +167,9 @@ export default function ChannelCard({
           <div className="space-y-2 mt-2">
             {displayedInstances.map((inst) => {
               const accountWarning =
-                inst.status === 'warning' || inst.status === 'error' || inst.comment_webhook_status === 'error'
+                inst.status === 'warning' || inst.status === 'error' || inst.comment_webhook_status === 'error' || Boolean(inst.integration?.sync_error) || inst.integration?.sync_status === 'failed'
               const accountWarningMessage = inst.status_message
+                || inst.integration?.sync_error
                 || (inst.comment_webhook_status === 'error'
                   ? `Comment webhook needs attention${inst.comment_webhook_error_code ? ` (${inst.comment_webhook_error_code})` : ''}`
                   : null)
@@ -183,7 +192,7 @@ export default function ChannelCard({
                         )}
                       </div>
                       <div className="text-[10px] text-text-tertiary truncate">
-                        ID: {inst.page_id || inst.id}
+                        <span dir="ltr">ID: {inst.page_id || inst.id}</span>
                         {accountWarningMessage && ` • ${accountWarningMessage}`}
                       </div>
                       {inst.integration && (
@@ -206,6 +215,9 @@ export default function ChannelCard({
                           ? 'AI Auto-Reply is active. Click to pause.'
                           : 'AI Auto-Reply is off. Click to activate.'
                       }
+                      aria-label={isRTL
+                        ? (inst.ai_enabled ? 'إيقاف الرد الآلي لهذا الحساب' : 'تفعيل الرد الآلي لهذا الحساب')
+                        : (inst.ai_enabled ? 'Pause AI replies for this account' : 'Enable AI replies for this account')}
                       className={`px-2 py-1 rounded-md text-[10px] font-mono font-semibold tracking-wider uppercase inline-flex items-center gap-1.5 border transition-all ${
                         inst.ai_enabled
                           ? 'bg-brand/10 border-brand/30 text-brand hover:bg-brand/15'
@@ -213,18 +225,24 @@ export default function ChannelCard({
                       }`}
                     >
                       <Sparkles className="w-3 h-3" />
-                      <span>{channel.disabled ? 'Replies off' : inst.ai_enabled ? 'AI On' : 'AI Off'}</span>
+                      <span>{channel.disabled
+                        ? (isRTL ? 'الردود متوقفة' : 'Replies off')
+                        : inst.ai_enabled && inst.effective_ai_enabled === false
+                          ? (isRTL ? 'مفعّل مؤقتاً' : 'Paused')
+                          : inst.ai_enabled
+                            ? (isRTL ? 'الذكاء مفعّل' : 'AI On')
+                            : (isRTL ? 'الذكاء متوقف' : 'AI Off')}</span>
                     </button>
                   </div>
 
                   {inst.ai_pause_reason === 'no_active_agent' && (
                     <p className="mb-2 text-[10px] font-medium text-warning">
-                      No active agent — replies paused
+                      {isRTL ? 'لا يوجد وكيل نشط — الردود متوقفة' : 'No active agent — replies paused'}
                     </p>
                   )}
                   {inst.ai_pause_reason === 'multiple_active_agents_without_primary' && (
                     <p className="mb-2 text-[10px] font-medium text-warning">
-                      Multiple agents need a primary selection — replies paused
+                      {isRTL ? 'يلزم اختيار وكيل أساسي — الردود متوقفة' : 'Multiple agents need a primary selection — replies paused'}
                     </p>
                   )}
 
@@ -236,9 +254,9 @@ export default function ChannelCard({
                           {accountWarningMessage || 'Connection needs attention'}
                         </span>
                       ) : inst.integration?.sync_status === 'syncing' || inst.integration?.sync_status === 'queued' ? (
-                        'Store sync in progress'
+                        (isRTL ? 'مزامنة المتجر جارية' : 'Store sync in progress')
                       ) : (
-                        'Connected'
+                        (isRTL ? 'متصل' : 'Connected')
                       )}
                     </span>
 
@@ -250,7 +268,7 @@ export default function ChannelCard({
                           className="px-2 py-1 rounded text-[10px] font-semibold text-brand hover:bg-brand/10 transition-colors"
                           title="Sync store data now"
                         >
-                          Sync now
+                          {isRTL ? 'مزامنة الآن' : 'Sync now'}
                         </button>
                       )}
                       {onManageSettings && (
@@ -258,7 +276,8 @@ export default function ChannelCard({
                           type="button"
                           onClick={() => onManageSettings(inst)}
                           className="p-1 rounded text-text-tertiary hover:text-text-primary hover:bg-surface transition-colors"
-                          title="Account Settings"
+                        title={isRTL ? 'إعدادات الحساب' : 'Account Settings'}
+                        aria-label={isRTL ? 'إعدادات الحساب' : 'Account settings'}
                         >
                           <Sliders className="w-3 h-3" />
                         </button>
@@ -267,7 +286,8 @@ export default function ChannelCard({
                         type="button"
                         onClick={() => onDisconnect(inst.id)}
                         className="p-1 rounded text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
-                        title="Disconnect account"
+                        title={isRTL ? 'فصل الحساب' : 'Disconnect account'}
+                        aria-label={isRTL ? 'فصل الحساب' : 'Disconnect account'}
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -286,8 +306,8 @@ export default function ChannelCard({
               >
                 <span>
                   {expanded
-                    ? 'Show fewer accounts'
-                    : `+ ${remainingCount} more ${
+                    ? (isRTL ? 'عرض حسابات أقل' : 'Show fewer accounts')
+                    : isRTL ? `+ ${remainingCount} حسابات إضافية` : `+ ${remainingCount} more ${
                         remainingCount === 1 ? 'account' : 'accounts'
                       }`}
                 </span>
@@ -306,12 +326,12 @@ export default function ChannelCard({
           <div className="py-3 space-y-2">
             <div className="text-xs text-text-secondary leading-relaxed">
               {channel.category === 'ecommerce'
-                ? 'Connect this store to sync product and order data for commerce-aware conversations.'
-                : `Connect ${channel.name} to receive supported customer messages and send supported replies.`}
+                ? (isRTL ? 'اربط هذا المتجر لمزامنة المنتجات والطلبات واستخدام بياناتها في المحادثات.' : 'Connect this store to sync product and order data for commerce-aware conversations.')
+                : isRTL ? `اربط ${channel.name} لاستقبال رسائل العملاء المدعومة وإرسال الردود.` : `Connect ${channel.name} to receive supported customer messages and send supported replies.`}
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary pt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-success/80" />
-              <span>Connection method and features depend on the provider.</span>
+              <span>{isRTL ? 'تعتمد طريقة الربط والميزات على مزود الخدمة.' : 'Connection method and features depend on the provider.'}</span>
             </div>
           </div>
         )}
@@ -321,7 +341,7 @@ export default function ChannelCard({
       <div className="p-4 bg-surface-elevated/40 border-t border-border/60 flex items-center gap-2">
         {channel.disabled ? (
           <Button variant="outline" size="sm" className="w-full text-xs" disabled>
-            Messaging unavailable
+            {isRTL ? 'المراسلة غير متاحة' : 'Messaging unavailable'}
           </Button>
         ) : isConnected ? (
           <>
@@ -331,7 +351,7 @@ export default function ChannelCard({
               className="flex-1 text-xs"
               onClick={onConnect}
             >
-              + Add Account
+              {isRTL ? 'إضافة حساب' : 'Add Account'}
             </Button>
             {hasWarning && (
               <Button
@@ -340,7 +360,7 @@ export default function ChannelCard({
                 className="text-xs"
                 onClick={onConnect}
               >
-                Fix Connection
+                {isRTL ? 'إصلاح الاتصال' : 'Fix Connection'}
               </Button>
             )}
           </>
@@ -351,7 +371,7 @@ export default function ChannelCard({
             className="w-full text-xs"
             onClick={onConnect}
           >
-            Connect {channel.name}
+            {isRTL ? `ربط ${channel.name}` : `Connect ${channel.name}`}
           </Button>
         )}
       </div>

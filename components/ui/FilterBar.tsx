@@ -11,6 +11,7 @@ export interface FilterTab {
 }
 
 export interface FilterBarProps {
+  dir?: 'ltr' | 'rtl'
   searchValue: string
   onSearchChange: (value: string) => void
   searchPlaceholder?: string
@@ -27,6 +28,7 @@ export interface FilterBarProps {
 }
 
 export default function FilterBar({
+  dir = 'ltr',
   searchValue,
   onSearchChange,
   searchPlaceholder = 'Search...',
@@ -42,7 +44,7 @@ export default function FilterBar({
   className = '',
 }: FilterBarProps) {
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div dir={dir} className={`space-y-3 ${className}`}>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         {/* Search */}
         <div className="w-full md:max-w-xs shrink-0">
@@ -74,6 +76,8 @@ export default function FilterBar({
           {sortOptions && onSortChange && (
             <div className="w-36 shrink-0">
               <Select
+                dir={dir}
+                ariaLabel={dir === 'rtl' ? 'ترتيب النتائج' : 'Sort results'}
                 value={sortValue}
                 onChange={(e) => onSortChange(e.target.value)}
                 options={sortOptions}
