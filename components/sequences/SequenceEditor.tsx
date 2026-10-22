@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { AlertCircle, ArrowLeft, Settings2, X, Zap } from 'lucide-react'
+import { useLang } from '../../lib/LangContext'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -38,6 +39,7 @@ interface Props {
 const LIST_URL = '/dashboard/sequences'
 
 export default function SequenceEditor({ sequenceId }: Props) {
+  const { isRTL } = useLang()
   const router = useRouter()
   const isEditing = typeof sequenceId === 'number' && !Number.isNaN(sequenceId)
   const { createSequence, updateSequence, activateSequence, fetchSequence } = useSequences()
@@ -317,7 +319,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
 
   if (stage === 'pick') {
     return (
-      <div className="min-h-screen bg-[var(--background)]">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[var(--background)]">
         <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
           {backLink}
           <TemplatePicker onPick={applyTemplate} />
@@ -360,7 +362,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
     status === 'active' ? 'success' : status === 'paused' ? 'warning' : 'outline'
 
   return (
-    <div className="min-h-screen bg-[var(--background)] pb-16">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[var(--background)] pb-16">
       {/* Sticky header */}
       <div className="sticky top-0 z-30 border-b border-border bg-[var(--background)]/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
@@ -448,9 +450,10 @@ export default function SequenceEditor({ sequenceId }: Props) {
 
               <div id="field-trigger" className="space-y-3">
                 <Select
+                  dir={isRTL ? 'rtl' : 'ltr'}
                   label="Starts when"
                   value={triggerType}
-                  onChange={(e) => setTriggerType(e.target.value as TriggerType)}
+                  onValueChange={(value) => setTriggerType(value as TriggerType)}
                   options={TRIGGERS.map((t) => ({
                     value: t.id,
                     label: t.label,
@@ -475,9 +478,10 @@ export default function SequenceEditor({ sequenceId }: Props) {
                     />
                     <div className="w-28">
                       <Select
+                        dir={isRTL ? 'rtl' : 'ltr'}
                         size="sm"
                         value={noReplyUnit}
-                        onChange={(e) => setNoReplyUnit(e.target.value as DelayUnit)}
+                        onValueChange={(value) => setNoReplyUnit(value as DelayUnit)}
                         options={[
                           { value: 'minutes', label: 'Minutes' },
                           { value: 'hours', label: 'Hours' },

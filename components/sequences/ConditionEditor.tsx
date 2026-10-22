@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react'
 import Select, { SelectGroup, SelectOption } from '../ui/Select'
 import Input from '../ui/Input'
+import { useLang } from '../../lib/LangContext'
 import {
   CONDITION_OPTIONS,
   CONDITION_VALUE_HINTS,
@@ -46,6 +47,7 @@ function operatorOptions(type: string): SelectOption[] {
 }
 
 export default function ConditionEditor({ step, allSteps, channelsList, onChange, error }: Props) {
+  const { isRTL } = useLang()
   const config = step.condition_config || {}
   const type: string = config.type || 'customer_replied'
   const opt = conditionOption(type)
@@ -103,11 +105,11 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
     return (
       <div className="space-y-2">
         <Select
+          dir={isRTL ? 'rtl' : 'ltr'}
           label={label}
           size="sm"
           value={value}
-          onChange={(e) => {
-            const v = e.target.value
+          onValueChange={(v) => {
             const next = { ...config, [route]: v }
             if (v !== 'jump') delete next[key]
             onChange({ condition_config: next })
@@ -116,9 +118,10 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
         />
         {value === 'jump' && (
           <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
             size="sm"
             value={config[key] ? String(config[key]) : ''}
-            onChange={(e) => update({ [key]: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+            onValueChange={(value) => update({ [key]: value ? parseInt(value, 10) : undefined })}
             options={jumpOptions(config[key])}
           />
         )}
@@ -129,7 +132,7 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Select label="Check whether…" value={type} onChange={(e) => handleTypeChange(e.target.value)} options={groups} />
+        <Select dir={isRTL ? 'rtl' : 'ltr'} label="Check whether…" value={type} onValueChange={handleTypeChange} options={groups} />
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
@@ -152,27 +155,30 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {type !== 'channel' && type !== 'day_of_week' && (
             <Select
+              dir={isRTL ? 'rtl' : 'ltr'}
               label="Comparison"
               size="sm"
               value={config.operator || operatorOptions(type)[0].value}
-              onChange={(e) => update({ operator: e.target.value })}
+              onValueChange={(value) => update({ operator: value })}
               options={operatorOptions(type)}
             />
           )}
           {type === 'channel' ? (
             <Select
+              dir={isRTL ? 'rtl' : 'ltr'}
               label="Channel"
               size="sm"
               value={config.value || channelsList[0]?.value || 'whatsapp'}
-              onChange={(e) => update({ value: e.target.value })}
+              onValueChange={(value) => update({ value })}
               options={channelsList}
             />
           ) : type === 'day_of_week' ? (
             <Select
+              dir={isRTL ? 'rtl' : 'ltr'}
               label="Day"
               size="sm"
               value={config.value || 'Monday'}
-              onChange={(e) => update({ value: e.target.value })}
+              onValueChange={(value) => update({ value })}
               options={DAYS_OF_WEEK.map((d) => ({ value: d, label: d }))}
             />
           ) : (

@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react'
 import Select from '../ui/Select'
+import { useLang } from '../../lib/LangContext'
 import Input from '../ui/Input'
 import MessageEditor from './MessageEditor'
 import ConditionEditor from './ConditionEditor'
@@ -148,6 +149,7 @@ function DelayRow({
   onUpdate: (updates: Partial<SequenceStepUI>) => void
   onDelete: () => void
 }) {
+  const { isRTL } = useLang()
   return (
     <div
       id={`step-${step.id}`}
@@ -170,9 +172,10 @@ function DelayRow({
       />
       <div className="w-28">
         <Select
+          dir={isRTL ? 'rtl' : 'ltr'}
           size="sm"
           value={step.delay_unit || 'hours'}
-          onChange={(e) => onUpdate({ delay_unit: e.target.value as DelayUnit })}
+          onValueChange={(value) => onUpdate({ delay_unit: value as DelayUnit })}
           options={DELAY_UNITS}
         />
       </div>
@@ -214,6 +217,7 @@ function StepCard({
   onDuplicate: () => void
   onMove: (dir: -1 | 1) => void
 }) {
+  const { isRTL } = useLang()
   const meta = TYPE_META[step.step_type]
   const Icon = meta.icon
   const channelsList = (channels.length ? channels : (['whatsapp'] as ChannelType[])).map((c) => ({
@@ -297,10 +301,10 @@ function StepCard({
           {step.step_type === 'action' && (
             <div className="space-y-3">
               <Select
+                dir={isRTL ? 'rtl' : 'ltr'}
                 label="What should happen?"
                 value={step.config?.action_type || 'stop_sequence'}
-                onChange={(e) => {
-                  const action_type = e.target.value
+                onValueChange={(action_type) => {
                   const config: Record<string, any> = { ...(step.config || {}), action_type }
                   if (action_type === 'stop_sequence') delete config.tag
                   onUpdate({ config })
