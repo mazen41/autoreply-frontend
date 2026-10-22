@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
@@ -9,6 +9,7 @@ import {
   ChevronDown, BarChart2, ArrowUpRight, Trash2, RefreshCw, GitBranch
 } from 'lucide-react'
 import { useSequences } from '../../../../hooks/useSequences'
+import { useLang } from '../../../../lib/LangContext'
 
 const STATUS_CONFIG = {
   active: { label: 'Active',  color: '#16A085', bg: 'rgba(22,160,133,0.1)', dot: '#16A085' },
@@ -71,64 +72,89 @@ function StatTile({ label, value, sub, accent }: { label: string; value: string;
 export default function SequenceDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { isRTL } = useLang()
   const { fetchSequence, activateSequence, pauseSequence, deleteSequence, duplicateSequence, getSequenceAnalytics, getSequenceEnrollments } = useSequences()
   
-  const [sequenceuence, setSequence] = useState<any>(null)
+  const [sequence, setSequence] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('draft')
   const [actionError, setActionError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [busyAction, setBusyAction] = useState<'status' | 'duplicate' | 'delete' | null>(null)
   const [moreOpen, setMoreOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'contacts'>('overview')
   const [analytics, setAnalytics] = useState<any>(null)
   const [enrollments, setEnrollments] = useState<any[]>([])
   
-  const sequenceuenceId = params.id ? parseInt(params.id as string) : 0
+  const sequenceId = params.id ? parseInt(params.id as string) : 0
   
-  useEffect(() => {
-    if (sequenceuenceId) {
-      loadSequence()
-    }
-  }, [sequenceuenceId])
-  
-  const loadSequence = async () => {
+  const loadSequence = useCallback(async () => {
     setLoading(true)
-    const data = await fetchSequence(sequenceuenceId)
-    if (data) {
-      setSequence(data)
-      setStatus(data.status || 'draft')
-      const [analyticsData, enrollmentData] = await Promise.all([getSequenceAnalytics(sequenceuenceId), getSequenceEnrollments(sequenceuenceId)])
-      setAnalytics(analyticsData)
-      setEnrollments(enrollmentData)
-    }
-    setLoading(false)
-  }
-  
-  const handleStatusToggle = async () => {
-    setActionError(null)
+    setLoadError(null)
     try {
-      if (status === 'active') {
-        const paused = await pauseSequence(sequenceuenceId)
-        if (paused) {
-          setStatus('paused')
-          setSequence(paused)
-        }
-      } else {
-        const activated = await activateSequence(sequenceuenceId)
-        if (activated) {
-          setStatus('active')
-          setSequence(activated)
+      const data = await fetchSequence(sequenceId)
+      setSequence(data)
+      if (data) {
+        setStatus(data.status || 'draft')
+        const [analyticsResult, enrollmentResult] = await Promise.allSettled([
+          getSequenceAnalytics(sequenceId),
+          getSequenceEnrollments(sequenceId),
+        ])
+        setAnalytics(analyticsResult.status === 'fulfilled' ? analyticsResult.value : null)
+        setEnrollments(enrollmentResult.status === 'fulfilled' ? enrollmentResult.value || [] : [])
+        if (analyticsResult.status === 'rejected' || enrollmentResult.status === 'rejected') {
+          setLoadError('Some sequence activity details could not be loaded. Retry to refresh them.')
         }
       }
     } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Could not load this sequence. Please try again.')
+      setSequence(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchSequence, getSequenceAnalytics, getSequenceEnrollments, sequenceId])
+
+  useEffect(() => {
+    if (sequenceId > 0) void loadSequence()
+    else setLoading(false)
+  }, [loadSequence, sequenceId])
+  
+  const handleStatusToggle = async () => {
+    setActionError(null)
+    setBusyAction('status')
+    try {
+      if (status === 'active') {
+        const paused = await pauseSequence(sequenceId)
+        if (paused) {
+          setStatus('paused')
+          setSequence(paused)
+        } else throw new Error('Could not pause this sequence. Please try again.')
+      } else {
+        const activated = await activateSequence(sequenceId)
+        if (activated) {
+          setStatus('active')
+          setSequence(activated)
+        } else throw new Error('Could not activate this sequence. Please check its setup and try again.')
+      }
+    } catch (error) {
       setActionError(error instanceof Error ? error.message : 'Could not update the sequence status.')
+    } finally {
+      setBusyAction(null)
     }
   }
   
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this sequenceuence?')) {
-      const deleted = await deleteSequence(sequenceuenceId)
-      if (deleted) {
-        router.push('/dashboard/sequences')
+    if (confirm('Are you sure you want to delete this sequence?')) {
+      setBusyAction('delete')
+      setActionError(null)
+      try {
+        const deleted = await deleteSequence(sequenceId)
+        if (deleted) router.push('/dashboard/sequences')
+        else throw new Error('Could not delete this sequence. Please try again.')
+      } catch (error) {
+        setActionError(error instanceof Error ? error.message : 'Could not delete this sequence.')
+      } finally {
+        setBusyAction(null)
       }
     }
   }
@@ -138,23 +164,31 @@ export default function SequenceDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading sequenceuence...</div>
+        <div role="status" className="text-gray-500">Loading sequence...</div>
       </div>
     )
   }
   
-  if (!sequenceuence) {
+  if (!sequence) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Sequence not found</div>
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-5 text-center">
+        <AlertCircle className="text-error" size={30} />
+        <div>
+          <h1 className="font-semibold text-[var(--text-primary)]">{loadError ? 'Could not load sequence' : 'Sequence not found'}</h1>
+          <p role={loadError ? 'alert' : undefined} className="mt-1 text-sm text-[var(--text-secondary)]">{loadError || 'This sequence may have been deleted or you may not have access to it.'}</p>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2">
+          {loadError && <button onClick={() => void loadSequence()} className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">Try again</button>}
+          <Link href="/dashboard/sequences" className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">Back to sequences</Link>
+        </div>
       </div>
     )
   }
   
-  const steps = sequenceuence.steps || []
+  const steps = sequence.steps || []
   const stats = analytics || {
-    total_enrollments: sequenceuence.total_enrollments || 0,
-    active_enrollments: sequenceuence.active_enrollments || 0,
+    total_enrollments: sequence.total_enrollments || 0,
+    active_enrollments: sequence.active_enrollments || 0,
     completed_enrollments: null,
     stopped_enrollments: null,
     failed_enrollments: null,
@@ -164,8 +198,17 @@ export default function SequenceDetailPage() {
   }
 
   const handleDuplicate = async () => {
-    const duplicated = await duplicateSequence(sequenceuenceId)
-    if (duplicated) router.push(`/dashboard/sequences/${duplicated.id}`)
+    setBusyAction('duplicate')
+    setActionError(null)
+    try {
+      const duplicated = await duplicateSequence(sequenceId)
+      if (duplicated) router.push(`/dashboard/sequences/${duplicated.id}`)
+      else throw new Error('Could not duplicate this sequence. Please try again.')
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Could not duplicate this sequence.')
+    } finally {
+      setBusyAction(null)
+    }
   }
 
   const exportEnrollments = () => {
@@ -181,56 +224,57 @@ export default function SequenceDetailPage() {
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = `sequence-${sequenceuenceId}-enrollments.csv`
+    anchor.download = `sequence-${sequenceId}-enrollments.csv`
     anchor.click()
-    URL.revokeObjectURL(url)
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
 
       {/* ── Header ── */}
       <div className="flex items-start gap-4 justify-between">
         <div className="flex items-start gap-3">
-          <Link href="/dashboard/sequences"
+          <Link href="/dashboard/sequences" aria-label="Back to sequences"
             className="mt-1 p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] transition-colors flex-shrink-0">
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} className={isRTL ? 'rotate-180' : ''} />
           </Link>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-black text-[var(--text-primary)]">{sequenceuence.name}</h1>
+              <h1 className="text-xl font-black text-[var(--text-primary)]">{sequence.name}</h1>
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                 style={{ background: st.bg, color: st.color }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
                 {st.label}
               </span>
-              {(Array.isArray(sequenceuence.settings?.target_channels) && sequenceuence.settings.target_channels.length > 0
-                ? sequenceuence.settings.target_channels
-                : [sequenceuence.channel || 'email']).map((target: string) => (
+              {(Array.isArray(sequence.settings?.target_channels) && sequence.settings.target_channels.length > 0
+                ? sequence.settings.target_channels
+                : [sequence.channel || 'email']).map((target: string) => (
                 <span key={target} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-[var(--surface-elevated)] border border-[var(--border)] text-[var(--text-secondary)]">
                   ● {target === 'facebook' || target === 'messenger' ? 'Messenger' : target.charAt(0).toUpperCase() + target.slice(1)}
                 </span>
               ))}
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">{sequenceuence.description}</p>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{sequence.description}</p>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
-              <span className="flex items-center gap-1"><Zap size={11} className="text-warning" /> {sequenceuence.trigger_type}</span>
+              <span className="flex items-center gap-1"><Zap size={11} className="text-warning" /> {sequence.trigger_type}</span>
               <span>·</span>
               <span>{steps.length} steps</span>
               <span>·</span>
-              <span>Updated {new Date(sequenceuence.updated_at).toLocaleDateString()}</span>
+              <span>Updated {new Date(sequence.updated_at).toLocaleDateString()}</span>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => void handleStatusToggle()}
+            disabled={!!busyAction}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
               status === 'active'
-                ? 'border-warning bg-warning text-warning hover:bg-warning dark:bg-warning/20 dark:border-warning'
-                : 'border-success bg-success text-success hover:bg-success dark:bg-success/20 dark:border-success'
+                ? 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/20'
+                : 'border-success/30 bg-success/10 text-success hover:bg-success/20'
             }`}>
             {status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Activate</>}
           </button>
@@ -239,17 +283,17 @@ export default function SequenceDetailPage() {
             <Edit2 size={14} /> Edit
           </Link>
           <div className="relative">
-            <button onClick={() => setMoreOpen(v => !v)}
+            <button onClick={() => setMoreOpen(v => !v)} aria-label="More sequence actions" aria-expanded={moreOpen} disabled={!!busyAction}
               className="p-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors">
               <MoreHorizontal size={16} />
             </button>
             {moreOpen && (
-              <div className="absolute right-0 top-11 w-40 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl shadow-lg z-20 overflow-hidden">
-                <button onClick={() => void handleDuplicate()} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] hover:bg-[var(--surface)] transition-colors">
+              <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-11 z-20 w-40 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-lg`}>
+                <button onClick={() => void handleDuplicate()} disabled={!!busyAction} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface)] disabled:opacity-50">
                   <Copy size={13} /> Duplicate
                 </button>
                 <div className="border-t border-[var(--divider)]" />
-                <button onClick={() => void handleDelete()} className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-error hover:bg-error dark:hover:bg-error/20 transition-colors">
+                <button onClick={() => void handleDelete()} disabled={!!busyAction} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-error transition-colors hover:bg-error/10 disabled:opacity-50">
                   <Trash2 size={13} /> Delete
                 </button>
               </div>
@@ -258,12 +302,12 @@ export default function SequenceDetailPage() {
         </div>
       </div>
 
-      {actionError && <div role="alert" className="rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">{actionError}</div>}
+      {(actionError || loadError) && <div role="alert" className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">{actionError || loadError}</div>}
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-1 w-fit">
         {([['overview', 'Overview'], ['analytics', 'Analytics'], ['contacts', 'Contacts']] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setActiveTab(k)}
+          <button key={k} onClick={() => setActiveTab(k)} aria-pressed={activeTab === k}
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeTab === k ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}>
@@ -360,6 +404,6 @@ export default function SequenceDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   )
 }
