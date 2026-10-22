@@ -83,13 +83,24 @@ export default function WhatsAppPage() {
         ? current
         : String(whatsapp[0]?.id || ''))
     } catch (cause) {
+      setChannels([])
+      setSelectedChannelId('')
       setError(cause instanceof Error ? cause.message : (isRTL ? 'تعذر تحميل قنوات واتساب.' : 'Could not load WhatsApp channels.'))
     } finally {
       setLoading(false)
     }
   }, [isRTL])
 
-  useEffect(() => { void loadChannels() }, [loadChannels])
+  useEffect(() => {
+    void loadChannels()
+    const refreshForBusiness = () => { setChannels([]); setSelectedChannelId(''); void loadChannels() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
+  }, [loadChannels])
 
   const filteredChannels = useMemo(() => {
     const query = search.trim().toLocaleLowerCase()
@@ -135,14 +146,14 @@ export default function WhatsAppPage() {
         <div role="alert" className="flex items-start gap-3 rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-error">
           <AlertCircle size={17} className="mt-0.5 shrink-0" />
           <span className="flex-1">{error}</span>
-          <Button variant="outline" size="sm" onClick={() => void loadChannels()}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</Button>
+          <Button variant="outline" size="sm" onClick={() => void loadChannels()} disabled={loading}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</Button>
         </div>
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label={isRTL ? 'ملخص واتساب' : 'WhatsApp overview'}>
         <Card className="border-border bg-surface-card">
           <CardContent className="flex items-center justify-between gap-4 p-5">
-            <div><p className="text-xs font-medium text-text-secondary">{isRTL ? 'الأرقام المتصلة' : 'Connected numbers'}</p><p className="mt-1 text-2xl font-bold tabular-nums text-text-primary">{loading ? '—' : channels.length}</p></div>
+            <div><p className="text-xs font-medium text-text-secondary">{isRTL ? 'الأرقام المتصلة' : 'Connected numbers'}</p><p className="mt-1 text-2xl font-bold tabular-nums text-text-primary">{loading ? '—' : connectedCount}</p></div>
             <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-success/20 bg-success/10 text-success"><Phone size={19} /></span>
           </CardContent>
         </Card>
@@ -193,7 +204,8 @@ export default function WhatsAppPage() {
             ) : (
               <div className="space-y-2">
                 {filteredChannels.map(channel => {
-                  const number = channel.phone || metadataText(channel, 'display_phone_number') || metadataText(channel, 'phone_number') || channel.page_id
+                  const number = channel.phone || metadataText(channel, 'display_phone_number') || metadataText(channel, 'phone_number')
+                  const accountName = channel.page_name || (number ? number : `${isRTL ? 'حساب واتساب' : 'WhatsApp account'} #${channel.id}`)
                   const selected = selectedChannelId === String(channel.id)
                   const style = statusStyle(channel.status)
                   return (
@@ -207,8 +219,8 @@ export default function WhatsAppPage() {
                       <div className="flex items-center gap-3">
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-success/20 bg-success/10 text-success"><Phone size={17} /></span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold text-text-primary">{channel.page_name || number}</span>
-                          <span dir="ltr" className="mt-0.5 block truncate text-start text-xs text-text-secondary">{number}</span>
+                          <span className="block truncate text-sm font-semibold text-text-primary">{accountName}</span>
+                          <span dir="ltr" className="mt-0.5 block truncate text-start text-xs text-text-secondary">{number || `${isRTL ? 'معرّف الحساب' : 'Account ID'}: ${channel.page_id}`}</span>
                         </span>
                         <Badge variant={style} size="xs" dot>{channel.status}</Badge>
                       </div>
@@ -227,14 +239,14 @@ export default function WhatsAppPage() {
           </CardHeader>
           <CardContent>
             {selectedChannel ? (() => {
-              const number = selectedChannel.phone || metadataText(selectedChannel, 'display_phone_number') || metadataText(selectedChannel, 'phone_number') || selectedChannel.page_id
+              const number = selectedChannel.phone || metadataText(selectedChannel, 'display_phone_number') || metadataText(selectedChannel, 'phone_number')
               const effectiveAI = selectedChannel.effective_ai_enabled ?? selectedChannel.ai_enabled ?? false
               const riskAcknowledged = selectedChannel.metadata?.unofficial_risk_accepted
               return <div className="space-y-5">
                 <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border bg-surface-elevated/30 p-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-success/20 bg-success/10 text-success"><MessageCircle size={22} /></span>
-                    <div className="min-w-0"><h3 className="truncate text-base font-semibold text-text-primary">{selectedChannel.page_name || (isRTL ? 'رقم واتساب' : 'WhatsApp number')}</h3><p dir="ltr" className="mt-1 text-start text-sm text-text-secondary">{number}</p></div>
+                    <div className="min-w-0"><h3 className="truncate text-base font-semibold text-text-primary">{selectedChannel.page_name || (isRTL ? 'حساب واتساب' : 'WhatsApp account')}</h3><p dir="ltr" className="mt-1 text-start text-sm text-text-secondary">{number || `${isRTL ? 'رقم الهاتف غير متاح' : 'Phone number unavailable'} · ${selectedChannel.page_id}`}</p></div>
                   </div>
                   <Badge variant={statusStyle(selectedChannel.status)} size="sm" dot>{selectedChannel.status}</Badge>
                 </div>
