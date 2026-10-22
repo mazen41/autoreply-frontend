@@ -10,6 +10,7 @@ import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -25,6 +26,7 @@ type UsageMetric = { used: number; limit: number; remaining: number | null; unli
 type UsageResponse = { business_id: number; period: { starts_at: string; ends_at: string }; usage: { ai_replies: UsageMetric; outbound_messages: UsageMetric; channels: UsageMetric } }
 
 export default function BillingPage() {
+  const { isRTL } = useLang()
   const [data, setData] = useState<SubscriptionResponse | null>(null)
   const [usage, setUsage] = useState<UsageResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -54,7 +56,16 @@ export default function BillingPage() {
     } finally { setLoading(false) }
   }, [])
 
-  useEffect(() => { queueMicrotask(() => { void fetchSubscription() }) }, [fetchSubscription])
+  useEffect(() => {
+    void fetchSubscription()
+    const refreshForBusiness = () => { void fetchSubscription() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
+  }, [fetchSubscription])
 
   const handleCancel = async () => {
     if (!confirm('Cancel this subscription?')) return
@@ -90,9 +101,9 @@ export default function BillingPage() {
   const subscription = data?.subscription || null
   const endDate = subscription?.ends_at ? new Date(subscription.ends_at) : null
 
-  return <div className="space-y-6">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
     <PageHeader title="Plans & Billing" description="View your current subscription and plan limits." primaryAction={<Link href="/pricing"><Button variant="primary" icon={<ArrowUpRight size={14} />}>View plans</Button></Link>} />
-    {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSubscription()}>Retry</Button></div>}
+    {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSubscription()} disabled={loading}>Retry</Button></div>}
     {loading ? <div className="py-16 text-center text-sm text-text-muted" role="status">Loading subscription…</div> : plan ? <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard label="Current plan" value={plan.name} subValue={subscription?.billing_cycle || (data?.is_free ? 'Free plan' : 'Plan')} icon={<Zap size={18} />} />
@@ -123,11 +134,11 @@ export default function BillingPage() {
             <div><span className="text-text-muted">Channel limit</span><div className="font-medium">{plan.channels_limit ?? 'Not provided by plan data'}</div></div>
             <div><span className="text-text-muted">Monthly outbound limit</span><div className="font-medium">{plan.outbound_messages_limit == null || plan.outbound_messages_limit < 0 ? 'Unlimited' : plan.outbound_messages_limit}</div></div>
           </div>
-          {plan.features?.length ? <ul className="list-disc space-y-1 pl-5 text-sm text-text-secondary">{plan.features.map((feature, index) => <li key={`${feature}-${index}`}>{feature}</li>)}</ul> : <p className="text-sm text-text-muted">No feature list is available for this plan.</p>}
+          {plan.features?.length ? <ul className="list-disc space-y-1 ps-5 text-sm text-text-secondary">{plan.features.map((feature, index) => <li key={`${feature}-${index}`}>{feature}</li>)}</ul> : <p className="text-sm text-text-muted">No feature list is available for this plan.</p>}
           {subscription && subscription.status === 'active' && !subscription.cancelled_at && <div className="border-t border-border pt-4"><Button variant="outline" loading={cancelling} onClick={() => void handleCancel()}>Cancel subscription</Button></div>}
           {subscription?.auto_renew_enabled && <div className="border-t border-border pt-4 space-y-2"><p className="text-sm text-text-secondary">Monthly automatic renewal is on. You can turn it off and keep access through the current term.</p><Button variant="outline" loading={disablingRenewal} onClick={() => void handleDisableAutoRenew()}>Turn off auto-renew</Button></div>}
         </CardContent>
       </Card>
     </> : !error && <Card className="p-6"><p className="text-sm text-text-muted">No subscription or plan details were returned for this account.</p></Card>}
-  </div>
+  </main>
 }
