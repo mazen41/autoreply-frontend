@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import PageHeader from '../../../components/ui/PageHeader'
 import MetricCard from '../../../components/ui/MetricCard'
 import Card, { CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
 import Input from '../../../components/ui/Input'
+import Select from '../../../components/ui/Select'
 import Tabs from '../../../components/ui/Tabs'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 import {
   Brain,
   UploadCloud,
@@ -27,6 +29,7 @@ import {
   Building2,
   RefreshCw,
   ExternalLink,
+  X,
 } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -43,8 +46,12 @@ interface KnowledgeFile {
 }
 
 export default function AIKnowledgeContent() {
+  const { isRTL } = useLang()
   const [activeTab, setActiveTab] = useState('documents')
   const [files, setFiles] = useState<KnowledgeFile[]>([])
+  const [fileSearch, setFileSearch] = useState('')
+  const [fileStatusFilter, setFileStatusFilter] = useState('all')
+  const [isDragging, setIsDragging] = useState(false)
   const [aiInstructions, setAiInstructions] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -55,7 +62,6 @@ export default function AIKnowledgeContent() {
   // Testing AI Sandbox
   const [testQuestion, setTestQuestion] = useState('')
   const [testResponse, setTestResponse] = useState('')
-  const [testSources, setTestSources] = useState<string[]>([])
   const [testing, setTesting] = useState(false)
 
   // Business profile
@@ -63,6 +69,7 @@ export default function AIKnowledgeContent() {
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([])
   const [newFaqQ, setNewFaqQ] = useState('')
   const [newFaqA, setNewFaqA] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const getToken = () =>
     typeof document !== 'undefined'
@@ -98,11 +105,15 @@ export default function AIKnowledgeContent() {
     queueMicrotask(() => { void fetchKnowledge() })
   }, [fetchKnowledge])
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const uploadFile = async (file: File) => {
     setUploading(true)
     try {
+      const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']
+      const extensionAllowed = /\.(pdf|xlsx|xls)$/i.test(file.name)
+      if (!extensionAllowed || (file.type && !allowedTypes.includes(file.type))) {
+        throw new Error(isRTL ? 'الملفات المدعومة هي PDF وXLSX وXLS فقط.' : 'Only PDF, XLSX, and XLS files are supported.')
+      }
+      if (file.size > 10 * 1024 * 1024) throw new Error(isRTL ? 'يجب ألا يتجاوز حجم الملف 10 ميجابايت.' : 'The file must be 10 MB or smaller.')
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
       const formData = new FormData()
@@ -115,20 +126,33 @@ export default function AIKnowledgeContent() {
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(result.error || 'Upload failed.')
       if (result.duplicate) {
-        toast('This document is already in this business knowledge base.')
+        toast(isRTL ? 'هذا الملف موجود بالفعل في قاعدة معرفة النشاط.' : 'This document is already in this business knowledge base.')
       } else {
-        toast.success('Document uploaded and queued for indexing')
+        toast.success(isRTL ? 'تم رفع الملف وإضافته إلى قائمة الفهرسة' : 'Document uploaded and queued for indexing')
       }
-      fetchKnowledge()
+      await fetchKnowledge()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Upload failed')
+      toast.error(error instanceof Error ? error.message : (isRTL ? 'فشل رفع الملف' : 'Upload failed'))
     } finally {
       setUploading(false)
     }
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (file) await uploadFile(file)
+  }
+
+  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragging(false)
+    const file = event.dataTransfer.files?.[0]
+    if (file) void uploadFile(file)
+  }
+
   const handleDeleteFile = async (id: number) => {
-    if (!confirm('Remove this document from the knowledge base?')) return
+    if (!confirm(isRTL ? 'هل تريد إزالة هذا المستند من قاعدة المعرفة؟' : 'Remove this document from the knowledge base?')) return
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
@@ -213,7 +237,6 @@ export default function AIKnowledgeContent() {
     if (!testQuestion.trim()) return
     setTesting(true)
     setTestResponse('')
-    setTestSources([])
 
     try {
       const token = getToken()
@@ -227,72 +250,60 @@ export default function AIKnowledgeContent() {
   }
 
   const totalChunks = files.reduce((acc, f) => acc + (f.chunks_count || 0), 0)
+  const filteredFiles = useMemo(() => files.filter(file => {
+    const matchesQuery = !fileSearch.trim() || file.filename.toLocaleLowerCase().includes(fileSearch.trim().toLocaleLowerCase())
+    return matchesQuery && (fileStatusFilter === 'all' || (file.status || 'pending') === fileStatusFilter)
+  }), [files, fileSearch, fileStatusFilter])
 
   return (
-    <div className="space-y-6">
+    <main className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
-        title="AI Knowledge Base"
-        description="Train and ground your AI agents with company documents, website catalogs, structured FAQs, and custom system instructions."
+        title={isRTL ? 'قاعدة المعرفة' : 'AI Knowledge'}
+        description={isRTL
+          ? 'أضف مستندات النشاط والأسئلة الشائعة والتعليمات لمساعدة الوكلاء على تقديم إجابات دقيقة.'
+          : 'Add business documents, FAQs, and instructions so agents can give accurate, grounded answers.'}
         breadcrumbs={[
           { label: 'NazBiz', href: '/dashboard' },
-          { label: 'AI Knowledge' },
+          { label: isRTL ? 'المعرفة' : 'AI Knowledge' },
         ]}
         primaryAction={
-          <label className="cursor-pointer">
-            <input
-              type="file"
-              className="hidden"
-              onChange={handleFileUpload}
-              accept=".pdf,.xlsx,.xls"
-            />
-            <Button
-              variant="primary"
-              size="md"
-              icon={<UploadCloud size={16} />}
-              loading={uploading}
-              onClick={(event) => {
-                event.preventDefault()
-                const input = event.currentTarget.parentElement?.querySelector('input[type="file"]') as HTMLInputElement | null
-                input?.click()
-              }}
-            >
-              Upload Document
-            </Button>
-          </label>
+          <Button variant="primary" size="md" icon={<UploadCloud size={16} />} loading={uploading} onClick={() => fileInputRef.current?.click()}>
+            {isRTL ? 'رفع مستند' : 'Upload document'}
+          </Button>
         }
         secondaryActions={
           <Button
-            variant="outline"
+            variant="secondary"
             size="md"
             icon={<RefreshCw size={14} />}
             onClick={() => void handleReindex()}
           >
-            Re-index Embeddings
+            {isRTL ? 'إعادة فهرسة المعرفة' : 'Re-index knowledge'}
           </Button>
         }
       />
 
-      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchKnowledge()}>Retry</Button></div>}
+      {loadError && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchKnowledge()}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</Button></div>}
 
       {/* ─── Metric Cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="Indexed Documents"
+          label={isRTL ? 'المستندات المرفوعة' : 'Documents'}
           value={files.length}
-          subValue="Documents currently in this account"
+          subValue={isRTL ? 'في قاعدة معرفة النشاط' : 'In this business knowledge base'}
           icon={<FileText size={18} />}
         />
         <MetricCard
-          label="Vector Chunks"
+          label={isRTL ? 'مقاطع المعرفة' : 'Knowledge chunks'}
           value={totalChunks}
-          subValue="Count reported by the knowledge API"
+          subValue={isRTL ? 'المقاطع المستخرجة من الملفات' : 'Extracted from indexed files'}
           icon={<Layers size={18} />}
         />
         <MetricCard
-          label="Knowledge FAQs"
+          label={isRTL ? 'الأسئلة الشائعة' : 'FAQs'}
           value={faqs.length}
-          subValue="Saved business question and answer pairs"
+          subValue={isRTL ? 'أسئلة وأجوبة النشاط المحفوظة' : 'Saved business question and answer pairs'}
           icon={<Clock size={18} />}
         />
       </div>
@@ -300,10 +311,10 @@ export default function AIKnowledgeContent() {
       {/* ─── Tabs ────────────────────────────────────────────────────────── */}
       <Tabs
         tabs={[
-          { id: 'documents', label: 'Uploaded Documents', icon: <FileText size={14} />, count: files.length },
-          { id: 'faqs', label: 'Structured FAQs', icon: <HelpCircle size={14} />, count: faqs.length },
-          { id: 'instructions', label: 'AI Persona & Instructions', icon: <Building2 size={14} /> },
-          { id: 'tester', label: 'Test AI Answers', icon: <Sparkles size={14} /> },
+          { id: 'documents', label: isRTL ? 'المستندات' : 'Documents', icon: <FileText size={14} />, count: files.length },
+          { id: 'faqs', label: isRTL ? 'الأسئلة الشائعة' : 'FAQs', icon: <HelpCircle size={14} />, count: faqs.length },
+          { id: 'instructions', label: isRTL ? 'تعليمات الوكيل' : 'Agent instructions', icon: <Building2 size={14} /> },
+          { id: 'tester', label: isRTL ? 'اختبار الإجابات' : 'Test answers', icon: <Sparkles size={14} /> },
         ]}
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -313,43 +324,63 @@ export default function AIKnowledgeContent() {
       {activeTab === 'documents' && (
         <div className="space-y-4">
           {/* Upload Dropzone */}
-          <div className="p-8 border-2 border-dashed border-border hover:border-brand/50 bg-surface-elevated/30 rounded-2xl text-center space-y-3 transition-colors">
+          <div
+            onDragEnter={(event) => { event.preventDefault(); setIsDragging(true) }}
+            onDragOver={(event) => event.preventDefault()}
+            onDragLeave={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsDragging(false)
+            }}
+            onDrop={handleFileDrop}
+            className={`p-8 border-2 border-dashed rounded-2xl text-center space-y-3 transition-colors ${isDragging ? 'border-brand bg-brand/10' : 'border-border hover:border-brand/50 bg-surface-elevated/30'}`}
+          >
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept=".pdf,.xlsx,.xls" />
             <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mx-auto">
               <UploadCloud size={24} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-text-primary">
-                Drag and drop your knowledge files
-              </h4>
+              <h4 className="text-sm font-bold text-text-primary">{isRTL ? 'اسحب ملفات المعرفة وأفلتها هنا' : 'Drag and drop your knowledge files'}</h4>
               <p className="text-xs text-text-tertiary mt-1">
-                Supports PDF, XLSX, and XLS files (up to 10 MB). Each file is limited to 500 indexed chunks.
+                {isRTL ? 'يدعم PDF وXLSX وXLS حتى 10 ميجابايت. الحد الأقصى لكل ملف 500 مقطع مفهرس.' : 'Supports PDF, XLSX, and XLS files (up to 10 MB). Each file is limited to 500 indexed chunks.'}
               </p>
             </div>
-            <label className="inline-block cursor-pointer">
-              <input
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                accept=".pdf,.xlsx,.xls"
-              />
-              <span className="px-4 py-2 bg-surface-elevated border border-border rounded-lg text-xs font-semibold text-text-primary hover:bg-surface-overlay transition-colors inline-flex items-center gap-1.5">
-                Browse Local Files
-              </span>
-            </label>
+            <Button variant="secondary" size="sm" loading={uploading} onClick={() => fileInputRef.current?.click()}>{isRTL ? 'اختيار ملف' : 'Browse files'}</Button>
           </div>
 
           {/* Files List */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Active Knowledge Sources</CardTitle>
+              <CardTitle className="text-sm">{isRTL ? 'مصادر المعرفة' : 'Knowledge sources'}</CardTitle>
               <CardDescription>
-                These files are chunked into vectors and queried automatically when a customer asks a question.
+                {isRTL ? 'تُفهرس هذه الملفات وتُستخدم تلقائيًا عند طرح العملاء للأسئلة.' : 'These files are indexed and used automatically when a customer asks a question.'}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="p-0">
+              <div className="flex flex-col gap-3 border-b border-border/60 p-4 sm:flex-row sm:items-center">
+                <div className="relative min-w-0 flex-1">
+                  <Search size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                  <input aria-label={isRTL ? 'البحث في المستندات' : 'Search documents'} value={fileSearch} onChange={(event) => setFileSearch(event.target.value)} placeholder={isRTL ? 'ابحث باسم الملف' : 'Search by filename'} className="w-full rounded-lg border border-border bg-surface-elevated py-2 ps-9 pe-9 text-sm text-text-primary outline-none transition-colors placeholder:text-text-tertiary focus:border-brand" />
+                  {fileSearch && <button type="button" onClick={() => setFileSearch('')} aria-label={isRTL ? 'مسح البحث' : 'Clear search'} className="absolute end-2 top-1/2 -translate-y-1/2 rounded p-1 text-text-tertiary hover:bg-surface-overlay hover:text-text-primary"><X size={14} /></button>}
+                </div>
+                <Select
+                  dir={isRTL ? 'rtl' : 'ltr'}
+                  ariaLabel={isRTL ? 'تصفية حسب حالة الفهرسة' : 'Filter by indexing status'}
+                  value={fileStatusFilter}
+                  onValueChange={setFileStatusFilter}
+                  className="w-full sm:w-48"
+                  options={[
+                    { value: 'all', label: isRTL ? 'كل الحالات' : 'All statuses' },
+                    { value: 'active', label: isRTL ? 'مفهرس' : 'Indexed' },
+                    { value: 'pending', label: isRTL ? 'قيد الانتظار' : 'Pending' },
+                    { value: 'processing', label: isRTL ? 'قيد المعالجة' : 'Processing' },
+                    { value: 'failed', label: isRTL ? 'فشل الفهرسة' : 'Indexing failed' },
+                  ]}
+                />
+              </div>
               <div className="divide-y divide-border/60">
-                {files.map((file) => (
+                {loading ? <div className="p-8 text-center text-sm text-text-tertiary">{isRTL ? 'جارٍ تحميل المستندات…' : 'Loading documents…'}</div>
+                  : filteredFiles.length === 0 ? <div className="p-8 text-center text-sm text-text-tertiary">{files.length ? (isRTL ? 'لا توجد مستندات تطابق عوامل التصفية.' : 'No documents match these filters.') : (isRTL ? 'لم تُرفع مستندات بعد. ارفع ملفًا للبدء.' : 'No documents yet. Upload a file to get started.')}</div>
+                  : filteredFiles.map((file) => (
                   <div
                     key={file.id}
                     className="p-4 flex items-center justify-between gap-4 hover:bg-surface-elevated/40 transition-colors"
@@ -363,7 +394,7 @@ export default function AIKnowledgeContent() {
                           {file.filename}
                         </div>
                         <div className="text-[11px] text-text-tertiary mt-0.5">
-                          {file.chunks_count ?? 0} vector chunks • Uploaded {file.uploaded_at}
+                          {file.chunks_count ?? 0} {isRTL ? 'مقطع معرفة' : 'knowledge chunks'} • {isRTL ? 'رُفع' : 'Uploaded'} {file.uploaded_at}
                           {file.error_message && <span className="block text-error">{file.error_message}</span>}
                         </div>
                       </div>
@@ -371,14 +402,15 @@ export default function AIKnowledgeContent() {
 
                     <div className="flex items-center gap-3 shrink-0">
                       <Badge variant={file.status === 'active' ? 'success' : file.status === 'failed' ? 'error' : 'warning'} dot size="xs">
-                        {file.status === 'active' ? 'Indexed' : file.status === 'failed' ? 'Indexing failed' : file.status || 'Pending'}
+                        {file.status === 'active' ? (isRTL ? 'مفهرس' : 'Indexed') : file.status === 'failed' ? (isRTL ? 'فشل الفهرسة' : 'Indexing failed') : file.status || (isRTL ? 'قيد الانتظار' : 'Pending')}
                       </Badge>
-                      {file.retryable && <Button variant="outline" size="sm" loading={retryingFileId === file.id} disabled={retryingFileId !== null} onClick={() => void handleRetryFile(file.id)}>Retry indexing</Button>}
+                      {file.retryable && <Button variant="outline" size="sm" loading={retryingFileId === file.id} disabled={retryingFileId !== null} onClick={() => void handleRetryFile(file.id)}>{isRTL ? 'إعادة المحاولة' : 'Retry indexing'}</Button>}
                       <button
                         type="button"
                         onClick={() => handleDeleteFile(file.id)}
                         className="p-1.5 rounded-lg text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
-                        title="Delete file"
+                        title={isRTL ? 'حذف الملف' : 'Delete file'}
+                        aria-label={isRTL ? `حذف ${file.filename}` : `Delete ${file.filename}`}
                       >
                         <Trash2 size={15} />
                       </button>
@@ -544,28 +576,11 @@ export default function AIKnowledgeContent() {
                   {testResponse}
                 </p>
 
-                {testSources.length > 0 && (
-                  <div className="pt-2 border-t border-border/60">
-                    <span className="text-[11px] font-semibold text-text-tertiary">
-                      Retrieved Vector Sources:
-                    </span>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      {testSources.map((src, i) => (
-                        <span
-                          key={i}
-                          className="text-[10px] px-2 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/20 font-mono"
-                        >
-                          {src}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
         </Card>
       )}
-    </div>
+    </main>
   )
 }
