@@ -19,10 +19,12 @@ import {
   ExternalLink,
   ChevronRight,
   Filter,
+  X,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
+import Select from '../ui/Select'
 import EmptyState from '../ui/EmptyState'
 import { MetricCardSkeleton } from '../ui/Skeleton'
 import { UnifiedCampaign, CampaignStatus, getStatusConfig } from './types'
@@ -194,6 +196,7 @@ export default function CampaignsList({
               <button
                 key={tab.id}
                 type="button"
+                aria-pressed={active}
                 onClick={() => setStatusFilter(tab.id)}
                 className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
                   active
@@ -215,7 +218,7 @@ export default function CampaignsList({
         </div>
 
         {/* Search & Channel Filter */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:shrink-0">
           <div className="relative w-full sm:w-60">
             <Search
               size={13}
@@ -225,27 +228,32 @@ export default function CampaignsList({
             />
             <input
               type="text"
+              aria-label={isRTL ? 'البحث في الحملات' : 'Search campaigns'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={isRTL ? 'بحث بالاسم أو المحتوى...' : 'Search campaigns...'}
               className={`h-9 w-full rounded-xl border border-border bg-surface text-xs text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none transition ${
-                isRTL ? 'pr-8 pl-3' : 'pl-8 pr-3'
+                isRTL ? 'pr-8 pl-8' : 'pl-8 pr-8'
               }`}
             />
+            {search && <button type="button" onClick={() => setSearch('')} aria-label={isRTL ? 'مسح البحث' : 'Clear search'} className={`absolute top-1/2 -translate-y-1/2 rounded p-1 text-text-tertiary hover:bg-surface-elevated hover:text-text-primary ${isRTL ? 'left-2' : 'right-2'}`}><X size={13} /></button>}
           </div>
 
-          <select
+          <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
+            ariaLabel={isRTL ? 'تصفية حسب القناة' : 'Filter by channel'}
             value={channelFilter}
-            onChange={(e) => setChannelFilter(e.target.value)}
-            className="h-9 rounded-xl border border-border bg-surface px-3 text-xs text-text-secondary focus:border-brand focus:outline-none"
-          >
-            <option value="all">{isRTL ? 'جميع القنوات' : 'All Channels'}</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="instagram">Instagram</option>
-            <option value="facebook">Facebook Messenger</option>
-            <option value="telegram">Telegram</option>
-            <option value="email">Email</option>
-          </select>
+            onValueChange={setChannelFilter}
+            className="w-full sm:w-48"
+            options={[
+              { value: 'all', label: isRTL ? 'جميع القنوات' : 'All channels' },
+              { value: 'whatsapp', label: 'WhatsApp' },
+              { value: 'instagram', label: 'Instagram' },
+              { value: 'facebook', label: 'Facebook Messenger' },
+              { value: 'telegram', label: 'Telegram' },
+              { value: 'email', label: 'Email' },
+            ]}
+          />
         </div>
       </div>
 

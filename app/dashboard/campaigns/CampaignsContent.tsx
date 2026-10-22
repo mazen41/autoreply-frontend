@@ -1,13 +1,11 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Megaphone,
   Plus,
   RefreshCw,
   Layers,
-  FileText,
-  Users,
 } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import Button from '../../../components/ui/Button'
@@ -151,7 +149,7 @@ export default function CampaignsContent() {
   ]
 
   return (
-    <div className="space-y-6">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       {/* 1. Page Header */}
       <PageHeader
         title={isRTL ? 'حملات البث والمراسلة' : 'Marketing & Broadcast Campaigns'}
@@ -168,7 +166,7 @@ export default function CampaignsContent() {
         primaryAction={
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => void fetchCampaigns()}
               disabled={loading}
@@ -182,7 +180,7 @@ export default function CampaignsContent() {
               onClick={() => setIsWizardOpen(true)}
               icon={<Plus size={14} />}
             >
-              {isRTL ? 'إنشاء حملة جديدة' : '+ Create Campaign'}
+              {isRTL ? 'إنشاء حملة جديدة' : 'Create campaign'}
             </Button>
           </div>
         }
@@ -259,6 +257,6 @@ export default function CampaignsContent() {
         isRTL={isRTL}
         onCampaignCreated={() => void fetchCampaigns()}
       />
-    </div>
+    </main>
   )
 }
