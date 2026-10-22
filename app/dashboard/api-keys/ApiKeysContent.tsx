@@ -27,6 +27,8 @@ import Input from '../../../components/ui/Input'
 import Modal from '../../../components/ui/Modal'
 import EmptyState from '../../../components/ui/EmptyState'
 import toast from 'react-hot-toast'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 interface ApiKey {
   id: number
@@ -52,6 +54,8 @@ const SCOPE_GROUPS = [
 ]
 
 export default function ApiKeysContent() {
+  const { isRTL } = useLang()
+  const [businessId, setBusinessId] = useState<number | null>(null)
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -67,16 +71,27 @@ export default function ApiKeysContent() {
   })
 
   useEffect(() => {
-    fetchApiKeys()
+    const syncBusiness = () => setBusinessId(getSelectedBusinessId())
+    syncBusiness()
+    window.addEventListener('naz:business-changed', syncBusiness)
+    window.addEventListener('storage', syncBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', syncBusiness)
+      window.removeEventListener('storage', syncBusiness)
+    }
   }, [])
 
+  useEffect(() => { void fetchApiKeys() }, [businessId])
+
   const fetchApiKeys = async () => {
+    if (!businessId) { setApiKeys([]); setLoading(false); return }
     try {
+      setLoading(true)
       const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
       if (!token) throw new Error('Your session expired. Sign in again to load API keys.')
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message || `Could not load API keys (HTTP ${res.status}).`)
@@ -100,6 +115,7 @@ export default function ApiKeysContent() {
       return
     }
 
+    setLoadError(null)
     try {
       const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
       if (!token) throw new Error('Your session expired. Sign in again to create API keys.')
@@ -110,6 +126,7 @@ export default function ApiKeysContent() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          ...getBusinessHeaders(),
         },
         body: JSON.stringify(form),
       })
@@ -118,7 +135,7 @@ export default function ApiKeysContent() {
       if (res.ok && data.key) {
         setNewKey(data.key)
         setForm({ name: '', scopes: ['conversations:read'], expires_at: '' })
-        fetchApiKeys()
+        void fetchApiKeys()
         toast.success('API Key generated successfully')
       } else {
         toast.error(data.error || data.message || 'Failed to create API key')
@@ -136,7 +153,7 @@ export default function ApiKeysContent() {
       if (!token) throw new Error('Your session expired. Sign in again.')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}`, {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
       if (!res.ok) throw new Error('Revoke request failed.')
       setApiKeys(prev => prev.filter(k => k.id !== keyId))
@@ -152,7 +169,7 @@ export default function ApiKeysContent() {
       if (!token) throw new Error('Your session expired. Sign in again.')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/api-keys/${keyId}/toggle`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
       if (!res.ok) throw new Error('Status update failed.')
       setApiKeys(prev =>
@@ -164,11 +181,15 @@ export default function ApiKeysContent() {
     }
   }
 
-  const copyToClipboard = (text: string, id: number | string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedId(id)
-    toast.success('Secret key copied to clipboard')
-    setTimeout(() => setCopiedId(null), 2500)
+  const copyToClipboard = async (text: string, id: number | string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedId(id)
+      toast.success('Secret key copied to clipboard')
+      window.setTimeout(() => setCopiedId(null), 2500)
+    } catch {
+      toast.error('Could not copy the key. Select and copy it manually.')
+    }
   }
 
   const toggleScope = (scopeId: string) => {
@@ -185,7 +206,7 @@ export default function ApiKeysContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface p-6">
         <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
         <span className="text-xs text-text-tertiary">Loading API credentials...</span>
       </div>
@@ -193,7 +214,7 @@ export default function ApiKeysContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
         title="API Keys"
         description="Provision programmatic authentication tokens to interface with NazBiz APIs, automated webhooks, and third-party CRM connectors."
@@ -205,6 +226,7 @@ export default function ApiKeysContent() {
         primaryAction={
           <Button
             variant="primary"
+            disabled={!businessId || loading}
             onClick={() => {
               setNewKey(null)
               setShowModal(true)
@@ -216,7 +238,9 @@ export default function ApiKeysContent() {
         }
       />
 
-      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchApiKeys()}>Retry</Button></div>}
+      {!businessId && <p role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-sm text-warning">Select a business to manage its API keys.</p>}
+
+      {loadError && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchApiKeys()} disabled={loading}>Retry</Button></div>}
 
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -280,7 +304,6 @@ export default function ApiKeysContent() {
           ) : (
             <div className="divide-y divide-border/60">
               {apiKeys.map((apiKey) => {
-                const isCopied = copiedId === apiKey.id
                 return (
                   <div
                     key={apiKey.id}
@@ -298,19 +321,8 @@ export default function ApiKeysContent() {
 
                       {/* Secret preview & copy */}
                       <div className="flex items-center gap-2">
-                        <code className="px-2.5 py-1 rounded-md bg-surface border border-border/80 text-xs font-mono text-text-secondary select-all">
-                          {apiKey.key.length > 18
-                            ? `${apiKey.key.substring(0, 10)}••••••••••••${apiKey.key.substring(apiKey.key.length - 4)}`
-                            : apiKey.key}
-                        </code>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
-                          className="p-1.5 rounded-md hover:bg-surface-elevated text-text-tertiary hover:text-text-primary transition-colors"
-                          title="Copy Token"
-                        >
-                          {isCopied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                        </button>
+                        <code className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-mono text-text-tertiary">••••••••••••••••••••</code>
+                        <span className="text-[11px] text-text-tertiary">Secret shown once when created</span>
                       </div>
 
                       {/* Metadata Details */}
@@ -493,9 +505,10 @@ export default function ApiKeysContent() {
               >
                 Cancel
               </Button>
-              <Button
+                <Button
                 variant="primary"
                 onClick={handleCreate}
+                  disabled={!businessId || loading}
                 icon={<Code2 size={14} />}
               >
                 Generate Key
