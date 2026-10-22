@@ -18,6 +18,7 @@ import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import { useLang } from '../../lib/LangContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ export default function WorkflowBuilder({
   onSave: () => void
   onCancel: () => void
 }) {
+  const { isRTL } = useLang()
   const isEditing = !!workflow
   const [stage, setStage] = useState<'pick' | 'edit'>(isEditing ? 'edit' : 'pick')
 
@@ -331,8 +333,8 @@ export default function WorkflowBuilder({
   // ─── Recipe picker ──────────────────────────────────────────────────────────
   if (stage === 'pick') {
     return (
-      <div className="mx-auto max-w-3xl space-y-6">
-        <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft size={14} />}>
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
+        <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft className={isRTL ? 'rotate-180' : ''} size={14} />}>
           Workflows
         </Button>
         <div>
@@ -345,7 +347,7 @@ export default function WorkflowBuilder({
               key={r.id}
               type="button"
               onClick={() => applyRecipe(r)}
-              className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-elevated p-4 text-left transition-colors hover:border-brand/50"
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-elevated p-4 text-start transition-colors hover:border-brand/50"
             >
               <span className="text-2xl">{r.emoji}</span>
               <div>
@@ -357,7 +359,7 @@ export default function WorkflowBuilder({
           <button
             type="button"
             onClick={() => applyRecipe(null)}
-            className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border p-4 text-left transition-colors hover:border-brand/50"
+            className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border p-4 text-start transition-colors hover:border-brand/50"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-text-secondary">
               <Plus size={16} />
@@ -375,10 +377,10 @@ export default function WorkflowBuilder({
   // ─── Builder ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 pb-16">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-3xl space-y-4 p-4 pb-16 md:p-6">
       <div className="sticky top-0 z-30 -mx-1 flex items-center justify-between gap-3 border-b border-border bg-[var(--background)]/90 px-1 py-3 backdrop-blur">
         <div className="flex min-w-0 items-center gap-3">
-          <Button variant="outline" size="sm" onClick={handleBack} icon={<ChevronLeft size={14} />}>
+          <Button variant="outline" size="sm" onClick={handleBack} icon={<ChevronLeft className={isRTL ? 'rotate-180' : ''} size={14} />}>
             Workflows
           </Button>
           <h2 className="hidden truncate text-sm font-bold text-text-primary sm:block">
@@ -401,7 +403,7 @@ export default function WorkflowBuilder({
           <p className="font-semibold text-error">
             Fix {errors.list.length} {errors.list.length === 1 ? 'issue' : 'issues'} to save
           </p>
-          <ul className="mt-1 list-disc pl-5 text-xs text-text-secondary">
+          <ul className="mt-1 list-disc ps-5 text-xs text-text-secondary">
             {errors.list.slice(0, 5).map((m, i) => (
               <li key={i}>{m}</li>
             ))}
@@ -436,6 +438,7 @@ export default function WorkflowBuilder({
       <Block n={1} tone="bg-warning/15 text-warning" title="When this happens">
         <div id="wf-trigger" className="space-y-3">
           <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
             value={triggerType}
             onChange={(e) => setTriggerType(e.target.value as TriggerType)}
             options={TRIGGERS.map((t) => ({ value: t.value, label: t.label, description: t.description, icon: <span>{t.icon}</span> }))}
@@ -477,6 +480,7 @@ export default function WorkflowBuilder({
                     <span className="px-1 text-xs font-semibold text-text-tertiary">{idx === 0 ? 'If' : 'and'}</span>
                     <div className="w-44">
                       <Select
+                        dir={isRTL ? 'rtl' : 'ltr'}
                         size="sm"
                         value={c.type}
                         onChange={(e) => setConditions((p) => p.map((x) => (x.id === c.id ? { ...x, type: e.target.value } : x)))}
@@ -485,6 +489,7 @@ export default function WorkflowBuilder({
                     </div>
                     <div className="w-28">
                       <Select
+                        dir={isRTL ? 'rtl' : 'ltr'}
                         size="sm"
                         value={c.comparison}
                         onChange={(e) => setConditions((p) => p.map((x) => (x.id === c.id ? { ...x, comparison: e.target.value } : x)))}
@@ -577,6 +582,7 @@ export default function WorkflowBuilder({
                 {open && (
                   <div className="space-y-3 border-t border-border/60 px-4 pb-4 pt-3">
                     <Select
+                      dir={isRTL ? 'rtl' : 'ltr'}
                       label="Action"
                       size="sm"
                       value={a.type}
@@ -625,7 +631,7 @@ export default function WorkflowBuilder({
                     key={t}
                     type="button"
                     onClick={() => addAction(t)}
-                    className="flex items-center gap-2.5 rounded-lg p-2 text-left hover:bg-surface-elevated"
+                    className="flex items-center gap-2.5 rounded-lg p-2 text-start hover:bg-surface-elevated"
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-brand/10 text-brand">
                       <Icon size={14} />
