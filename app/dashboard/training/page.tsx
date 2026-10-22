@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import {
   Bot, TrendingUp, AlertTriangle, MessageSquare,
   ThumbsUp, ThumbsDown, CheckCircle, BrainCircuit,
@@ -15,9 +16,10 @@ import MetricCard from '../../../components/ui/MetricCard'
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/Card'
 import Button from '../../../components/ui/Button'
 import Badge from '../../../components/ui/Badge'
-import Tabs from '../../../components/ui/Tabs'
+import Select from '../../../components/ui/Select'
 import { SkeletonCard } from '../../../components/ui/Skeleton'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -67,11 +69,11 @@ interface TrainingStats {
 }
 
 const PRESETS = [
-  { key: 'today', label: 'Today' },
-  { key: 'last_7_days', label: '7 Days' },
-  { key: 'last_30_days', label: '30 Days' },
-  { key: 'this_month', label: 'This Month' },
-  { key: 'all_time', label: 'All Time' },
+  { key: 'today', label: 'Today', ar: 'اليوم' },
+  { key: 'last_7_days', label: '7 Days', ar: '٧ أيام' },
+  { key: 'last_30_days', label: '30 Days', ar: '٣٠ يومًا' },
+  { key: 'this_month', label: 'This Month', ar: 'هذا الشهر' },
+  { key: 'all_time', label: 'All Time', ar: 'كل الفترة' },
 ]
 
 const pctLabel = (v: number | null): string =>
@@ -153,6 +155,8 @@ function ChannelBadge({ channel, count, total }: { channel: string; count: numbe
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function TrainingDashboard() {
+  const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [preset, setPreset] = useState('last_30_days')
   const [stats, setStats] = useState<TrainingStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -207,8 +211,9 @@ export default function TrainingDashboard() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <motion.div
-      className="space-y-6 page-enter"
+    <motion.main
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8 page-enter"
       variants={variants.page}
       initial="hidden"
       animate="visible"
@@ -216,25 +221,25 @@ export default function TrainingDashboard() {
     >
       {/* Page Header */}
       <PageHeader
-        title="Training & AI Performance"
-        description="Deep insights into AI performance, auto-replies, escalations, and customer feedback across all channels."
+        title={L('Training & AI Performance', 'التدريب وأداء الذكاء الاصطناعي')}
+        description={L('Track AI replies, confidence, escalations, and customer feedback across your channels.', 'تابع ردود الذكاء الاصطناعي ومستوى الثقة والتصعيد وملاحظات العملاء عبر قنواتك.')}
         badge={
           stats && (
-            <Badge variant="ai" dot>AI Analytics</Badge>
+            <Badge variant="ai" dot>{L('AI analytics', 'تحليلات الذكاء الاصطناعي')}</Badge>
           )
         }
         primaryAction={
-          <a href="/dashboard/training/review">
+          <Link href="/dashboard/training/review">
             <Button icon={<ExternalLink size={14} />}>
-              Review Corrections
+              {L('Review corrections', 'مراجعة التصحيحات')}
             </Button>
-          </a>
+          </Link>
         }
         secondaryActions={
           <div className="flex items-center gap-2">
             {stats && (
               <span className="text-[11px] text-text-tertiary hidden sm:inline">
-                Updated: {stats.last_updated}
+                {L('Updated', 'آخر تحديث')}: {stats.last_updated}
               </span>
             )}
             <Button
@@ -248,13 +253,21 @@ export default function TrainingDashboard() {
           </div>
         }
       >
-        {/* Time Range Tabs */}
-        <Tabs
-          variant="pills"
-          tabs={PRESETS.map(p => ({ id: p.key, label: p.label }))}
-          activeTab={preset}
-          onChange={(id) => setPreset(id)}
-        />
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-card p-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-xl">
+            <p className="text-sm font-semibold text-text-primary">{L('Performance overview', 'نظرة عامة على الأداء')}</p>
+            <p className="mt-1 text-xs text-text-tertiary">{L('Choose a reporting period to update every metric and breakdown.', 'اختر الفترة لتحديث المؤشرات والتفاصيل.')}</p>
+          </div>
+          <Select
+            dir={isRTL ? 'rtl' : 'ltr'}
+            label={L('Reporting period', 'الفترة الزمنية')}
+            ariaLabel={L('Reporting period', 'الفترة الزمنية')}
+            value={preset}
+            onValueChange={setPreset}
+            className="w-full sm:w-52"
+            options={PRESETS.map((item) => ({ value: item.key, label: L(item.label, item.ar) }))}
+          />
+        </div>
       </PageHeader>
 
       {/* Loading State */}
@@ -269,9 +282,9 @@ export default function TrainingDashboard() {
             <div className="w-14 h-14 rounded-2xl bg-error/10 flex items-center justify-center mb-4">
               <AlertTriangle size={24} className="text-error" />
             </div>
-            <h3 className="text-sm font-semibold text-text-primary mb-1">Failed to load data</h3>
+            <h3 className="text-sm font-semibold text-text-primary mb-1">{L('Could not load training data', 'تعذر تحميل بيانات التدريب')}</h3>
             <p className="text-xs text-text-secondary mb-4">{error}</p>
-            <Button onClick={refresh} size="sm">Try Again</Button>
+            <Button onClick={refresh} size="sm">{L('Try again', 'أعد المحاولة')}</Button>
           </div>
         </Card>
       ) : stats ? (
@@ -284,9 +297,9 @@ export default function TrainingDashboard() {
                   <Bot size={16} className="text-info" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-text-primary mb-0.5">No AI data yet</h4>
+                  <h4 className="text-xs font-semibold text-text-primary mb-0.5">{L('No AI data yet', 'لا توجد بيانات للذكاء الاصطناعي بعد')}</h4>
                   <p className="text-xs text-text-secondary leading-relaxed">
-                    Statistics will appear here once the AI starts replying to conversations. Ensure AI is enabled on your channels.
+                    {L('Statistics will appear after the AI replies to conversations. Check that AI is enabled for your channels.', 'ستظهر الإحصاءات بعد أن يرد الذكاء الاصطناعي على المحادثات. تأكد من تفعيله لقنواتك.')}
                   </p>
                 </div>
               </div>
@@ -296,29 +309,28 @@ export default function TrainingDashboard() {
           {/* KPI Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
-              label="Auto-Reply Rate"
+              label={L('Auto-reply rate', 'معدل الرد التلقائي')}
               value={pctLabel(stats.auto_reply_rate)}
-              subValue={`${fmt(stats.total_conversations)} total conversations`}
+              subValue={`${fmt(stats.total_conversations)} ${L('total conversations', 'محادثة إجمالًا')}`}
               icon={<Bot size={18} />}
               variant="ai"
             />
             <MetricCard
-              label="Avg Confidence"
+              label={L('Average confidence', 'متوسط الثقة')}
               value={pctLabel(stats.avg_confidence)}
-              subValue={stats.avg_confidence === null ? 'Need more data' : 'High accuracy threshold'}
+              subValue={stats.avg_confidence === null ? L('Not enough data', 'لا توجد بيانات كافية') : `${fmt(stats.confidence_count)} ${L('scored replies', 'ردًا تم قياسه')}`}
               icon={<CheckCircle size={18} />}
             />
             <MetricCard
-              label="AI Replies Total"
+              label={L('AI replies', 'ردود الذكاء الاصطناعي')}
               value={fmt(stats.total_ai_messages)}
-              subValue={`${fmt(stats.ai_messages_today)} today`}
+              subValue={`${fmt(stats.ai_messages_today)} ${L('today', 'اليوم')}`}
               icon={<MessageSquare size={18} />}
-              trend={{ value: 12, isPositive: true, label: 'vs last period' }}
             />
             <MetricCard
-              label="Escalation Rate"
+              label={L('Escalation rate', 'معدل التصعيد')}
               value={pctLabel(stats.escalation_rate)}
-              subValue={`${fmt(stats.escalations_today)} escalations today`}
+              subValue={`${fmt(stats.escalations_today)} ${L('escalations today', 'حالة تصعيد اليوم')}`}
               icon={<AlertTriangle size={18} />}
               variant="warning"
             />
@@ -334,7 +346,7 @@ export default function TrainingDashboard() {
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <TrendingUp size={16} className="text-brand" />
-                      <CardTitle>Intent Analysis</CardTitle>
+                      <CardTitle>{L('Intent analysis', 'تحليل النوايا')}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -343,7 +355,7 @@ export default function TrainingDashboard() {
                     ) : (
                       <div className="flex flex-col items-center py-8 text-text-tertiary">
                         <BarChart3 size={24} className="mb-2 opacity-40" />
-                        <span className="text-xs">No intent data for this period</span>
+                        <span className="text-xs">{L('No intent data for this period', 'لا توجد بيانات نوايا لهذه الفترة')}</span>
                       </div>
                     )}
                   </CardContent>
@@ -353,7 +365,7 @@ export default function TrainingDashboard() {
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <AlertCircle size={16} className="text-error" />
-                      <CardTitle>Escalation Triggers</CardTitle>
+                      <CardTitle>{L('Escalation reasons', 'أسباب التصعيد')}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -362,7 +374,7 @@ export default function TrainingDashboard() {
                     ) : (
                       <div className="flex flex-col items-center py-8 text-text-tertiary">
                         <CheckCircle size={24} className="mb-2 opacity-40" />
-                        <span className="text-xs">No escalation reasons recorded</span>
+                        <span className="text-xs">{L('No escalation reasons recorded', 'لم تُسجل أسباب تصعيد')}</span>
                       </div>
                     )}
                   </CardContent>
@@ -374,39 +386,39 @@ export default function TrainingDashboard() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <MessageCircle size={16} className="text-brand" />
-                    <CardTitle>Customer Feedback Hub</CardTitle>
+                    <CardTitle>{L('Customer feedback', 'ملاحظات العملاء')}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Feedback KPIs */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center p-4 rounded-xl bg-surface-elevated border border-border">
-                      <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider mb-1">Satisfaction</div>
+                      <div className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider mb-1">{L('Satisfaction', 'الرضا')}</div>
                       <div className="text-2xl font-bold text-text-primary">
                         {stats.feedback_total > 0 ? `${Math.round(stats.satisfaction_percentage ?? 0)}%` : '--'}
                       </div>
-                      <div className="text-[11px] text-text-tertiary mt-1">{stats.feedback_total} ratings</div>
+                      <div className="text-[11px] text-text-tertiary mt-1">{stats.feedback_total} {L('ratings', 'تقييم')}</div>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-success/5 border border-success/15">
                       <ThumbsUp size={18} className="text-success mx-auto mb-1.5" />
                       <div className="text-xl font-bold text-success">{fmt(stats.feedback_positive)}</div>
-                      <div className="text-[11px] text-success/70 mt-0.5">Positive</div>
+                      <div className="text-[11px] text-success/70 mt-0.5">{L('Positive', 'إيجابي')}</div>
                     </div>
                     <div className="text-center p-4 rounded-xl bg-error/5 border border-error/15">
                       <ThumbsDown size={18} className="text-error mx-auto mb-1.5" />
                       <div className="text-xl font-bold text-error">{fmt(stats.feedback_negative)}</div>
-                      <div className="text-[11px] text-error/70 mt-0.5">Negative</div>
+                      <div className="text-[11px] text-error/70 mt-0.5">{L('Negative', 'سلبي')}</div>
                     </div>
                   </div>
 
                   {/* Reported Issues */}
                   <div className="pt-4 border-t border-border">
-                    <h4 className="text-[11px] font-semibold uppercase text-text-tertiary tracking-wider mb-3">Reported Issues</h4>
+                    <h4 className="text-[11px] font-semibold uppercase text-text-tertiary tracking-wider mb-3">{L('Reported issues', 'المشكلات المبلغ عنها')}</h4>
                     {Object.keys(stats.issue_breakdown).length > 0 ? (
                       <BreakdownBars data={stats.issue_breakdown} color="#F97316" />
                     ) : (
                       <p className="text-xs text-text-tertiary text-center py-3">
-                        No negative feedback issues reported.
+                        {L('No negative feedback issues reported.', 'لم يتم الإبلاغ عن مشكلات في الملاحظات السلبية.')}
                       </p>
                     )}
                   </div>
@@ -419,7 +431,7 @@ export default function TrainingDashboard() {
               {/* Channel Traffic */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Traffic by Channel</CardTitle>
+                  <CardTitle>{L('AI replies by channel', 'ردود الذكاء الاصطناعي حسب القناة')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {Object.keys(stats.channel_breakdown).length > 0 ? (
@@ -438,7 +450,7 @@ export default function TrainingDashboard() {
                   ) : (
                     <div className="flex flex-col items-center py-8 text-text-tertiary">
                       <MessageSquare size={24} className="mb-2 opacity-40" />
-                      <span className="text-xs">No channel data yet</span>
+                      <span className="text-xs">{L('No channel data yet', 'لا توجد بيانات قنوات بعد')}</span>
                     </div>
                   )}
                 </CardContent>
@@ -447,7 +459,7 @@ export default function TrainingDashboard() {
               {/* Language Demographics */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Audience Demographics</CardTitle>
+                  <CardTitle>{L('Language and dialects', 'اللغات واللهجات')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {Object.keys(stats.dialect_breakdown).length > 0 ? (
@@ -464,7 +476,7 @@ export default function TrainingDashboard() {
                   ) : (
                     <div className="flex flex-col items-center py-8 text-text-tertiary">
                       <BrainCircuit size={24} className="mb-2 opacity-40" />
-                      <span className="text-xs">No language data yet</span>
+                      <span className="text-xs">{L('No language data yet', 'لا توجد بيانات لغات بعد')}</span>
                     </div>
                   )}
                 </CardContent>
@@ -472,17 +484,17 @@ export default function TrainingDashboard() {
 
               {/* AI Tip */}
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-brand to-brand p-5 text-white">
-                <div className="absolute top-0 right-0 w-28 h-28 bg-white/10 rounded-bl-full" />
+                <div className="absolute top-0 end-0 w-28 h-28 bg-white/10 rounded-es-full" />
                 <BrainCircuit size={20} className="mb-3 opacity-80" />
-                <h3 className="text-sm font-semibold mb-2">AI Tip of the Day</h3>
+                <h3 className="text-sm font-semibold mb-2">{L('Improve AI answers', 'حسّن إجابات الذكاء الاصطناعي')}</h3>
                 <p className="text-xs text-brand leading-relaxed">
-                  To lower your escalation rate, review negative feedback and add the corrected answers to your Business FAQs.
+                  {L('Review negative feedback and add corrected answers to your business FAQs to help prevent repeat escalations.', 'راجع الملاحظات السلبية وأضف الإجابات المصححة إلى الأسئلة الشائعة لتقليل تكرار التصعيد.')}
                 </p>
               </div>
             </div>
           </div>
         </>
       ) : null}
-    </motion.div>
+    </motion.main>
   )
 }
