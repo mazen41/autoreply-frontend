@@ -10,6 +10,7 @@ import { useLang } from '../../../lib/LangContext'
 import { Select } from '../../../components/ui/Select'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
+const fieldClass = 'w-full rounded-xl border border-border bg-surface-elevated px-3.5 py-2.5 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-brand focus:ring-2 focus:ring-brand/15'
 type Retention = { message_retention_days: number; media_retention_days: number; consent_retention_days: number | null }
 type Customer = { id: number; name: string; phone: string | null; email: string | null }
 type RightsRequest = { id: number; type: string; status: string; receipt: Record<string, unknown> | null; archive_expires_at: string | null; created_at: string }
@@ -29,13 +30,15 @@ export default function PrivacyDataPage() {
   const [customerSearch, setCustomerSearch] = useState('')
   const [requests, setRequests] = useState<RightsRequest[]>([])
   const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
   const headers = useCallback(() => ({ Authorization: `Bearer ${token()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() }), [])
 
   const load = useCallback(async (id: number, search = '') => {
-    setError('')
+    setLoading(true); setError('')
+    try {
     const [retentionResponse, customerResponse, requestsResponse] = await Promise.all([
       fetch(`${API}/businesses/${id}/data-retention`, { headers: headers() }),
       fetch(`${API}/businesses/${id}/data-rights/customers?per_page=50&search=${encodeURIComponent(search)}`, { headers: headers() }),
@@ -46,6 +49,11 @@ export default function PrivacyDataPage() {
     const customerPayload = await customerResponse.json()
     setCustomers(customerPayload.data || [])
     setRequests(await requestsResponse.json())
+    } catch (cause) {
+      throw cause
+    } finally {
+      setLoading(false)
+    }
   }, [headers])
 
   useEffect(() => {
@@ -53,7 +61,7 @@ export default function PrivacyDataPage() {
       const id = getSelectedBusinessId()
       setSelectedCustomer('')
       setCustomers([])
-      if (!id) { setBusinessId(null); setError('Select a business to manage its privacy settings.'); return }
+      if (!id) { setBusinessId(null); setRequests([]); setLoading(false); setError('Select a business to manage its privacy settings.'); return }
       setBusinessId(id)
       load(id).catch((cause) => setError(cause instanceof Error ? cause.message : 'Could not load privacy settings.'))
     }
@@ -118,17 +126,17 @@ export default function PrivacyDataPage() {
     finally { setBusy(false) }
   }
 
-  return <div className="mx-auto max-w-5xl space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
     <PageHeader title={t('Privacy & customer data', 'الخصوصية وبيانات العملاء')} description={t('Manage data retention, create a business data export, and fulfill customer erasure requests.', 'إدارة مدة الاحتفاظ بالبيانات وتصدير بيانات النشاط وتنفيذ طلبات حذف العملاء.')} />
-    {error && <p role="alert" className="rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error">{error}</p>}
+    {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{error}</span>{businessId && <Button variant="outline" size="sm" onClick={() => void load(businessId, customerSearch)} disabled={loading}>{t('Retry', 'إعادة المحاولة')}</Button>}</div>}
     {notice && <p role="status" className="rounded-lg border border-success/30 bg-success/5 p-3 text-sm text-success">{notice}</p>}
 
     <Card><CardContent className="space-y-5 p-5">
       <div className="flex items-center gap-3"><ShieldCheck className="text-brand" /><div><h2 className="font-semibold">{t('Retention settings', 'إعدادات الاحتفاظ')}</h2><p className="text-sm text-muted-foreground">{t('Messages default to 365 days. Media defaults to 30 days. Consent records are kept until you set a period.', 'الافتراضي للرسائل ٣٦٥ يومًا وللوسائط ٣٠ يومًا. تُحتفظ بسجلات الموافقة حتى تحدد مدة لها.')}</p></div></div>
       <div className="grid gap-4 md:grid-cols-3">
-        <label className="space-y-1 text-sm">{t('Messages (days)', 'الرسائل (أيام)')}<input type="number" min="30" max="3650" className="w-full rounded-md border bg-background px-3 py-2" value={retention.message_retention_days} onChange={(e) => setRetention({ ...retention, message_retention_days: Number(e.target.value) })} /></label>
-        <label className="space-y-1 text-sm">{t('Media (days)', 'الوسائط (أيام)')}<input type="number" min="1" max="3650" className="w-full rounded-md border bg-background px-3 py-2" value={retention.media_retention_days} onChange={(e) => setRetention({ ...retention, media_retention_days: Number(e.target.value) })} /></label>
-        <label className="space-y-1 text-sm">{t('Consent records (days)', 'سجلات الموافقة (أيام)')}<input type="number" min="30" max="36500" placeholder={t('Keep indefinitely', 'احتفظ بها دون مدة انتهاء')} className="w-full rounded-md border bg-background px-3 py-2" value={retention.consent_retention_days ?? ''} onChange={(e) => setRetention({ ...retention, consent_retention_days: e.target.value ? Number(e.target.value) : null })} /></label>
+        <label className="space-y-1.5 text-sm text-text-secondary">{t('Messages (days)', 'الرسائل (أيام)')}<input type="number" min="30" max="3650" className={fieldClass} value={retention.message_retention_days} onChange={(e) => setRetention({ ...retention, message_retention_days: Number(e.target.value) })} /></label>
+        <label className="space-y-1.5 text-sm text-text-secondary">{t('Media (days)', 'الوسائط (أيام)')}<input type="number" min="1" max="3650" className={fieldClass} value={retention.media_retention_days} onChange={(e) => setRetention({ ...retention, media_retention_days: Number(e.target.value) })} /></label>
+        <label className="space-y-1.5 text-sm text-text-secondary">{t('Consent records (days)', 'سجلات الموافقة (أيام)')}<input type="number" min="30" max="36500" placeholder={t('Keep indefinitely', 'احتفظ بها دون مدة انتهاء')} className={fieldClass} value={retention.consent_retention_days ?? ''} onChange={(e) => setRetention({ ...retention, consent_retention_days: e.target.value ? Number(e.target.value) : null })} /></label>
       </div>
       <Button onClick={saveRetention} disabled={busy}>{t('Save retention settings', 'حفظ إعدادات الاحتفاظ')}</Button>
     </CardContent></Card>
@@ -140,13 +148,13 @@ export default function PrivacyDataPage() {
 
     <Card><CardContent className="space-y-4 p-5">
       <div className="flex items-center gap-3"><Trash2 className="text-error" /><div><h2 className="font-semibold">{t('Erase customer data', 'حذف بيانات العميل')}</h2><p className="text-sm text-muted-foreground">{t('Deletes the customer profile, notes, conversations, messages, media, and consent records. Synced order records remain with customer details anonymized; a suppression record remains.', 'يحذف ملف العميل والملاحظات والمحادثات والرسائل والوسائط وسجلات الموافقة. تبقى الطلبات المتزامنة بعد إزالة بيانات العميل الشخصية، ويُحتفظ بسجل منع التواصل.')}</p></div></div>
-      <div className="flex flex-col gap-3 sm:flex-row"><input className="min-w-0 flex-1 rounded-md border bg-background px-3 py-2" placeholder={t('Search name, email, or phone', 'ابحث بالاسم أو البريد أو الهاتف')} value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} /><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy}>{t('Search customers', 'بحث عن العملاء')}</Button></div>
-      <div className="flex flex-col gap-3 sm:flex-row"><Select className="min-w-0 flex-1" label={t('Customer', 'العميل')} value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)} options={[{ value: '', label: t('Select a customer', 'اختر عميلًا') }, ...customers.map((customer) => ({ value: String(customer.id), label: `${customer.name || t('Unnamed', 'بدون اسم')}${customer.email ? ` · ${customer.email}` : ''}${customer.phone ? ` · ${customer.phone}` : ''}` }))]} /><Button variant="destructive" onClick={eraseCustomer} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
+      <div className="flex flex-col gap-3 sm:flex-row"><input className={`${fieldClass} min-w-0 flex-1`} placeholder={t('Search name, email, or phone', 'ابحث بالاسم أو البريد أو الهاتف')} value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} /><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy || loading}>{t('Search customers', 'بحث عن العملاء')}</Button></div>
+      <div className="flex flex-col gap-3 sm:flex-row"><Select dir={isRTL ? 'rtl' : 'ltr'} className="min-w-0 flex-1" label={t('Customer', 'العميل')} value={selectedCustomer} onValueChange={setSelectedCustomer} options={[{ value: '', label: t('Select a customer', 'اختر عميلًا') }, ...customers.map((customer) => ({ value: String(customer.id), label: `${customer.name || t('Unnamed', 'بدون اسم')}${customer.email ? ` · ${customer.email}` : ''}${customer.phone ? ` · ${customer.phone}` : ''}` }))]} /><Button variant="destructive" onClick={eraseCustomer} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
     </CardContent></Card>
 
     <Card><CardContent className="space-y-4 p-5">
-      <div className="flex items-center justify-between"><h2 className="font-semibold">{t('Data rights history', 'سجل طلبات البيانات')}</h2><Button variant="outline" onClick={() => businessId && load(businessId)} disabled={busy}><RefreshCw size={15} /> {t('Refresh', 'تحديث')}</Button></div>
-      {requests.length === 0 ? <p className="text-sm text-muted-foreground">{t('No requests yet.', 'لا توجد طلبات بعد.')}</p> : <div className="divide-y">{requests.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"><div><span className="font-medium capitalize">{item.type === 'erasure' ? t('Customer erasure', 'حذف عميل') : t('Data export', 'تصدير بيانات')}</span><span className="ml-2 text-muted-foreground">#{item.id} · {item.status} · {new Date(item.created_at).toLocaleString()}</span>{item.receipt && <pre className="mt-2 max-w-xl overflow-auto rounded bg-muted p-2 text-xs">{JSON.stringify(item.receipt, null, 2)}</pre>}</div>{item.type === 'export' && item.status === 'completed' && item.archive_expires_at && new Date(item.archive_expires_at) > new Date() && <Button variant="outline" onClick={() => downloadExport(item.id)} disabled={busy}><Download size={15} /> {t('Download', 'تنزيل')}</Button>}</div>)}</div>}
+      <div className="flex items-center justify-between"><h2 className="font-semibold">{t('Data rights history', 'سجل طلبات البيانات')}</h2><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy || loading}><RefreshCw size={15} /> {t('Refresh', 'تحديث')}</Button></div>
+      {loading ? <p role="status" className="py-4 text-sm text-text-tertiary">{t('Loading privacy data…', 'جارٍ تحميل بيانات الخصوصية…')}</p> : requests.length === 0 ? <p className="text-sm text-muted-foreground">{t('No requests yet.', 'لا توجد طلبات بعد.')}</p> : <div className="divide-y">{requests.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"><div><span className="font-medium capitalize">{item.type === 'erasure' ? t('Customer erasure', 'حذف عميل') : t('Data export', 'تصدير بيانات')}</span><span className="ms-2 text-muted-foreground">#{item.id} · {item.status} · {new Date(item.created_at).toLocaleString()}</span>{item.receipt && <pre className="mt-2 max-w-xl overflow-auto rounded bg-muted p-2 text-xs">{JSON.stringify(item.receipt, null, 2)}</pre>}</div>{item.type === 'export' && item.status === 'completed' && item.archive_expires_at && new Date(item.archive_expires_at) > new Date() && <Button variant="outline" onClick={() => downloadExport(item.id)} disabled={busy}><Download size={15} /> {t('Download', 'تنزيل')}</Button>}</div>)}</div>}
     </CardContent></Card>
-  </div>
+  </main>
 }
