@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import {
   AlertCircle,
   ChevronDown,
@@ -17,7 +18,7 @@ import toast from 'react-hot-toast'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
-import { getBusinessHeaders } from '../../lib/businessContext'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../lib/businessContext'
 import { useLang } from '../../lib/LangContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -33,6 +34,11 @@ interface WorkflowLike {
 
 type TriggerType = 'first_contact' | 'message_received' | 'keyword' | 'business_hours' | 'tag_added'
 type ActionType = 'send_message' | 'add_tag' | 'assign_agent'
+
+interface WorkflowAgent {
+  id: number
+  name: string
+}
 
 interface Cond {
   id: string
@@ -192,6 +198,53 @@ export default function WorkflowBuilder({
   const [attempted, setAttempted] = useState(false)
   const [saving, setSaving] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [agents, setAgents] = useState<WorkflowAgent[]>([])
+  const [agentsLoading, setAgentsLoading] = useState(false)
+  const [agentsError, setAgentsError] = useState<string | null>(null)
+  const [agentsReload, setAgentsReload] = useState(0)
+  const needsAgents = actions.some((action) => action.type === 'assign_agent')
+
+  useEffect(() => {
+    if (!needsAgents) return
+
+    let cancelled = false
+    const loadAgents = async () => {
+      const businessId = getSelectedBusinessId()
+      const token = getToken()
+      if (!businessId || !token) {
+        setAgentsError('Select a workspace and sign in before choosing an agent.')
+        return
+      }
+
+      setAgentsLoading(true)
+      setAgentsError(null)
+      try {
+        const api = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+        const response = await fetch(`${api}/api/businesses/${businessId}/team`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            ...getBusinessHeaders(),
+          },
+        })
+        if (!response.ok) throw new Error(`Could not load team members (HTTP ${response.status}).`)
+        const data = await response.json()
+        const members = Array.isArray(data) ? data : data.members || data.data || []
+        if (!cancelled) {
+          setAgents(members
+            .filter((member: any) => member.is_active && member.user?.id)
+            .map((member: any) => ({ id: Number(member.user.id), name: member.user.name || member.user.email || `Agent ${member.user.id}` })))
+        }
+      } catch (error) {
+        if (!cancelled) setAgentsError(error instanceof Error ? error.message : 'Could not load team members.')
+      } finally {
+        if (!cancelled) setAgentsLoading(false)
+      }
+    }
+
+    void loadAgents()
+    return () => { cancelled = true }
+  }, [needsAgents, agentsReload])
 
   // Dirty tracking
   const snapshot = useMemo(
@@ -230,10 +283,11 @@ export default function WorkflowBuilder({
       let msg = ''
       if (a.type === 'send_message' && !a.config.message?.trim()) msg = 'Write the message to send'
       if (a.type === 'add_tag' && !a.config.tag?.trim()) msg = 'Enter the tag name'
+      if (a.type === 'assign_agent' && !agents.some((agent) => agent.id === Number(a.config.agent_id))) msg = 'Choose an active team agent'
       if (msg) { e.act[a.id] = msg; e.list.push(`Action ${i + 1}: ${msg}`); e.first ||= `wf-act-${a.id}` }
     })
     return e
-  }, [name, triggerType, keyword, tag, conditions, actions])
+  }, [name, triggerType, keyword, tag, conditions, actions, agents])
   const showErrors = attempted && errors.list.length > 0
 
   const applyRecipe = (r: Recipe | null) => {
@@ -604,6 +658,31 @@ export default function WorkflowBuilder({
                           }`}
                         />
                         {attempted && err && <p className="mt-1 text-xs font-medium text-error">{err}</p>}
+                      </div>
+                    )}
+                    {a.type === 'assign_agent' && (
+                      <div className="space-y-2">
+                        <Select
+                          dir={isRTL ? 'rtl' : 'ltr'}
+                          label="Assign to"
+                          size="sm"
+                          value={a.config.agent_id ? String(a.config.agent_id) : ''}
+                          onValueChange={(value) => updateActionConfig(a.id, { agent_id: value ? Number(value) : null })}
+                          disabled={agentsLoading || agents.length === 0}
+                          loading={agentsLoading}
+                          options={agents.map((agent) => ({ value: String(agent.id), label: agent.name }))}
+                          placeholder={agentsLoading ? 'Loading agents…' : 'Choose an agent'}
+                        />
+                        {agentsError ? (
+                          <div role="alert" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-error">
+                            <span>{agentsError}</span>
+                            <button type="button" onClick={() => setAgentsReload((value) => value + 1)} disabled={agentsLoading} className="font-semibold underline disabled:opacity-50">Try again</button>
+                            <Link href="/dashboard/team" className="font-semibold underline">Open team</Link>
+                          </div>
+                        ) : agents.length === 0 && !agentsLoading ? (
+                          <p className="text-xs text-text-tertiary">No active team agents are available. <Link href="/dashboard/team" className="font-semibold text-brand hover:underline">Manage team</Link></p>
+                        ) : null}
+                        {attempted && err && <p className="text-xs font-medium text-error">{err}</p>}
                       </div>
                     )}
                     {a.type === 'add_tag' && (
