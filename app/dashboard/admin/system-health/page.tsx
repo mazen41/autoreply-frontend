@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useLang } from '../../../../lib/LangContext'
 import { Activity, AlertTriangle, CheckCircle, RefreshCw, XCircle } from 'lucide-react'
+import Select from '../../../../components/ui/Select'
+import Button from '../../../../components/ui/Button'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 const token = () => typeof document === 'undefined' ? '' : decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
@@ -31,12 +33,16 @@ export default function AdminSystemHealthPage() {
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
     try {
+      const authToken = token()
+      if (!authToken) throw new Error('Your session expired. Sign in again.')
       const params = new URLSearchParams()
       if (provider) params.set('provider', provider)
       if (status) params.set('status', status)
       const response = await fetch(`${API}/api/admin/system-health?${params}`, {
-        headers: { Authorization: `Bearer ${token()}`, Accept: 'application/json' },
+        headers: { Authorization: `Bearer ${authToken}`, Accept: 'application/json' },
       })
       if (!response.ok) throw new Error(response.status === 403 ? 'Admin access is required.' : 'Could not load health data.')
       setData(await response.json())
@@ -59,23 +65,19 @@ export default function AdminSystemHealthPage() {
     </div>
   }
 
-  return <main className="mx-auto max-w-7xl space-y-6 px-4 py-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="text-2xl font-bold text-[var(--text-primary)]">{L('System health & delivery', 'صحة النظام والتسليم')}</h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">{L('Connection authorization is shown separately from message delivery evidence.', 'حالة الاتصال منفصلة عن دليل تسليم الرسائل.')}</p></div>
-      <div className="flex items-center gap-2">
-        <select value={provider} onChange={e => setProvider(e.target.value)} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)]">
-          <option value="">{L('All providers', 'كل المزوّدين')}</option>
-          {['facebook','instagram','whatsapp','gmail','telegram','salla','shopify','woocommerce'].map(v => <option key={v} value={v}>{v}</option>)}
-        </select>
-        <select value={status} onChange={e => setStatus(e.target.value)} className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)]">
-          <option value="">{L('Any connection state', 'كل حالات الاتصال')}</option><option value="connected">connected</option><option value="disconnected">disconnected</option>
-        </select>
-        <button onClick={() => { setLoading(true); setError(''); void load() }} disabled={loading} className="rounded-lg border border-[var(--border)] p-2 text-[var(--text-primary)]"><RefreshCw size={17} className={loading ? 'animate-spin' : ''} /></button>
+      <div className="flex flex-wrap items-end gap-2">
+        <Select dir={isRTL ? 'rtl' : 'ltr'} className="min-w-44" ariaLabel={L('Filter by provider', 'تصفية حسب المزوّد')} value={provider} onValueChange={setProvider} options={[{ value: '', label: L('All providers', 'كل المزوّدين') }, ...['facebook','instagram','whatsapp','gmail','telegram','salla','shopify','woocommerce'].map(v => ({ value: v, label: v }))]} />
+        <Select dir={isRTL ? 'rtl' : 'ltr'} className="min-w-48" ariaLabel={L('Filter by connection state', 'تصفية حسب حالة الاتصال')} value={status} onValueChange={setStatus} options={[{ value: '', label: L('Any connection state', 'كل حالات الاتصال') }, { value: 'connected', label: L('Connected', 'متصل') }, { value: 'disconnected', label: L('Disconnected', 'غير متصل') }]} />
+        <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading} aria-label={L('Refresh health data', 'تحديث بيانات الحالة')}><RefreshCw size={16} className={loading ? 'animate-spin' : ''} />{L('Refresh', 'تحديث')}</Button>
       </div>
     </header>
     <div className="flex gap-3 text-sm"><Link href="/dashboard/admin/queue" className="text-[var(--accent)] underline">{L('Queue monitor', 'مراقبة المهام')}</Link></div>
-    {error && <div role="alert" className="rounded-xl border border-error/30 bg-error/10 p-4 text-sm text-error">{error}</div>}
+    {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/10 p-4 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
+    {loading && !data && <div role="status" className="rounded-xl border border-border bg-surface-elevated p-8 text-center text-sm text-text-tertiary">{L('Loading system health…', 'جارٍ تحميل حالة النظام…')}</div>}
     {data && <>
       <section className="grid gap-4 sm:grid-cols-3">
         {card(L('Pending jobs', 'المهام المعلقة'), data.queue.pending_jobs, 'info')}
@@ -84,7 +86,7 @@ export default function AdminSystemHealthPage() {
       </section>
       <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)]">
         <div className="border-b border-[var(--border)] p-4"><h2 className="font-semibold text-[var(--text-primary)]">{L('Connected accounts', 'الحسابات المتصلة')}</h2></div>
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-[var(--text-secondary)]"><tr>{['Provider','Account','Connection','Webhooks','Last event','Last delivery','Last sync','Last error'].map(x => <th key={x} className="px-4 py-3">{L(x, x)}</th>)}</tr></thead>
+        <div className="overflow-x-auto"><table className="w-full text-start text-sm"><thead className="text-[var(--text-secondary)]"><tr>{['Provider','Account','Connection','Webhooks','Last event','Last delivery','Last sync','Last error'].map(x => <th key={x} className="px-4 py-3 text-start">{L(x, x)}</th>)}</tr></thead>
           <tbody>{data.channels.map(c => <tr key={c.id} className="border-t border-[var(--border)] text-[var(--text-primary)]">
             <td className="px-4 py-3">{c.provider}</td><td className="px-4 py-3">{c.label || `Account ${c.id}`}</td><td className="px-4 py-3">{c.authorization_status}</td><td className="px-4 py-3">{c.webhook_status || '—'}</td>
             <td className="px-4 py-3">{c.last_event_at ? new Date(c.last_event_at).toLocaleString() : L('No message evidence', 'لا يوجد دليل رسالة')}</td>
