@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Users, UserPlus, Shield, Eye, Crown, Trash2,
   Mail, Search
@@ -17,6 +17,7 @@ import { SkeletonRow } from '../../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useBusinessAccess } from '../../../lib/businessAccess'
+import { useLang } from '../../../lib/LangContext'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 
@@ -75,6 +76,8 @@ const GRADIENT_COLORS = [
 ]
 
 export default function TeamPage() {
+  const { isRTL } = useLang()
+  const L = useCallback((en: string, ar: string) => isRTL ? ar : en, [isRTL])
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
@@ -88,44 +91,64 @@ export default function TeamPage() {
   const access = useBusinessAccess()
   const canManageTeam = access.can('manage_team')
   const [owner, setOwner] = useState<{ id: number; name: string; email: string } | null>(null)
+  const teamLoadGeneration = useRef(0)
 
-  const fetchBusinessId = async () => {
-    try {
-      const selectedBusinessId = getSelectedBusinessId()
-      if (!selectedBusinessId) throw new Error('Select a business before opening team settings.')
-      setBusinessId(selectedBusinessId)
-      await fetchTeamMembers(selectedBusinessId)
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not load team.')
-      setLoading(false)
-    }
-  }
-
-  const fetchTeamMembers = async (bid: number) => {
+  const fetchTeamMembers = useCallback(async (bid: number) => {
+    const generation = ++teamLoadGeneration.current
     setLoading(true)
     setError(null)
     try {
       const res = await fetch(`${API}/businesses/${bid}/team`, { headers: authHeaders() })
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
+      if (generation !== teamLoadGeneration.current) return
       setTeamMembers(Array.isArray(data) ? data : (data.members || data.data || []))
       setOwner(Array.isArray(data) ? null : (data.owner ?? null))
       const invitationsResponse = await fetch(`${API}/businesses/${bid}/team/invitations`, { headers: authHeaders() })
+      if (generation !== teamLoadGeneration.current) return
       if (invitationsResponse.ok) {
         const invitationData = await invitationsResponse.json()
         setPendingInvitations(Array.isArray(invitationData) ? invitationData : [])
+      } else {
+        setPendingInvitations([])
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not load team members.')
+      if (generation === teamLoadGeneration.current) setError(cause instanceof Error ? cause.message : L('Could not load team members.', 'تعذر تحميل أعضاء الفريق.'))
     } finally {
+      if (generation === teamLoadGeneration.current) setLoading(false)
+    }
+  }, [L])
+
+  const fetchBusinessId = useCallback(async () => {
+    try {
+      const selectedBusinessId = getSelectedBusinessId()
+      if (!selectedBusinessId) {
+        teamLoadGeneration.current++
+        setBusinessId(null)
+        setTeamMembers([])
+        setPendingInvitations([])
+        setOwner(null)
+        throw new Error(L('Select a business before opening team settings.', 'اختر نشاطًا تجاريًا قبل فتح إعدادات الفريق.'))
+      }
+      setBusinessId(selectedBusinessId)
+      await fetchTeamMembers(selectedBusinessId)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : L('Could not load team.', 'تعذر تحميل الفريق.'))
       setLoading(false)
     }
-  }
+  }, [fetchTeamMembers, L])
 
-  // Mount-time load: the effect intentionally runs once. Its state updates happen
-  // after the request starts, not as a cascade on re-render.
-  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
-  useEffect(() => { void fetchBusinessId() }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    const syncBusiness = () => { void fetchBusinessId() }
+    syncBusiness()
+    window.addEventListener('naz:business-changed', syncBusiness)
+    window.addEventListener('storage', syncBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', syncBusiness)
+      window.removeEventListener('storage', syncBusiness)
+    }
+  }, [fetchBusinessId])
 
   const handleInvitation = async (invitationId: number, action: 'resend' | 'revoke') => {
     if (!businessId) return
@@ -136,51 +159,54 @@ export default function TeamPage() {
       })
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(result.error || `Could not ${action} invitation.`)
-      toast.success(action === 'resend' ? 'Invitation resent' : 'Invitation revoked')
+      toast.success(action === 'resend' ? L('Invitation resent', 'تمت إعادة إرسال الدعوة') : L('Invitation revoked', 'تم إلغاء الدعوة'))
       await fetchTeamMembers(businessId)
     } catch (cause) {
-      toast.error(cause instanceof Error ? cause.message : `Could not ${action} invitation.`)
+      toast.error(cause instanceof Error ? cause.message : L(`Could not ${action} invitation.`, `تعذر ${action === 'resend' ? 'إعادة إرسال' : 'إلغاء'} الدعوة.`))
     }
   }
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) {
-      toast.error('Please enter an email address')
+      toast.error(L('Please enter an email address', 'أدخل عنوان البريد الإلكتروني'))
       return
     }
     setSending(true)
     try {
-      if (!businessId) throw new Error('Business information is unavailable. Reload the page and try again.')
+      if (!businessId) throw new Error(L('Business information is unavailable. Reload the page and try again.', 'بيانات النشاط غير متاحة. أعد تحميل الصفحة وحاول مرة أخرى.'))
       const res = await fetch(`${API}/businesses/${businessId}/team/invite`, {
           method: 'POST',
           headers: authHeaders(),
-          body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+          body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
         })
-      if (!res.ok) throw new Error('Invitation request failed.')
-      toast.success('Invitation sent successfully')
+      if (!res.ok) {
+        const result = await res.json().catch(() => ({}))
+        throw new Error(result.message || result.error || L('Invitation request failed.', 'تعذر إرسال الدعوة.'))
+      }
+      toast.success(L('Invitation sent successfully', 'تم إرسال الدعوة بنجاح'))
       setShowInviteModal(false)
       setInviteEmail('')
       await fetchTeamMembers(businessId)
-    } catch {
-      toast.error('Failed to send invitation')
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : L('Failed to send invitation', 'فشل إرسال الدعوة'))
     } finally {
       setSending(false)
     }
   }
 
   const handleRemove = async (memberId: number) => {
-    if (!confirm('Are you sure you want to remove this member?')) return
+    if (!confirm(L('Are you sure you want to remove this member?', 'هل أنت متأكد من إزالة هذا العضو؟'))) return
     try {
-      if (!businessId) throw new Error('Business information is unavailable.')
+      if (!businessId) throw new Error(L('Business information is unavailable.', 'بيانات النشاط غير متاحة.'))
       const res = await fetch(`${API}/businesses/${businessId}/team/${memberId}`, {
           method: 'DELETE',
           headers: authHeaders(),
         })
-      if (!res.ok) throw new Error('Member removal failed.')
+      if (!res.ok) throw new Error(L('Member removal failed.', 'فشلت إزالة العضو.'))
       setTeamMembers(prev => prev.filter(m => m.id !== memberId))
-      toast.success('Member removed')
+      toast.success(L('Member removed', 'تمت إزالة العضو'))
     } catch {
-      toast.error('Failed to remove member')
+      toast.error(L('Failed to remove member', 'فشلت إزالة العضو'))
     }
   }
 
@@ -201,17 +227,17 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
-        title="Team"
-        description="Manage access and permissions for your team members."
+        title={L('Team', 'الفريق')}
+        description={L('Manage team access, roles, invitations, and member permissions for this business.', 'أدر وصول الفريق وأدواره ودعواته وصلاحيات أعضائه لهذا النشاط.')}
         primaryAction={
           canManageTeam ? (
-            <Button
+            <Button variant="primary"
               icon={<UserPlus size={14} />}
               onClick={() => setShowInviteModal(true)}
             >
-              Invite Member
+              {L('Invite member', 'دعوة عضو')}
             </Button>
           ) : undefined
         }
@@ -219,28 +245,28 @@ export default function TeamPage() {
 
       {!access.loading && access.error && (
         <div role="alert" className="border border-error/30 bg-error/5 px-4 py-3 text-sm">
-          {access.error} Choose another business from the selector.
+          {access.error} {L('Choose another business from the selector.', 'اختر نشاطًا تجاريًا آخر من القائمة.')}
         </div>
       )}
 
-      {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchBusinessId()}>Retry</Button></div>}
+      {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchBusinessId()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          label="Total Members"
+          label={L('Total members', 'إجمالي الأعضاء')}
           value={stats.total}
           icon={<Users size={18} />}
         />
         <MetricCard
-          label="Active Agents"
+          label={L('Agents', 'الوكلاء')}
           value={stats.agents}
           icon={<Shield size={18} />}
         />
         <MetricCard
-          label="Online Now"
+          label={L('Active members', 'الأعضاء النشطون')}
           value={stats.active}
-          icon={<span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" /><span className="relative inline-flex rounded-full h-3 w-3 bg-success" /></span>}
+          icon={<span className="inline-flex h-3 w-3 rounded-full bg-success ring-4 ring-success/10" />}
         />
       </div>
 
@@ -249,7 +275,7 @@ export default function TeamPage() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search members..."
+          placeholder={L('Search members…', 'ابحث عن عضو…')}
           onClear={() => setSearch('')}
           icon={<Search size={14} />}
         />
@@ -263,16 +289,16 @@ export default function TeamPage() {
               {[...Array(4)].map((_, i) => <SkeletonRow key={i} />)}
             </div>
           ) : error ? (
-            <p className="px-5 py-8 text-center text-sm text-text-muted">Team data is unavailable until the request succeeds.</p>
+            <p className="px-5 py-8 text-center text-sm text-text-muted">{L('Team data is unavailable until the request succeeds.', 'بيانات الفريق غير متاحة حتى ينجح الطلب.')}</p>
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No team members found"
-              description={search ? 'Try a different search term.' : 'Invite your first team member to get started.'}
+              title={L('No team members found', 'لم يتم العثور على أعضاء')}
+              description={search ? L('Try a different search term.', 'جرّب كلمة بحث أخرى.') : L('Invite a teammate to get started.', 'ادعُ أحد أعضاء الفريق للبدء.')}
               primaryAction={
-                !search ? (
+                !search && canManageTeam ? (
                   <Button size="sm" icon={<UserPlus size={14} />} onClick={() => setShowInviteModal(true)}>
-                    Invite Member
+                    {L('Invite member', 'دعوة عضو')}
                   </Button>
                 ) : undefined
               }
@@ -281,14 +307,14 @@ export default function TeamPage() {
             <div className="divide-y divide-border/50">
               {/* Table Header */}
               <div className="hidden sm:grid grid-cols-[1fr_160px_120px_80px] gap-4 px-5 py-2.5 bg-surface-elevated/50">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Member</span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Role</span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">Status</span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary text-right">Actions</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">{L('Member', 'العضو')}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">{L('Role', 'الدور')}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">{L('Status', 'الحالة')}</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary text-end">{L('Actions', 'الإجراءات')}</span>
               </div>
 
               {filtered.map((member, idx) => {
-                const rc = ROLE_CONFIG[member.role]
+                const rc = ROLE_CONFIG[member.role] || ROLE_CONFIG.viewer
                 const gradient = GRADIENT_COLORS[idx % GRADIENT_COLORS.length]
                 return (
                   <div
@@ -310,14 +336,14 @@ export default function TeamPage() {
                     <div>
                       <Badge variant={rc.variant} size="sm">
                         {rc.icon}
-                        <span className="ml-1">{rc.label}</span>
+                        <span className="ms-1">{L(rc.label, rc.label === 'Owner' ? 'المالك' : rc.label === 'Manager' ? 'مدير' : rc.label === 'Agent' ? 'وكيل' : 'مشاهد')}</span>
                       </Badge>
                     </div>
 
                     {/* Status */}
                     <div>
                       <Badge variant={member.is_active ? 'success' : 'outline'} dot size="sm">
-                        {member.is_active ? 'Active' : 'Inactive'}
+                        {member.is_active ? L('Active', 'نشط') : L('Inactive', 'غير نشط')}
                       </Badge>
                     </div>
 
@@ -329,6 +355,8 @@ export default function TeamPage() {
                           size="xs"
                           onClick={() => handleRemove(member.id)}
                           className="text-text-tertiary hover:text-error"
+                          aria-label={L(`Remove ${member.user.name}`, `إزالة ${member.user.name}`)}
+                          title={L('Remove member', 'إزالة العضو')}
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -346,19 +374,19 @@ export default function TeamPage() {
         <Card>
           <CardContent className="p-0">
             <div className="border-b border-border px-5 py-4">
-              <h2 className="text-sm font-semibold text-text-primary">Pending invitations</h2>
-              <p className="mt-1 text-xs text-text-tertiary">Invited users join only after accepting the invitation.</p>
+              <h2 className="text-sm font-semibold text-text-primary">{L('Pending invitations', 'الدعوات المعلقة')}</h2>
+              <p className="mt-1 text-xs text-text-tertiary">{L('Invited users join only after accepting the invitation.', 'ينضم المدعوون بعد قبول الدعوة فقط.')}</p>
             </div>
             <div className="divide-y divide-border/50">
               {pendingInvitations.map(invitation => (
                 <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
                   <div>
                     <p className="text-sm font-medium text-text-primary">{invitation.email}</p>
-                    <p className="text-xs text-text-secondary">{ROLE_CONFIG[invitation.role]?.label || invitation.role} · expires {new Date(invitation.expires_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-text-secondary">{L(invitation.role, invitation.role === 'manager' ? 'مدير' : invitation.role === 'agent' ? 'وكيل' : invitation.role === 'viewer' ? 'مشاهد' : invitation.role)} · {L('expires', 'تنتهي')} {new Date(invitation.expires_at).toLocaleDateString(isRTL ? 'ar' : 'en')}</p>
                   </div>
                   <div className="flex gap-2">
-                    {canManageTeam && <Button variant="outline" size="sm" onClick={() => void handleInvitation(invitation.id, 'resend')}>Resend</Button>}
-                    {canManageTeam && <Button variant="ghost" size="sm" onClick={() => void handleInvitation(invitation.id, 'revoke')} className="text-error">Revoke</Button>}
+                    {canManageTeam && <Button variant="secondary" size="sm" onClick={() => void handleInvitation(invitation.id, 'resend')}>{L('Resend', 'إعادة الإرسال')}</Button>}
+                    {canManageTeam && <Button variant="ghost" size="sm" onClick={() => void handleInvitation(invitation.id, 'revoke')} className="text-error">{L('Revoke', 'إلغاء')}</Button>}
                   </div>
                 </div>
               ))}
@@ -371,12 +399,12 @@ export default function TeamPage() {
       <Modal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
-        title="Invite New Member"
+        title={L('Invite new member', 'دعوة عضو جديد')}
         size="sm"
       >
         <div className="space-y-4 p-5">
           <Input
-            label="Email Address"
+            label={L('Email address', 'البريد الإلكتروني')}
             type="email"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
@@ -385,7 +413,7 @@ export default function TeamPage() {
           />
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-text-secondary">Role</label>
+            <label className="text-xs font-medium text-text-secondary">{L('Role', 'الدور')}</label>
             <div className="grid grid-cols-2 gap-2">
               {(['manager', 'agent', 'viewer'] as const).map(role => {
                 const rc = ROLE_CONFIG[role]
@@ -402,14 +430,14 @@ export default function TeamPage() {
                     }`}
                   >
                     {rc.icon}
-                    <div className="text-left">
-                      <div className="font-semibold">{rc.label}</div>
+                    <div className="text-start">
+                      <div className="font-semibold">{L(rc.label, role === 'manager' ? 'مدير' : role === 'agent' ? 'وكيل' : 'مشاهد')}</div>
                       <div className="text-[10px] text-text-tertiary mt-0.5">
                         {role === 'manager'
-                          ? 'Runs business operations and support. No team or billing.'
+                          ? L('Runs business operations and support. No team or billing access.', 'يدير عمليات النشاط والدعم دون صلاحيات الفريق أو الفوترة.')
                           : role === 'agent'
-                            ? 'Handles conversations and assigned work.'
-                            : 'Read-only. Cannot reply, assign, or change anything.'}
+                            ? L('Handles conversations and assigned work.', 'يتعامل مع المحادثات والمهام المسندة إليه.')
+                            : L('Read-only. Cannot reply, assign, or change anything.', 'للقراءة فقط، دون الرد أو الإسناد أو التعديل.')}
                       </div>
                     </div>
                   </button>
@@ -425,18 +453,18 @@ export default function TeamPage() {
               loading={sending}
               icon={<Mail size={14} />}
             >
-              Send Invitation
+              {L('Send invitation', 'إرسال الدعوة')}
             </Button>
             <Button
               variant="outline"
               className="flex-1"
               onClick={() => setShowInviteModal(false)}
             >
-              Cancel
+              {L('Cancel', 'إلغاء')}
             </Button>
           </div>
         </div>
       </Modal>
-    </div>
+    </main>
   )
 }
