@@ -51,6 +51,7 @@ type CommentSettings = {
 }
 type ChannelCardProps = {
   channel: ChannelRecord
+  isRTL: boolean
   selected: boolean
   primary: boolean
   routeId: number | null
@@ -111,7 +112,7 @@ function keywordList(value: string): string[] {
 }
 
 const ChannelCard = memo(function ChannelCard({
-  channel, selected, primary, routeId, stores, enabledStoreIds, botDefaultId,
+  channel, isRTL, selected, primary, routeId, stores, enabledStoreIds, botDefaultId,
   otherBotCount, copy, onToggle, onTogglePrimary, onRouteChange,
 }: ChannelCardProps) {
   const communicationChannel = isCommunicationChannel(channel)
@@ -150,7 +151,7 @@ const ChannelCard = memo(function ChannelCard({
                 </div>
               )}
               {communicationChannel && <div>
-                <Select id={`channel-store-${channel.id}`} label={copy.storeRoute} value={routeId ?? ''} onChange={(event) => onRouteChange(channel.id, event.target.value ? Number(event.target.value) : null)} options={[
+                <Select dir={isRTL ? 'rtl' : 'ltr'} id={`channel-store-${channel.id}`} label={copy.storeRoute} value={routeId ?? ''} onChange={(event) => onRouteChange(channel.id, event.target.value ? Number(event.target.value) : null)} options={[
                   { value: '', label: enabledStoreIds.length === 1 ? copy.automatic : copy.useBotDefault },
                   ...(invalidRoute ? [{ value: String(routeId), label: copy.invalidRoute, disabled: true }] : []),
                   ...stores.filter((store) => enabledStoreIds.includes(store.id)).map((store) => ({ value: String(store.id), label: getStoreLabel(store) })),
@@ -599,7 +600,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                       {touched.name && fieldErrors.name && <p id="bot-name-error" className="mt-1 text-xs text-error">{fieldErrors.name}</p>}
                     </div>
                     <div>
-                      <Select id="bot-status" label={copy.status} value={status} onChange={(event) => { setStatus(event.target.value as 'active' | 'inactive' | 'draft'); markDirty() }} options={[
+                      <Select dir={isRTL ? 'rtl' : 'ltr'} id="bot-status" label={copy.status} value={status} onChange={(event) => { setStatus(event.target.value as 'active' | 'inactive' | 'draft'); markDirty() }} options={[
                         { value: 'active', label: copy.active }, { value: 'inactive', label: copy.inactive }, { value: 'draft', label: copy.draft },
                       ]} />
                     </div>
@@ -609,11 +610,11 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                 <section aria-labelledby="model-heading" className="space-y-4 border-t border-border pt-5">
                   <h3 id="model-heading" className="text-sm font-semibold text-text-primary">{copy.model}</h3>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Select label={copy.provider} value={aiProvider} onChange={(event) => { setAiProvider(event.target.value); setAiModel(''); markDirty() }} options={[
+                    <Select dir={isRTL ? 'rtl' : 'ltr'} label={copy.provider} value={aiProvider} onChange={(event) => { setAiProvider(event.target.value); setAiModel(''); markDirty() }} options={[
                       { value: '', label: `${copy.businessDefault}${businessAiProvider ? ` (${businessAiProvider})` : ''}` },
                       { value: 'gemini', label: 'Google Gemini' }, { value: 'groq', label: 'Groq' },
                     ]} />
-                    <Select label={copy.aiModel} value={aiModel} onChange={(event) => { setAiModel(event.target.value); markDirty() }} options={[
+                    <Select dir={isRTL ? 'rtl' : 'ltr'} label={copy.aiModel} value={aiModel} onChange={(event) => { setAiModel(event.target.value); markDirty() }} options={[
                       { value: '', label: `${copy.businessDefault}${businessAiModel ? ` (${businessAiModel})` : ''}` },
                       ...((aiProvider || businessAiProvider) === 'gemini'
                         ? [{ value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }, { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' }, { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }, { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' }]
@@ -697,7 +698,7 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
                   ) : <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {communicationChannels.map((channel) => {
                       const otherBots = (channel.bots || []).filter((candidate) => candidate.id !== bot?.id && candidate.status === 'active')
-                      return <ChannelCard key={channel.id} channel={channel} selected={selectedChannelIds.includes(channel.id)} primary={primaryChannelIds.includes(channel.id)} routeId={channelCommerceDefaults[channel.id] ?? null} stores={connectedCommerceStores} enabledStoreIds={ecommerceConnectionIds} botDefaultId={defaultEcommerceConnectionId} otherBotCount={otherBots.length} copy={copy} onToggle={toggleChannel} onTogglePrimary={togglePrimary} onRouteChange={changeRoute} />
+                      return <ChannelCard key={channel.id} channel={channel} isRTL={isRTL} selected={selectedChannelIds.includes(channel.id)} primary={primaryChannelIds.includes(channel.id)} routeId={channelCommerceDefaults[channel.id] ?? null} stores={connectedCommerceStores} enabledStoreIds={ecommerceConnectionIds} botDefaultId={defaultEcommerceConnectionId} otherBotCount={otherBots.length} copy={copy} onToggle={toggleChannel} onTogglePrimary={togglePrimary} onRouteChange={changeRoute} />
                     })}
                   </div>}
                   {communicationChannels.filter((channel) => ['facebook', 'instagram'].includes(channel.type) && selectedChannelIds.includes(channel.id)).map((channel) => {
