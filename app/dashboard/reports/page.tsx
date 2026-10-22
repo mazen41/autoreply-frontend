@@ -18,6 +18,7 @@ import { SkeletonCard } from '../../../components/ui/Skeleton'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
+import { useLang } from '../../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
@@ -43,6 +44,7 @@ function getToken() {
 }
 
 export default function ReportsPage() {
+  const { isRTL } = useLang()
   const [range, setRange] = useState('30d')
   const [loading, setLoading] = useState(true)
   const [dailyData, setDailyData] = useState<number[]>([])
@@ -56,7 +58,16 @@ export default function ReportsPage() {
   const [savingEstimates, setSavingEstimates] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => { fetchReports() }, [range])
+  useEffect(() => {
+    void fetchReports()
+    const refreshForBusiness = () => { void fetchReports() }
+    window.addEventListener('naz:business-changed', refreshForBusiness)
+    window.addEventListener('storage', refreshForBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', refreshForBusiness)
+      window.removeEventListener('storage', refreshForBusiness)
+    }
+  }, [range])
 
   const fetchReports = async () => {
     setLoading(true)
@@ -98,6 +109,10 @@ export default function ReportsPage() {
   async function saveEstimateInputs() {
     const token = getToken()
     if (!token) return
+    if (!Number.isFinite(minutesPerReply) || minutesPerReply < 1 || minutesPerReply > 60 || !Number.isFinite(hourlyRate) || hourlyRate < 0 || hourlyRate > 1000000) {
+      toast.error('Enter valid estimate values before saving.')
+      return
+    }
     setSavingEstimates(true)
     try {
       const response = await fetch(`${API}/api/reports/time-saved/settings`, {
@@ -124,16 +139,18 @@ export default function ReportsPage() {
       if (!res.ok) throw new Error('Export failed')
       const blob = await res.blob()
       const a = document.createElement('a')
-      a.href = window.URL.createObjectURL(blob)
+      const objectUrl = window.URL.createObjectURL(blob)
+      a.href = objectUrl
       a.download = `report.${format}`
       a.click()
+      window.URL.revokeObjectURL(objectUrl)
     } catch {
       toast.error('Could not export this report.')
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
         title="Reports"
         description="Comprehensive reporting on conversations, AI performance, and business impact."
@@ -160,7 +177,7 @@ export default function ReportsPage() {
         />
       </PageHeader>
 
-      {error && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchReports()}>Retry</Button></div>}
+      {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchReports()} disabled={loading}>Retry</Button></div>}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -196,17 +213,17 @@ export default function ReportsPage() {
           <CardTitle>Estimate inputs</CardTitle>
           <CardDescription>These merchant-provided assumptions estimate time and value saved. They are estimates, not measured savings.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-3">
+        <CardContent className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-xs text-text-secondary">
             Minutes per manual reply
-            <input type="number" min={1} max={60} value={minutesPerReply} onChange={(event) => setMinutesPerReply(Number(event.target.value))} className="h-9 w-36 rounded-md border border-border bg-surface px-2 text-sm text-text-primary" />
+            <input type="number" min={1} max={60} value={minutesPerReply} onChange={(event) => setMinutesPerReply(event.target.value === '' ? 0 : Number(event.target.value))} className="h-10 w-40 rounded-xl border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15" />
           </label>
           <label className="flex flex-col gap-1 text-xs text-text-secondary">
             Hourly rate
-            <input type="number" min={0} step="0.01" max={1000000} value={hourlyRate} onChange={(event) => setHourlyRate(Number(event.target.value))} className="h-9 w-36 rounded-md border border-border bg-surface px-2 text-sm text-text-primary" />
+            <input type="number" min={0} step="0.01" max={1000000} value={hourlyRate} onChange={(event) => setHourlyRate(event.target.value === '' ? 0 : Number(event.target.value))} className="h-10 w-40 rounded-xl border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15" />
           </label>
-          <Select label="Currency" value={hourlyRateCurrency} onChange={(event) => setHourlyRateCurrency(event.target.value)} options={['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => ({ value: currency, label: currency }))} />
-          <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates}>Save estimates</Button>
+          <Select dir={isRTL ? 'rtl' : 'ltr'} label="Currency" value={hourlyRateCurrency} onValueChange={setHourlyRateCurrency} options={['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => ({ value: currency, label: currency }))} />
+          <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates} disabled={loading || savingEstimates}>Save estimates</Button>
         </CardContent>
       </Card>
 
