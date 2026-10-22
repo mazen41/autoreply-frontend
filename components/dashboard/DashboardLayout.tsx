@@ -326,6 +326,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setWorkspaceMenuOpen(false)
         setHelpModalOpen(false)
       }
+      const target = e.target as HTMLElement | null
+      const isTyping = target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+      if (e.key === '?' && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault()
+        setHelpModalOpen((prev) => !prev)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -908,7 +914,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
                     </a>
 
-                    <a
+                    <Link
                       href="/dashboard/channels"
                       onClick={() => setHelpModalOpen(false)}
                       className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-card)] border border-[var(--border)] transition-colors group"
@@ -922,11 +928,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </div>
                       </div>
                       <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="pt-4 border-t border-[var(--border)]/70 mt-4 flex items-center justify-between text-xs text-[var(--text-tertiary)]">
-                    <span>support@nazbiz.io</span>
+                    <a href="mailto:support@nazbiz.io" className="rounded text-[var(--text-secondary)] hover:text-[var(--brand)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--brand)]">support@nazbiz.io</a>
                     <button
                       type="button"
                       onClick={() => setHelpModalOpen(false)}
