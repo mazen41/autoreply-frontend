@@ -1,10 +1,14 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Image as ImageIcon, UploadCloud } from 'lucide-react'
-import { getBusinessHeaders } from '../../../lib/businessContext'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import toast from 'react-hot-toast'
 import Checkbox from '../../../components/ui/Checkbox'
+import Button from '../../../components/ui/Button'
+import PageHeader from '../../../components/ui/PageHeader'
+import { Card, CardContent } from '../../../components/ui/Card'
+import { useLang } from '../../../lib/LangContext'
 
 interface ImageAnalysis {
   description?: string
@@ -26,29 +30,45 @@ function authHeaders(): Record<string, string> {
 }
 
 export default function MultimodalContent() {
+  const { isRTL } = useLang()
+  const [businessId, setBusinessId] = useState<number | null>(null)
   const [disclosureAcknowledged, setDisclosureAcknowledged] = useState(false)
   const [disclosureLoading, setDisclosureLoading] = useState(true)
+  const [disclosureError, setDisclosureError] = useState('')
   const [disclosureSaving, setDisclosureSaving] = useState(false)
   const [image, setImage] = useState<File | null>(null)
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<ImageAnalysis | null>(null)
 
   useEffect(() => {
-    const loadDisclosure = async () => {
-      try {
-        const response = await fetch(`${apiBase}/api/media-processing/disclosure`, { headers: authHeaders() })
-        if (response.ok) {
-          const data = await response.json()
-          setDisclosureAcknowledged(Boolean(data.acknowledged))
-        }
-      } catch {
-        // Keep the disclosure unchecked if the setting cannot be loaded.
-      } finally {
-        setDisclosureLoading(false)
-      }
+    const syncBusiness = () => setBusinessId(getSelectedBusinessId())
+    syncBusiness()
+    window.addEventListener('naz:business-changed', syncBusiness)
+    window.addEventListener('storage', syncBusiness)
+    return () => {
+      window.removeEventListener('naz:business-changed', syncBusiness)
+      window.removeEventListener('storage', syncBusiness)
     }
-    loadDisclosure()
   }, [])
+
+  const loadDisclosure = useCallback(async () => {
+    if (!businessId) { setDisclosureAcknowledged(false); setDisclosureLoading(false); return }
+    setDisclosureLoading(true)
+    setDisclosureError('')
+    try {
+      const response = await fetch(`${apiBase}/api/media-processing/disclosure`, { headers: authHeaders() })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.message || 'Could not load the disclosure status.')
+      setDisclosureAcknowledged(Boolean(data.acknowledged))
+    } catch (error) {
+      setDisclosureAcknowledged(false)
+      setDisclosureError(error instanceof Error ? error.message : 'Could not load the disclosure status.')
+    } finally {
+      setDisclosureLoading(false)
+    }
+  }, [businessId])
+
+  useEffect(() => { void loadDisclosure() }, [loadDisclosure])
 
   const saveDisclosure = async (acknowledged: boolean) => {
     setDisclosureSaving(true)
@@ -58,9 +78,10 @@ export default function MultimodalContent() {
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ acknowledged }),
       })
-      if (!response.ok) throw new Error('Could not save disclosure acknowledgment')
-      const data = await response.json()
-      setDisclosureAcknowledged(Boolean(data.acknowledged))
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.message || 'Could not save disclosure acknowledgment')
+      setDisclosureAcknowledged(Boolean(payload.acknowledged))
+      setDisclosureError('')
       toast.success(acknowledged ? 'Disclosure acknowledgment saved' : 'Acknowledgment removed')
     } catch {
       toast.error('Could not save the media disclosure setting')
@@ -72,6 +93,10 @@ export default function MultimodalContent() {
   const analyzeImage = async () => {
     if (!disclosureAcknowledged) {
       toast.error('Acknowledge the media processing disclosure first')
+      return
+    }
+    if (!businessId) {
+      toast.error('Select a business before testing media processing')
       return
     }
     if (!image) {
@@ -101,15 +126,11 @@ export default function MultimodalContent() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">Media processing</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          Incoming voice and image messages use the server-configured AI providers. Provider credentials and processing behavior are managed by the server.
-        </p>
-      </div>
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+      <PageHeader title="Media processing" description="Incoming voice and image messages use the server-configured AI providers. Provider credentials and processing behavior are managed by the server." />
 
-      <section className="rounded-xl border border-border bg-surface-elevated p-5">
+      {!businessId && <p role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-sm text-warning">Select a business before managing media settings.</p>}
+      <Card><CardContent className="p-5 md:p-6">
         <div className="flex items-start gap-3">
           <AlertCircle className="mt-0.5 h-5 w-5 text-warning" aria-hidden="true" />
           <div className="flex-1">
@@ -120,14 +141,15 @@ export default function MultimodalContent() {
             {disclosureLoading ? (
               <p className="mt-3 text-sm text-text-tertiary">Loading disclosure status…</p>
             ) : (
-              <Checkbox checked={disclosureAcknowledged} disabled={disclosureSaving} onChange={saveDisclosure} label="I acknowledge this media processing disclosure for this business." className="mt-4 text-sm" />
+              <Checkbox checked={disclosureAcknowledged} disabled={disclosureSaving || !businessId || Boolean(disclosureError)} onChange={saveDisclosure} label="I acknowledge this media processing disclosure for this business." className="mt-4 text-sm" />
             )}
+            {disclosureError && <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{disclosureError}</span><Button variant="outline" size="sm" onClick={() => void loadDisclosure()} disabled={disclosureLoading}>Retry</Button></div>}
           </div>
           {disclosureAcknowledged && <CheckCircle2 className="h-5 w-5 text-success" aria-label="Acknowledged" />}
         </div>
-      </section>
+      </CardContent></Card>
 
-      <section className="rounded-xl border border-border bg-surface-elevated p-5">
+      <Card><CardContent className="p-5 md:p-6">
         <div className="flex items-center gap-2">
           <ImageIcon className="h-5 w-5 text-accent" aria-hidden="true" />
           <h2 className="font-semibold text-text-primary">Test image analysis</h2>
@@ -136,25 +158,13 @@ export default function MultimodalContent() {
           This sends the selected image to the configured vision provider. The image is not saved by this test endpoint.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-text-primary">
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition hover:border-brand hover:bg-brand/5">
             <UploadCloud className="h-4 w-4" aria-hidden="true" />
             Choose image
-            <input
-              className="sr-only"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={event => { setImage(event.target.files?.[0] || null); setResult(null) }}
-            />
+            <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose image to analyze" onChange={event => { setImage(event.target.files?.[0] || null); setResult(null) }} />
           </label>
           <span className="max-w-full truncate text-sm text-text-secondary">{image?.name || 'No image selected'}</span>
-          <button
-            type="button"
-            onClick={analyzeImage}
-            disabled={testing || disclosureLoading || !disclosureAcknowledged || !image}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {testing ? 'Analyzing…' : 'Analyze image'}
-          </button>
+          <Button type="button" onClick={analyzeImage} disabled={testing || disclosureLoading || !disclosureAcknowledged || !image || !businessId} loading={testing}>{testing ? 'Analyzing…' : 'Analyze image'}</Button>
         </div>
 
         {result && (
@@ -166,7 +176,7 @@ export default function MultimodalContent() {
             {!!result.product_matches?.length && <p><strong>Product matches:</strong> {JSON.stringify(result.product_matches)}</p>}
           </div>
         )}
-      </section>
+      </CardContent></Card>
     </div>
   )
 }
