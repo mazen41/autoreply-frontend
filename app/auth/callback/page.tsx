@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useRef, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../../lib/LangContext'
 
@@ -11,15 +11,16 @@ function CallbackHandler() {
   const router = useRouter()
   const { t } = useLang()
   const [error, setError] = useState('')
+  const callbackStarted = useRef(false)
+
+  const errorParam = searchParams.get('error')
+  const redirectTo = searchParams.get('redirect')
+  const packageId = searchParams.get('package')
+  const billingCycle = searchParams.get('billing')
+  const rememberMe = searchParams.get('remember_me') === '1'
+  const code = searchParams.get('code')
 
   useEffect(() => {
-    const errorParam = searchParams.get('error')
-    const redirectTo = searchParams.get('redirect')
-    const packageId = searchParams.get('package')
-    const billingCycle = searchParams.get('billing')
-    const rememberMe = searchParams.get('remember_me') === '1'
-    const code = searchParams.get('code')
-
     if (errorParam === 'auth_failed') {
       setError('Authentication failed. Please try again.')
       setTimeout(() => router.push('/login?error=auth_failed'), 2000)
@@ -27,14 +28,20 @@ function CallbackHandler() {
     }
 
     if (!code) {
+      // Removing the one-time code updates Next.js search params. Once callback
+      // processing has started, that URL cleanup must not be mistaken for a
+      // callback that arrived without a code.
+      if (callbackStarted.current) return
       setError('Missing or expired sign-in code.')
       setTimeout(() => router.push('/login?error=auth_failed'), 2000)
       return
     }
 
+    if (callbackStarted.current) return
+    callbackStarted.current = true
+
     // Remove the one-time exchange code from browser history before redeeming it.
     window.history.replaceState({}, '', '/auth/callback')
-    let cancelled = false
 
     const completeSignIn = async () => {
       try {
@@ -70,17 +77,15 @@ function CallbackHandler() {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         }).catch(() => null)
 
-        if (!cancelled) router.push(redirectUrl)
+        router.push(redirectUrl)
       } catch {
-        if (cancelled) return
         setError('Authentication failed. Please try again.')
         setTimeout(() => router.push('/login?error=auth_failed'), 2000)
       }
     }
 
     void completeSignIn()
-    return () => { cancelled = true }
-  }, [searchParams, router])
+  }, [errorParam, redirectTo, packageId, billingCycle, rememberMe, code, router])
 
   if (error) {
     return (
