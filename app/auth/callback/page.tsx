@@ -73,9 +73,41 @@ function CallbackHandler() {
           }
         }
 
-        await fetch(`${API_URL}/api/auth/user`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        }).catch(() => null)
+        const authHeaders = { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+        const [userResponse, businessesResponse] = await Promise.all([
+          fetch(`${API_URL}/api/auth/user`, { headers: authHeaders }),
+          fetch(`${API_URL}/api/businesses`, { headers: authHeaders }),
+        ])
+
+        if (!userResponse.ok || !businessesResponse.ok) {
+          throw new Error('Could not load the signed-in account workspace.')
+        }
+
+        const user = await userResponse.json() as { onboarding_completed?: boolean; business_id?: number | null }
+        const businessPayload = await businessesResponse.json() as {
+          businesses?: Array<{ id: number; is_primary?: boolean }>
+        }
+        const businesses = Array.isArray(businessPayload.businesses) ? businessPayload.businesses : []
+        const selectedBusiness = businesses.find((business) => business.id === user.business_id)
+          || businesses.find((business) => business.is_primary)
+          || businesses[0]
+
+        if (selectedBusiness) {
+          window.localStorage.setItem('naz_selected_business_id', String(selectedBusiness.id))
+        } else {
+          window.localStorage.removeItem('naz_selected_business_id')
+        }
+
+        // A prior interrupted Google signup may have created the user row but
+        // never created a workspace. Treat that account as needing onboarding.
+        const needsOnboarding = !selectedBusiness || !user.onboarding_completed
+        if (!redirectTo && needsOnboarding) {
+          const params = new URLSearchParams()
+          if (packageId) params.set('package', packageId)
+          if (billingCycle) params.set('billing', billingCycle)
+          const queryString = params.toString()
+          redirectUrl = `/onboarding${queryString ? `?${queryString}` : ''}`
+        }
 
         router.push(redirectUrl)
       } catch {
