@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/lib/AuthContext'
 import { Bot } from 'lucide-react'
+import { useLang } from '@/lib/LangContext'
 
 const tools = [
   {
@@ -80,6 +81,7 @@ const tools = [
 
 export default function ToolsPage() {
   const { user } = useAuth()
+  const { isRTL } = useLang()
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Header */}
@@ -91,12 +93,12 @@ export default function ToolsPage() {
           {user ? (
             <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              Dashboard
+              {isRTL ? 'لوحة التحكم' : 'Dashboard'}
             </Link>
           ) : (
             <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
               style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-              Sign Up Free
+              {isRTL ? 'سجّل مجاناً' : 'Sign Up Free'}
             </Link>
           )}
         </div>
@@ -109,14 +111,14 @@ export default function ToolsPage() {
             style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-focus)' }}>
             <span style={{ color: 'var(--accent)', fontSize: 12 }}>✦</span>
             <span className="text-xs font-bold tracking-[0.1em]" style={{ color: 'var(--accent)' }}>
-              10 FREE AI TOOLS
+              {isRTL ? '10 أدوات ذكاء اصطناعي مجانية' : '10 FREE AI TOOLS'}
             </span>
           </div>
           <h1 className="font-black mb-4" style={{ fontSize: 'clamp(2rem,4vw,3rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-            أدوات تسويقية مجانية
+            {isRTL ? 'أدوات تسويقية مجانية' : 'Free AI Marketing Tools'}
           </h1>
           <p className="text-lg mb-8" style={{ color: 'var(--text-secondary)' }}>
-            Free AI marketing tools to grow your business
+            {isRTL ? 'أدوات ذكاء اصطناعي مجانية لتنمية أعمالك' : 'Free AI marketing tools to grow your business'}
           </p>
         </motion.div>
       </div>
@@ -138,20 +140,14 @@ export default function ToolsPage() {
                     <span style={{ color: 'var(--accent)', fontSize: 24 }}>⚡</span>
                   </div>
                   <h3 className="font-bold mb-2" style={{ color: 'var(--text-primary)', fontSize: '1.1rem' }}>
-                    {tool.nameAr}
+                    {isRTL ? tool.nameAr : tool.nameEn}
                   </h3>
                   <p className="text-sm mb-4" style={{ color: 'var(--text-tertiary)' }}>
-                    {tool.nameEn}
-                  </p>
-                  <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    {tool.descriptionAr}
-                  </p>
-                  <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
-                    {tool.descriptionEn}
+                    {isRTL ? tool.descriptionAr : tool.descriptionEn}
                   </p>
                   <div className="px-4 py-2 rounded-lg text-sm font-bold text-center"
                     style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
-                    جرّبها مجاناً
+                    {isRTL ? 'جرّبها مجاناً' : 'Try it free'}
                   </div>
                 </div>
               </Link>

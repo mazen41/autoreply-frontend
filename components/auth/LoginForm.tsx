@@ -187,7 +187,7 @@ export default function LoginForm() {
                       type="button" 
                       onClick={() => setShowPass(s => !s)} 
                       className={`absolute top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition-colors rounded-md p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 ${isRTL ? 'left-2.5' : 'right-2.5'}`}
-                      aria-label={showPass ? 'Hide password' : 'Show password'}
+                      aria-label={showPass ? (isRTL ? 'إخفاء كلمة المرور' : 'Hide password') : (isRTL ? 'إظهار كلمة المرور' : 'Show password')}
                     >
                       {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>

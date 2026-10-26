@@ -23,6 +23,6 @@ export default function PublicHelpArticlePage() {
   useEffect(() => { queueMicrotask(() => { void load() }) }, [load])
   return <main className="min-h-screen bg-slate-50 px-4 py-12 text-slate-900"><article className="mx-auto max-w-3xl rounded-2xl border bg-white p-6 md:p-10">
     <Link className="text-sm text-emerald-700 hover:underline" href={`/help/${params.businessId}`}>← {businessName} Help Center</Link>
-    {error ? <p role="alert" className="mt-6 text-red-700">{error}</p> : !article ? <p className="mt-6 text-slate-500">Loading article…</p> : <><p className="mt-8 text-sm text-emerald-700">{article.category}</p><h1 className="mt-2 text-3xl font-bold">{article.title}</h1>{article.excerpt && <p className="mt-4 text-lg text-slate-600">{article.excerpt}</p>}<div className="mt-8 whitespace-pre-wrap leading-7">{article.content}</div></>}
+    {error ? <p role="alert" className="mt-6 text-red-700">{error}</p> : !article ? <p className="mt-6 text-slate-500">Loading article…</p> : <><p className="mt-8 text-sm text-brand">{article.category}</p><h1 className="mt-2 text-3xl font-bold">{article.title}</h1>{article.excerpt && <p className="mt-4 text-lg text-slate-600">{article.excerpt}</p>}<div className="mt-8 whitespace-pre-wrap leading-7">{article.content}</div></>}
   </article></main>
 }

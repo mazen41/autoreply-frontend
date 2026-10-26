@@ -53,6 +53,7 @@ export interface VoiceMessagePlayerProps {
   hintDuration?: number | null
   /** Whether displayed on a solid brand outgoing bubble (adjusts contrast) */
   isOutgoing?: boolean
+  isRTL?: boolean
   /** Seed for deterministic waveform bars (e.g. message id or url) */
   seed?: string
   onError?: () => void
@@ -65,6 +66,7 @@ export default function VoiceMessagePlayer({
   src,
   hintDuration,
   isOutgoing = false,
+  isRTL = false,
   seed = src,
   onError,
 }: VoiceMessagePlayerProps) {
@@ -322,7 +324,7 @@ export default function VoiceMessagePlayer({
         }`}
       >
         <AlertCircle size={14} className="shrink-0 text-error" />
-        <span>Audio unavailable</span>
+        <span>{isRTL ? 'الصوت غير متاح' : 'Audio unavailable'}</span>
       </div>
     )
   }
@@ -333,7 +335,7 @@ export default function VoiceMessagePlayer({
       <button
         type="button"
         onClick={togglePlay}
-        aria-label={isPlaying ? 'Pause' : 'Play'}
+        aria-label={isPlaying ? (isRTL ? 'إيقاف مؤقت' : 'Pause') : (isRTL ? 'تشغيل' : 'Play')}
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors ${playBtnBase}`}
       >
         {loadState === 'loading' ? (
@@ -354,7 +356,7 @@ export default function VoiceMessagePlayer({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(progress * 100)}
-          aria-label="Seek audio"
+          aria-label={isRTL ? 'التقدم في الصوت' : 'Seek audio'}
           tabIndex={0}
           className="flex h-7 cursor-pointer items-center gap-[2px] touch-none"
           onMouseDown={handleWaveformPointerDown}

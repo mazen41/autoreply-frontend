@@ -11,9 +11,9 @@ import Image from 'next/image'
 import { Zap, MessageSquare, ArrowRight, CheckCircle } from 'lucide-react'
 
 const PROOF_POINTS = [
-  { icon: CheckCircle, text: 'Automate common customer questions' },
-  { icon: Zap, text: 'Manage conversations in one inbox' },
-  { icon: MessageSquare, text: 'Connect supported messaging channels' },
+  { icon: CheckCircle, en: 'Automate common customer questions', ar: 'أتمتة الرد على أسئلة العملاء الشائعة' },
+  { icon: Zap, en: 'Manage conversations in one inbox', ar: 'إدارة المحادثات من صندوق وارد موحد' },
+  { icon: MessageSquare, en: 'Connect supported messaging channels', ar: 'ربط قنوات المراسلة المدعومة' },
 ]
 
 const CHANNEL_LOGOS = [
@@ -59,7 +59,7 @@ function Hero() {
           <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-border bg-surface/60 backdrop-blur-sm">
             <Image src="/icons/logo_icon.png" alt="NazBiz" width={28} height={28} className="object-contain" />
             <span className="text-sm font-bold text-text-primary">NazBiz</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/20">AI POWERED</span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/20">{isRTL ? 'مدعوم بالذكاء الاصطناعي' : 'AI POWERED'}</span>
           </div>
         </motion.div>
 
@@ -107,16 +107,16 @@ function Hero() {
         {/* Proof points */}
         <motion.div variants={variants.fadeUp} transition={springs.standard} className="flex flex-wrap items-center justify-center gap-4">
           {PROOF_POINTS.map((p) => (
-            <div key={p.text} className="flex items-center gap-1.5 text-xs text-text-secondary">
+            <div key={p.en} className="flex items-center gap-1.5 text-xs text-text-secondary">
               <p.icon size={13} className="text-brand flex-shrink-0" />
-              <span>{p.text}</span>
+              <span>{isRTL ? p.ar : p.en}</span>
             </div>
           ))}
         </motion.div>
 
         {/* Channel logos strip */}
         <motion.div variants={variants.fadeUp} transition={springs.standard} className="pt-4">
-          <p className="text-[11px] text-text-muted uppercase tracking-widest font-semibold mb-4">Available channel integrations</p>
+          <p className="text-[11px] text-text-muted uppercase tracking-widest font-semibold mb-4">{isRTL ? 'القنوات والتكاملات المتاحة' : 'Available channel integrations'}</p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {CHANNEL_LOGOS.map((ch) => (
               <motion.div

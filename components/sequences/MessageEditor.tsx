@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from 'react'
 import { CHANNELS, ChannelType, SAMPLE_VALUES, VARIABLES } from './types'
+import { useLang } from '../../lib/LangContext'
 
 interface Props {
   value: string
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function MessageEditor({ value, onChange, channels, error }: Props) {
+  const { isRTL } = useLang()
   const ref = useRef<HTMLTextAreaElement>(null)
   const [previewChannel, setPreviewChannel] = useState<ChannelType>(channels[0] || 'whatsapp')
   const activeChannel = channels.includes(previewChannel) ? previewChannel : channels[0] || 'whatsapp'
@@ -41,7 +43,7 @@ export default function MessageEditor({ value, onChange, channels, error }: Prop
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={4}
-          placeholder="Write the message your customer will receive…"
+          placeholder={isRTL ? 'اكتب الرسالة التي ستصل إلى العميل…' : 'Write the message your customer will receive…'}
           aria-invalid={!!error}
           className={`w-full rounded-lg border bg-surface-elevated p-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-1 resize-y ${
             error
@@ -51,12 +53,12 @@ export default function MessageEditor({ value, onChange, channels, error }: Prop
         />
         <div className="mt-1 flex items-center justify-between text-[11px] text-text-tertiary">
           <span className={error ? 'text-error font-medium' : ''}>{error || ' '}</span>
-          <span>{value.length} characters</span>
+          <span>{value.length} {isRTL ? 'حرفًا' : 'characters'}</span>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[11px] font-semibold text-text-tertiary mr-1">Insert:</span>
+        <span className="me-1 text-[11px] font-semibold text-text-tertiary">{isRTL ? 'إدراج:' : 'Insert:'}</span>
         {VARIABLES.map((v) => (
           <button
             key={v.tag}
@@ -64,7 +66,7 @@ export default function MessageEditor({ value, onChange, channels, error }: Prop
             onClick={() => insertVariable(v.tag)}
             className="rounded-md border border-border bg-surface px-2 py-1 text-[11px] font-medium text-text-secondary hover:border-brand/40 hover:text-brand transition-colors"
           >
-            {v.label}
+            {isRTL ? ({ Name: 'الاسم', Business: 'النشاط', Product: 'المنتج', 'Order #': 'رقم الطلب', Total: 'الإجمالي', Tracking: 'التتبع' }[v.label] || v.label) : v.label}
           </button>
         ))}
       </div>
@@ -72,7 +74,7 @@ export default function MessageEditor({ value, onChange, channels, error }: Prop
       {value.trim() && (
         <div className="rounded-xl bg-surface border border-border/60 p-3">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Preview</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">{isRTL ? 'معاينة' : 'Preview'}</span>
             {channels.length > 1 && (
               <div className="flex gap-1">
                 {channels.map((c) => {

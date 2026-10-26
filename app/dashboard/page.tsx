@@ -12,6 +12,7 @@ import Badge from '../../components/ui/Badge'
 import ChannelIcon from '../../components/ui/ChannelIcon'
 import { MetricCardSkeleton } from '../../components/ui/Skeleton'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import { useLang } from '../../lib/LangContext'
 import HandoffTaskQueue from '../../components/inbox/HandoffTaskQueue'
 import {
   MessageSquare,
@@ -87,24 +88,25 @@ function getToken(): string {
   return m ? decodeURIComponent(m[1]) : ''
 }
 
-function formatRelativeTime(iso: string | null): string {
+function formatRelativeTime(iso: string | null, isRTL: boolean): string {
   if (!iso) return ''
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ''
   const diff  = Date.now() - d.getTime()
   const mins  = Math.round(diff / 60_000)
   const hours = Math.round(diff / 3_600_000)
-  if (mins  <  1)  return 'just now'
-  if (mins  < 60)  return `${mins}m ago`
-  if (hours < 24)  return `${hours}h ago`
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const relativeTime = new Intl.RelativeTimeFormat(isRTL ? 'ar' : 'en', { numeric: 'auto' })
+  if (mins < 1) return relativeTime.format(0, 'second')
+  if (mins < 60) return relativeTime.format(-mins, 'minute')
+  if (hours < 24) return relativeTime.format(-hours, 'hour')
+  return d.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'short', day: 'numeric' })
 }
 
-function formatChartDate(iso: string, total: number): string {
+function formatChartDate(iso: string, total: number, isRTL: boolean): string {
   const d = new Date(iso + 'T00:00:00')
   // For 7d show day name, for 30d+ show M/D
-  if (total <= 7) return d.toLocaleDateString(undefined, { weekday: 'short' })
-  return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })
+  if (total <= 7) return d.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { weekday: 'short' })
+  return d.toLocaleDateString(isRTL ? 'ar-EG' : 'en-US', { month: 'numeric', day: 'numeric' })
 }
 
 function fmtNum(n: number): string {
@@ -120,6 +122,7 @@ function fmtNum(n: number): string {
 
 /** Centred error state for any section */
 function SectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const { isRTL } = useLang()
   return (
     <div
       role="alert"
@@ -129,7 +132,7 @@ function SectionError({ message, onRetry }: { message: string; onRetry: () => vo
       <AlertCircle size={18} className="text-error/60" aria-hidden />
       <p className="text-sm text-text-secondary max-w-[24rem]">{message}</p>
       <Button variant="outline" size="sm" icon={<RefreshCw size={13} />} onClick={onRetry}>
-        Try again
+        {isRTL ? 'حاول مرة أخرى' : 'Try again'}
       </Button>
     </div>
   )
@@ -175,11 +178,11 @@ function ConversationAvatar({ name, channel }: { name: string; channel: Dashboar
   const initial = normalizedName.charAt(0).toUpperCase() || '?'
   const paletteIndex = (normalizedName.charCodeAt(0) || 0) % 5
   const palette = [
-    'from-emerald-400/20 to-emerald-700/20 text-emerald-300',
-    'from-sky-400/20 to-blue-700/20 text-sky-300',
-    'from-amber-300/20 to-orange-700/20 text-amber-300',
-    'from-violet-400/20 to-purple-700/20 text-violet-300',
-    'from-rose-400/20 to-pink-700/20 text-rose-300',
+    'from-brand-blue/20 to-brand-cyan/10 text-brand-cyan',
+    'from-brand-cyan/20 to-brand-blue/10 text-brand-cyan',
+    'from-brand-violet/20 to-brand-blue/10 text-ai-accent',
+    'from-brand-violet/20 to-brand-blue/20 text-ai-accent',
+    'from-brand-magenta/20 to-brand-violet/10 text-brand-magenta',
   ][paletteIndex]
 
   return (
@@ -212,9 +215,10 @@ function VolumeChart({
   error: string | null
   onRetry: () => void
 }) {
+  const { isRTL } = useLang()
   if (loading) {
     return (
-      <div aria-busy aria-label="Loading chart" className="flex gap-3 pt-1" style={{ height: '11rem' }}>
+      <div aria-busy aria-label={isRTL ? 'جارٍ تحميل الرسم البياني' : 'Loading chart'} className="flex gap-3 pt-1" style={{ height: '11rem' }}>
         {/* Y-axis */}
         <div className="flex flex-col-reverse justify-between w-8 shrink-0 py-1 gap-1 animate-pulse">
           {[...Array(5)].map((_, i) => (
@@ -241,8 +245,8 @@ function VolumeChart({
     return (
       <EmptyState
         icon={<BarChart2 size={30} />}
-        heading="No message data yet"
-        body="Volume will appear here once messages arrive in the selected period."
+        heading={isRTL ? 'لا توجد بيانات رسائل بعد' : 'No message data yet'}
+        body={isRTL ? 'سيظهر حجم الرسائل هنا عند وصول رسائل خلال الفترة المحددة.' : 'Volume will appear here once messages arrive in the selected period.'}
       />
     )
   }
@@ -252,7 +256,9 @@ function VolumeChart({
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => Math.round(f * yMax))
   const total  = data.length
 
-  const summary = `Bar chart: ${total} day${total === 1 ? '' : 's'}, peak ${max.toLocaleString()} messages`
+  const summary = isRTL
+    ? `رسم بياني للرسائل: ${total} يوم، والذروة ${max.toLocaleString('ar-EG')} رسالة`
+    : `Bar chart: ${total} day${total === 1 ? '' : 's'}, peak ${max.toLocaleString()} messages`
 
   return (
     <figure aria-label={summary}>
@@ -280,7 +286,7 @@ function VolumeChart({
             {data.map((value, i) => {
               const pct  = yMax > 0 ? (value / yMax) * 100 : 0
               const date = dates[i] ?? ''
-              const lbl  = date ? formatChartDate(date, total) : `Day ${i + 1}`
+              const lbl  = date ? formatChartDate(date, total, isRTL) : (isRTL ? `اليوم ${i + 1}` : `Day ${i + 1}`)
               const hide = total > 14 && i % 2 !== 0
               return (
                 <div
@@ -291,7 +297,7 @@ function VolumeChart({
                     className="relative w-full"
                     style={{ height: `${Math.max(pct, 1)}%` }}
                     role="img"
-                    aria-label={`${lbl}: ${value.toLocaleString()} messages`}
+                    aria-label={isRTL ? `${lbl}: ${value.toLocaleString('ar-EG')} رسالة` : `${lbl}: ${value.toLocaleString()} messages`}
                   >
                     {/* Bar fill */}
                     <div
@@ -329,9 +335,9 @@ function VolumeChart({
 
       {/* Hidden accessible table */}
       <table className="sr-only">
-        <caption>Daily message volume</caption>
+        <caption>{isRTL ? 'حجم الرسائل اليومي' : 'Daily message volume'}</caption>
         <thead>
-          <tr><th scope="col">Date</th><th scope="col">Messages</th></tr>
+          <tr><th scope="col">{isRTL ? 'التاريخ' : 'Date'}</th><th scope="col">{isRTL ? 'الرسائل' : 'Messages'}</th></tr>
         </thead>
         <tbody>
           {data.map((v, i) => (
@@ -349,6 +355,8 @@ function VolumeChart({
 ───────────────────────────────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
+  const { isRTL } = useLang()
+  const label = useCallback((english: string, arabic: string) => isRTL ? arabic : english, [isRTL])
 
   /* ── state ── */
   const [stats,               setStats]               = useState<DashboardStats | null>(null)
@@ -379,23 +387,23 @@ export default function DashboardPage() {
     setSectionErrors (prev => ({ ...prev, [section]: null  }))
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again.')
+      if (!token) throw new Error(label('Your session expired. Sign in again.', 'انتهت صلاحية الجلسة. سجّل الدخول مرة أخرى.'))
       const res = await fetch(`${API}${path}`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
-      if (!res.ok) throw new Error(`Could not load ${SECTION_LABELS[section].toLowerCase()} (${res.status}).`)
+      if (!res.ok) throw new Error(label(`Could not load ${SECTION_LABELS[section].toLowerCase()} (${res.status}).`, `تعذر تحميل ${({ stats: 'إجمالي الرسائل', ai: 'أداء الذكاء الاصطناعي', channels: 'القنوات المتصلة', daily: 'الرسم البياني للرسائل', inbox: 'أحدث المحادثات' } as const)[section]} (${res.status}).`))
       onData(await res.json() as T)
     } catch (err) {
       setSectionErrors(prev => ({
         ...prev,
         [section]: err instanceof Error
           ? err.message
-          : `Could not load ${SECTION_LABELS[section].toLowerCase()}.`,
+          : label(`Could not load ${SECTION_LABELS[section].toLowerCase()}.`, `تعذر تحميل ${({ stats: 'إجمالي الرسائل', ai: 'أداء الذكاء الاصطناعي', channels: 'القنوات المتصلة', daily: 'الرسم البياني للرسائل', inbox: 'أحدث المحادثات' } as const)[section]}.`),
       }))
     } finally {
       setSectionLoading(prev => ({ ...prev, [section]: false }))
     }
-  }, [])
+  }, [label])
 
   /* ── query strings ── */
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
@@ -445,21 +453,21 @@ export default function DashboardPage() {
   const loadBots = useCallback(async () => {
     try {
       const token = getToken()
-      if (!token) throw new Error('Session expired.')
+      if (!token) throw new Error(label('Session expired.', 'انتهت صلاحية الجلسة.'))
       const res = await fetch(`${API}/api/bots`, {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
-      if (!res.ok) throw new Error(`Could not load bots (${res.status}).`)
+      if (!res.ok) throw new Error(label(`Could not load bots (${res.status}).`, `تعذر تحميل الوكلاء (${res.status}).`))
       const p    = await res.json()
       const list = Array.isArray(p) ? p as DashboardBot[] : (p.bots ?? p.data ?? []) as DashboardBot[]
       setBots(list)
     } catch (err) {
       setSectionErrors(prev => ({
         ...prev,
-        channels: err instanceof Error ? err.message : 'Could not load bots.',
+        channels: err instanceof Error ? err.message : label('Could not load bots.', 'تعذر تحميل الوكلاء.'),
       }))
     }
-  }, [])
+  }, [label])
   const loadInbox = useCallback(
     () => loadSection<{ data?: ApiConversation[] }>(
       'inbox', `/api/inbox${inboxQ ? `?${inboxQ}` : ''}`,
@@ -467,7 +475,7 @@ export default function DashboardPage() {
         const rows = Array.isArray(d.data) ? d.data : []
         setRecentConversations(rows.slice(0, 6).map(item => ({
           id:         item.id,
-          sender_name:item.sender_name || item.sender_id || 'Unknown',
+          sender_name:item.sender_name || item.sender_id || label('Unknown', 'غير معروف'),
           channel:    item.channel?.type || 'webchat',
           message:    item.latest_message?.content || item.message_preview || item.last_message || '',
           ai_replied: Boolean(item.latest_message?.is_ai || item.ai_replied),
@@ -476,7 +484,7 @@ export default function DashboardPage() {
         })))
       },
     ),
-    [inboxQ, loadSection],
+    [inboxQ, loadSection, label],
   )
 
   /* ── effects ── */
@@ -490,7 +498,7 @@ export default function DashboardPage() {
   const selectedChannel = channels.find(channel => String(channel.id) === selectedChannelId)
   const selectedBot = bots.find(bot => String(bot.id) === selectedBotId)
   const channelOptions: SelectOption[] = [
-    { value: '', label: 'All channels', icon: <Radio size={14} /> },
+    { value: '', label: label('All channels', 'كل القنوات'), icon: <Radio size={14} /> },
     ...channels.map(channel => ({
       value: String(channel.id),
       label: channel.page_name || channel.page_id || channel.type,
@@ -499,15 +507,15 @@ export default function DashboardPage() {
     })),
   ]
   const botOptions: SelectOption[] = [
-    { value: '', label: 'All AI agents', icon: <Bot size={14} /> },
+    { value: '', label: label('All AI agents', 'كل الوكلاء'), icon: <Bot size={14} /> },
     ...bots.map(bot => ({
       value: String(bot.id),
       label: bot.name,
       icon: <Bot size={14} />,
-      badge: bot.status === 'active' ? 'Active' : undefined,
+      badge: bot.status === 'active' ? label('Active', 'نشط') : undefined,
     })),
   ]
-  const periodLabel = timeRange === '7d' ? 'Last 7 days' : timeRange === '30d' ? 'Last 30 days' : 'Last 90 days'
+  const periodLabel = timeRange === '7d' ? label('Last 7 days', 'آخر 7 أيام') : timeRange === '30d' ? label('Last 30 days', 'آخر 30 يوماً') : label('Last 90 days', 'آخر 90 يوماً')
 
 
   /* ── render ── */
@@ -532,10 +540,10 @@ export default function DashboardPage() {
             />
             <div>
               <h1 className="text-2xl sm:text-[1.75rem] font-bold tracking-tight text-text-primary leading-tight">
-                Command Center
+                {label('Command Center', 'مركز التحكم')}
               </h1>
               <p className="mt-1 text-[13px] text-text-tertiary leading-relaxed">
-                Omnichannel performance · AI agent metrics · real-time conversation feed
+                {label('Omnichannel performance · AI agent metrics · real-time conversation feed', 'أداء جميع القنوات · مؤشرات الوكلاء · المحادثات أولاً بأول')}
               </p>
             </div>
           </div>
@@ -544,7 +552,7 @@ export default function DashboardPage() {
           <div className="shrink-0 self-start">
             <Link href="/dashboard/channels">
               <Button variant="primary" size="md" icon={<Plus size={15} />}>
-                Connect channel
+                {label('Connect channel', 'ربط قناة')}
               </Button>
             </Link>
           </div>
@@ -556,7 +564,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:w-[min(100%,34rem)]">
               <Select
                 id="dashboard-channel-filter"
-                label="Channel account"
+                label={label('Channel account', 'حساب القناة')}
                 value={selectedChannelId}
                 options={channelOptions}
                 onValueChange={setSelectedChannelId}
@@ -566,7 +574,7 @@ export default function DashboardPage() {
               />
               <Select
                 id="dashboard-agent-filter"
-                label="AI agent"
+                label={label('AI agent', 'وكيل الذكاء الاصطناعي')}
                 value={selectedBotId}
                 options={botOptions}
                 onValueChange={setSelectedBotId}
@@ -583,7 +591,7 @@ export default function DashboardPage() {
               </span>
               <div
                 role="group"
-                aria-label="Time range"
+                aria-label={label('Time range', 'النطاق الزمني')}
                 className="inline-flex w-fit items-center rounded-xl border border-border bg-background/70 p-1"
               >
                 {(['7d', '30d', '90d'] as const).map((range, index) => (
@@ -598,7 +606,7 @@ export default function DashboardPage() {
                         : 'text-text-tertiary hover:bg-surface-hover hover:text-text-primary'
                     }`}
                   >
-                    {['7 days', '30 days', '90 days'][index]}
+                    {isRTL ? ['7 أيام', '30 يوماً', '90 يوماً'][index] : ['7 days', '30 days', '90 days'][index]}
                   </button>
                 ))}
               </div>
@@ -624,7 +632,7 @@ export default function DashboardPage() {
           a compact column on desktop and stack on mobile.
       ═══════════════════════════════════════════════════════════════════════ */}
       <motion.section
-        aria-label="Key metrics"
+        aria-label={label('Key metrics', 'المؤشرات الرئيسية')}
         className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
         variants={variants.staggerContainer}
         initial="hidden"
@@ -642,9 +650,9 @@ export default function DashboardPage() {
             <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} />
           ) : (
             <MetricCard
-              label="Total Messages"
+              label={label('Total Messages', 'إجمالي الرسائل')}
               value={(stats?.total_messages ?? 0).toLocaleString()}
-              subValue={`${periodLabel.toLowerCase()} · ${selectedChannel?.page_name || selectedChannel?.type || 'all channels'}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
+              subValue={`${periodLabel} · ${selectedChannel?.page_name || selectedChannel?.type || label('all channels', 'كل القنوات')}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
               variant="hero"
               icon={<MessageSquare size={17} />}
             />
@@ -659,9 +667,9 @@ export default function DashboardPage() {
             <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
           ) : (
             <MetricCard
-              label="AI Reply Rate"
+              label={label('AI Reply Rate', 'معدل ردود الذكاء الاصطناعي')}
               value={`${aiShare}%`}
-              subValue={`${autoReplies.toLocaleString()} auto-replies`}
+              subValue={`${autoReplies.toLocaleString(isRTL ? 'ar-EG' : 'en-US')} ${label('auto-replies', 'رد تلقائي')}`}
               variant="ai"
               icon={<Sparkles size={17} />}
             />
@@ -676,9 +684,9 @@ export default function DashboardPage() {
             <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
           ) : (
             <MetricCard
-              label="Median Response"
+              label={label('Median Response', 'متوسط زمن الرد')}
               value={aiPerformance?.median_response_time_formatted || '—'}
-              subValue="Message to first reply"
+              subValue={label('Message to first reply', 'من استلام الرسالة إلى أول رد')}
               icon={<Clock size={17} />}
             />
           )}
@@ -692,9 +700,9 @@ export default function DashboardPage() {
             <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
           ) : (
             <MetricCard
-              label="Active Channels"
+              label={label('Active Channels', 'القنوات النشطة')}
               value={channels.length}
-              subValue="Connected accounts"
+              subValue={label('Connected accounts', 'الحسابات المتصلة')}
               icon={<Radio size={17} />}
             />
           )}
@@ -715,15 +723,15 @@ export default function DashboardPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <TrendingUp size={14} className="text-brand shrink-0" aria-hidden />
-                <CardTitle>Message volume</CardTitle>
+                <CardTitle>{label('Message volume', 'حجم الرسائل')}</CardTitle>
               </div>
               <CardDescription>
-                Daily totals
+                {label('Daily totals', 'الإجمالي اليومي')}
                 {selectedChannelId
-                  ? ` for ${selectedChannel?.page_name ?? 'selected channel'}`
-                  : ' across all channels'}
+                  ? ` ${label('for', 'لـ')} ${selectedChannel?.page_name ?? label('selected channel', 'القناة المحددة')}`
+                  : ` ${label('across all channels', 'عبر جميع القنوات')}`}
                 {selectedBot ? ` · ${selectedBot.name}` : ''}
-                {' '}· {periodLabel.toLowerCase()}
+                {' '}· {periodLabel}
               </CardDescription>
             </div>
 
@@ -736,7 +744,7 @@ export default function DashboardPage() {
               aria-hidden
             >
               <span className="w-2.5 h-2.5 rounded-sm bg-brand/50 shrink-0" />
-              Messages
+              {label('Messages', 'الرسائل')}
             </div>
           </CardHeader>
 
@@ -756,9 +764,9 @@ export default function DashboardPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2 mb-0.5">
               <Sparkles size={14} className="text-brand shrink-0" aria-hidden />
-              <CardTitle>AI performance</CardTitle>
+              <CardTitle>{label('AI performance', 'أداء الذكاء الاصطناعي')}</CardTitle>
             </div>
-            <CardDescription>Automation metrics for the period.</CardDescription>
+            <CardDescription>{label('Automation metrics for the period.', 'مؤشرات الأتمتة خلال الفترة المحددة.')}</CardDescription>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col gap-4 pt-0">
@@ -784,7 +792,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-1.5 mb-2">
                     <Zap size={12} className="text-brand" aria-hidden />
                     <span className="text-[10px] font-bold text-brand uppercase tracking-wider">
-                      AI reply rate
+                      {label('AI reply rate', 'معدل ردود الذكاء الاصطناعي')}
                     </span>
                   </div>
                   <div className="text-3xl font-bold text-text-primary tracking-tight">
@@ -792,7 +800,7 @@ export default function DashboardPage() {
                     <span className="text-xl font-semibold text-text-secondary ms-0.5">%</span>
                   </div>
                   <p className="mt-1 text-[11px] text-text-tertiary">
-                    {autoReplies.toLocaleString()} auto-replies · {periodLabel.toLowerCase()}
+                    {autoReplies.toLocaleString(isRTL ? 'ar-EG' : 'en-US')} {label('auto-replies', 'رد تلقائي')} · {periodLabel}
                   </p>
                   {/* Progress bar */}
                   <div
@@ -801,7 +809,7 @@ export default function DashboardPage() {
                     aria-valuenow={aiShare}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label={`AI replied to ${aiShare}% of messages`}
+                    aria-label={label(`AI replied to ${aiShare}% of messages`, `رد الذكاء الاصطناعي على ${aiShare}% من الرسائل`)}
                   >
                     <div
                       className="h-full rounded-full bg-brand transition-all duration-500"
@@ -818,13 +826,13 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-1.5 mb-2">
                     <Clock size={12} className="text-text-secondary" aria-hidden />
                     <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
-                      Median response
+                      {label('Median response', 'متوسط زمن الرد')}
                     </span>
                   </div>
                   <div className="text-2xl font-bold text-text-primary tracking-tight">
                     {aiPerformance?.median_response_time_formatted || '—'}
                   </div>
-                  <p className="mt-1 text-[11px] text-text-tertiary">Message to first reply</p>
+                  <p className="mt-1 text-[11px] text-text-tertiary">{label('Message to first reply', 'من استلام الرسالة إلى أول رد')}</p>
                 </div>
               </>
             )}
@@ -838,7 +846,7 @@ export default function DashboardPage() {
                 iconRight={<ChevronRight size={13} />}
                 className="w-full justify-between text-text-secondary"
               >
-                Full analytics
+                {label('Full analytics', 'عرض كل التحليلات')}
               </Button>
             </Link>
           </CardFooter>
@@ -857,9 +865,9 @@ export default function DashboardPage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <Inbox size={14} className="text-text-secondary shrink-0" aria-hidden />
-                <CardTitle>Recent conversations</CardTitle>
+                <CardTitle>{label('Recent conversations', 'أحدث المحادثات')}</CardTitle>
               </div>
-              <CardDescription>Latest inbound messages across connected platforms.</CardDescription>
+              <CardDescription>{label('Latest inbound messages across connected platforms.', 'أحدث الرسائل الواردة عبر القنوات المتصلة.')}</CardDescription>
             </div>
             <Link href="/inbox" className="shrink-0 self-center">
               <Button
@@ -868,14 +876,14 @@ export default function DashboardPage() {
                 iconRight={<ArrowUpRight size={13} />}
                 className="text-text-tertiary hover:text-text-primary"
               >
-                Open inbox
+                {label('Open inbox', 'فتح صندوق الوارد')}
               </Button>
             </Link>
           </CardHeader>
 
           <CardContent className="p-0 flex-1">
             {sectionLoading.inbox ? (
-              <ul aria-busy aria-label="Loading recent conversations">
+              <ul aria-busy aria-label={label('Loading recent conversations', 'جارٍ تحميل أحدث المحادثات')}>
                 {[...Array(5)].map((_, i) => (
                   <li key={i} className="border-b border-border/50 last:border-0">
                     <SkeletonRow widths={['2rem', '30%', '1fr', '3rem']} />
@@ -889,12 +897,12 @@ export default function DashboardPage() {
             ) : recentConversations.length === 0 ? (
               <EmptyState
                 icon={<MessageSquare size={28} />}
-                heading="No conversations yet"
-                body="They'll appear here once messages arrive on your connected channels."
+                heading={label('No conversations yet', 'لا توجد محادثات بعد')}
+                body={label("They'll appear here once messages arrive on your connected channels.", 'ستظهر المحادثات هنا عند وصول رسائل إلى قنواتك المتصلة.')}
               />
             ) : (
               <ul
-                aria-label="Recent conversations"
+                aria-label={label('Recent conversations', 'أحدث المحادثات')}
                 className="divide-y divide-border/50"
               >
                 {recentConversations.map(item => (
@@ -905,7 +913,7 @@ export default function DashboardPage() {
                                  hover:bg-surface-elevated/60 transition-colors duration-100
                                  focus-visible:outline-none focus-visible:ring-2
                                  focus-visible:ring-inset focus-visible:ring-brand/40"
-                      aria-label={`Conversation with ${item.sender_name}`}
+                      aria-label={label(`Conversation with ${item.sender_name}`, `محادثة مع ${item.sender_name}`)}
                     >
                       {/* Avatar */}
                       <ConversationAvatar name={item.sender_name} channel={item.channel} />
@@ -917,17 +925,17 @@ export default function DashboardPage() {
                             {item.sender_name}
                           </span>
                           {item.ai_replied ? (
-                            <Badge variant="ai" size="xs" className="shrink-0">AI replied</Badge>
+                            <Badge variant="ai" size="xs" className="shrink-0">{label('AI replied', 'ردّ الوكيل')}</Badge>
                           ) : (
                             <Badge variant="warning" size="xs" dot dotPulse className="shrink-0">
-                              Needs agent
+                              {label('Needs agent', 'تحتاج إلى متابعة')}
                             </Badge>
                           )}
                         </div>
                         <p className="text-[12px] text-text-tertiary truncate leading-snug">
                           {item.message
                             ? item.message
-                            : <span className="italic text-text-disabled">No preview</span>}
+                            : <span className="italic text-text-disabled">{label('No preview', 'لا يوجد محتوى للعرض')}</span>}
                         </p>
                       </div>
 
@@ -936,10 +944,10 @@ export default function DashboardPage() {
                         {item.time && (
                           <time
                             dateTime={item.time}
-                            title={new Date(item.time).toLocaleString()}
+                            title={new Date(item.time).toLocaleString(isRTL ? 'ar-EG' : 'en-US')}
                             className="text-[11px] text-text-disabled tabular-nums whitespace-nowrap"
                           >
-                            {formatRelativeTime(item.time)}
+                            {formatRelativeTime(item.time, isRTL)}
                           </time>
                         )}
                         <ChevronRight
@@ -965,7 +973,7 @@ export default function DashboardPage() {
                   iconRight={<ArrowUpRight size={13} />}
                   className="w-full justify-center text-text-tertiary"
                 >
-                  View all conversations
+                  {label('View all conversations', 'عرض جميع المحادثات')}
                 </Button>
               </Link>
             </CardFooter>
@@ -978,9 +986,9 @@ export default function DashboardPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2 mb-0.5">
               <Wifi size={14} className="text-text-secondary shrink-0" aria-hidden />
-              <CardTitle>Connected channels</CardTitle>
+              <CardTitle>{label('Connected channels', 'القنوات المتصلة')}</CardTitle>
             </div>
-            <CardDescription>Active accounts in this workspace.</CardDescription>
+            <CardDescription>{label('Active accounts in this workspace.', 'الحسابات النشطة في مساحة العمل.')}</CardDescription>
           </CardHeader>
 
           <CardContent className="flex-1 p-0">
@@ -1007,19 +1015,19 @@ export default function DashboardPage() {
             ) : channels.length === 0 ? (
               <EmptyState
                 icon={<Wifi size={26} />}
-                heading="No channels yet"
-                body="Connect a channel to start receiving messages."
+                heading={label('No channels yet', 'لا توجد قنوات بعد')}
+                body={label('Connect a channel to start receiving messages.', 'اربط قناة لبدء استقبال الرسائل.')}
                 action={
                   <Link href="/dashboard/channels">
                     <Button variant="outline" size="sm" icon={<Plus size={13} />}>
-                      Connect channel
+                      {label('Connect channel', 'ربط قناة')}
                     </Button>
                   </Link>
                 }
               />
             ) : (
               <ul
-                aria-label="Connected channels"
+                aria-label={label('Connected channels', 'القنوات المتصلة')}
                 className="divide-y divide-border/50"
               >
                 {channels.map(ch => (
@@ -1031,8 +1039,8 @@ export default function DashboardPage() {
                     {/* Connected indicator — small dot is enough; don't need a full badge */}
                     <span
                       className="w-2 h-2 rounded-full bg-success shrink-0"
-                      aria-label="Connected"
-                      title="Connected"
+                      aria-label={label('Connected', 'متصل')}
+                      title={label('Connected', 'متصل')}
                     />
                   </li>
                 ))}
@@ -1048,7 +1056,7 @@ export default function DashboardPage() {
                 iconRight={<ChevronRight size={13} />}
                 className="w-full justify-between text-text-tertiary"
               >
-                Manage channels
+                {label('Manage channels', 'إدارة القنوات')}
               </Button>
             </Link>
           </CardFooter>

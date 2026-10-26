@@ -429,33 +429,33 @@ export default function AIKnowledgeContent() {
           {/* Add New FAQ */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">+ Add Q&A Knowledge Pair</CardTitle>
+              <CardTitle className="text-sm">+ {isRTL ? 'إضافة سؤال وجواب إلى المعرفة' : 'Add Q&A Knowledge Pair'}</CardTitle>
               <CardDescription>
-                Direct question-and-answer pairs teach your AI how to resolve specific edge cases.
+                {isRTL ? 'تساعد أزواج الأسئلة والأجوبة المباشرة الذكاء الاصطناعي على التعامل مع الحالات الخاصة.' : 'Direct question-and-answer pairs teach your AI how to resolve specific edge cases.'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-2">
               <Input
-                label="Customer Question"
+                label={isRTL ? 'سؤال العميل' : 'Customer Question'}
                 value={newFaqQ}
                 onChange={(e) => setNewFaqQ(e.target.value)}
-                placeholder="e.g. Do you ship to UAE or Kuwait?"
+                placeholder={isRTL ? 'مثال: هل توصلون إلى الإمارات أو الكويت؟' : 'e.g. Do you ship to UAE or Kuwait?'}
               />
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-text-secondary">
-                  Approved Answer
+                  {isRTL ? 'الإجابة المعتمدة' : 'Approved Answer'}
                 </label>
                 <textarea
                   value={newFaqA}
                   onChange={(e) => setNewFaqA(e.target.value)}
-                  placeholder="e.g. Yes, we deliver to UAE within 3-4 days via DHL Express..."
+                  placeholder={isRTL ? 'مثال: نعم، نوصل إلى الإمارات خلال 3 إلى 4 أيام عبر DHL Express...' : 'e.g. Yes, we deliver to UAE within 3-4 days via DHL Express...'}
                   className="w-full min-h-[80px] p-3 text-xs bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand"
                 />
               </div>
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button variant="primary" size="sm" onClick={handleAddFaq}>
-                Add FAQ Pair
+                {isRTL ? 'إضافة السؤال والجواب' : 'Add FAQ Pair'}
               </Button>
             </CardFooter>
           </Card>
@@ -492,32 +492,32 @@ export default function AIKnowledgeContent() {
       {activeTab === 'instructions' && (
         <Card>
           <CardHeader>
-            <CardTitle>System Persona & Behavioral Guidelines</CardTitle>
+            <CardTitle>{isRTL ? 'شخصية النظام وإرشادات السلوك' : 'System Persona & Behavioral Guidelines'}</CardTitle>
             <CardDescription>
-              These master instructions govern how all AI auto-replies are composed and formatted.
+              {isRTL ? 'تحدد هذه التعليمات الأساسية طريقة صياغة جميع الردود الآلية للذكاء الاصطناعي وتنسيقها.' : 'These master instructions govern how all AI auto-replies are composed and formatted.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-text-secondary">
-                Master Instructions
+                {isRTL ? 'التعليمات الأساسية' : 'Master Instructions'}
               </label>
               <textarea
                 value={aiInstructions}
                 onChange={(e) => setAiInstructions(e.target.value)}
                 className="w-full min-h-[160px] p-4 text-xs font-mono bg-surface-elevated text-text-primary border border-border rounded-xl focus:outline-none focus:border-brand leading-relaxed"
-                placeholder="Write system instructions for the AI..."
+                placeholder={isRTL ? 'اكتب تعليمات النظام للذكاء الاصطناعي...' : 'Write system instructions for the AI...'}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Brand Name"
+                label={isRTL ? 'اسم العلامة التجارية' : 'Brand Name'}
                 value={profile.business_name}
                 onChange={(e) => setProfile({ ...profile, business_name: e.target.value })}
               />
               <Input
-                label="Reply Tone"
+                label={isRTL ? 'أسلوب الرد' : 'Reply Tone'}
                 value={profile.reply_style}
                 onChange={(e) => setProfile({ ...profile, reply_style: e.target.value })}
               />
@@ -530,7 +530,7 @@ export default function AIKnowledgeContent() {
               loading={savingInstructions}
               onClick={handleSaveInstructions}
             >
-              Save & Redeploy Instructions
+              {isRTL ? 'حفظ التعليمات وإعادة نشرها' : 'Save & Redeploy Instructions'}
             </Button>
           </CardFooter>
         </Card>
@@ -540,9 +540,9 @@ export default function AIKnowledgeContent() {
       {activeTab === 'tester' && (
         <Card>
           <CardHeader>
-            <CardTitle>Knowledge Retrieval & Semantic Search Sandbox</CardTitle>
+            <CardTitle>{isRTL ? 'استرجاع المعرفة والبحث الدلالي' : 'Knowledge Retrieval & Semantic Search Sandbox'}</CardTitle>
             <CardDescription>
-              Verify what information your AI extracts when a customer asks a question
+              {isRTL ? 'تحقق من المعلومات التي يستخرجها الذكاء الاصطناعي عند طرح العميل لسؤال.' : 'Verify what information your AI extracts when a customer asks a question'}
             </CardDescription>
           </CardHeader>
 
@@ -552,7 +552,7 @@ export default function AIKnowledgeContent() {
                 value={testQuestion}
                 onChange={(e) => setTestQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleTestQuestion()}
-                placeholder="Ask a customer question to test knowledge retrieval..."
+                placeholder={isRTL ? 'اكتب سؤالًا من العملاء لاختبار استرجاع المعرفة...' : 'Ask a customer question to test knowledge retrieval...'}
                 className="flex-1"
               />
               <Button
@@ -562,7 +562,7 @@ export default function AIKnowledgeContent() {
                 onClick={handleTestQuestion}
                 icon={<Search size={14} />}
               >
-                Inspect Answer
+                {isRTL ? 'فحص الإجابة' : 'Inspect Answer'}
               </Button>
             </div>
 

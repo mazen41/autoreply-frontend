@@ -35,16 +35,16 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
         data = JSON.parse(text)
       } catch {
         console.error('Social login: server returned non-JSON response:', text.slice(0, 200))
-        throw new Error('Server error — check that the backend is running and Google/Facebook credentials are configured in .env')
+        throw new Error(isRTL ? 'حدث خطأ في الخادم. تحقق من تشغيل الخدمة وإعداد تسجيل الدخول لدى Google أو Facebook.' : 'Server error — check that the backend is running and Google/Facebook credentials are configured.')
       }
 
       if (!res.ok || data.error || !data.url) {
-        throw new Error(data.message || data.error || 'Failed to get authentication URL')
+        throw new Error(data.message || data.error || (isRTL ? 'تعذر بدء تسجيل الدخول.' : 'Failed to get authentication URL'))
       }
 
       window.location.href = data.url
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Authentication error'
+      const msg = error instanceof Error ? error.message : (isRTL ? 'حدث خطأ أثناء المصادقة.' : 'Authentication error')
       console.error('Social login error:', error)
       setError(msg)
       setLoading(null)

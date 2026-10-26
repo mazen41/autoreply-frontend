@@ -40,6 +40,7 @@ const LIST_URL = '/dashboard/sequences'
 
 export default function SequenceEditor({ sequenceId }: Props) {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const router = useRouter()
   const isEditing = typeof sequenceId === 'number' && !Number.isNaN(sequenceId)
   const { createSequence, updateSequence, activateSequence, fetchSequence } = useSequences()
@@ -303,7 +304,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
   }
 
   const confirmLeave = (e: React.MouseEvent) => {
-    if (dirty && !window.confirm('You have unsaved changes. Leave without saving?')) e.preventDefault()
+    if (dirty && !window.confirm(L('You have unsaved changes. Leave without saving?', 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟'))) e.preventDefault()
   }
 
   // ─── Render ──────────────────────────────────────────────────────────────────
@@ -313,7 +314,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
       onClick={confirmLeave}
       className="flex items-center gap-1.5 text-sm font-medium text-text-secondary hover:text-text-primary"
     >
-      <ArrowLeft size={15} /> Sequences
+      <ArrowLeft size={15} className={isRTL ? 'rotate-180' : ''} /> {L('Sequences', 'التسلسلات')}
     </Link>
   )
 
@@ -343,13 +344,13 @@ export default function SequenceEditor({ sequenceId }: Props) {
     return (
       <div className="mx-auto max-w-md space-y-4 px-4 py-16 text-center">
         <AlertCircle className="mx-auto text-error" size={32} />
-        <p className="text-sm text-text-secondary">We couldn&apos;t load this sequence.</p>
+        <p className="text-sm text-text-secondary">{L('We couldn’t load this sequence.', 'تعذر تحميل هذا التسلسل.')}</p>
         <div className="flex justify-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setLoadNonce((n) => n + 1)}>
-            Try again
+            {L('Try again', 'أعد المحاولة')}
           </Button>
           <Link href={LIST_URL}>
-            <Button variant="ghost" size="sm">Back to sequences</Button>
+            <Button variant="ghost" size="sm">{L('Back to sequences', 'العودة إلى التسلسلات')}</Button>
           </Link>
         </div>
       </div>
@@ -370,19 +371,19 @@ export default function SequenceEditor({ sequenceId }: Props) {
             {backLink}
             <span className="hidden text-text-tertiary sm:inline">/</span>
             <h1 className="hidden truncate text-sm font-bold text-text-primary sm:block">
-              {isEditing ? name || 'Edit sequence' : 'New sequence'}
+              {isEditing ? name || L('Edit sequence', 'تعديل التسلسل') : L('New sequence', 'تسلسل جديد')}
             </h1>
             {isEditing && (
               <Badge variant={statusBadge as any} size="sm" dot>
-                {status}
+                {isRTL ? (({ active: 'نشط', paused: 'متوقف مؤقتًا', draft: 'مسودة' } as Record<string, string>)[status] || status) : status}
               </Badge>
             )}
-            {dirty && <span className="text-xs font-medium text-warning">Unsaved changes</span>}
+            {dirty && <span className="text-xs font-medium text-warning">{L('Unsaved changes', 'تغييرات غير محفوظة')}</span>}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {isLive ? (
               <Button size="sm" onClick={() => save(false)} loading={saving === 'draft'} disabled={!!saving}>
-                Save changes
+                {L('Save changes', 'حفظ التغييرات')}
               </Button>
             ) : (
               <>
@@ -393,10 +394,10 @@ export default function SequenceEditor({ sequenceId }: Props) {
                   loading={saving === 'draft'}
                   disabled={!!saving}
                 >
-                  {isEditing ? 'Save' : 'Save draft'}
+                  {isEditing ? L('Save', 'حفظ') : L('Save draft', 'حفظ كمسودة')}
                 </Button>
                 <Button size="sm" onClick={() => save(true)} loading={saving === 'activate'} disabled={!!saving}>
-                  {isEditing ? 'Save & activate' : 'Activate'}
+                  {isEditing ? L('Save & activate', 'حفظ وتفعيل') : L('Activate', 'تفعيل')}
                 </Button>
               </>
             )}
@@ -408,7 +409,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
         {apiError && (
           <div role="alert" className="flex items-start justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error">
             <span>{apiError}</span>
-            <button type="button" onClick={() => setApiError(null)} aria-label="Dismiss">
+            <button type="button" onClick={() => setApiError(null)} aria-label={L('Dismiss', 'إغلاق')}>
               <X size={14} />
             </button>
           </div>
@@ -416,15 +417,14 @@ export default function SequenceEditor({ sequenceId }: Props) {
 
         {isLive && (
           <div className="rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-text-secondary">
-            This sequence is live{enrolled > 0 ? ` with ${enrolled} contact${enrolled === 1 ? '' : 's'} enrolled` : ''}.
-            Saving updates the live flow, so review your changes carefully.
+            {L(`This sequence is live${enrolled > 0 ? ` with ${enrolled} contact${enrolled === 1 ? '' : 's'} enrolled` : ''}. Saving updates the live flow, so review your changes carefully.`, `هذا التسلسل يعمل الآن${enrolled > 0 ? ` ويضم ${enrolled} جهة اتصال` : ''}. يؤدي الحفظ إلى تحديثه مباشرة، لذا راجع التغييرات بعناية.`)}
           </div>
         )}
 
         {showErrors && (
           <div role="alert" className="rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm">
             <p className="font-semibold text-error">
-              Fix {validation.count} {validation.count === 1 ? 'issue' : 'issues'} to save
+              {L(`Fix ${validation.count} ${validation.count === 1 ? 'issue' : 'issues'} to save`, `أصلح ${validation.count} مشكلة قبل الحفظ`)}
             </p>
             <ul className="mt-1 list-disc pl-5 text-xs text-text-secondary">
               {validation.messages.slice(0, 5).map((m, i) => (
@@ -440,31 +440,31 @@ export default function SequenceEditor({ sequenceId }: Props) {
             <section className="space-y-4 rounded-2xl border border-border bg-surface-elevated p-5">
               <Input
                 id="field-name"
-                label="Sequence name"
+                label={L('Sequence name', 'اسم التسلسل')}
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Welcome new customers"
+                placeholder={L('e.g. Welcome new customers', 'مثال: الترحيب بالعملاء الجدد')}
                 error={attempted ? validation.name : undefined}
               />
 
               <div id="field-trigger" className="space-y-3">
                 <Select
                   dir={isRTL ? 'rtl' : 'ltr'}
-                  label="Starts when"
+                  label={L('Starts when', 'يبدأ عند')}
                   value={triggerType}
                   onValueChange={(value) => setTriggerType(value as TriggerType)}
                   options={TRIGGERS.map((t) => ({
                     value: t.id,
-                    label: t.label,
-                    description: t.desc,
+                    label: isRTL ? ({ manual: 'تسجيل يدوي', new_user: 'عميل جديد', tag_added: 'إضافة وسم للعميل', no_reply: 'عدم الرد', order_created: 'تقديم طلب' }[t.id] || t.label) : t.label,
+                    description: isRTL ? ({ manual: 'تسجل جهات الاتصال بنفسك', new_user: 'عند بدء محادثة جديدة', tag_added: 'عند إضافة وسم محدد', no_reply: 'عندما لا يرد العميل لفترة', order_created: 'عند إنشاء طلب جديد' }[t.id] || t.desc) : t.desc,
                     icon: <span>{t.icon}</span>,
                   }))}
                 />
 
                 {triggerType === 'no_reply' && (
                   <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
-                    <span>Customer hasn&apos;t replied for</span>
+                    <span>{L('Customer hasn’t replied for', 'لم يرد العميل منذ')}</span>
                     <input
                       type="number"
                       min={1}
@@ -474,7 +474,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
                         setNoReplyValue(Number.isNaN(n) ? 0 : n)
                       }}
                       className={NUMBER_INPUT_CLASS}
-                      aria-label="No-reply duration"
+                      aria-label={L('No-reply duration', 'مدة عدم الرد')}
                     />
                     <div className="w-28">
                       <Select
@@ -483,9 +483,9 @@ export default function SequenceEditor({ sequenceId }: Props) {
                         value={noReplyUnit}
                         onValueChange={(value) => setNoReplyUnit(value as DelayUnit)}
                         options={[
-                          { value: 'minutes', label: 'Minutes' },
-                          { value: 'hours', label: 'Hours' },
-                          { value: 'days', label: 'Days' },
+                          { value: 'minutes', label: L('Minutes', 'دقائق') },
+                          { value: 'hours', label: L('Hours', 'ساعات') },
+                          { value: 'days', label: L('Days', 'أيام') },
                         ]}
                       />
                     </div>
@@ -494,21 +494,21 @@ export default function SequenceEditor({ sequenceId }: Props) {
 
                 {triggerType === 'tag_added' && (
                   <Input
-                    label="Tag name"
+                    label={L('Tag name', 'اسم الوسم')}
                     value={triggerTag}
                     onChange={(e) => setTriggerTag(e.target.value)}
-                    placeholder="e.g. VIP, Interested"
+                    placeholder={L('e.g. VIP, Interested', 'مثال: مميز، مهتم')}
                   />
                 )}
 
                 {triggerType === 'order_created' && (
                   <Input
-                    label="Minimum order value (optional)"
+                    label={L('Minimum order value (optional)', 'الحد الأدنى لقيمة الطلب (اختياري)')}
                     type="number"
                     min={0}
                     value={minOrderValue}
                     onChange={(e) => setMinOrderValue(e.target.value)}
-                    placeholder="Leave empty for all orders"
+                    placeholder={L('Leave empty for all orders', 'اتركه فارغًا لتطبيقه على كل الطلبات')}
                   />
                 )}
 
@@ -527,7 +527,7 @@ export default function SequenceEditor({ sequenceId }: Props) {
               className="flex w-full items-center justify-between rounded-xl border border-border bg-surface-elevated px-4 py-3 text-sm font-medium text-text-primary lg:hidden"
             >
               <span className="flex items-center gap-2">
-                <Settings2 size={15} /> Settings
+                <Settings2 size={15} /> {L('Settings', 'الإعدادات')}
               </span>
               <span className="text-xs text-text-tertiary">
                 {channels.map((c) => CHANNELS.find((x) => x.id === c)?.label).join(', ')}
@@ -551,16 +551,16 @@ export default function SequenceEditor({ sequenceId }: Props) {
 
             <section id="field-steps" className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-text-primary">What happens next</h2>
+                <h2 className="text-sm font-bold text-text-primary">{L('What happens next', 'ماذا سيحدث بعد ذلك')}</h2>
                 <span className="text-xs text-text-tertiary">
-                  {steps.length} step{steps.length === 1 ? '' : 's'}
+                  {steps.length} {isRTL ? 'خطوات' : `step${steps.length === 1 ? '' : 's'}`}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 rounded-xl border border-warning/20 bg-warning/5 px-3 py-2 text-xs font-medium text-warning">
                 <Zap size={13} />
                 <span>
-                  Starts when: {triggerMeta?.label}
+                  {L('Starts when:', 'يبدأ عند:')} {isRTL ? ({ manual: 'تسجيل يدوي', new_user: 'عميل جديد', tag_added: 'إضافة وسم للعميل', no_reply: 'عدم الرد', order_created: 'تقديم طلب' }[triggerType] || triggerMeta?.label) : triggerMeta?.label}
                 </span>
               </div>
 

@@ -2,6 +2,7 @@
 
 import React, { memo } from 'react'
 import { Inbox, Users, AlertCircle, Clock, Tag, TrendingUp, Zap, ChevronDown, ChevronUp } from 'lucide-react'
+import { useLang } from '../../lib/LangContext'
 
 interface InboxNavigationProps {
   currentView: string
@@ -21,6 +22,8 @@ const InboxNavigation = memo(function InboxNavigation({
   onViewChange, 
   unreadCounts = {} 
 }: InboxNavigationProps) {
+  const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({
     main: true,
     channels: false,
@@ -32,16 +35,16 @@ const InboxNavigation = memo(function InboxNavigation({
   }
 
   const mainNavItems: NavItem[] = [
-    { id: 'all', label: 'All Conversations', icon: <Inbox size={16} />, count: unreadCounts.all },
-    { id: 'unassigned', label: 'Unassigned', icon: <Users size={16} />, count: unreadCounts.unassigned },
-    { id: 'open', label: 'Open', icon: <AlertCircle size={16} />, count: unreadCounts.open },
-    { id: 'priority', label: 'Priority', icon: <TrendingUp size={16} />, count: unreadCounts.priority },
-    { id: 'escalations', label: 'AI Escalations', icon: <Zap size={16} />, count: unreadCounts.escalations },
+    { id: 'all', label: L('All Conversations', 'كل المحادثات'), icon: <Inbox size={16} />, count: unreadCounts.all },
+    { id: 'unassigned', label: L('Unassigned', 'غير مسندة'), icon: <Users size={16} />, count: unreadCounts.unassigned },
+    { id: 'open', label: L('Open', 'مفتوحة'), icon: <AlertCircle size={16} />, count: unreadCounts.open },
+    { id: 'priority', label: L('Priority', 'الأولوية'), icon: <TrendingUp size={16} />, count: unreadCounts.priority },
+    { id: 'escalations', label: L('AI Escalations', 'تصعيدات الذكاء الاصطناعي'), icon: <Zap size={16} />, count: unreadCounts.escalations },
   ]
 
   const viewNavItems: NavItem[] = [
-    { id: 'mentions', label: 'Mentions', icon: <Tag size={16} />, count: unreadCounts.mentions },
-    { id: 'snoozed', label: 'Snoozed', icon: <Clock size={16} />, count: unreadCounts.snoozed },
+    { id: 'mentions', label: L('Mentions', 'الإشارات'), icon: <Tag size={16} />, count: unreadCounts.mentions },
+    { id: 'snoozed', label: L('Snoozed', 'مؤجلة'), icon: <Clock size={16} />, count: unreadCounts.snoozed },
   ]
 
   const NavSection = ({ 
@@ -91,16 +94,16 @@ const InboxNavigation = memo(function InboxNavigation({
   )
 
   return (
-    <div className="w-64 border-r border-white/[0.05] bg-[#14151D]/60 flex flex-col h-full flex-shrink-0">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="w-64 border-r border-[var(--border)] bg-[var(--surface)] flex flex-col h-full flex-shrink-0">
       {/* Header */}
       <div className="p-4 border-b border-white/[0.04]">
-        <h2 className="text-sm font-bold text-white tracking-tight">Inbox</h2>
+        <h2 className="text-sm font-bold text-white tracking-tight">{L('Inbox', 'الرسائل')}</h2>
       </div>
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto p-3 scrollbar-thin">
-        <NavSection title="Main" items={mainNavItems} sectionKey="main" />
-        <NavSection title="Views" items={viewNavItems} sectionKey="views" />
+        <NavSection title={L('Main', 'الرئيسية')} items={mainNavItems} sectionKey="main" />
+        <NavSection title={L('Views', 'طرق العرض')} items={viewNavItems} sectionKey="views" />
       </div>
     </div>
   )

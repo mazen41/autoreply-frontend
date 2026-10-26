@@ -33,7 +33,7 @@ export default function SetupAccountPage() {
     if (token) {
       checkInvitation()
     } else {
-      setError('Invalid invitation link')
+      setError(isRTL ? 'رابط الدعوة غير صالح.' : 'Invalid invitation link')
       setLoading(false)
     }
   }, [token, tokenReady])
@@ -46,13 +46,13 @@ export default function SetupAccountPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Invalid invitation')
+        throw new Error(isRTL ? 'الدعوة غير صالحة أو انتهت صلاحيتها.' : (data.message || 'Invalid invitation'))
       }
 
       const data = await response.json()
       setInvitation(data)
     } catch (error: any) {
-      setError(error.message || 'Failed to check invitation')
+      setError(isRTL ? 'تعذر التحقق من الدعوة. قد تكون غير صالحة أو منتهية الصلاحية.' : (error.message || 'Failed to check invitation'))
     } finally {
       setLoading(false)
     }
@@ -97,7 +97,7 @@ export default function SetupAccountPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.message || 'Failed to accept invitation')
+        throw new Error(isRTL ? 'تعذر قبول الدعوة. تحقق من بياناتك وحاول مرة أخرى.' : (data.message || 'Failed to accept invitation'))
       }
 
       const data = await response.json()
@@ -110,7 +110,7 @@ export default function SetupAccountPage() {
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (error: any) {
-      setError(error.message || 'Failed to accept invitation')
+      setError(isRTL ? 'تعذر قبول الدعوة. تحقق من بياناتك وحاول مرة أخرى.' : (error.message || 'Failed to accept invitation'))
     } finally {
       setProcessing(false)
     }

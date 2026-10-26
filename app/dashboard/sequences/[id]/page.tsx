@@ -12,9 +12,9 @@ import { useSequences } from '../../../../hooks/useSequences'
 import { useLang } from '../../../../lib/LangContext'
 
 const STATUS_CONFIG = {
-  active: { label: 'Active',  color: '#16A085', bg: 'rgba(22,160,133,0.1)', dot: '#16A085' },
-  paused: { label: 'Paused',  color: '#F39C12', bg: 'rgba(243,156,18,0.1)', dot: '#F39C12' },
-  draft:  { label: 'Draft',   color: '#6A6A78', bg: 'rgba(106,106,120,0.1)', dot: '#A9AAB8' },
+  active: { label: 'Active',  color: 'var(--success)', bg: 'var(--success-subtle)', dot: 'var(--success)' },
+  paused: { label: 'Paused',  color: 'var(--warning)', bg: 'var(--warning-subtle)', dot: 'var(--warning)' },
+  draft:  { label: 'Draft',   color: 'var(--text-muted)', bg: 'var(--surface-secondary)', dot: 'var(--text-muted)' },
 }
 
 // ─── Mini bar chart ───────────────────────────────────────────────────────────
@@ -28,8 +28,8 @@ interface StepData {
   action_config?: any
 }
 
-function StepRow({ step, index }: {
-  step: StepData; index: number
+function StepRow({ step, index, isRTL }: {
+  step: StepData; index: number; isRTL: boolean
 }) {
   const colors: Record<string, { border: string; bg: string; icon: string }> = {
     message:   { border: 'border-info dark:border-info/30',    bg: 'bg-info/50 dark:bg-info/10',   icon: 'text-info' },
@@ -48,10 +48,10 @@ function StepRow({ step, index }: {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-[var(--text-primary)]">
           {step.step_type === 'message' ? step.message?.substring(0, 50) + '...' : 
-           step.step_type === 'delay' ? `Wait ${step.delay_hours} ${step.delay_unit}` :
+           step.step_type === 'delay' ? `${isRTL ? 'انتظار' : 'Wait'} ${step.delay_hours} ${step.delay_unit}` :
            step.step_type}
         </p>
-        <p className="text-xs text-[var(--text-tertiary)] capitalize">{step.step_type}</p>
+        <p className="text-xs text-[var(--text-tertiary)] capitalize">{isRTL ? ({ message: 'رسالة', delay: 'انتظار', condition: 'شرط', action: 'إجراء' }[step.step_type] || step.step_type) : step.step_type}</p>
       </div>
     </div>
   )
@@ -144,7 +144,7 @@ export default function SequenceDetailPage() {
   }
   
   const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this sequence?')) {
+    if (confirm(isRTL ? 'هل أنت متأكد من حذف هذا التسلسل؟' : 'Are you sure you want to delete this sequence?')) {
       setBusyAction('delete')
       setActionError(null)
       try {
@@ -164,7 +164,7 @@ export default function SequenceDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div role="status" className="text-gray-500">Loading sequence...</div>
+        <div role="status" className="text-gray-500">{isRTL ? 'جارٍ تحميل التسلسل…' : 'Loading sequence...'}</div>
       </div>
     )
   }
@@ -174,12 +174,12 @@ export default function SequenceDetailPage() {
       <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center gap-4 px-5 text-center">
         <AlertCircle className="text-error" size={30} />
         <div>
-          <h1 className="font-semibold text-[var(--text-primary)]">{loadError ? 'Could not load sequence' : 'Sequence not found'}</h1>
-          <p role={loadError ? 'alert' : undefined} className="mt-1 text-sm text-[var(--text-secondary)]">{loadError || 'This sequence may have been deleted or you may not have access to it.'}</p>
+          <h1 className="font-semibold text-[var(--text-primary)]">{loadError ? (isRTL ? 'تعذر تحميل التسلسل' : 'Could not load sequence') : (isRTL ? 'التسلسل غير موجود' : 'Sequence not found')}</h1>
+          <p role={loadError ? 'alert' : undefined} className="mt-1 text-sm text-[var(--text-secondary)]">{loadError || (isRTL ? 'ربما حُذف هذا التسلسل أو لا تملك صلاحية الوصول إليه.' : 'This sequence may have been deleted or you may not have access to it.')}</p>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
-          {loadError && <button onClick={() => void loadSequence()} className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">Try again</button>}
-          <Link href="/dashboard/sequences" className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">Back to sequences</Link>
+          {loadError && <button onClick={() => void loadSequence()} className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white">{isRTL ? 'أعد المحاولة' : 'Try again'}</button>}
+          <Link href="/dashboard/sequences" className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-secondary)]">{isRTL ? 'العودة إلى التسلسلات' : 'Back to sequences'}</Link>
         </div>
       </div>
     )
@@ -235,7 +235,7 @@ export default function SequenceDetailPage() {
       {/* ── Header ── */}
       <div className="flex items-start gap-4 justify-between">
         <div className="flex items-start gap-3">
-          <Link href="/dashboard/sequences" aria-label="Back to sequences"
+          <Link href="/dashboard/sequences" aria-label={isRTL ? 'العودة إلى التسلسلات' : 'Back to sequences'}
             className="mt-1 p-2 rounded-lg hover:bg-[var(--surface-elevated)] text-[var(--text-secondary)] transition-colors flex-shrink-0">
             <ArrowLeft size={16} className={isRTL ? 'rotate-180' : ''} />
           </Link>
@@ -245,7 +245,7 @@ export default function SequenceDetailPage() {
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
                 style={{ background: st.bg, color: st.color }}>
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: st.dot }} />
-                {st.label}
+                {isRTL ? ({ Active: 'نشط', Paused: 'متوقف مؤقتًا', Draft: 'مسودة' }[st.label] || st.label) : st.label}
               </span>
               {(Array.isArray(sequence.settings?.target_channels) && sequence.settings.target_channels.length > 0
                 ? sequence.settings.target_channels
@@ -259,9 +259,9 @@ export default function SequenceDetailPage() {
             <div className="flex items-center gap-3 mt-1.5 text-xs text-[var(--text-tertiary)]">
               <span className="flex items-center gap-1"><Zap size={11} className="text-warning" /> {sequence.trigger_type}</span>
               <span>·</span>
-              <span>{steps.length} steps</span>
+              <span>{steps.length} {isRTL ? 'خطوات' : 'steps'}</span>
               <span>·</span>
-              <span>Updated {new Date(sequence.updated_at).toLocaleDateString()}</span>
+              <span>{isRTL ? 'آخر تحديث' : 'Updated'} {new Date(sequence.updated_at).toLocaleDateString(isRTL ? 'ar' : undefined)}</span>
             </div>
           </div>
         </div>
@@ -276,25 +276,25 @@ export default function SequenceDetailPage() {
                 ? 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/20'
                 : 'border-success/30 bg-success/10 text-success hover:bg-success/20'
             }`}>
-            {status === 'active' ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Activate</>}
+            {status === 'active' ? <><Pause size={14} /> {isRTL ? 'إيقاف مؤقت' : 'Pause'}</> : <><Play size={14} /> {isRTL ? 'تفعيل' : 'Activate'}</>}
           </button>
           <Link href={`/dashboard/sequences/${params.id}/edit`}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors">
-            <Edit2 size={14} /> Edit
+            <Edit2 size={14} /> {isRTL ? 'تعديل' : 'Edit'}
           </Link>
           <div className="relative">
-            <button onClick={() => setMoreOpen(v => !v)} aria-label="More sequence actions" aria-expanded={moreOpen} disabled={!!busyAction}
+            <button onClick={() => setMoreOpen(v => !v)} aria-label={isRTL ? 'إجراءات إضافية للتسلسل' : 'More sequence actions'} aria-expanded={moreOpen} disabled={!!busyAction}
               className="p-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] transition-colors">
               <MoreHorizontal size={16} />
             </button>
             {moreOpen && (
               <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-11 z-20 w-40 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-elevated)] shadow-lg`}>
                 <button onClick={() => void handleDuplicate()} disabled={!!busyAction} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface)] disabled:opacity-50">
-                  <Copy size={13} /> Duplicate
+                  <Copy size={13} /> {isRTL ? 'إنشاء نسخة' : 'Duplicate'}
                 </button>
                 <div className="border-t border-[var(--divider)]" />
                 <button onClick={() => void handleDelete()} disabled={!!busyAction} className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-error transition-colors hover:bg-error/10 disabled:opacity-50">
-                  <Trash2 size={13} /> Delete
+                  <Trash2 size={13} /> {isRTL ? 'حذف' : 'Delete'}
                 </button>
               </div>
             )}
@@ -306,7 +306,7 @@ export default function SequenceDetailPage() {
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 bg-[var(--surface-elevated)] border border-[var(--border)] rounded-xl p-1 w-fit">
-        {([['overview', 'Overview'], ['analytics', 'Analytics'], ['contacts', 'Contacts']] as const).map(([k, l]) => (
+        {([['overview', isRTL ? 'نظرة عامة' : 'Overview'], ['analytics', isRTL ? 'التحليلات' : 'Analytics'], ['contacts', isRTL ? 'جهات الاتصال' : 'Contacts']] as const).map(([k, l]) => (
           <button key={k} onClick={() => setActiveTab(k)} aria-pressed={activeTab === k}
             className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeTab === k ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -321,27 +321,25 @@ export default function SequenceDetailPage() {
         <div className="space-y-6">
           {/* Stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="Enrolled" value={Number(stats.total_enrollments || 0).toLocaleString()} sub="Total contacts" />
-            <StatTile label="Active now" value={Number(stats.active_enrollments || 0).toLocaleString()} sub="In progress" accent="var(--accent)" />
-            <StatTile label="Completed" value={stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments).toLocaleString()} sub="Finished all steps" accent="#16A085" />
-            <StatTile label="Conversion" value={stats.conversion_rate == null ? '—' : `${stats.conversion_rate}%`} sub="Goal achieved" accent="#8B3FFB" />
-            <StatTile label="Messages sent" value={stats.messages_sent == null ? '—' : Number(stats.messages_sent).toLocaleString()} />
-            <StatTile label="Stopped" value={stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments).toLocaleString()} />
-            <StatTile label="Failed" value={stats.failed_enrollments == null ? '—' : Number(stats.failed_enrollments).toLocaleString()} />
+            <StatTile label={isRTL ? 'المسجلون' : 'Enrolled'} value={Number(stats.total_enrollments || 0).toLocaleString(isRTL ? 'ar' : 'en')} sub={isRTL ? 'إجمالي جهات الاتصال' : 'Total contacts'} />
+            <StatTile label={isRTL ? 'نشط الآن' : 'Active now'} value={Number(stats.active_enrollments || 0).toLocaleString(isRTL ? 'ar' : 'en')} sub={isRTL ? 'قيد التنفيذ' : 'In progress'} accent="var(--accent)" />
+            <StatTile label={isRTL ? 'مكتمل' : 'Completed'} value={stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments).toLocaleString(isRTL ? 'ar' : 'en')} sub={isRTL ? 'أكمل جميع الخطوات' : 'Finished all steps'} accent="var(--success)" />
+            <StatTile label={isRTL ? 'معدل التحويل' : 'Conversion'} value={stats.conversion_rate == null ? '—' : `${stats.conversion_rate}%`} sub={isRTL ? 'تم تحقيق الهدف' : 'Goal achieved'} accent="var(--ai-accent)" />
+            <StatTile label={isRTL ? 'الرسائل المرسلة' : 'Messages sent'} value={stats.messages_sent == null ? '—' : Number(stats.messages_sent).toLocaleString(isRTL ? 'ar' : 'en')} />
+            <StatTile label={isRTL ? 'متوقف' : 'Stopped'} value={stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments).toLocaleString(isRTL ? 'ar' : 'en')} />
+            <StatTile label={isRTL ? 'فشل' : 'Failed'} value={stats.failed_enrollments == null ? '—' : Number(stats.failed_enrollments).toLocaleString(isRTL ? 'ar' : 'en')} />
           </div>
 
           {/* Steps timeline */}
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">Sequence Steps</h3>
-              <span className="text-xs text-[var(--text-tertiary)]">{steps.length} steps total</span>
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">{isRTL ? 'خطوات التسلسل' : 'Sequence Steps'}</h3>
+              <span className="text-xs text-[var(--text-tertiary)]">{steps.length} {isRTL ? 'خطوات إجمالًا' : 'steps total'}</span>
             </div>
             <div className="p-4 space-y-2">
               {steps.map((step: StepData, i: number) => (
                 <React.Fragment key={i}>
-                  <StepRow
-                    step={step} index={i}
-                  />
+                  <StepRow step={step} index={i} isRTL={isRTL} />
                   {i < steps.length - 1 && (
                     <div className="flex justify-center py-1">
                       <div className="w-px h-4 bg-[var(--border)]" />
@@ -357,7 +355,7 @@ export default function SequenceDetailPage() {
       {/* ── Analytics Tab ── */}
       {activeTab === 'analytics' && (
         <div className="space-y-5">
-          <div className="rounded-xl border border-border bg-surface-elevated p-6 text-sm text-text-muted">The sequence analytics API provides aggregate counts only. Daily enrollment and per-step reply charts are not available.</div>
+          <div className="rounded-xl border border-border bg-surface-elevated p-6 text-sm text-text-muted">{isRTL ? 'توفر واجهة تحليلات التسلسل أعدادًا إجمالية فقط. لا تتوفر مخططات يومية للتسجيل أو الردود لكل خطوة.' : 'The sequence analytics API provides aggregate counts only. Daily enrollment and per-step reply charts are not available.'}</div>
         </div>
       )}
 
@@ -367,9 +365,9 @@ export default function SequenceDetailPage() {
           {/* Enrollment breakdown */}
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: 'In Progress', value: Number(stats.active_enrollments || 0), color: 'var(--accent)' },
-              { label: 'Completed', value: stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments), color: '#16A085' },
-              { label: 'Stopped', value: stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments), color: '#FF4757' },
+              { label: isRTL ? 'قيد التنفيذ' : 'In Progress', value: Number(stats.active_enrollments || 0), color: 'var(--accent)' },
+              { label: isRTL ? 'مكتمل' : 'Completed', value: stats.completed_enrollments == null ? '—' : Number(stats.completed_enrollments), color: 'var(--success)' },
+              { label: isRTL ? 'متوقف' : 'Stopped', value: stats.stopped_enrollments == null ? '—' : Number(stats.stopped_enrollments), color: 'var(--error)' },
             ].map(c => (
               <div key={c.label} className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl p-5 text-center">
                 <p className="text-2xl font-black" style={{ color: c.color }}>{c.value.toLocaleString()}</p>
@@ -381,22 +379,22 @@ export default function SequenceDetailPage() {
           {/* Enrollment outcomes and delivery context */}
           <div className="bg-[var(--surface-elevated)] border border-[var(--border)] rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--text-primary)]">Enrolled Contacts</h3>
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">{isRTL ? 'جهات الاتصال المسجلة' : 'Enrolled Contacts'}</h3>
               <button onClick={exportEnrollments} disabled={enrollments.length === 0} className="flex items-center gap-1.5 text-xs text-[var(--accent)] font-semibold hover:underline disabled:opacity-40">
-                Export CSV <ArrowUpRight size={12} />
+                {isRTL ? 'تصدير CSV' : 'Export CSV'} <ArrowUpRight size={12} />
               </button>
             </div>
             {enrollments.length === 0 ? <div className="p-5 text-center text-[var(--text-tertiary)]">
               <Users size={32} className="mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No enrollment records found.</p>
+              <p className="text-sm">{isRTL ? 'لم يتم العثور على سجلات تسجيل.' : 'No enrollment records found.'}</p>
             </div> : <div className="divide-y divide-border">{enrollments.map((item) => {
               const reason = item.stop_reason || item.failed_reason
               const sender = item.conversation?.channel
               return <div key={item.id} className="flex flex-col gap-1 px-5 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="truncate text-[var(--text-primary)]">{item.conversation?.sender_name || item.conversation?.sender_id || 'Unknown contact'}</p>
-                  <p className="text-xs text-[var(--text-tertiary)]">Sending account: {sender?.page_name || sender?.page_id || sender?.type || 'Unavailable'}</p>
-                  {reason && <p className="text-xs text-warning">Reason: {String(reason).replaceAll('_', ' ')}</p>}
+                  <p className="truncate text-[var(--text-primary)]">{item.conversation?.sender_name || item.conversation?.sender_id || (isRTL ? 'جهة اتصال غير معروفة' : 'Unknown contact')}</p>
+                  <p className="text-xs text-[var(--text-tertiary)]">{isRTL ? 'حساب الإرسال:' : 'Sending account:'} {sender?.page_name || sender?.page_id || sender?.type || (isRTL ? 'غير متاح' : 'Unavailable')}</p>
+                  {reason && <p className="text-xs text-warning">{isRTL ? 'السبب:' : 'Reason:'} {String(reason).replaceAll('_', ' ')}</p>}
                 </div>
                 <span className="shrink-0 text-text-muted">{item.status}</span>
               </div>

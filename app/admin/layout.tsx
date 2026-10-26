@@ -10,12 +10,12 @@ import { clsx } from 'clsx'
 import { useLang } from '../../lib/LangContext'
 
 const navItems = [
-  { path: '/admin', ar: '????????', en: 'Overview', icon: Home },
-  { path: '/admin/users', ar: '??????????', en: 'Users', icon: Users },
-  { path: '/admin/packages', ar: '???????', en: 'Packages', icon: Box },
-  { path: '/admin/payments', ar: '?????????', en: 'Payments', icon: CreditCard },
-  { path: '/admin/blog', ar: '???????', en: 'Blog', icon: FileText },
-  { path: '/admin/settings', ar: '?????????', en: 'Settings', icon: Settings },
+  { path: '/admin', ar: 'نظرة عامة', en: 'Overview', icon: Home },
+  { path: '/admin/users', ar: 'المستخدمون', en: 'Users', icon: Users },
+  { path: '/admin/packages', ar: 'الباقات', en: 'Packages', icon: Box },
+  { path: '/admin/payments', ar: 'المدفوعات', en: 'Payments', icon: CreditCard },
+  { path: '/admin/blog', ar: 'المدونة', en: 'Blog', icon: FileText },
+  { path: '/admin/settings', ar: 'الإعدادات', en: 'Settings', icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/admin/login')
   }
 
-  const pageTitle = useMemo(() => navItems.find((item) => item.path === pathname)?.[isRTL ? 'ar' : 'en'] || (isRTL ? '???? ???????' : 'Admin'), [pathname, isRTL])
+  const pageTitle = useMemo(() => navItems.find((item) => item.path === pathname)?.[isRTL ? 'ar' : 'en'] || (isRTL ? 'الإدارة' : 'Admin'), [pathname, isRTL])
 
   if (pathname === '/admin/login') return <>{children}</>
 
@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </nav>
 
       <div className="space-y-2 border-t border-white/10 pt-4 dark:border-white/10">
-        <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-white/70 transition hover:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"><BarChart3 size={19} />{isRTL ? '?????? ???????' : 'Back to App'}</Link>
+        <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-white/70 transition hover:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"><BarChart3 size={19} />{isRTL ? 'العودة إلى التطبيق' : 'Back to App'}</Link>
         <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-white/60 transition hover:bg-white/50 dark:text-white/30 dark:hover:bg-white/40"><LogOut size={19} />{t.common.logout}</button>
       </div>
     </aside>
@@ -125,11 +125,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <button className="rounded-xl p-2 text-white/70 hover:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 lg:hidden" onClick={() => setSidebarOpen(true)} aria-label="Open menu"><Menu size={22} /></button>
               <div className="min-w-0">
                 <div className="truncate text-sm font-black text-white/70 dark:text-white">{pageTitle}</div>
-                <div className="hidden text-xs text-white/70 dark:text-white/70 sm:block">{isRTL ? '????? ??????? ??????? ?????? ?????????? ??????????' : 'Manage performance, security, AI, and revenue'}</div>
+                <div className="hidden text-xs text-white/70 dark:text-white/70 sm:block">{isRTL ? 'إدارة الأداء والأمان والذكاء الاصطناعي والإيرادات' : 'Manage performance, security, AI, and revenue'}</div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden items-center gap-2 rounded-2xl border border-white/10 bg-white px-3 py-2 text-sm text-white/70 dark:border-white/10 dark:bg-white/8 dark:text-white/70 md:flex"><Search size={16} />{isRTL ? '??? ???' : 'Global search'}<kbd className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] dark:bg-white/10">/</kbd></div>
+              <div className="hidden items-center gap-2 rounded-2xl border border-white/10 bg-white px-3 py-2 text-sm text-white/70 dark:border-white/10 dark:bg-white/8 dark:text-white/70 md:flex"><Search size={16} />{isRTL ? 'بحث شامل' : 'Global search'}<kbd className="rounded bg-white/5 px-1.5 py-0.5 text-[10px] dark:bg-white/10">/</kbd></div>
               <button className="relative rounded-xl p-2 text-white/70 hover:bg-white/5 dark:text-white/70 dark:hover:bg-white/10" aria-label="Notifications"><Bell size={20} /><span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-white/40" /></button>
               <button onClick={toggleTheme} className="rounded-xl p-2 text-white/70 hover:bg-white/5 dark:text-white/70 dark:hover:bg-white/10" aria-label="Toggle theme">{dark ? <Sun size={20} /> : <Moon size={20} />}</button>
             </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useLang } from '../../lib/LangContext'
 import { CHANNELS, ChannelType, TriggerType } from './types'
 
 function Toggle({
@@ -66,6 +67,8 @@ export default function SettingsPanel({
   onAllowReentryChange,
   triggerType,
 }: Props) {
+  const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const toggleChannel = (id: ChannelType) => {
     if (channels.includes(id)) {
       if (channels.length === 1) return
@@ -79,10 +82,10 @@ export default function SettingsPanel({
 
   return (
     <div className="space-y-5 rounded-2xl border border-border bg-surface-elevated p-5">
-      <h3 className="text-sm font-bold text-text-primary">Settings</h3>
+      <h3 className="text-sm font-bold text-text-primary">{L('Settings', 'الإعدادات')}</h3>
 
       <div className="space-y-2">
-        <p className="text-xs font-semibold text-text-secondary">Send on</p>
+        <p className="text-xs font-semibold text-text-secondary">{L('Send on', 'قنوات الإرسال')}</p>
         <div className="flex flex-wrap gap-1.5">
           {CHANNELS.map((c) => {
             const on = channels.includes(c.id)
@@ -104,25 +107,25 @@ export default function SettingsPanel({
             )
           })}
         </div>
-        <p className="text-xs text-text-tertiary">Contacts on other channels won&apos;t receive this sequence.</p>
+        <p className="text-xs text-text-tertiary">{L('Contacts on other channels won’t receive this sequence.', 'لن تتلقى جهات الاتصال على القنوات الأخرى هذا التسلسل.')}</p>
         {channels.length === 0 && (
           <p role="status" className="text-xs font-medium text-amber-700">
-            Choose at least one channel before saving. No channel is selected by default.
+            {L('Choose at least one channel before saving. No channel is selected by default.', 'اختر قناة واحدة على الأقل قبل الحفظ. لا يتم تحديد أي قناة تلقائيًا.')}
           </p>
         )}
       </div>
 
       <div className="space-y-4 border-t border-border/60 pt-4">
         <Toggle
-          label="Stop when customer replies"
-          helper={noReply ? 'Always on for no-reply sequences.' : 'Ends the sequence as soon as they answer.'}
+          label={L('Stop when customer replies', 'إيقاف التسلسل عند رد العميل')}
+          helper={noReply ? L('Always on for no-reply sequences.', 'مفعّل دائمًا لتسلسلات عدم الرد.') : L('Ends the sequence as soon as they answer.', 'ينهي التسلسل فور رد العميل.')}
           checked={stopOnReply || noReply}
           disabled={noReply}
           onChange={onStopOnReplyChange}
         />
         <Toggle
-          label="Allow re-entry"
-          helper="Let the same contact go through this sequence more than once."
+          label={L('Allow re-entry', 'السماح بإعادة التسجيل')}
+          helper={L('Let the same contact go through this sequence more than once.', 'السماح لجهة الاتصال نفسها بالمرور بهذا التسلسل أكثر من مرة.')}
           checked={allowReentry}
           onChange={onAllowReentryChange}
         />
@@ -130,14 +133,14 @@ export default function SettingsPanel({
 
       <div className="space-y-1.5 border-t border-border/60 pt-4">
         <label htmlFor="seq-description" className="text-xs font-semibold text-text-secondary">
-          Description <span className="font-normal text-text-tertiary">(optional)</span>
+          {L('Description', 'الوصف')} <span className="font-normal text-text-tertiary">{L('(optional)', '(اختياري)')}</span>
         </label>
         <textarea
           id="seq-description"
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
           rows={2}
-          placeholder="What is this sequence for?"
+          placeholder={L('What is this sequence for?', 'ما الغرض من هذا التسلسل؟')}
           className="w-full resize-y rounded-lg border border-border bg-surface p-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
         />
       </div>

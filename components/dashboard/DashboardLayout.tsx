@@ -386,7 +386,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--text-tertiary)] tracking-widest uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] animate-pulse" />
-            Loading NazBiz…
+            {isRTL ? 'جارٍ تحميل ناز بزنس…' : 'Loading NazBiz…'}
           </div>
         </div>
       </div>
@@ -397,10 +397,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div role="alert" className="max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center shadow-md">
-          <h1 className="text-sm font-bold text-[var(--text-primary)]">Could not load your account</h1>
-          <p className="mt-2 text-xs text-[var(--text-secondary)] leading-relaxed">Check your connection and try again.</p>
+          <h1 className="text-sm font-bold text-[var(--text-primary)]">{isRTL ? 'تعذر تحميل حسابك' : 'Could not load your account'}</h1>
+          <p className="mt-2 text-xs text-[var(--text-secondary)] leading-relaxed">{isRTL ? 'تحقق من اتصالك ثم حاول مرة أخرى.' : 'Check your connection and try again.'}</p>
           <button type="button" onClick={() => void retryAuth()} className="mt-4 rounded-lg bg-[var(--brand)] px-4 py-2 text-xs font-semibold text-[var(--brand-text)]">
-            Try again
+            {isRTL ? 'أعد المحاولة' : 'Try again'}
           </button>
         </div>
       </div>

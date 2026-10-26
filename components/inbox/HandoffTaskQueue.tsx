@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import { useLang } from '../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -21,6 +22,8 @@ function token(): string {
 }
 
 export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: (conversationId: number) => void; onResolved?: () => void }) {
+  const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [tasks, setTasks] = useState<HandoffTask[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -54,7 +57,7 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
 
   const resolve = async (taskId: number) => {
     try {
-      const resolutionNote = window.prompt('Add a resolution note (optional):')
+      const resolutionNote = window.prompt(L('Add a resolution note (optional):', 'أضف ملاحظة للحل (اختياري):'))
       if (resolutionNote === null) return
       const response = await fetch(`${API}/api/handoff-tasks/${taskId}/resolve`, {
         method: 'PATCH',
@@ -69,19 +72,19 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
     }
   }
 
-  if (loading && tasks.length === 0) return <div className="border-b border-border px-3 py-2 text-[11px] text-text-tertiary">Loading handoffs…</div>
-  if (error && tasks.length === 0) return <div className="border-b border-border px-3 py-2 text-[11px] text-warning">Handoff task list is unavailable.</div>
+  if (loading && tasks.length === 0) return <div className="border-b border-border px-3 py-2 text-[11px] text-text-tertiary">{L('Loading handoffs…', 'جارٍ تحميل طلبات المتابعة…')}</div>
+  if (error && tasks.length === 0) return <div className="border-b border-border px-3 py-2 text-[11px] text-warning">{L('Handoff task list is unavailable.', 'قائمة طلبات المتابعة غير متاحة.')}</div>
   if (tasks.length === 0 && overdueCount === 0) return null
 
   const compact = Boolean(onSelect)
 
   return (
-    <section className={`border-b border-warning/20 bg-warning/5 ${compact ? 'px-3 py-2' : 'rounded-2xl border p-4'}`} aria-label="Open handoff tasks">
+    <section dir={isRTL ? 'rtl' : 'ltr'} className={`border-b border-warning/20 bg-warning/5 ${compact ? 'px-3 py-2' : 'rounded-2xl border p-4'}`} aria-label={L('Open handoff tasks', 'طلبات المتابعة المفتوحة')}>
       <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
         <AlertTriangle className="h-4 w-4 text-warning" />
-        <span>{tasks.length} open handoff{tasks.length === 1 ? '' : 's'}</span>
-        {overdueCount > 0 && <span className="ml-auto text-warning">{overdueCount} overdue</span>}
-        {!compact && <Link className="ml-auto text-brand hover:underline" href="/dashboard/handoffs">Manage handoffs</Link>}
+        <span>{tasks.length} {L('open handoff tasks', 'طلبات متابعة مفتوحة')}</span>
+        {overdueCount > 0 && <span className="ms-auto text-warning">{overdueCount} {L('overdue', 'متأخرة')}</span>}
+        {!compact && <Link className="ms-auto text-brand hover:underline" href="/dashboard/handoffs">{L('Manage handoffs', 'إدارة طلبات المتابعة')}</Link>}
       </div>
       <ul className={`mt-2 space-y-1.5 ${compact ? 'max-h-24 overflow-y-auto' : ''}`}>
         {tasks.slice(0, compact ? 3 : 5).map(task => {
@@ -90,11 +93,11 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
           return (
             <li key={task.id} className="flex items-center gap-2 text-[11px] text-text-secondary">
               <Clock className={`h-3.5 w-3.5 shrink-0 ${overdue ? 'text-error' : 'text-text-tertiary'}`} />
-              <button type="button" className="min-w-0 flex-1 truncate text-left hover:text-brand" onClick={() => conversationId && onSelect?.(conversationId)}>
-                {task.conversation?.sender_name || `Conversation #${conversationId}`} · {task.reason.replaceAll('_', ' ')}
+              <button type="button" className="min-w-0 flex-1 truncate text-start hover:text-brand" onClick={() => conversationId && onSelect?.(conversationId)}>
+                {task.conversation?.sender_name || `${L('Conversation', 'محادثة')} #${conversationId}`} · {task.reason.replaceAll('_', ' ')}
               </button>
-              {task.due_at && <time className={overdue ? 'text-error' : 'text-text-tertiary'}>{overdue ? 'Overdue' : new Date(task.due_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>}
-              {onSelect && <button type="button" className="rounded p-1 text-text-tertiary hover:text-success" title="Resolve handoff" onClick={() => void resolve(task.id)}><CheckCircle2 size={14} /></button>}
+              {task.due_at && <time className={overdue ? 'text-error' : 'text-text-tertiary'}>{overdue ? L('Overdue', 'متأخرة') : new Date(task.due_at).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' })}</time>}
+              {onSelect && <button type="button" className="rounded p-1 text-text-tertiary hover:text-success" title={L('Resolve handoff', 'إنهاء طلب المتابعة')} onClick={() => void resolve(task.id)}><CheckCircle2 size={14} /></button>}
             </li>
           )
         })}

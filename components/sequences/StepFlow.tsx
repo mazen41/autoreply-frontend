@@ -60,11 +60,13 @@ function IconBtn({
   danger?: boolean
   children: React.ReactNode
 }) {
+  const { isRTL } = useLang()
+  const localizedTitle = isRTL ? ({ 'Remove wait': 'إزالة الانتظار', 'Move up': 'تحريك لأعلى', 'Move down': 'تحريك لأسفل', Duplicate: 'إنشاء نسخة', Delete: 'حذف' }[title] || title) : title
   return (
     <button
       type="button"
-      title={title}
-      aria-label={title}
+      title={localizedTitle}
+      aria-label={localizedTitle}
       disabled={disabled}
       onClick={onClick}
       className={`p-1.5 rounded-md text-text-tertiary transition-colors disabled:opacity-30 disabled:pointer-events-none ${
@@ -89,6 +91,8 @@ function InsertPoint({
   onToggle: () => void
   onPick: (type: StepType) => void
 }) {
+  const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   return (
     <div className="flex flex-col items-center">
       {!isEmpty && <div className="w-px h-3 bg-border" />}
@@ -97,19 +101,22 @@ function InsertPoint({
           {(Object.keys(TYPE_META) as StepType[]).map((t) => {
             const m = TYPE_META[t]
             const Icon = m.icon
+            const label = isRTL ? ({ message: 'رسالة', delay: 'انتظار', condition: 'شرط', action: 'إجراء' }[t]) : m.label
+            const hint = isRTL ? ({ message: 'إرسال رسالة', delay: 'إيقاف مؤقت قبل الخطوة التالية', condition: 'تفرّع أو إيقاف بناءً على شرط', action: 'إضافة وسم أو إيقاف التسلسل' }[t]) : m.hint
             return (
               <button
                 key={t}
                 type="button"
                 onClick={() => onPick(t)}
-                className="flex items-center gap-2.5 rounded-lg p-2 text-left hover:bg-surface transition-colors"
+                dir={isRTL ? 'rtl' : 'ltr'}
+                className="flex items-center gap-2.5 rounded-lg p-2 text-start hover:bg-surface transition-colors"
               >
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${m.bg} ${m.tone}`}>
                   <Icon size={14} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-xs font-semibold text-text-primary">{m.label}</span>
-                  <span className="block truncate text-[11px] text-text-tertiary">{m.hint}</span>
+                  <span className="block text-xs font-semibold text-text-primary">{label}</span>
+                  <span className="block truncate text-[11px] text-text-tertiary">{hint}</span>
                 </span>
               </button>
             )
@@ -121,13 +128,13 @@ function InsertPoint({
           onClick={onToggle}
           className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-xs font-semibold text-text-secondary hover:border-brand/50 hover:text-brand transition-colors"
         >
-          <Plus size={14} /> Add step
+          <Plus size={14} /> {L('Add step', 'إضافة خطوة')}
         </button>
       ) : (
         <button
           type="button"
           onClick={onToggle}
-          aria-label="Insert step here"
+          aria-label={L('Insert step here', 'إدراج خطوة هنا')}
           className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-elevated text-text-tertiary hover:border-brand hover:text-brand transition-colors"
         >
           <Plus size={12} />
@@ -158,7 +165,7 @@ function DelayRow({
       }`}
     >
       <Clock size={14} className="text-brand shrink-0" />
-      <span className="text-xs font-semibold text-text-secondary">Wait</span>
+      <span className="text-xs font-semibold text-text-secondary">{isRTL ? 'انتظار' : 'Wait'}</span>
       <input
         type="number"
         min={1}
@@ -168,7 +175,7 @@ function DelayRow({
           onUpdate({ delay_hours: Number.isNaN(n) ? 0 : n })
         }}
         className={`${NUMBER_INPUT_CLASS} !h-8 !w-16`}
-        aria-label="Wait duration"
+        aria-label={isRTL ? 'مدة الانتظار' : 'Wait duration'}
       />
       <div className="w-28">
         <Select
@@ -176,10 +183,10 @@ function DelayRow({
           size="sm"
           value={step.delay_unit || 'hours'}
           onValueChange={(value) => onUpdate({ delay_unit: value as DelayUnit })}
-          options={DELAY_UNITS}
+          options={DELAY_UNITS.map((option) => ({ ...option, label: isRTL ? ({ minutes: 'دقائق', hours: 'ساعات', days: 'أيام' }[option.value] || option.label) : option.label }))}
         />
       </div>
-      <span className="hidden sm:inline text-xs text-text-tertiary">then continue</span>
+      <span className="hidden sm:inline text-xs text-text-tertiary">{isRTL ? 'ثم المتابعة' : 'then continue'}</span>
       {error && <span className="text-xs font-medium text-error">{error}</span>}
       <div className="ml-auto">
         <IconBtn title="Remove wait" onClick={onDelete} danger>
@@ -250,7 +257,7 @@ function StepCard({
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">
-            Step {index + 1} · {meta.label}
+            {isRTL ? `الخطوة ${index + 1} · ${{ message: 'رسالة', delay: 'انتظار', condition: 'شرط', action: 'إجراء' }[step.step_type]}` : `Step ${index + 1} · ${meta.label}`}
           </p>
           <p className="truncate text-sm text-text-primary">{summarizeStep(step)}</p>
         </div>
@@ -302,21 +309,21 @@ function StepCard({
             <div className="space-y-3">
               <Select
                 dir={isRTL ? 'rtl' : 'ltr'}
-                label="What should happen?"
+                label={isRTL ? 'ما الإجراء المطلوب؟' : 'What should happen?'}
                 value={step.config?.action_type || 'stop_sequence'}
                 onValueChange={(action_type) => {
                   const config: Record<string, any> = { ...(step.config || {}), action_type }
                   if (action_type === 'stop_sequence') delete config.tag
                   onUpdate({ config })
                 }}
-                options={ACTION_OPTIONS}
+                options={ACTION_OPTIONS.map((option) => ({ ...option, label: isRTL ? ({ stop_sequence: 'إيقاف التسلسل', add_tag: 'إضافة وسم', remove_tag: 'إزالة وسم' }[option.value] || option.label) : option.label }))}
               />
               {(step.config?.action_type === 'add_tag' || step.config?.action_type === 'remove_tag') && (
                 <Input
-                  label="Tag name"
+                  label={isRTL ? 'اسم الوسم' : 'Tag name'}
                   value={step.config?.tag || ''}
                   onChange={(e) => onUpdate({ config: { ...(step.config || {}), tag: e.target.value } })}
-                  placeholder="e.g. VIP, Interested"
+                  placeholder={isRTL ? 'مثال: مميز، مهتم' : 'e.g. VIP, Interested'}
                   error={error}
                 />
               )}

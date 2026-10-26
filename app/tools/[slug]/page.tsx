@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useAuth } from '@/lib/AuthContext'
 import { use } from 'react'
 import { Bot } from 'lucide-react'
+import { useLang } from '@/lib/LangContext'
 
 const toolComponents: Record<string, React.ComponentType> = {
   'sales-script': dynamic(() => import('@/components/tools/SalesScriptGenerator'), { ssr: false }),
@@ -43,6 +44,7 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
   }
 
   const { user, loading } = useAuth()
+  const { isRTL } = useLang()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
@@ -54,18 +56,18 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/tools" className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-              All Tools
+              {isRTL ? 'كل الأدوات' : 'All Tools'}
             </Link>
             {!loading && (
               user ? (
                 <Link href="/dashboard" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
                   style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-                  Dashboard
+                  {isRTL ? 'لوحة التحكم' : 'Dashboard'}
                 </Link>
               ) : (
                 <Link href="/register" className="px-4 py-2 rounded-lg text-sm font-bold transition-all"
                   style={{ background: 'var(--accent-subtle)', color: 'var(--accent)', border: '1px solid var(--accent-focus)' }}>
-                  Sign Up Free
+                  {isRTL ? 'سجّل مجاناً' : 'Sign Up Free'}
                 </Link>
               )
             )}
@@ -77,13 +79,13 @@ export default function ToolPage({ params }: { params: Promise<{ slug: string }>
       <div className="max-w-4xl mx-auto px-6 py-8">
         <Link href="/tools" className="inline-flex items-center gap-2 text-sm mb-6"
           style={{ color: 'var(--text-secondary)' }}>
-          ← Back to Tools
+          {isRTL ? '→ العودة إلى الأدوات' : '← Back to Tools'}
         </Link>
         <h1 className="font-black mb-2" style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
-          {toolName.ar}
+          {isRTL ? toolName.ar : toolName.en}
         </h1>
         <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-          {toolName.en}
+          {isRTL ? toolName.en : toolName.ar}
         </p>
       </div>
 

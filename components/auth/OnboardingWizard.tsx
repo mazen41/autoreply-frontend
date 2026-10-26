@@ -94,9 +94,9 @@ const REGIONAL_DEFAULTS: Record<string, { currency: string; timezone: string }> 
 }
 
 // ─── PROGRESS BAR ─────────────────────────────────────────────────────────────
-function ProgressBar({ step, total }: { step: number; total: number }) {
+function ProgressBar({ step, total, isRTL }: { step: number; total: number; isRTL: boolean }) {
   const pct = ((step) / total) * 100
-  const STEP_LABELS = ['Business Type', 'Business Info', 'AI Tuning', 'Connect Channel']
+  const STEP_LABELS = isRTL ? ['نوع النشاط', 'معلومات النشاط', 'إعداد الذكاء الاصطناعي', 'ربط قناة'] : ['Business Type', 'Business Info', 'AI Tuning', 'Connect Channel']
   return (
     <div className="w-full mb-8">
       <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider mb-3">
@@ -124,7 +124,7 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
                   : i + 1 === step
                     ? 'var(--brand)'
                     : 'rgba(255,255,255,0.08)',
-                boxShadow: i + 1 === step ? '0 0 8px rgba(0,232,122,0.5)' : 'none',
+                boxShadow: i + 1 === step ? '0 0 8px color-mix(in srgb, var(--accent) 50%, transparent)' : 'none',
               }}
             />
           </div>
@@ -155,9 +155,9 @@ function Step1({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               onClick={() => setData({ ...data, businessType: type.id })}
               className="flex flex-col items-center gap-2.5 p-5 rounded-2xl text-center transition-all duration-200"
               style={{
-                background: selected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
-                border: `2px solid ${selected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
-                boxShadow: selected ? '0 0 24px rgba(0,232,122,0.1)' : 'none',
+                background: selected ? 'var(--accent-subtle)' : 'var(--surface)',
+                border: `2px solid ${selected ? 'var(--accent-outline)' : 'var(--border)'}`,
+                boxShadow: selected ? '0 0 18px color-mix(in srgb, var(--accent) 10%, transparent)' : 'none',
               }}>
               <span style={{ fontSize: 32 }}>{type.icon}</span>
               <span className="text-sm font-bold leading-tight" style={{ color: selected ? 'var(--brand)' : 'var(--text-secondary)' }}>
@@ -186,8 +186,8 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     outline: 'none',
   }
   const inputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
-    e.currentTarget.style.borderColor = 'rgba(0,232,122,0.2)'
-    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,232,122,0.1)'
+    e.currentTarget.style.borderColor = 'var(--accent-outline)'
+    e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
   }
   const inputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     e.currentTarget.style.borderColor = 'var(--border)'
@@ -294,8 +294,8 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 <button key={day.id} type="button" onClick={() => toggleDay(day.id)}
                   className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200"
                   style={{
-                    background: on ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
-                    border: `1px solid ${on ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                    background: on ? 'var(--accent-subtle)' : 'var(--surface)',
+                    border: `1px solid ${on ? 'var(--accent-outline)' : 'var(--border)'}`,
                     color: on ? 'var(--brand)' : 'var(--text-tertiary)',
                   }}>
                   {isRTL ? day.ar : day.en}
@@ -354,8 +354,8 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     resize: 'none' as const,
   }
   const taFocus = (e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = 'rgba(0,232,122,0.2)'
-    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,232,122,0.1)'
+    e.currentTarget.style.borderColor = 'var(--accent-outline)'
+    e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-subtle)'
   }
   const taBlur = (e: React.FocusEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     e.currentTarget.style.borderColor = 'var(--border)'
@@ -402,7 +402,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             </div>
             <button type="button" onClick={addFaq}
               className="text-xs font-bold px-3 py-1.5 rounded-xl transition-all duration-200"
-              style={{ background: 'rgba(0,232,122,0.1)', color: 'var(--brand)', border: '1px solid rgba(0,232,122,0.2)' }}>
+              style={{ background: 'var(--accent-subtle)', color: 'var(--brand)', border: '1px solid var(--accent-outline)' }}>
               + {isRTL ? 'إضافة' : 'Add'}
             </button>
           </div>
@@ -412,7 +412,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                 <button type="button" onClick={() => removeFaq(i)}
                   className="absolute text-[11px] transition-colors"
-                  style={{ top: 10, [isRTL ? 'left' : 'right']: 10, color: 'rgba(0,232,122,0.2)' }}>
+                  style={{ top: 10, [isRTL ? 'left' : 'right']: 10, color: 'var(--accent-outline)' }}>
                   ✕
                 </button>
                 <input type="text"
@@ -436,7 +436,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             {data.faqs.length === 0 && (
               <button type="button" onClick={addFaq}
                 className="w-full py-4 rounded-xl text-sm border-dashed transition-all duration-200"
-                style={{ border: '2px dashed rgba(0,232,122,0.2)', color: 'var(--text-tertiary)', background: 'transparent' }}>
+                style={{ border: '2px dashed var(--accent-outline)', color: 'var(--text-tertiary)', background: 'transparent' }}>
                 + {isRTL ? 'أضف سؤالاً وإجابة' : 'Add a question and answer'}
               </button>
             )}
@@ -456,8 +456,8 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                   onClick={() => setData({ ...data, replyStyle: style.id })}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-start transition-all duration-200"
                   style={{
-                    background: selected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
-                    border: `1px solid ${selected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                    background: selected ? 'var(--accent-subtle)' : 'var(--surface)',
+                    border: `1px solid ${selected ? 'var(--accent-outline)' : 'var(--border)'}`,
                     color: selected ? 'var(--brand)' : 'var(--text-secondary)',
                   }}>
                   <span style={{ fontSize: 18 }}>{style.icon}</span>
@@ -564,7 +564,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
         })
         const result = await response.json().catch(() => ({}))
-        if (!response.ok || !result.url) throw new Error(result.message || 'Could not start channel connection')
+        if (!response.ok || !result.url) throw new Error(isRTL ? 'تعذر بدء ربط القناة. حاول مرة أخرى أو اربطها من صفحة القنوات.' : (result.message || 'Could not start channel connection'))
         window.location.href = result.url
       } catch (error) {
         console.error('Channel connection could not start:', error)
@@ -613,7 +613,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
       {/* Recommended */}
       <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl"
-        style={{ background: 'rgba(0,232,122,0.1)', border: '1px solid rgba(0,232,122,0.2)' }}>
+        style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-outline)' }}>
         <span style={{ color: 'var(--brand)', fontSize: 13 }}>💡</span>
         <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           {isRTL ? 'نوصي بربط WhatsApp أو Salla' : 'We recommend WhatsApp or Salla'}
@@ -630,8 +630,8 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               transition={{ delay: i * 0.08 }}
               className="flex items-center justify-between p-4 rounded-2xl transition-all duration-200"
               style={{
-                background: connected ? 'rgba(0,232,122,0.1)' : 'var(--surface)',
-                border: `1px solid ${connected ? 'rgba(0,232,122,0.2)' : 'var(--border)'}`,
+                background: connected ? 'var(--accent-subtle)' : 'var(--surface)',
+                border: `1px solid ${connected ? 'var(--accent-outline)' : 'var(--border)'}`,
               }}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center p-2"
@@ -658,7 +658,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
               {connected ? (
                 <div className="px-3 py-1.5 rounded-xl text-xs font-bold"
-                  style={{ background: 'rgba(0,232,122,0.1)', color: 'var(--brand)', border: '1px solid rgba(0,232,122,0.2)' }}>
+                  style={{ background: 'var(--accent-subtle)', color: 'var(--brand)', border: '1px solid var(--accent-outline)' }}>
                   ✓ {isRTL ? 'مربوط' : 'Connected'}
                 </div>
               ) : (
@@ -701,7 +701,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       )}
 
       {/* Skip */}
-      <div className="p-4 rounded-xl" style={{ background: 'rgba(0,232,122,0.1)', border: '1px solid rgba(0,232,122,0.2)' }}>
+      <div className="p-4 rounded-xl" style={{ background: 'var(--accent-subtle)', border: '1px solid var(--accent-outline)' }}>
         <p className="text-xs" style={{ color: 'var(--brand)' }}>
           ⚠️ {isRTL
             ? 'يمكنك تخطي هذه الخطوة الآن وربط قناة لاحقاً من لوحة التحكم، لكن لن يعمل البوت حتى ذلك الحين.'
@@ -725,7 +725,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-        style={{ background: 'rgba(0,232,122,0.1)', border: '3px solid rgba(0,232,122,0.2)', boxShadow: '0 0 40px rgba(0,232,122,0.2)' }}>
+        style={{ background: 'var(--accent-subtle)', border: '3px solid var(--accent-outline)', boxShadow: '0 0 28px color-mix(in srgb, var(--accent) 20%, transparent)' }}>
         <motion.span
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           transition={{ delay: 0.3, type: 'spring', stiffness: 300 }}
@@ -738,7 +738,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
           className="absolute rounded-full pointer-events-none"
           style={{
             width: 80 + i * 40, height: 80 + i * 40,
-            border: '1px solid rgba(0,232,122,0.2)',
+            border: '1px solid var(--accent-outline)',
             left: '50%', top: 80,
             transform: 'translate(-50%,-50%)',
           }}
@@ -757,7 +757,7 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
 
         {/* Summary */}
         <div className="glass rounded-2xl p-5 mb-6 text-start"
-          style={{ background: 'var(--surface)', border: '1px solid rgba(0,232,122,0.1)' }}>
+          style={{ background: 'var(--surface)', border: '1px solid var(--accent-subtle)' }}>
           <div className="text-[10px] font-bold tracking-widest mb-3 text-center" style={{ color: 'var(--brand)' }}>
             {isRTL ? 'ملخص الإعداد' : 'SETUP SUMMARY'}
           </div>
@@ -958,7 +958,7 @@ export default function OnboardingWizard() {
         router.replace('/dashboard/channels')
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not save onboarding progress.')
+        setError(isRTL ? 'تعذر حفظ تقدم الإعداد. حاول مرة أخرى.' : (cause instanceof Error ? cause.message : 'Could not save onboarding progress.'))
     } finally { setSaving(false) }
   }
 
@@ -970,10 +970,10 @@ export default function OnboardingWizard() {
         method: 'POST',
         headers: { Accept: 'application/json', Authorization: `Bearer ${getToken()}`, ...getBusinessHeaders() },
       })
-      if (!response.ok) throw new Error('Could not skip onboarding.')
+      if (!response.ok) throw new Error(isRTL ? 'تعذر تخطي الإعداد.' : 'Could not skip onboarding.')
       router.replace('/dashboard/channels')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not skip onboarding.')
+      setError(isRTL ? 'تعذر تخطي الإعداد.' : (cause instanceof Error ? cause.message : 'Could not skip onboarding.'))
     } finally { setSaving(false) }
   }
 
@@ -984,13 +984,13 @@ export default function OnboardingWizard() {
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#04061A]">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
       <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   return (
-    <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-[#04061A] relative overflow-hidden">
+    <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-[var(--background)] relative overflow-hidden">
       {/* Deep background glows */}
       <div className="fixed -top-24 -right-24 w-72 h-72 rounded-full bg-accent/[0.06] blur-3xl pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[var(--brand)]/[0.06] blur-3xl pointer-events-none" />
@@ -1013,12 +1013,12 @@ export default function OnboardingWizard() {
         </div>
 
         {/* Main card */}
-        <div className="rounded-3xl p-7 bg-[#0C0E1E] border border-white/[0.06] shadow-2xl shadow-black/40 relative overflow-hidden">
+        <div className="rounded-3xl p-7 bg-[var(--surface)] border border-[var(--border)] shadow-2xl shadow-black/40 relative overflow-hidden">
           {/* inner subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-[var(--brand)]/[0.02] pointer-events-none" />
 
           <div className="relative">
-            {step <= 4 && <ProgressBar step={step} total={4} />}
+            {step <= 4 && <ProgressBar step={step} total={4} isRTL={isRTL} />}
             {error && <p role="alert" className="mb-4 rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-xs text-red-200">{error}</p>}
 
             <AnimatePresence mode="wait" custom={direction}>

@@ -33,7 +33,7 @@ export default function TermsPage() {
         },
         {
           id: 'service-desc',
-          icon: <Sparkles className="w-5 h-5 text-purple-400" />,
+          icon: <Sparkles className="w-5 h-5 text-ai-accent" />,
           title: '2. Description of Platform Services',
           content: `Naz Biz provides an enterprise multi-channel AI customer support platform. The service aggregates customer conversations across messaging channels (Meta Pages, Instagram, WhatsApp, Telegram, Gmail, Salla, Shopify, TikTok) and generates automated contextual replies using artificial intelligence.`
         },
@@ -120,7 +120,7 @@ export default function TermsPage() {
         },
         {
           id: 'service-desc',
-          icon: <Sparkles className="w-5 h-5 text-purple-400" />,
+          icon: <Sparkles className="w-5 h-5 text-ai-accent" />,
           title: '2. وصف خدمات المنصة',
           content: `توفر ناز بيز منصة متكاملة لأتمتة خدمة العملاء بالذكاء الاصطناعي. تجمع المنصة المحادثات عبر قنوات المراسلة (فيسبوك، إنستغرام، واتساب، تليجرام، جيميل، سلة، شوبيفاي، تيك توك) وتولد ردوداً سياقية فورية باستخدام الذكاء الاصطناعي.`
         },
@@ -195,16 +195,16 @@ export default function TermsPage() {
   const c = content[lang]
 
   return (
-    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: '#090d16', color: '#f8fafc' }}>
+    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
       {/* Top Navbar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-slate-950/80">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-[var(--background)]">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand via-purple-600 to-brand flex items-center justify-center shadow-lg shadow-brand/20">
+            <div className="w-9 h-9 rounded-xl bg-[image:var(--brand-gradient)] flex items-center justify-center shadow-lg shadow-brand/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-black tracking-tight text-white">
-              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400">Biz</span>
+              Naz <span className="text-transparent bg-clip-text bg-[image:var(--brand-gradient)]">Biz</span>
             </span>
           </Link>
 
@@ -227,10 +227,10 @@ export default function TermsPage() {
       </nav>
 
       {/* Hero Header */}
-      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/30 via-slate-950 to-slate-950 text-center">
+      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/20 via-[var(--background)] to-[var(--background)] text-center">
         <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-xs font-semibold mb-6">
-            <Scale className="w-4 h-4 text-purple-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand-violet/30 bg-brand-violet/10 text-ai-accent text-xs font-semibold mb-6">
+            <Scale className="w-4 h-4 text-ai-accent" />
             {c.badge}
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 text-white">
@@ -251,7 +251,7 @@ export default function TermsPage() {
           {c.sections.map((sec, idx) => (
             <div
               key={sec.id || idx}
-              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-purple-500/30 transition-all shadow-xl shadow-black/20"
+              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-surface backdrop-blur-sm hover:border-brand-violet/30 transition-all shadow-xl shadow-black/20"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
@@ -278,7 +278,7 @@ export default function TermsPage() {
                 <ul className="space-y-3 mt-3">
                   {sec.items.map((item, itemIdx) => (
                     <li key={itemIdx} className="flex items-start gap-3 text-sm sm:text-base text-slate-300">
-                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0" />
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-violet shrink-0" />
                       <span className="leading-relaxed">{item}</span>
                     </li>
                   ))}
@@ -289,7 +289,7 @@ export default function TermsPage() {
         </div>
 
         {/* Footer Contact */}
-        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-purple-950/20 via-brand/20 to-slate-900/50">
+        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-brand-violet/10 via-brand/10 to-surface">
           <p className="text-sm font-medium text-slate-300">
             {c.contactUs}
           </p>

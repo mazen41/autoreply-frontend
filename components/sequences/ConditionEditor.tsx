@@ -21,33 +21,35 @@ interface Props {
   error?: string
 }
 
-function operatorOptions(type: string): SelectOption[] {
+function operatorOptions(type: string, isRTL = false): SelectOption[] {
+  const L = (en: string, ar: string) => isRTL ? ar : en
   if (type === 'customer_tag')
     return [
-      { value: 'has_tag', label: 'Has tag' },
-      { value: 'does_not_have_tag', label: 'Does not have tag' },
+      { value: 'has_tag', label: L('Has tag', 'لديه الوسم') },
+      { value: 'does_not_have_tag', label: L('Does not have tag', 'ليس لديه الوسم') },
     ]
   if (type === 'ai_confidence' || type === 'order_total')
     return [
-      { value: 'greater_than', label: 'Greater than' },
-      { value: 'less_than', label: 'Less than' },
-      { value: 'equals', label: 'Equals' },
+      { value: 'greater_than', label: L('Greater than', 'أكبر من') },
+      { value: 'less_than', label: L('Less than', 'أقل من') },
+      { value: 'equals', label: L('Equals', 'يساوي') },
     ]
   if (type === 'message_text')
     return [
-      { value: 'contains', label: 'Contains' },
-      { value: 'does_not_contain', label: 'Does not contain' },
-      { value: 'equals', label: 'Equals' },
+      { value: 'contains', label: L('Contains', 'يحتوي على') },
+      { value: 'does_not_contain', label: L('Does not contain', 'لا يحتوي على') },
+      { value: 'equals', label: L('Equals', 'يساوي') },
     ]
   return [
-    { value: 'equals', label: 'Equals' },
-    { value: 'not_equals', label: 'Does not equal' },
-    { value: 'contains', label: 'Contains' },
+    { value: 'equals', label: L('Equals', 'يساوي') },
+    { value: 'not_equals', label: L('Does not equal', 'لا يساوي') },
+    { value: 'contains', label: L('Contains', 'يحتوي على') },
   ]
 }
 
 export default function ConditionEditor({ step, allSteps, channelsList, onChange, error }: Props) {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const config = step.condition_config || {}
   const type: string = config.type || 'customer_replied'
   const opt = conditionOption(type)
@@ -56,17 +58,19 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
   const update = (patch: Record<string, any>) => onChange({ condition_config: { ...config, ...patch } })
 
   const groups = useMemo<SelectGroup[]>(() => {
-    const toOpt = (o: (typeof CONDITION_OPTIONS)[number]): SelectOption => ({ value: o.value, label: o.label })
-    const result: SelectGroup[] = [{ label: 'Most used', options: CONDITION_OPTIONS.filter((o) => o.common).map(toOpt) }]
+    const labels: Record<string, string> = { customer_replied: 'رد العميل', customer_tag: 'لدى العميل وسم', has_order: 'لدى العميل طلب', order_status: 'حالة الطلب', channel: 'القناة', within_business_hours: 'خلال ساعات العمل', conversation_status: 'حالة المحادثة', last_message_from_customer: 'آخر رسالة من العميل', last_message_from_ai: 'آخر رسالة من الذكاء الاصطناعي', is_escalated: 'تم التصعيد', is_not_escalated: 'لم يتم التصعيد', customer_field: 'حقل العميل', customer_exists: 'العميل موجود', message_text: 'نص الرسالة', message_language: 'لغة الرسالة', message_intent: 'نية الرسالة', ai_confidence: 'ثقة الذكاء الاصطناعي', ai_intent: 'نية الذكاء الاصطناعي', needs_escalation: 'يحتاج إلى تصعيد', does_not_have_order: 'ليس لدى العميل طلب', order_total: 'إجمالي الطلب', product_exists: 'المنتج موجود', outside_business_hours: 'خارج ساعات العمل', day_of_week: 'يوم الأسبوع', time_of_day: 'وقت اليوم' }
+    const toOpt = (o: (typeof CONDITION_OPTIONS)[number]): SelectOption => ({ value: o.value, label: isRTL ? (labels[o.value] || o.label) : o.label })
+    const result: SelectGroup[] = [{ label: L('Most used', 'الأكثر استخدامًا'), options: CONDITION_OPTIONS.filter((o) => o.common).map(toOpt) }]
     if (showAll) {
       const byGroup = new Map<string, SelectOption[]>()
       CONDITION_OPTIONS.filter((o) => !o.common).forEach((o) => {
         byGroup.set(o.group, [...(byGroup.get(o.group) || []), toOpt(o)])
       })
-      byGroup.forEach((options, label) => result.push({ label, options }))
+      const groupLabels: Record<string, string> = { Conversation: 'المحادثة', Customer: 'العميل', Orders: 'الطلبات', Channel: 'القناة', Schedule: 'الجدولة', 'Message content': 'محتوى الرسالة', AI: 'الذكاء الاصطناعي' }
+      byGroup.forEach((options, label) => result.push({ label: isRTL ? (groupLabels[label] || label) : label, options }))
     }
     return result
-  }, [showAll])
+  }, [showAll, isRTL])
 
   const handleTypeChange = (newType: string) => {
     let operator = 'equals'
@@ -89,15 +93,15 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
       if (existing && !list.includes(existing)) list.unshift(existing)
     }
     return [
-      { value: '', label: 'Pick a step…' },
-      ...list.map((s) => ({ value: String(s.step_order), label: `Step ${s.step_order}: ${summarizeStep(s).slice(0, 40)}` })),
+      { value: '', label: L('Pick a step…', 'اختر خطوة…') },
+      ...list.map((s) => ({ value: String(s.step_order), label: `${L('Step', 'الخطوة')} ${s.step_order}: ${summarizeStep(s).slice(0, 40)}` })),
     ]
   }
 
   const routeOptions: SelectOption[] = [
-    { value: 'continue', label: 'Continue to next step' },
-    { value: 'stop', label: 'Stop the sequence' },
-    { value: 'jump', label: 'Jump to a later step' },
+    { value: 'continue', label: L('Continue to next step', 'الانتقال إلى الخطوة التالية') },
+    { value: 'stop', label: L('Stop the sequence', 'إيقاف التسلسل') },
+    { value: 'jump', label: L('Jump to a later step', 'الانتقال إلى خطوة لاحقة') },
   ]
 
   const renderRoute = (label: string, route: 'on_true' | 'on_false', key: 'true_step_order' | 'false_step_order') => {
@@ -132,22 +136,22 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Select dir={isRTL ? 'rtl' : 'ltr'} label="Check whether…" value={type} onValueChange={handleTypeChange} options={groups} />
+        <Select dir={isRTL ? 'rtl' : 'ltr'} label={L('Check whether…', 'تحقّق مما إذا كان…')} value={type} onValueChange={handleTypeChange} options={groups} />
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
           className="text-[11px] font-medium text-brand hover:underline"
         >
-          {showAll ? 'Show only the most used' : 'Show all conditions'}
+          {showAll ? L('Show only the most used', 'عرض الأكثر استخدامًا فقط') : L('Show all conditions', 'عرض جميع الشروط')}
         </button>
       </div>
 
       {opt?.needsField && (
         <Input
-          label="Field name"
+          label={L('Field name', 'اسم الحقل')}
           value={config.field || ''}
           onChange={(e) => update({ field: e.target.value })}
-          placeholder="e.g. city"
+          placeholder={L('e.g. city', 'مثال: المدينة')}
         />
       )}
 
@@ -156,17 +160,17 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
           {type !== 'channel' && type !== 'day_of_week' && (
             <Select
               dir={isRTL ? 'rtl' : 'ltr'}
-              label="Comparison"
+              label={L('Comparison', 'المقارنة')}
               size="sm"
               value={config.operator || operatorOptions(type)[0].value}
               onValueChange={(value) => update({ operator: value })}
-              options={operatorOptions(type)}
+              options={operatorOptions(type, isRTL)}
             />
           )}
           {type === 'channel' ? (
             <Select
               dir={isRTL ? 'rtl' : 'ltr'}
-              label="Channel"
+              label={L('Channel', 'القناة')}
               size="sm"
               value={config.value || channelsList[0]?.value || 'whatsapp'}
               onValueChange={(value) => update({ value })}
@@ -175,27 +179,27 @@ export default function ConditionEditor({ step, allSteps, channelsList, onChange
           ) : type === 'day_of_week' ? (
             <Select
               dir={isRTL ? 'rtl' : 'ltr'}
-              label="Day"
+              label={L('Day', 'اليوم')}
               size="sm"
               value={config.value || 'Monday'}
               onValueChange={(value) => update({ value })}
-              options={DAYS_OF_WEEK.map((d) => ({ value: d, label: d }))}
+              options={DAYS_OF_WEEK.map((d) => ({ value: d, label: isRTL ? ({ Monday: 'الاثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت', Sunday: 'الأحد' }[d] || d) : d }))}
             />
           ) : (
             <Input
-              label="Value"
+              label={L('Value', 'القيمة')}
               type={type === 'ai_confidence' || type === 'order_total' ? 'number' : 'text'}
               value={config.value ?? ''}
               onChange={(e) => update({ value: e.target.value })}
-              placeholder={CONDITION_VALUE_HINTS[type] || 'Value…'}
+              placeholder={CONDITION_VALUE_HINTS[type] || L('Value…', 'القيمة…')}
             />
           )}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-border/60">
-        {renderRoute('If yes', 'on_true', 'true_step_order')}
-        {renderRoute('Otherwise', 'on_false', 'false_step_order')}
+        {renderRoute(L('If yes', 'إذا كانت الإجابة نعم'), 'on_true', 'true_step_order')}
+        {renderRoute(L('Otherwise', 'وإلا'), 'on_false', 'false_step_order')}
       </div>
 
       {error && (

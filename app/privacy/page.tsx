@@ -32,7 +32,7 @@ export default function PrivacyPage() {
         },
         {
           id: 'data-collection',
-          icon: <Lock className="w-5 h-5 text-purple-400" />,
+          icon: <Lock className="w-5 h-5 text-ai-accent" />,
           title: '2. Data Collection & Account Isolation',
           intro: 'To deliver automated replies, cross-channel inbox aggregation, and contextual AI memory, we collect the following data:',
           items: [
@@ -113,7 +113,7 @@ export default function PrivacyPage() {
         },
         {
           id: 'data-collection',
-          icon: <Lock className="w-5 h-5 text-purple-400" />,
+          icon: <Lock className="w-5 h-5 text-ai-accent" />,
           title: '2. جمع البيانات والعزل الأمني',
           intro: 'لتقديم خدمة الرد الآلي الفوري وتأمين الذاكرة السياقية وصندوق الوارد الموحد، نجمع البيانات التالية بشكل آمن:',
           items: [
@@ -183,16 +183,16 @@ export default function PrivacyPage() {
   const c = content[lang]
 
   return (
-    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: '#090d16', color: '#f8fafc' }}>
+    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
       {/* Top Navbar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-slate-950/80">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-[var(--background)]">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand via-purple-600 to-brand flex items-center justify-center shadow-lg shadow-brand/20">
+            <div className="w-9 h-9 rounded-xl bg-[image:var(--brand-gradient)] flex items-center justify-center shadow-lg shadow-brand/20">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-black tracking-tight text-white">
-              Naz <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-purple-400">Biz</span>
+              Naz <span className="text-transparent bg-clip-text bg-[image:var(--brand-gradient)]">Biz</span>
             </span>
           </Link>
 
@@ -216,7 +216,7 @@ export default function PrivacyPage() {
       </nav>
 
       {/* Hero Header */}
-      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/30 via-slate-950 to-slate-950 text-center">
+      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/20 via-[var(--background)] to-[var(--background)] text-center">
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand/30 bg-brand/10 text-brand text-xs font-semibold mb-6">
             <ShieldCheck className="w-4 h-4 text-brand" />
@@ -240,7 +240,7 @@ export default function PrivacyPage() {
           {c.sections.map((sec, idx) => (
             <div
               key={sec.id || idx}
-              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-slate-900/40 backdrop-blur-sm hover:border-brand/30 transition-all shadow-xl shadow-black/20"
+              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-surface backdrop-blur-sm hover:border-brand/30 transition-all shadow-xl shadow-black/20"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
@@ -278,7 +278,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* Footer Contact */}
-        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-brand/20 via-purple-950/20 to-slate-900/50">
+        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-brand-violet/10 via-brand/10 to-surface">
           <p className="text-sm font-medium text-slate-300">
             {c.contactUs}
           </p>

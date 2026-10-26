@@ -150,10 +150,12 @@ function AttachmentIcon({ kind }: { kind: string }) {
 function AttachmentCard({
   msg,
   isOutgoing,
+  isRTL,
   isSolidBubble = isOutgoing,
 }: {
   msg: MessageBubbleProps['msg']
   isOutgoing: boolean
+  isRTL: boolean
   isSolidBubble?: boolean
 }) {
   const [previewError, setPreviewError] = useState(false)
@@ -208,13 +210,13 @@ function AttachmentCard({
   }, [msg.id, directUrl])
 
   const downloadButton = loading || !downloadUrl ? (
-    <span className="text-[11px] opacity-70">Loading attachment…</span>
+    <span className="text-[11px] opacity-70">{isRTL ? 'جارٍ تحميل المرفق…' : 'Loading attachment…'}</span>
   ) : (
     <a
       href={downloadUrl}
       download={name}
-      title="Download original file"
-      aria-label={`Download ${name}`}
+      title={isRTL ? 'تنزيل الملف الأصلي' : 'Download original file'}
+      aria-label={isRTL ? `تنزيل ${name}` : `Download ${name}`}
       className={`inline-flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-[11px] font-semibold transition-colors ${
         isSolidBubble
           ? 'border-brand-text/25 bg-brand-text/10 text-brand-text hover:bg-brand-text/20'
@@ -222,7 +224,7 @@ function AttachmentCard({
       }`}
     >
       <Download size={14} />
-      <span className="ml-1 hidden sm:inline">Download</span>
+      <span className="ms-1 hidden sm:inline">{isRTL ? 'تنزيل' : 'Download'}</span>
     </a>
   )
 
@@ -257,6 +259,7 @@ function AttachmentCard({
             src={inlineUrl}
             hintDuration={msg.duration}
             isOutgoing={isSolidBubble}
+            isRTL={isRTL}
             seed={String(msg.id || inlineUrl)}
             onError={() => setPreviewError(true)}
           />
@@ -289,11 +292,11 @@ function AttachmentCard({
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold">{name}</div>
-        <div className="mt-0.5 text-[11px] opacity-70">{previewError ? 'Unable to preview file' : meta || 'File'}</div>
+        <div className="mt-0.5 text-[11px] opacity-70">{previewError ? (isRTL ? 'تعذرت معاينة الملف' : 'Unable to preview file') : meta || (isRTL ? 'ملف' : 'File')}</div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
         {kind === 'pdf' && (
-          <a href={inlineUrl} target="_blank" rel="noreferrer" title="Open PDF" aria-label={`Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isSolidBubble ? 'border-brand-text/25 bg-brand-text/10 text-brand-text' : 'border-border bg-surface text-text-secondary'}`}>
+          <a href={inlineUrl} target="_blank" rel="noreferrer" title={isRTL ? 'فتح ملف PDF' : 'Open PDF'} aria-label={isRTL ? `فتح ${name}` : `Open ${name}`} className={`flex h-8 w-8 items-center justify-center rounded-lg border ${isSolidBubble ? 'border-brand-text/25 bg-brand-text/10 text-brand-text' : 'border-border bg-surface text-text-secondary'}`}>
             <ExternalLink size={14} />
           </a>
         )}
@@ -303,7 +306,7 @@ function AttachmentCard({
   )
 }
 
-function EmailIframe({ content }: { content: string }) {
+function EmailIframe({ content, isRTL }: { content: string; isRTL: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(220)
 
@@ -328,7 +331,7 @@ function EmailIframe({ content }: { content: string }) {
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
-  return <iframe ref={iframeRef} title="Email Content" style={{ width: '100%', height, border: 'none', display: 'block', background: 'transparent', borderRadius: 8 }} sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" />
+  return <iframe ref={iframeRef} title={isRTL ? 'محتوى البريد الإلكتروني' : 'Email Content'} style={{ width: '100%', height, border: 'none', display: 'block', background: 'transparent', borderRadius: 8 }} sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" />
 }
 
 const MessageBubble = memo(function MessageBubble({
@@ -378,16 +381,16 @@ const MessageBubble = memo(function MessageBubble({
       const response = await fetch(`${API_ORIGIN}/api/messages/${msg.id}/ai-audit`, {
         headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
-      if (response.status === 403) throw new Error('Only business owners and managers can view this explanation.')
-      if (response.status === 404) throw new Error('No decision audit is available for this reply.')
-      if (!response.ok) throw new Error('Could not load the reply explanation.')
+      if (response.status === 403) throw new Error(isRTL ? 'يمكن لمالكي النشاط والمديرين فقط عرض هذا التفسير.' : 'Only business owners and managers can view this explanation.')
+      if (response.status === 404) throw new Error(isRTL ? 'لا يتوفر سجل قرار لهذا الرد.' : 'No decision audit is available for this reply.')
+      if (!response.ok) throw new Error(isRTL ? 'تعذر تحميل تفسير الرد.' : 'Could not load the reply explanation.')
       setAiAudit(await response.json() as AiReplyAudit)
     } catch (error) {
-      setAuditError(error instanceof Error ? error.message : 'Could not load the reply explanation.')
+      setAuditError(isRTL ? 'تعذر تحميل تفسير الرد.' : (error instanceof Error ? error.message : 'Could not load the reply explanation.'))
     } finally {
       setAuditLoading(false)
     }
-  }, [aiAudit, auditLoading, msg.id])
+  }, [aiAudit, auditLoading, isRTL, msg.id])
 
   const toggleAiAudit = useCallback(() => {
     const next = !showAiAudit
@@ -456,7 +459,7 @@ const MessageBubble = memo(function MessageBubble({
           </div>
           <div className="p-5 text-sm leading-6 text-text-primary">
             {subject && <div className="mb-3 font-bold">{subject}</div>}
-            {sanitizedHtml ? <EmailIframe content={sanitizedHtml} /> : <div className="whitespace-pre-wrap break-words">{msg.content}</div>}
+            {sanitizedHtml ? <EmailIframe content={sanitizedHtml} isRTL={isRTL} /> : <div className="whitespace-pre-wrap break-words">{msg.content}</div>}
           </div>
         </div>
         {!isIn && (
@@ -476,6 +479,7 @@ const MessageBubble = memo(function MessageBubble({
             loading={auditLoading}
             open={showAiAudit}
             onToggle={toggleAiAudit}
+            isRTL={isRTL}
           />
         )}
       </div>
@@ -506,7 +510,7 @@ const MessageBubble = memo(function MessageBubble({
             )}
             {isDeletedForEveryone ? (
               <span className="italic text-text-secondary">{isRTL ? 'تم حذف هذه الرسالة' : 'This message was deleted'}</span>
-            ) : hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isSolidBubble={!isIn && !msg.is_ai} />}
+            ) : hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isRTL={isRTL} isSolidBubble={!isIn && !msg.is_ai} />}
             {!isDeletedForEveryone && msg.content && (
               <div
                 dir={textDirection as React.HTMLAttributes<HTMLDivElement>['dir']}
@@ -536,14 +540,14 @@ const MessageBubble = memo(function MessageBubble({
                 <button
                   onClick={() => onSubmitFeedback(msg.id, 'positive')}
                   className="w-5 h-5 flex items-center justify-center rounded text-text-tertiary hover:text-brand hover:bg-brand/10 transition-colors"
-                  title="Helpful"
+                  title={isRTL ? 'مفيد' : 'Helpful'}
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                 </button>
                 <button
                   onClick={() => onSubmitFeedback(msg.id, 'negative')}
                   className="w-5 h-5 flex items-center justify-center rounded text-text-tertiary hover:text-error hover:bg-error/10 transition-colors"
-                  title="Not helpful"
+                  title={isRTL ? 'غير مفيد' : 'Not helpful'}
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/></svg>
                 </button>
@@ -556,7 +560,7 @@ const MessageBubble = memo(function MessageBubble({
                 className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-text-tertiary hover:bg-brand/10 hover:text-brand"
                 aria-expanded={showAiAudit}
               >
-                <Info size={12} /> Why did the bot say this?
+                <Info size={12} /> {isRTL ? 'لماذا قال الروبوت ذلك؟' : 'Why did the bot say this?'}
               </button>
             )}
           </div>
@@ -569,6 +573,7 @@ const MessageBubble = memo(function MessageBubble({
               open={showAiAudit}
               onToggle={toggleAiAudit}
               hideToggle
+              isRTL={isRTL}
             />
           )}
 
@@ -583,7 +588,7 @@ const MessageBubble = memo(function MessageBubble({
               ) : (
                 <>
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-bold text-brand uppercase tracking-wide">Correct this AI reply</span>
+                    <span className="text-xs font-bold text-brand uppercase tracking-wide">{isRTL ? 'تصحيح رد الذكاء الاصطناعي' : 'Correct this AI reply'}</span>
                     <button onClick={() => { setShowCorrection(false); setCorrectionText('') }} className="text-text-tertiary hover:text-text-primary">
                       <X size={14} />
                     </button>
@@ -591,7 +596,7 @@ const MessageBubble = memo(function MessageBubble({
                   <textarea
                     value={correctionText}
                     onChange={e => setCorrectionText(e.target.value)}
-                    placeholder="Write the correct response the AI should have given..."
+                    placeholder={isRTL ? 'اكتب الرد الصحيح الذي كان ينبغي أن يقدمه الذكاء الاصطناعي...' : 'Write the correct response the AI should have given...'}
                     rows={3}
                     className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-brand"
                   />
@@ -647,7 +652,7 @@ const MessageBubble = memo(function MessageBubble({
             </button>
           )}
           {msg.content && (
-            <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title="Copy message" aria-label="Copy message">
+            <button onClick={() => navigator.clipboard?.writeText(msg.content)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title={isRTL ? 'نسخ الرسالة' : 'Copy message'} aria-label={isRTL ? 'نسخ الرسالة' : 'Copy message'}>
               <Copy size={14} />
             </button>
           )}
@@ -655,19 +660,19 @@ const MessageBubble = memo(function MessageBubble({
             <button
               onClick={() => setShowCorrection(v => !v)}
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-brand hover:bg-brand/10"
-              title="Correct this AI reply (trains the AI)"
-              aria-label="Correct AI reply"
+              title={isRTL ? 'صحح رد الذكاء الاصطناعي (يدرّب الذكاء الاصطناعي)' : 'Correct this AI reply (trains the AI)'}
+              aria-label={isRTL ? 'تصحيح رد الذكاء الاصطناعي' : 'Correct AI reply'}
             >
               <Pencil size={14} />
             </button>
           )}
           {isFailed && (
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-error" title="Retry send" aria-label="Retry send">
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-error" title={isRTL ? 'إعادة الإرسال' : 'Retry send'} aria-label={isRTL ? 'إعادة الإرسال' : 'Retry send'}>
               <RefreshCw size={14} />
             </button>
           )}
           {canReact && (
-            <button onClick={() => onReact?.(msg.id, '❤')} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title="React" aria-label="React">
+            <button onClick={() => onReact?.(msg.id, '❤')} className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface-elevated text-text-secondary hover:text-text-primary" title={isRTL ? 'تفاعل' : 'React'} aria-label={isRTL ? 'تفاعل' : 'React'}>
               <MessageCircle size={14} />
             </button>
           )}
@@ -684,6 +689,7 @@ function AiAuditDisclosure({
   open,
   onToggle,
   hideToggle = false,
+  isRTL,
 }: {
   audit: AiReplyAudit | null
   error: string
@@ -691,6 +697,7 @@ function AiAuditDisclosure({
   open: boolean
   onToggle: () => void
   hideToggle?: boolean
+  isRTL: boolean
 }) {
   if (!open && hideToggle) return null
 
@@ -698,24 +705,24 @@ function AiAuditDisclosure({
     <div className="mt-2 w-full max-w-[min(76%,42rem)] rounded-lg border border-border bg-surface-elevated p-2.5 text-xs text-text-secondary">
       {!hideToggle && (
         <button type="button" onClick={onToggle} className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline" aria-expanded={open}>
-          <Info size={13} /> Why did the bot say this?
+          <Info size={13} /> {isRTL ? 'لماذا قال الروبوت ذلك؟' : 'Why did the bot say this?'}
         </button>
       )}
       {open && (
         <div className={hideToggle ? '' : 'mt-2'}>
-          {loading && <div role="status">Loading reply explanation…</div>}
+          {loading && <div role="status">{isRTL ? 'جارٍ تحميل تفسير الرد…' : 'Loading reply explanation…'}</div>}
           {!loading && error && <div role="status" className="text-warning">{error}</div>}
           {!loading && !error && audit && (
             <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1.5">
-              <dt>Agent</dt><dd className="min-w-0 text-text-primary">{audit.agent?.name ?? 'Unassigned'}{audit.agent_version ? ` · ${audit.agent_version}` : ''}</dd>
-              <dt>Store</dt><dd className="min-w-0 text-text-primary">{audit.commerce_connection ? `${audit.commerce_connection.name || audit.commerce_connection.provider} (${audit.commerce_connection.provider})` : 'No commerce store'}</dd>
-              <dt>Knowledge files</dt><dd className="text-text-primary">{audit.knowledge_file_ids.length ? audit.knowledge_file_ids.join(', ') : 'None retrieved'}</dd>
-              <dt>Knowledge chunks</dt><dd className="text-text-primary">{audit.knowledge_chunk_ids.length ? audit.knowledge_chunk_ids.join(', ') : 'None retrieved'}</dd>
-              <dt>Prompt version</dt><dd className="text-text-primary">{audit.prompt_version || 'Not recorded'}</dd>
-              <dt>AI model</dt><dd className="text-text-primary">{[audit.ai_provider, audit.ai_model].filter(Boolean).join(' · ') || 'Not recorded'}</dd>
-              <dt>Confidence</dt><dd className="text-text-primary">{audit.confidence === null ? 'Not recorded' : `${Math.round(audit.confidence * 100)}%`}</dd>
-              <dt>Escalation</dt><dd className="text-text-primary">{audit.escalation_decision ? `Yes · ${audit.escalation_reason || 'Reason not recorded'}` : `No · ${audit.escalation_reason || 'Automatic reply'}`}</dd>
-              <dt>Consent basis</dt><dd className="text-text-primary">{audit.consent_basis.replaceAll('_', ' ')}</dd>
+              <dt>{isRTL ? 'الوكيل' : 'Agent'}</dt><dd className="min-w-0 text-text-primary">{audit.agent?.name ?? (isRTL ? 'غير معيّن' : 'Unassigned')}{audit.agent_version ? ` · ${audit.agent_version}` : ''}</dd>
+              <dt>{isRTL ? 'المتجر' : 'Store'}</dt><dd className="min-w-0 text-text-primary">{audit.commerce_connection ? `${audit.commerce_connection.name || audit.commerce_connection.provider} (${audit.commerce_connection.provider})` : (isRTL ? 'لا يوجد متجر تجارة إلكترونية' : 'No commerce store')}</dd>
+              <dt>{isRTL ? 'ملفات المعرفة' : 'Knowledge files'}</dt><dd className="text-text-primary">{audit.knowledge_file_ids.length ? audit.knowledge_file_ids.join(', ') : (isRTL ? 'لم يتم استرجاع ملفات' : 'None retrieved')}</dd>
+              <dt>{isRTL ? 'مقاطع المعرفة' : 'Knowledge chunks'}</dt><dd className="text-text-primary">{audit.knowledge_chunk_ids.length ? audit.knowledge_chunk_ids.join(', ') : (isRTL ? 'لم يتم استرجاع مقاطع' : 'None retrieved')}</dd>
+              <dt>{isRTL ? 'إصدار التعليمات' : 'Prompt version'}</dt><dd className="text-text-primary">{audit.prompt_version || (isRTL ? 'غير مسجل' : 'Not recorded')}</dd>
+              <dt>{isRTL ? 'نموذج الذكاء الاصطناعي' : 'AI model'}</dt><dd className="text-text-primary">{[audit.ai_provider, audit.ai_model].filter(Boolean).join(' · ') || (isRTL ? 'غير مسجل' : 'Not recorded')}</dd>
+              <dt>{isRTL ? 'الثقة' : 'Confidence'}</dt><dd className="text-text-primary">{audit.confidence === null ? (isRTL ? 'غير مسجل' : 'Not recorded') : `${Math.round(audit.confidence * 100)}%`}</dd>
+              <dt>{isRTL ? 'التصعيد' : 'Escalation'}</dt><dd className="text-text-primary">{audit.escalation_decision ? `${isRTL ? 'نعم' : 'Yes'} · ${audit.escalation_reason || (isRTL ? 'السبب غير مسجل' : 'Reason not recorded')}` : `${isRTL ? 'لا' : 'No'} · ${audit.escalation_reason || (isRTL ? 'رد آلي' : 'Automatic reply')}`}</dd>
+              <dt>{isRTL ? 'أساس الموافقة' : 'Consent basis'}</dt><dd className="text-text-primary">{audit.consent_basis.replaceAll('_', ' ')}</dd>
             </dl>
           )}
         </div>

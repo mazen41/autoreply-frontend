@@ -14,13 +14,13 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
   setTheme: () => {},
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = useState<Theme>('dark')
 
   useEffect(() => {
     const saved = cookies.get('naz-theme') as Theme
@@ -28,8 +28,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(saved)
       document.documentElement.classList.toggle('dark', saved === 'dark')
     } else {
-      document.documentElement.classList.remove('dark')
-      cookies.set('naz-theme', 'light', { path: '/', maxAge: 31536000 })
+      document.documentElement.classList.add('dark')
+      cookies.set('naz-theme', 'dark', { path: '/', maxAge: 31536000 })
     }
   }, [])
 

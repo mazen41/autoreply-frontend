@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import './globals.css'
 import { LangProvider } from '../lib/LangContext'
+import type { Language } from '../lib/i18n'
 import { ThemeProvider } from '../lib/ThemeContext'
 import { AuthProvider } from '../lib/AuthContext'
 import { Space_Grotesk, Cairo } from 'next/font/google'
@@ -31,10 +32,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // already matches the visitor's choice — avoids a dark-then-light flash.
   const cookieStore = await cookies()
   const savedTheme = cookieStore.get('naz-theme')?.value
+  const savedLanguage = cookieStore.get('naz-lang')?.value
+  const initialLang: Language = savedLanguage === 'en' ? 'en' : 'ar'
   const isLight = savedTheme === 'light'
 
   return (
-    <html lang="ar" dir="rtl" className={isLight ? '' : 'dark'} suppressHydrationWarning>
+    <html lang={initialLang} dir={initialLang === 'ar' ? 'rtl' : 'ltr'} className={isLight ? '' : 'dark'} suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable} ${cairo.variable}`}>
         {/* AI Operating System background — persists across all pages */}
         <div className="os-bg" aria-hidden="true">
@@ -43,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </div>
 
         <ThemeProvider>
-          <LangProvider>
+          <LangProvider initialLang={initialLang}>
             <AuthProvider>
               <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="flex-1">

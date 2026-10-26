@@ -27,6 +27,7 @@ type UsageResponse = { business_id: number; period: { starts_at: string; ends_at
 
 export default function BillingPage() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [data, setData] = useState<SubscriptionResponse | null>(null)
   const [usage, setUsage] = useState<UsageResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -39,22 +40,22 @@ export default function BillingPage() {
     setError(null)
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again to view billing.')
+      if (!token) throw new Error(L('Your session expired. Sign in again to view billing.', 'انتهت جلستك. سجّل الدخول مجددًا لعرض الفوترة.'))
       const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() }
       const [response, usageResponse] = await Promise.all([
         fetch(`${API}/api/subscriptions/current`, { headers }),
         fetch(`${API}/api/billing/usage`, { headers }),
       ])
       const [result, usageResult] = await Promise.all([response.json(), usageResponse.json()])
-      if (!response.ok) throw new Error(result.message || `Could not load subscription (HTTP ${response.status}).`)
-      if (!usageResponse.ok) throw new Error(usageResult.message || `Could not load usage (HTTP ${usageResponse.status}).`)
+      if (!response.ok) throw new Error(isRTL ? `تعذر تحميل الاشتراك (HTTP ${response.status}).` : result.message || `Could not load subscription (HTTP ${response.status}).`)
+      if (!usageResponse.ok) throw new Error(isRTL ? `تعذر تحميل الاستخدام (HTTP ${usageResponse.status}).` : usageResult.message || `Could not load usage (HTTP ${usageResponse.status}).`)
       setData(result)
       setUsage(usageResult)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not load billing information.')
+      setError(cause instanceof Error ? cause.message : L('Could not load billing information.', 'تعذر تحميل معلومات الفوترة.'))
       setData(null)
     } finally { setLoading(false) }
-  }, [])
+  }, [isRTL])
 
   useEffect(() => {
     void fetchSubscription()
@@ -68,32 +69,32 @@ export default function BillingPage() {
   }, [fetchSubscription])
 
   const handleCancel = async () => {
-    if (!confirm('Cancel this subscription?')) return
+    if (!confirm(L('Cancel this subscription?', 'هل تريد إلغاء هذا الاشتراك؟'))) return
     setCancelling(true)
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again.')
+      if (!token) throw new Error(L('Your session expired. Sign in again.', 'انتهت جلستك. سجّل الدخول مجددًا.'))
       const response = await fetch(`${API}/api/subscriptions`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
       const result = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(result.message || 'Subscription cancellation failed.')
-      toast.success(result.message || 'Subscription cancellation requested.')
+      if (!response.ok) throw new Error(isRTL ? 'تعذر إلغاء الاشتراك.' : result.message || 'Subscription cancellation failed.')
+      toast.success(isRTL ? 'تم إرسال طلب إلغاء الاشتراك.' : result.message || 'Subscription cancellation requested.')
       await fetchSubscription()
-    } catch (cause) { toast.error(cause instanceof Error ? cause.message : 'Could not cancel subscription.') }
+    } catch (cause) { toast.error(cause instanceof Error ? cause.message : L('Could not cancel subscription.', 'تعذر إلغاء الاشتراك.')) }
     finally { setCancelling(false) }
   }
 
   const handleDisableAutoRenew = async () => {
-    if (!confirm('Turn off automatic renewal? Your current plan stays active until its end date.')) return
+    if (!confirm(L('Turn off automatic renewal? Your current plan stays active until its end date.', 'هل تريد إيقاف التجديد التلقائي؟ ستظل باقتك الحالية فعالة حتى تاريخ انتهائها.'))) return
     setDisablingRenewal(true)
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again.')
+      if (!token) throw new Error(L('Your session expired. Sign in again.', 'انتهت جلستك. سجّل الدخول مجددًا.'))
       const response = await fetch(`${API}/api/subscriptions/auto-renew/disable`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
       const result = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(result.message || 'Could not turn off automatic renewal.')
-      toast.success(result.message)
+      if (!response.ok) throw new Error(isRTL ? 'تعذر إيقاف التجديد التلقائي.' : result.message || 'Could not turn off automatic renewal.')
+      toast.success(isRTL ? 'تم إيقاف التجديد التلقائي.' : result.message)
       await fetchSubscription()
-    } catch (cause) { toast.error(cause instanceof Error ? cause.message : 'Could not turn off automatic renewal.') }
+    } catch (cause) { toast.error(cause instanceof Error ? cause.message : L('Could not turn off automatic renewal.', 'تعذر إيقاف التجديد التلقائي.')) }
     finally { setDisablingRenewal(false) }
   }
 
@@ -102,43 +103,43 @@ export default function BillingPage() {
   const endDate = subscription?.ends_at ? new Date(subscription.ends_at) : null
 
   return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
-    <PageHeader title="Plans & Billing" description="View your current subscription and plan limits." primaryAction={<Link href="/pricing"><Button variant="primary" icon={<ArrowUpRight size={14} />}>View plans</Button></Link>} />
-    {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSubscription()} disabled={loading}>Retry</Button></div>}
-    {loading ? <div className="py-16 text-center text-sm text-text-muted" role="status">Loading subscription…</div> : plan ? <>
+    <PageHeader title={L('Plans & Billing', 'الباقات والفوترة')} description={L('View your current subscription and plan limits.', 'اطّلع على اشتراكك الحالي وحدود باقتك.')} primaryAction={<Link href="/pricing"><Button variant="primary" icon={<ArrowUpRight size={14} />}>{L('View plans', 'عرض الباقات')}</Button></Link>} />
+    {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSubscription()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
+    {loading ? <div className="py-16 text-center text-sm text-text-muted" role="status">{L('Loading subscription…', 'جارٍ تحميل الاشتراك…')}</div> : plan ? <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MetricCard label="Current plan" value={plan.name} subValue={subscription?.billing_cycle || (data?.is_free ? 'Free plan' : 'Plan')} icon={<Zap size={18} />} />
-        <MetricCard label="Plan price" value={data?.is_free ? 'Free' : `${subscription?.amount_paid ?? plan.price_monthly ?? '—'}`} subValue={subscription?.billing_cycle === 'yearly' ? 'Billed yearly' : 'Billing amount from subscription'} icon={<CreditCard size={18} />} />
-        <MetricCard label="Current term ends" value={endDate ? endDate.toLocaleDateString() : '—'} subValue={subscription?.status || 'No active subscription'} icon={<Calendar size={18} />} />
+        <MetricCard label={L('Current plan', 'الباقة الحالية')} value={plan.name} subValue={subscription?.billing_cycle || (data?.is_free ? L('Free plan', 'باقة مجانية') : L('Plan', 'باقة'))} icon={<Zap size={18} />} />
+        <MetricCard label={L('Plan price', 'سعر الباقة')} value={data?.is_free ? L('Free', 'مجاني') : `${subscription?.amount_paid ?? plan.price_monthly ?? '—'}`} subValue={subscription?.billing_cycle === 'yearly' ? L('Billed yearly', 'الفوترة سنوية') : L('Billing amount from subscription', 'قيمة الفوترة حسب الاشتراك')} icon={<CreditCard size={18} />} />
+        <MetricCard label={L('Current term ends', 'تنتهي الفترة الحالية')} value={endDate ? endDate.toLocaleDateString(isRTL ? 'ar' : undefined) : '—'} subValue={subscription?.status || L('No active subscription', 'لا يوجد اشتراك نشط')} icon={<Calendar size={18} />} />
       </div>
       {usage && <Card>
-        <CardHeader><CardTitle>Monthly usage</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{L('Monthly usage', 'الاستخدام الشهري')}</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {([
-            ['AI replies', usage.usage.ai_replies],
-            ['Outbound messages', usage.usage.outbound_messages],
-            ['Channel accounts', usage.usage.channels],
+            [L('AI replies', 'ردود الذكاء الاصطناعي'), usage.usage.ai_replies],
+            [L('Outbound messages', 'الرسائل الصادرة'), usage.usage.outbound_messages],
+            [L('Channel accounts', 'حسابات القنوات'), usage.usage.channels],
           ] as [string, UsageMetric][]).map(([label, metric]) => {
             const percentage = metric.unlimited ? 0 : Math.min(metric.percentage ?? 0, 100)
             return <div key={label}>
-              <div className="mb-2 flex justify-between gap-3 text-sm"><span>{label}</span><span className="font-medium">{metric.used} / {metric.unlimited ? 'Unlimited' : metric.limit}</span></div>
+              <div className="mb-2 flex justify-between gap-3 text-sm"><span>{label}</span><span className="font-medium">{metric.used} / {metric.unlimited ? L('Unlimited', 'غير محدود') : metric.limit}</span></div>
               {!metric.unlimited && <div className="h-2 overflow-hidden rounded-full bg-surface-muted"><div className={`h-full ${metric.allowed ? 'bg-brand' : 'bg-error'}`} style={{ width: `${percentage}%` }} /></div>}
             </div>
           })}
         </CardContent>
       </Card>}
       <Card>
-        <CardHeader className="flex-row items-center justify-between"><CardTitle>Plan details</CardTitle><Badge variant={subscription?.status === 'active' ? 'success' : 'outline'} dot>{subscription?.status || (data?.is_free ? 'Free' : 'No subscription')}</Badge></CardHeader>
+        <CardHeader className="flex-row items-center justify-between"><CardTitle>{L('Plan details', 'تفاصيل الباقة')}</CardTitle><Badge variant={subscription?.status === 'active' ? 'success' : 'outline'} dot>{subscription?.status || (data?.is_free ? L('Free', 'مجاني') : L('No subscription', 'لا يوجد اشتراك'))}</Badge></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div><span className="text-text-muted">AI replies included</span><div className="font-medium">{plan.ai_replies_limit ?? 'Not provided by plan data'}</div></div>
-            <div><span className="text-text-muted">Channel limit</span><div className="font-medium">{plan.channels_limit ?? 'Not provided by plan data'}</div></div>
-            <div><span className="text-text-muted">Monthly outbound limit</span><div className="font-medium">{plan.outbound_messages_limit == null || plan.outbound_messages_limit < 0 ? 'Unlimited' : plan.outbound_messages_limit}</div></div>
+            <div><span className="text-text-muted">{L('AI replies included', 'ردود الذكاء الاصطناعي المشمولة')}</span><div className="font-medium">{plan.ai_replies_limit ?? L('Not provided by plan data', 'غير متاح ضمن بيانات الباقة')}</div></div>
+            <div><span className="text-text-muted">{L('Channel limit', 'حد القنوات')}</span><div className="font-medium">{plan.channels_limit ?? L('Not provided by plan data', 'غير متاح ضمن بيانات الباقة')}</div></div>
+            <div><span className="text-text-muted">{L('Monthly outbound limit', 'حد الرسائل الصادرة شهريًا')}</span><div className="font-medium">{plan.outbound_messages_limit == null || plan.outbound_messages_limit < 0 ? L('Unlimited', 'غير محدود') : plan.outbound_messages_limit}</div></div>
           </div>
-          {plan.features?.length ? <ul className="list-disc space-y-1 ps-5 text-sm text-text-secondary">{plan.features.map((feature, index) => <li key={`${feature}-${index}`}>{feature}</li>)}</ul> : <p className="text-sm text-text-muted">No feature list is available for this plan.</p>}
-          {subscription && subscription.status === 'active' && !subscription.cancelled_at && <div className="border-t border-border pt-4"><Button variant="outline" loading={cancelling} onClick={() => void handleCancel()}>Cancel subscription</Button></div>}
-          {subscription?.auto_renew_enabled && <div className="border-t border-border pt-4 space-y-2"><p className="text-sm text-text-secondary">Monthly automatic renewal is on. You can turn it off and keep access through the current term.</p><Button variant="outline" loading={disablingRenewal} onClick={() => void handleDisableAutoRenew()}>Turn off auto-renew</Button></div>}
+          {plan.features?.length ? <ul className="list-disc space-y-1 ps-5 text-sm text-text-secondary">{plan.features.map((feature, index) => <li key={`${feature}-${index}`}>{feature}</li>)}</ul> : <p className="text-sm text-text-muted">{L('No feature list is available for this plan.', 'لا تتوفر قائمة بمزايا هذه الباقة.')}</p>}
+          {subscription && subscription.status === 'active' && !subscription.cancelled_at && <div className="border-t border-border pt-4"><Button variant="outline" loading={cancelling} onClick={() => void handleCancel()}>{L('Cancel subscription', 'إلغاء الاشتراك')}</Button></div>}
+          {subscription?.auto_renew_enabled && <div className="border-t border-border pt-4 space-y-2"><p className="text-sm text-text-secondary">{L('Monthly automatic renewal is on. You can turn it off and keep access through the current term.', 'التجديد التلقائي الشهري مفعّل. يمكنك إيقافه مع الاحتفاظ بإمكانية الوصول حتى نهاية الفترة الحالية.')}</p><Button variant="outline" loading={disablingRenewal} onClick={() => void handleDisableAutoRenew()}>{L('Turn off auto-renew', 'إيقاف التجديد التلقائي')}</Button></div>}
         </CardContent>
       </Card>
-    </> : !error && <Card className="p-6"><p className="text-sm text-text-muted">No subscription or plan details were returned for this account.</p></Card>}
+    </> : !error && <Card className="p-6"><p className="text-sm text-text-muted">{L('No subscription or plan details were returned for this account.', 'لم يتم إرجاع تفاصيل اشتراك أو باقة لهذا الحساب.')}</p></Card>}
   </main>
 }

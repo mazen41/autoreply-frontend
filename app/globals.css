@@ -20,19 +20,25 @@
   --border-hover: #CBD0CD;
   --divider: #E5E9E6;
 
-  /* Brand: Electric Green signature */
-  --brand: #00B85C;
-  --brand-hover: #009F50;
-  --brand-dark: #008A45;
-  --brand-primary: #00B85C;
+  /* Nazeer Business brand palette */
+  --brand-cyan: #00D9FF;
+  --brand-blue: #1769FF;
+  --brand-violet: #713CFF;
+  --brand-magenta: #E020F0;
+  --brand-gradient: linear-gradient(90deg, #00D9FF 0%, #1769FF 35%, #713CFF 68%, #E020F0 100%);
+  --brand: #1769FF;
+  --brand-hover: #0F5BE6;
+  --brand-dark: #124FC2;
+  --brand-primary: #1769FF;
   --brand-text: #FFFFFF;
-  --accent: #00B85C;
-  --accent-end: #008A45;
-  --accent-hover: #009F50;
-  --accent-subtle: rgba(0, 184, 92, 0.08);
-  --accent-focus: rgba(0, 184, 92, 0.22);
-  --ai-accent: #00B85C;
-  --ai-subtle: rgba(0, 184, 92, 0.08);
+  --accent: #1769FF;
+  --accent-end: #713CFF;
+  --accent-hover: #0F5BE6;
+  --accent-subtle: rgba(23, 105, 255, 0.08);
+  --accent-outline: rgba(23, 105, 255, 0.2);
+  --accent-focus: rgba(0, 217, 255, 0.32);
+  --ai-accent: #713CFF;
+  --ai-subtle: rgba(113, 60, 255, 0.09);
 
   /* Text */
   --text-primary: #111412;
@@ -42,22 +48,22 @@
   --text-disabled: #A1A8A4;
 
   /* Feedback */
-  --success: #00B85C;
-  --success-subtle: rgba(0, 184, 92, 0.12);
+  --success: #22C55E;
+  --success-subtle: rgba(34, 197, 94, 0.12);
   --warning: #F59E0B;
   --warning-subtle: rgba(245, 158, 11, 0.12);
   --error: #EF4444;
   --error-subtle: rgba(239, 68, 68, 0.12);
-  --info: #0284C7;
-  --info-subtle: rgba(2, 132, 199, 0.12);
+  --info: #1769FF;
+  --info-subtle: rgba(23, 105, 255, 0.12);
 
-  --primary: #00B85C;
+  --primary: #1769FF;
   --on-accent-text: #FFFFFF;
 
   /* ── Legacy alias tokens (used in older components — do not scatter) ── */
-  --accent-secondary: #00B85C;           /* alias → brand */
-  --accent-secondary-subtle: rgba(0, 184, 92, 0.08); /* alias → accent-subtle */
-  --accent-secondary-hover: #009F50;     /* alias → brand-hover */
+  --accent-secondary: #1769FF;           /* accessible light-theme cyan/blue alias */
+  --accent-secondary-subtle: rgba(23, 105, 255, 0.08);
+  --accent-secondary-hover: #0F5BE6;
   --accent-pink: #EF4444;                /* alias → error */
   --accent-pink-subtle: rgba(239, 68, 68, 0.08);     /* alias → error-subtle */
 
@@ -93,70 +99,68 @@
   --button-height-sm: 2rem; --button-height-md: 2.5rem; --button-height-lg: 2.75rem;
   --touch-target: 2.75rem;
   --bg-primary: #F7F8F7;
-  --accent-primary: #00B85C;
+  --accent-primary: #1769FF;
 }
 
 .dark {
-  /* ─── Dark Theme (Near-black #090A0A, layered dark surfaces, electric green #00E87A) ─── */
-  --background: #090A0A;
-  --surface: #101211;
-  --surface-secondary: #141716;
-  --surface-elevated: #181B19;
-  --surface-hover: #1C201E;
-  --surface-card: #121513;
-  --surface-overlay: #1B1E1C;
+  /* Official Nazeer Business dark theme */
+  --background: #080B14;
+  --surface: #101626;
+  --surface-secondary: #101626;
+  --surface-elevated: #101626;
+  --surface-hover: #1C263A;
+  --surface-card: #101626;
+  --surface-overlay: #101626;
 
-  --border: #242826;
-  --border-strong: #303532;
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-hover: #363D39;
-  --divider: rgba(255, 255, 255, 0.05);
+  --border: #1C263A;
+  --border-strong: #2B3852;
+  --border-subtle: rgba(148, 163, 184, 0.12);
+  --border-hover: #3A4966;
+  --divider: rgba(148, 163, 184, 0.14);
 
-  /* Brand: Electric Green signature */
-  --brand: #00E87A;
-  --brand-hover: #00FF85;
-  --brand-dark: #00B85C;
-  --brand-primary: #00E87A;
-  --brand-text: #090A0A;
-  --accent: #00E87A;
-  --accent-end: #00B85C;
-  --accent-hover: #00FF85;
-  --accent-subtle: rgba(0, 232, 122, 0.08);
-  --accent-focus: rgba(0, 232, 122, 0.22);
-  --ai-accent: #00E87A;
-  --ai-subtle: rgba(0, 232, 122, 0.10);
+  --brand: #1769FF;
+  --brand-hover: #3B82FF;
+  --brand-dark: #124FC2;
+  --brand-primary: #1769FF;
+  --brand-text: #FFFFFF;
+  --accent: #1769FF;
+  --accent-end: #713CFF;
+  --accent-hover: #3B82FF;
+  --accent-subtle: rgba(23, 105, 255, 0.14);
+  --accent-outline: rgba(0, 217, 255, 0.24);
+  --accent-focus: rgba(0, 217, 255, 0.42);
+  --ai-accent: #A78BFA;
+  --ai-subtle: rgba(113, 60, 255, 0.18);
 
-  /* Text */
-  --text-primary: #F5F7F6;
-  --text-secondary: #A7ADA9;
-  --text-muted: #737A76;
-  --text-tertiary: #737A76;
-  --text-disabled: #4D5450;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #94A3B8;
+  --text-tertiary: #94A3B8;
+  --text-disabled: #64748B;
 
-  /* Feedback */
-  --success: #00E87A;
-  --success-subtle: rgba(0, 232, 122, 0.12);
+  --success: #22C55E;
+  --success-subtle: rgba(34, 197, 94, 0.16);
   --warning: #F59E0B;
-  --warning-subtle: rgba(245, 158, 11, 0.15);
+  --warning-subtle: rgba(245, 158, 11, 0.16);
   --error: #EF4444;
-  --error-subtle: rgba(239, 68, 68, 0.15);
-  --info: #38BDF8;
-  --info-subtle: rgba(56, 189, 248, 0.15);
+  --error-subtle: rgba(239, 68, 68, 0.16);
+  --info: #00D9FF;
+  --info-subtle: rgba(0, 217, 255, 0.14);
 
   /* Shadows (Subtle, non-muddy surface contrast) */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.6);
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.7);
   --shadow-premium: 0 12px 36px rgba(0,0,0,0.8);
-  --on-accent-text: #090A0A;
+  --on-accent-text: #FFFFFF;
 
-  --bg-primary: #090A0A;
-  --accent-primary: #00E87A;
+  --bg-primary: #080B14;
+  --accent-primary: #1769FF;
 
   /* ── Legacy alias tokens (dark theme overrides) ── */
-  --accent-secondary: #00E87A;
-  --accent-secondary-subtle: rgba(0, 232, 122, 0.08);
-  --accent-secondary-hover: #00FF85;
+  --accent-secondary: #00D9FF;
+  --accent-secondary-subtle: rgba(0, 217, 255, 0.14);
+  --accent-secondary-hover: #5CE7FF;
   --accent-pink: #EF4444;
   --accent-pink-subtle: rgba(239, 68, 68, 0.10);
 }
@@ -196,7 +200,7 @@ body {
 
 /* ─── Utility classes ──────────────────────────────────────────────────────── */
 .text-lime, .text-dual {
-  background: linear-gradient(135deg, var(--accent), var(--accent-end));
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -209,7 +213,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent), var(--accent-end));
+  background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -277,21 +281,21 @@ body {
   min-height: var(--button-height-md, 2.5rem);
   font-size: 14px;
   position: relative;
-  background: linear-gradient(180deg, color-mix(in srgb, #ffffff 16%, transparent) 0%, transparent 60%), linear-gradient(135deg, var(--accent), var(--accent-end));
+  background: var(--accent);
   color: var(--on-accent-text);
-  border: 1px solid color-mix(in srgb, #ffffff 25%, transparent);
+  border: 1px solid var(--accent);
   font-weight: 700;
   letter-spacing: -0.01em;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 30%, transparent), 0 3px 14px color-mix(in srgb, var(--accent) 25%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 .btn-lime:hover:not(:disabled) {
   filter: brightness(1.06);
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, #ffffff 40%, transparent);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 40%, transparent), 0 6px 22px color-mix(in srgb, var(--accent) 45%, transparent);
+  border-color: var(--accent-hover);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 .btn-lime:active:not(:disabled) { transform: translateY(0) scale(0.98); box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
 .btn-lime:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
@@ -729,6 +733,115 @@ body {
   }
 }
 
+/* ─── Dark palette bridge for legacy Tailwind neutrals ───────────────────────
+   Older feature screens still use gray/slate utility names. In dark mode map
+   those neutrals onto the shared Nazeer tokens; semantic/status colors remain
+   untouched. New UI should use the semantic tokens directly.                */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-slate-200,
+.dark .bg-zinc-50,
+.dark .bg-neutral-50 { background-color: var(--surface) !important; }
+
+.dark [class*="bg-white/"] { background-color: var(--surface) !important; }
+
+.dark .bg-gray-300,
+.dark .bg-gray-400,
+.dark .bg-gray-500,
+.dark .bg-slate-300,
+.dark .bg-slate-400,
+.dark .bg-slate-500,
+.dark .bg-zinc-300,
+.dark .bg-neutral-300 { background-color: var(--surface-secondary) !important; }
+
+.dark .bg-gray-600,
+.dark .bg-gray-700,
+.dark .bg-gray-750,
+.dark .bg-gray-800,
+.dark .bg-gray-900,
+.dark .bg-slate-600,
+.dark .bg-slate-700,
+.dark .bg-slate-800,
+.dark .bg-slate-900,
+.dark .bg-slate-950,
+.dark .bg-zinc-700,
+.dark .bg-zinc-800,
+.dark .bg-zinc-900,
+.dark .bg-neutral-800,
+.dark .bg-neutral-900 { background-color: var(--surface) !important; }
+
+.dark .text-gray-50,
+.dark .text-gray-100,
+.dark .text-gray-200,
+.dark .text-gray-300,
+.dark .text-gray-400,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .text-slate-300,
+.dark .text-slate-400,
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-zinc-300,
+.dark .text-zinc-400,
+.dark .text-zinc-500,
+.dark .text-neutral-400,
+.dark .text-neutral-500 { color: var(--text-secondary) !important; }
+
+.dark .text-gray-800,
+.dark .text-gray-900,
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-zinc-800,
+.dark .text-zinc-900,
+.dark .text-neutral-800,
+.dark .text-neutral-900 { color: var(--text-primary) !important; }
+
+.dark [class*="text-white/20"],
+.dark [class*="text-white/30"],
+.dark [class*="text-white/50"],
+.dark [class*="text-white/60"],
+.dark [class*="text-white/70"] { color: var(--text-secondary) !important; }
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-400,
+.dark .border-gray-500,
+.dark .border-gray-600,
+.dark .border-gray-700,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-400,
+.dark .border-slate-500,
+.dark .border-slate-600,
+.dark .border-slate-700,
+.dark .border-zinc-200,
+.dark .border-zinc-300 { border-color: var(--border) !important; }
+
+.dark .ring-slate-200,
+.dark .ring-gray-200 { --tw-ring-color: var(--border-strong) !important; }
+
+.dark [class*="bg-white/5"],
+.dark [class*="bg-white/[0.04]"],
+.dark [class*="bg-white/[0.05]"] { background-color: var(--surface-secondary) !important; }
+.dark [class*="bg-white/10"],
+.dark [class*="bg-white/[0.08]"] { background-color: var(--surface-hover) !important; }
+.dark [class*="border-white/5"],
+.dark [class*="border-white/10"],
+.dark [class*="border-white/[0.04]"],
+.dark [class*="border-white/[0.05]"],
+.dark [class*="border-white/[0.06]"] { border-color: var(--border) !important; }
+.dark [class*="border-white/20"],
+.dark [class*="border-white/40"] { border-color: var(--border-strong) !important; }
+.dark [class*="ring-white/10"] { --tw-ring-color: var(--border) !important; }
+
 /* ─── Misc legacy ────────────────────────────────────────────────────────────── */
 @keyframes barGrow  { from { width: 0; } }
 @keyframes nodePulse { 0% { transform: translate(-50%,-50%) scale(0.9); opacity: 0.6; } 100% { transform: translate(-50%,-50%) scale(1.4); opacity: 0; } }
@@ -758,7 +871,7 @@ body {
 
 /* ─── Focus ring — premium, accessible ────────────────────────────────────── */
 *:focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--accent-focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
   transition: outline-offset 100ms ease;

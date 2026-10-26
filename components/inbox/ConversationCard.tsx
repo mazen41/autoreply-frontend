@@ -112,7 +112,7 @@ const ConversationCard = memo(function ConversationCard({ conv, selected, onClic
           <div className="flex items-center justify-between gap-2">
             <p className={`text-xs truncate ${unread > 0 ? 'text-text-secondary font-medium' : 'text-text-muted'}`}>
               {conv.latest_message?.is_ai && <span className="text-brand font-semibold me-1">AI:</span>}
-              {preview || <span className="italic">No messages yet</span>}
+              {preview || <span className="italic">{isRTL ? 'لا توجد رسائل بعد' : 'No messages yet'}</span>}
             </p>
 
             <div className="flex items-center gap-1.5 flex-shrink-0">

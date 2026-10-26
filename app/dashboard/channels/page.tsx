@@ -124,6 +124,7 @@ const CHANNELS_CATALOG: ChannelDef[] = [
 
 export default function ChannelsPage() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
   const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
@@ -583,7 +584,7 @@ export default function ChannelsPage() {
         }
       />
 
-      {errorState && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{errorState}</span><Button variant="outline" size="sm" onClick={() => void fetchChannels()}>Retry</Button></div>}
+      {errorState && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{errorState}</span><Button variant="outline" size="sm" onClick={() => void fetchChannels()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
 
       {aiSetup && (
         <section className="rounded-2xl border border-border bg-surface-card p-5" aria-labelledby="ai-setup-title">
@@ -607,7 +608,7 @@ export default function ChannelsPage() {
             ))}
           </ul>
           <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
-            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored. <a className="text-brand underline" href="/privacy">Privacy policy</a></>} className="text-xs" />
+            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>{L('I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored.', 'أقرّ بأن الرسائل التسويقية تتطلب موافقة مسبقة، وأن طلبات الإيقاف أو إلغاء الاشتراك ستُحترم.')} <a className="text-brand underline" href="/privacy">{L('Privacy policy', 'سياسة الخصوصية')}</a></>} className="text-xs" />
             <label className="space-y-1 text-xs text-text-secondary">Human handoff notification email
               <input type="email" className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm" value={goLiveSettings.handoff_notification_email || ''} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, handoff_notification_email: event.target.value })} placeholder="support@example.com" />
             </label>
@@ -790,28 +791,28 @@ export default function ChannelsPage() {
         isOpen={settingsInstance !== null}
         onClose={() => setSettingsInstance(null)}
         title={settingsInstance?.page_name || 'Account settings'}
-        description="Connection status and account controls for this channel."
+        description={L('Connection status and account controls for this channel.', 'حالة الاتصال وإعدادات الحساب لهذه القناة.')}
         size="md"
-        footer={settingsInstance ? <Button variant="outline" onClick={() => setSettingsInstance(null)}>Close</Button> : undefined}
+        footer={settingsInstance ? <Button variant="outline" onClick={() => setSettingsInstance(null)}>{L('Close', 'إغلاق')}</Button> : undefined}
       >
         {settingsInstance && <div className="space-y-4 text-sm">
           <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-4 gap-y-3">
-            <dt className="text-text-muted">Channel</dt><dd className="font-medium capitalize">{settingsInstance.type}</dd>
-            <dt className="text-text-muted">Account ID</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
-            <dt className="text-text-muted">Connection</dt><dd className="capitalize">{settingsInstance.status || 'Connected'}</dd>
-            <dt className="text-text-muted">AI replies</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? 'Enabled' : 'Paused'}</dd>
-            {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">Pause reason</dt><dd>{settingsInstance.ai_pause_reason}</dd></>}
-            {settingsInstance.comment_webhook_status && <><dt className="text-text-muted">Comment webhook</dt><dd className="capitalize">{settingsInstance.comment_webhook_status}{settingsInstance.comment_webhook_error_code ? ` (${settingsInstance.comment_webhook_error_code})` : ''}</dd></>}
-            {settingsInstance.integration?.store_url && <><dt className="text-text-muted">Store URL</dt><dd className="break-all">{settingsInstance.integration.store_url}</dd></>}
-            {settingsInstance.integration?.sync_status && <><dt className="text-text-muted">Store sync</dt><dd className="capitalize">{settingsInstance.integration.sync_status}</dd></>}
-            {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">Sync issue</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
+            <dt className="text-text-muted">{L('Channel', 'القناة')}</dt><dd className="font-medium capitalize">{settingsInstance.type}</dd>
+            <dt className="text-text-muted">{L('Account ID', 'معرّف الحساب')}</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
+            <dt className="text-text-muted">{L('Connection', 'الاتصال')}</dt><dd className="capitalize">{settingsInstance.status || L('Connected', 'متصل')}</dd>
+            <dt className="text-text-muted">{L('AI replies', 'ردود الذكاء الاصطناعي')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Enabled', 'مفعّلة') : L('Paused', 'متوقفة مؤقتًا')}</dd>
+            {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">{L('Pause reason', 'سبب الإيقاف')}</dt><dd>{settingsInstance.ai_pause_reason}</dd></>}
+            {settingsInstance.comment_webhook_status && <><dt className="text-text-muted">{L('Comment webhook', 'خطاف التعليقات')}</dt><dd className="capitalize">{settingsInstance.comment_webhook_status}{settingsInstance.comment_webhook_error_code ? ` (${settingsInstance.comment_webhook_error_code})` : ''}</dd></>}
+            {settingsInstance.integration?.store_url && <><dt className="text-text-muted">{L('Store URL', 'رابط المتجر')}</dt><dd className="break-all">{settingsInstance.integration.store_url}</dd></>}
+            {settingsInstance.integration?.sync_status && <><dt className="text-text-muted">{L('Store sync', 'مزامنة المتجر')}</dt><dd className="capitalize">{settingsInstance.integration.sync_status}</dd></>}
+            {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">{L('Sync issue', 'مشكلة المزامنة')}</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
           </dl>
           {settingsInstance.status_message && <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-warning">{settingsInstance.status_message}</p>}
           <div className="flex justify-end border-t border-border pt-4">
             <Button variant={settingsInstance.ai_enabled ? 'outline' : 'primary'} onClick={() => {
               void handleToggleAI(settingsInstance.id, settingsInstance.ai_enabled)
               setSettingsInstance(null)
-            }}>{settingsInstance.ai_enabled ? 'Pause AI replies' : 'Enable AI replies'}</Button>
+            }}>{settingsInstance.ai_enabled ? L('Pause AI replies', 'إيقاف ردود الذكاء الاصطناعي') : L('Enable AI replies', 'تفعيل ردود الذكاء الاصطناعي')}</Button>
           </div>
         </div>}
       </Modal>

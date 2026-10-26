@@ -31,6 +31,7 @@ function authHeaders(): Record<string, string> {
 
 export default function MultimodalContent() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [disclosureAcknowledged, setDisclosureAcknowledged] = useState(false)
   const [disclosureLoading, setDisclosureLoading] = useState(true)
@@ -58,15 +59,15 @@ export default function MultimodalContent() {
     try {
       const response = await fetch(`${apiBase}/api/media-processing/disclosure`, { headers: authHeaders() })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data.message || 'Could not load the disclosure status.')
+      if (!response.ok) throw new Error(isRTL ? 'تعذر تحميل حالة الإقرار.' : data.message || 'Could not load the disclosure status.')
       setDisclosureAcknowledged(Boolean(data.acknowledged))
     } catch (error) {
       setDisclosureAcknowledged(false)
-      setDisclosureError(error instanceof Error ? error.message : 'Could not load the disclosure status.')
+      setDisclosureError(error instanceof Error ? error.message : L('Could not load the disclosure status.', 'تعذر تحميل حالة الإقرار.'))
     } finally {
       setDisclosureLoading(false)
     }
-  }, [businessId])
+  }, [businessId, isRTL])
 
   useEffect(() => { void loadDisclosure() }, [loadDisclosure])
 
@@ -79,12 +80,12 @@ export default function MultimodalContent() {
         body: JSON.stringify({ acknowledged }),
       })
       const payload = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(payload.message || 'Could not save disclosure acknowledgment')
+      if (!response.ok) throw new Error(isRTL ? 'تعذر حفظ الإقرار.' : payload.message || 'Could not save disclosure acknowledgment')
       setDisclosureAcknowledged(Boolean(payload.acknowledged))
       setDisclosureError('')
-      toast.success(acknowledged ? 'Disclosure acknowledgment saved' : 'Acknowledgment removed')
+      toast.success(acknowledged ? L('Disclosure acknowledgment saved', 'تم حفظ الإقرار') : L('Acknowledgment removed', 'تم إلغاء الإقرار'))
     } catch {
-      toast.error('Could not save the media disclosure setting')
+      toast.error(L('Could not save the media disclosure setting', 'تعذر حفظ إعداد معالجة الوسائط'))
     } finally {
       setDisclosureSaving(false)
     }
@@ -92,15 +93,15 @@ export default function MultimodalContent() {
 
   const analyzeImage = async () => {
     if (!disclosureAcknowledged) {
-      toast.error('Acknowledge the media processing disclosure first')
+      toast.error(L('Acknowledge the media processing disclosure first', 'أقرّ بإشعار معالجة الوسائط أولًا'))
       return
     }
     if (!businessId) {
-      toast.error('Select a business before testing media processing')
+      toast.error(L('Select a business before testing media processing', 'اختر نشاطًا تجاريًا قبل اختبار معالجة الوسائط'))
       return
     }
     if (!image) {
-      toast.error('Choose an image to analyze')
+      toast.error(L('Choose an image to analyze', 'اختر صورة لتحليلها'))
       return
     }
 
@@ -115,11 +116,11 @@ export default function MultimodalContent() {
         body,
       })
       const data = await response.json()
-      if (!response.ok) throw new Error(data.message || 'Image analysis failed')
+      if (!response.ok) throw new Error(isRTL ? 'فشل تحليل الصورة.' : data.message || 'Image analysis failed')
       setResult(data)
-      toast.success('Image analyzed by the configured provider')
+      toast.success(L('Image analyzed by the configured provider', 'تم تحليل الصورة باستخدام المزوّد المحدد'))
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Image analysis failed')
+      toast.error(error instanceof Error ? error.message : L('Image analysis failed', 'فشل تحليل الصورة'))
     } finally {
       setTesting(false)
     }
@@ -127,53 +128,53 @@ export default function MultimodalContent() {
 
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
-      <PageHeader title="Media processing" description="Incoming voice and image messages use the server-configured AI providers. Provider credentials and processing behavior are managed by the server." />
+      <PageHeader title={L('Media processing', 'معالجة الوسائط')} description={L('Incoming voice and image messages use the server-configured AI providers. Provider credentials and processing behavior are managed by the server.', 'تُعالج الرسائل الصوتية والصور الواردة باستخدام مزوّدي الذكاء الاصطناعي المحددين على الخادم، وتُدار بيانات اعتمادهم وطريقة المعالجة من إعدادات الخادم.')} />
 
-      {!businessId && <p role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-sm text-warning">Select a business before managing media settings.</p>}
+      {!businessId && <p role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-sm text-warning">{L('Select a business before managing media settings.', 'اختر نشاطًا تجاريًا قبل إدارة إعدادات الوسائط.')}</p>}
       <Card><CardContent className="p-5 md:p-6">
         <div className="flex items-start gap-3">
           <AlertCircle className="mt-0.5 h-5 w-5 text-warning" aria-hidden="true" />
           <div className="flex-1">
-            <h2 className="font-semibold text-text-primary">Third-party media processing disclosure</h2>
+            <h2 className="font-semibold text-text-primary">{L('Third-party media processing disclosure', 'إقرار معالجة الوسائط لدى جهة خارجية')}</h2>
             <p className="mt-1 text-sm text-text-secondary">
-              Images and voice messages may be sent to the AI provider configured for this service so it can analyze or transcribe them.
+              {L('Images and voice messages may be sent to the AI provider configured for this service so it can analyze or transcribe them.', 'قد تُرسل الصور والرسائل الصوتية إلى مزوّد الذكاء الاصطناعي المحدد لهذه الخدمة لتحليلها أو تفريغها نصيًا.')}
             </p>
             {disclosureLoading ? (
-              <p className="mt-3 text-sm text-text-tertiary">Loading disclosure status…</p>
+              <p className="mt-3 text-sm text-text-tertiary">{L('Loading disclosure status…', 'جارٍ تحميل حالة الإقرار…')}</p>
             ) : (
-              <Checkbox checked={disclosureAcknowledged} disabled={disclosureSaving || !businessId || Boolean(disclosureError)} onChange={saveDisclosure} label="I acknowledge this media processing disclosure for this business." className="mt-4 text-sm" />
+              <Checkbox checked={disclosureAcknowledged} disabled={disclosureSaving || !businessId || Boolean(disclosureError)} onChange={saveDisclosure} label={L('I acknowledge this media processing disclosure for this business.', 'أقرّ بإشعار معالجة الوسائط لهذا النشاط التجاري.')} className="mt-4 text-sm" />
             )}
-            {disclosureError && <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{disclosureError}</span><Button variant="outline" size="sm" onClick={() => void loadDisclosure()} disabled={disclosureLoading}>Retry</Button></div>}
+            {disclosureError && <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{disclosureError}</span><Button variant="outline" size="sm" onClick={() => void loadDisclosure()} disabled={disclosureLoading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
           </div>
-          {disclosureAcknowledged && <CheckCircle2 className="h-5 w-5 text-success" aria-label="Acknowledged" />}
+          {disclosureAcknowledged && <CheckCircle2 className="h-5 w-5 text-success" aria-label={L('Acknowledged', 'تم الإقرار')} />}
         </div>
       </CardContent></Card>
 
       <Card><CardContent className="p-5 md:p-6">
         <div className="flex items-center gap-2">
           <ImageIcon className="h-5 w-5 text-accent" aria-hidden="true" />
-          <h2 className="font-semibold text-text-primary">Test image analysis</h2>
+          <h2 className="font-semibold text-text-primary">{L('Test image analysis', 'اختبار تحليل الصور')}</h2>
         </div>
         <p className="mt-1 text-sm text-text-secondary">
-          This sends the selected image to the configured vision provider. The image is not saved by this test endpoint.
+          {L('This sends the selected image to the configured vision provider. The image is not saved by this test endpoint.', 'سيتم إرسال الصورة المحددة إلى مزوّد تحليل الصور. لا يحفظ هذا الاختبار الصورة.')}
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition hover:border-brand hover:bg-brand/5">
             <UploadCloud className="h-4 w-4" aria-hidden="true" />
-            Choose image
-            <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose image to analyze" onChange={event => { setImage(event.target.files?.[0] || null); setResult(null) }} />
+            {L('Choose image', 'اختيار صورة')}
+            <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" aria-label={L('Choose image to analyze', 'اختر صورة لتحليلها')} onChange={event => { setImage(event.target.files?.[0] || null); setResult(null) }} />
           </label>
-          <span className="max-w-full truncate text-sm text-text-secondary">{image?.name || 'No image selected'}</span>
-          <Button type="button" onClick={analyzeImage} disabled={testing || disclosureLoading || !disclosureAcknowledged || !image || !businessId} loading={testing}>{testing ? 'Analyzing…' : 'Analyze image'}</Button>
+          <span className="max-w-full truncate text-sm text-text-secondary">{image?.name || L('No image selected', 'لم يتم اختيار صورة')}</span>
+          <Button type="button" onClick={analyzeImage} disabled={testing || disclosureLoading || !disclosureAcknowledged || !image || !businessId} loading={testing}>{testing ? L('Analyzing…', 'جارٍ التحليل…') : L('Analyze image', 'تحليل الصورة')}</Button>
         </div>
 
         {result && (
           <div className="mt-5 space-y-2 rounded-lg border border-border bg-surface p-4 text-sm text-text-primary">
-            {typeof result.confidence === 'number' && <p><strong>Confidence:</strong> {Math.round(result.confidence * 100)}%</p>}
-            {result.detected_intent && <p><strong>Detected intent:</strong> {result.detected_intent}</p>}
-            {result.description && <p><strong>Description:</strong> {result.description}</p>}
-            {result.extracted_text && <p><strong>Extracted text:</strong> {result.extracted_text}</p>}
-            {!!result.product_matches?.length && <p><strong>Product matches:</strong> {JSON.stringify(result.product_matches)}</p>}
+            {typeof result.confidence === 'number' && <p><strong>{L('Confidence:', 'مستوى الثقة:')}</strong> {Math.round(result.confidence * 100)}%</p>}
+            {result.detected_intent && <p><strong>{L('Detected intent:', 'النية المكتشفة:')}</strong> {result.detected_intent}</p>}
+            {result.description && <p><strong>{L('Description:', 'الوصف:')}</strong> {result.description}</p>}
+            {result.extracted_text && <p><strong>{L('Extracted text:', 'النص المستخرج:')}</strong> {result.extracted_text}</p>}
+            {!!result.product_matches?.length && <p><strong>{L('Product matches:', 'المنتجات المطابقة:')}</strong> {JSON.stringify(result.product_matches)}</p>}
           </div>
         )}
       </CardContent></Card>

@@ -86,7 +86,7 @@ export default function SystemLogsPage() {
     ERROR: 'text-error bg-error/10',
     WARNING: 'text-warning bg-warning/10',
     INFO: 'text-info bg-info/10',
-    DEBUG: 'text-gray-500 bg-gray-500/10',
+    DEBUG: 'text-text-muted bg-surface-secondary',
   }
 
   const levelIcons: Record<string, React.ReactNode> = {
@@ -164,7 +164,7 @@ export default function SystemLogsPage() {
       )}
 
       {/* Log Stream */}
-      <section aria-label={L('Log entries', 'إدخالات السجل')} aria-busy={loading || refreshing} className="mx-5 my-4 flex-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[#0d1117] lg:mx-8">
+      <section aria-label={L('Log entries', 'إدخالات السجل')} aria-busy={loading || refreshing} className="mx-5 my-4 flex-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] lg:mx-8">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs text-gray-400">
           <span>{L(`${logs.length} entries`, `${logs.length} إدخال`)}</span>
           {refreshing && <span className="inline-flex items-center gap-2"><RefreshCw size={12} className="animate-spin" />{L('Updating…', 'جارٍ التحديث…')}</span>}

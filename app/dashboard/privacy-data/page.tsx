@@ -44,7 +44,7 @@ export default function PrivacyDataPage() {
       fetch(`${API}/businesses/${id}/data-rights/customers?per_page=50&search=${encodeURIComponent(search)}`, { headers: headers() }),
       fetch(`${API}/businesses/${id}/data-rights-requests`, { headers: headers() }),
     ])
-    if (!retentionResponse.ok || !customerResponse.ok || !requestsResponse.ok) throw new Error('Could not load privacy settings for this business.')
+    if (!retentionResponse.ok || !customerResponse.ok || !requestsResponse.ok) throw new Error(t('Could not load privacy settings for this business.', 'تعذر تحميل إعدادات الخصوصية لهذا النشاط.'))
     setRetention(await retentionResponse.json())
     const customerPayload = await customerResponse.json()
     setCustomers(customerPayload.data || [])
@@ -61,9 +61,9 @@ export default function PrivacyDataPage() {
       const id = getSelectedBusinessId()
       setSelectedCustomer('')
       setCustomers([])
-      if (!id) { setBusinessId(null); setRequests([]); setLoading(false); setError('Select a business to manage its privacy settings.'); return }
+      if (!id) { setBusinessId(null); setRequests([]); setLoading(false); setError(t('Select a business to manage its privacy settings.', 'اختر نشاطًا تجاريًا لإدارة إعدادات الخصوصية.')); return }
       setBusinessId(id)
-      load(id).catch((cause) => setError(cause instanceof Error ? cause.message : 'Could not load privacy settings.'))
+      load(id).catch((cause) => setError(isRTL ? 'تعذر تحميل إعدادات الخصوصية.' : (cause instanceof Error ? cause.message : 'Could not load privacy settings.')))
     }
     syncBusiness()
     window.addEventListener('naz:business-changed', syncBusiness)
@@ -72,7 +72,7 @@ export default function PrivacyDataPage() {
       window.removeEventListener('naz:business-changed', syncBusiness)
       window.removeEventListener('storage', syncBusiness)
     }
-  }, [load])
+  }, [isRTL, load])
 
   async function saveRetention() {
     if (!businessId) return
@@ -80,9 +80,9 @@ export default function PrivacyDataPage() {
     try {
       const response = await fetch(`${API}/businesses/${businessId}/data-retention`, { method: 'PUT', headers: headers(), body: JSON.stringify(retention) })
       const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.message || 'Could not save retention settings.')
-      setRetention(body); setNotice('Retention settings saved. Scheduled cleanup applies them daily.')
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save retention settings.') }
+      if (!response.ok) throw new Error(body.message || t('Could not save retention settings.', 'تعذر حفظ إعدادات الاحتفاظ.'))
+      setRetention(body); setNotice(t('Retention settings saved. Scheduled cleanup applies them daily.', 'تم حفظ إعدادات الاحتفاظ. تُطبّق عملية التنظيف المجدولة هذه الإعدادات يوميًا.'))
+    } catch (cause) { setError(isRTL ? t('Could not save retention settings.', 'تعذر حفظ إعدادات الاحتفاظ.') : (cause instanceof Error ? cause.message : 'Could not save retention settings.')) }
     finally { setBusy(false) }
   }
 
@@ -92,10 +92,10 @@ export default function PrivacyDataPage() {
     try {
       const response = await fetch(`${API}/businesses/${businessId}/data-exports`, { method: 'POST', headers: headers(), body: '{}' })
       const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.message || 'Could not start the export.')
-      setNotice('Export request created. Refresh the request list to see when the archive is ready.')
+      if (!response.ok) throw new Error(body.message || t('Could not start the export.', 'تعذر بدء التصدير.'))
+      setNotice(t('Export request created. Refresh the request list to see when the archive is ready.', 'تم إنشاء طلب التصدير. حدّث قائمة الطلبات لمعرفة موعد جاهزية الأرشيف.'))
       await load(businessId)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not start the export.') }
+    } catch (cause) { setError(isRTL ? t('Could not start the export.', 'تعذر بدء التصدير.') : (cause instanceof Error ? cause.message : 'Could not start the export.')) }
     finally { setBusy(false) }
   }
 
@@ -104,25 +104,25 @@ export default function PrivacyDataPage() {
     setBusy(true); setError('')
     try {
       const response = await fetch(`${API}/businesses/${businessId}/data-exports/${requestId}/download`, { headers: headers() })
-      if (!response.ok) throw new Error('Archive is not ready or has expired.')
+      if (!response.ok) throw new Error(t('Archive is not ready or has expired.', 'الأرشيف غير جاهز أو انتهت صلاحيته.'))
       const blob = await response.blob(); const url = URL.createObjectURL(blob)
       const anchor = document.createElement('a'); anchor.href = url; anchor.download = `customer-data-export-${requestId}.zip`; anchor.click(); URL.revokeObjectURL(url)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not download the archive.') }
+    } catch (cause) { setError(isRTL ? t('Could not download the archive.', 'تعذر تنزيل الأرشيف.') : (cause instanceof Error ? cause.message : 'Could not download the archive.')) }
     finally { setBusy(false) }
   }
 
   async function eraseCustomer() {
     if (!businessId || !selectedCustomer) return
     const customer = customers.find((item) => String(item.id) === selectedCustomer)
-    if (!customer || !window.confirm(`Permanently delete ${customer.name || 'this customer'}'s conversations, messages, media, consents, notes, and customer profile? A suppression record will remain to prevent marketing re-import.`)) return
+    if (!customer || !window.confirm(isRTL ? `هل تريد حذف محادثات ${customer.name || 'هذا العميل'} ورسائله ووسائطه وموافقاته وملاحظاته وملفه نهائيًا؟ سيبقى سجل منع لإيقاف استيراده مجددًا للتسويق.` : `Permanently delete ${customer.name || 'this customer'}'s conversations, messages, media, consents, notes, and customer profile? A suppression record will remain to prevent marketing re-import.`)) return
     setBusy(true); setError(''); setNotice('')
     try {
       const response = await fetch(`${API}/businesses/${businessId}/customers/${selectedCustomer}/data`, { method: 'DELETE', headers: headers(), body: JSON.stringify({ confirm: true }) })
       const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.message || 'Could not erase customer data.')
-      setNotice(`Erasure completed. Receipt #${body.request.id} is saved below.`)
+      if (!response.ok) throw new Error(body.message || t('Could not erase customer data.', 'تعذر حذف بيانات العميل.'))
+      setNotice(isRTL ? `اكتمل الحذف. حُفظ الإيصال رقم ${body.request.id} أدناه.` : `Erasure completed. Receipt #${body.request.id} is saved below.`)
       setSelectedCustomer(''); await load(businessId)
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not erase customer data.') }
+    } catch (cause) { setError(isRTL ? t('Could not erase customer data.', 'تعذر حذف بيانات العميل.') : (cause instanceof Error ? cause.message : 'Could not erase customer data.')) }
     finally { setBusy(false) }
   }
 

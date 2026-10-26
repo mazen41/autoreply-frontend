@@ -40,6 +40,7 @@ function getToken() {
 
 export default function SettingsPage() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -235,22 +236,22 @@ export default function SettingsPage() {
       transition={springs.smooth}
     >
       <PageHeader
-        title="Settings & Workspace Preferences"
-        description="Configure your personal credentials, company profile, AI persona reply tone, and security authentication."
+        title={L('Settings & Workspace Preferences', 'الإعدادات وتفضيلات مساحة العمل')}
+        description={L('Configure your personal credentials, company profile, AI persona reply tone, and security authentication.', 'أدر بياناتك الشخصية وملف النشاط التجاري ونبرة ردود الذكاء الاصطناعي وإعدادات الأمان.')}
       >
         <Tabs
           variant="segmented"
           tabs={[
-            { id: 'profile', label: 'User Profile', icon: <User size={14} /> },
-            { id: 'business', label: 'Business & AI Persona', icon: <Building2 size={14} /> },
-            { id: 'security', label: 'Security & Access', icon: <ShieldCheck size={14} /> },
+            { id: 'profile', label: L('User Profile', 'الملف الشخصي'), icon: <User size={14} /> },
+            { id: 'business', label: L('Business & AI Persona', 'النشاط التجاري وشخصية الذكاء الاصطناعي'), icon: <Building2 size={14} /> },
+            { id: 'security', label: L('Security & Access', 'الأمان والوصول'), icon: <ShieldCheck size={14} /> },
           ]}
           activeTab={activeTab}
           onChange={setActiveTab}
         />
       </PageHeader>
 
-      {loadError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void initSettings()} disabled={loading}>Retry</Button></div>}
+      {loadError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void initSettings()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
 
       {/* ── PROFILE TAB ── */}
       {activeTab === 'profile' && (
@@ -261,8 +262,8 @@ export default function SettingsPage() {
                 <User size={20} />
               </div>
               <div>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your personal account credentials and email alerts.</CardDescription>
+                <CardTitle>{L('Personal Information', 'المعلومات الشخصية')}</CardTitle>
+                <CardDescription>{L('Update your personal account credentials and email alerts.', 'حدّث بيانات حسابك الشخصية وإشعارات البريد الإلكتروني.')}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -287,15 +288,15 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="Full Name"
+                  label={L('Full Name', 'الاسم الكامل')}
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  placeholder="Mohammed Al-Rashid"
+                  placeholder={isRTL ? 'محمد الراشد' : 'Mohammed Al-Rashid'}
                   icon={<User size={14} />}
                   required
                 />
                 <Input
-                  label="Email Address"
+                  label={L('Email Address', 'البريد الإلكتروني')}
                   type="email"
                   value={profile.email}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
@@ -313,7 +314,7 @@ export default function SettingsPage() {
                 loading={saving}
                 icon={<Save size={14} />}
               >
-                Save Profile Changes
+                {L('Save Profile Changes', 'حفظ تغييرات الملف الشخصي')}
               </Button>
             </CardFooter>
           </form>
@@ -330,14 +331,14 @@ export default function SettingsPage() {
                   <Building2 size={20} />
                 </div>
                 <div>
-                  <CardTitle>Business Profile & AI Persona</CardTitle>
+                  <CardTitle>{L('Business Profile & AI Persona', 'ملف النشاط التجاري وشخصية الذكاء الاصطناعي')}</CardTitle>
                   <CardDescription>
-                    Information used as fundamental prompt context across all omnichannel bots.
+                    {L('Information used as fundamental prompt context across all omnichannel bots.', 'تُستخدم هذه المعلومات كسياق أساسي لجميع البوتات على مختلف القنوات.')}
                   </CardDescription>
                 </div>
               </div>
               <Badge variant="ai" size="sm">
-                <Sparkles size={11} className="mr-1" /> System Prompt Context
+                <Sparkles size={11} className="mr-1" /> {L('System Prompt Context', 'سياق تعليمات النظام')}
               </Badge>
             </div>
           </CardHeader>
@@ -346,20 +347,20 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="Registered Business Name"
+                  label={L('Registered Business Name', 'اسم النشاط التجاري المسجل')}
                   value={bizData.business_name}
                   onChange={(e) => setBizData({ ...bizData, business_name: e.target.value })}
-                  placeholder="Company LLC"
+                  placeholder={isRTL ? 'اسم الشركة' : 'Company LLC'}
                   icon={<Building2 size={14} />}
                 />
                 <Input
-                  label="Industry / Category"
+                  label={L('Industry / Category', 'المجال / التصنيف')}
                   value={bizData.business_type}
                   onChange={(e) => setBizData({ ...bizData, business_type: e.target.value })}
-                  placeholder="e.g. Retail, Healthcare, Logistics"
+                  placeholder={L('e.g. Retail, Healthcare, Logistics', 'مثال: تجارة التجزئة، الرعاية الصحية، الخدمات اللوجستية')}
                 />
                 <Input
-                  label="Official Website"
+                  label={L('Official Website', 'الموقع الرسمي')}
                   type="url"
                   value={bizData.website}
                   onChange={(e) => setBizData({ ...bizData, website: e.target.value })}
@@ -367,60 +368,60 @@ export default function SettingsPage() {
                   icon={<Globe size={14} />}
                 />
                 <Input
-                  label="Customer Support Hotline"
+                  label={L('Customer Support Hotline', 'هاتف خدمة العملاء')}
                   value={bizData.phone}
                   onChange={(e) => setBizData({ ...bizData, phone: e.target.value })}
                   placeholder="+966 ..."
                   icon={<Phone size={14} />}
                 />
                 <Input
-                  label="City & Headquarters"
+                  label={L('City & Headquarters', 'المدينة والمقر الرئيسي')}
                   value={bizData.city}
                   onChange={(e) => setBizData({ ...bizData, city: e.target.value })}
-                  placeholder="Riyadh, Dubai, Cairo..."
+                  placeholder={L('Riyadh, Dubai, Cairo...', 'الرياض، دبي، القاهرة...')}
                   icon={<MapPin size={14} />}
                 />
                 <Input
-                  label="Country"
+                  label={L('Country', 'الدولة')}
                   value={bizData.country}
                   onChange={(e) => setBizData({ ...bizData, country: e.target.value })}
-                  placeholder="Saudi Arabia"
+                  placeholder={L('Saudi Arabia', 'المملكة العربية السعودية')}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text-primary">Business Overview (AI Context)</label>
+                <label className="text-xs font-semibold text-text-primary">{L('Business Overview (AI Context)', 'نبذة عن النشاط (سياق الذكاء الاصطناعي)')}</label>
                 <Textarea
                   value={bizData.description}
                   onChange={(e) => setBizData({ ...bizData, description: e.target.value })}
                   rows={3}
-                  placeholder="Explain what your company does and core differentiators..."
+                  placeholder={L('Explain what your company does and core differentiators...', 'اشرح طبيعة نشاطك وما يميزه عن غيره...')}
                 />
                 <span className="text-[11px] text-text-tertiary">
-                  Bots will reference this when introducing your business to first-time customers.
+                  {L('Bots will reference this when introducing your business to first-time customers.', 'ستستخدم البوتات هذه المعلومات عند تعريف العملاء الجدد بنشاطك.')}
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text-primary">Key Products, Services & Policies</label>
+                <label className="text-xs font-semibold text-text-primary">{L('Key Products, Services & Policies', 'أهم المنتجات والخدمات والسياسات')}</label>
                 <Textarea
                   value={bizData.services}
                   onChange={(e) => setBizData({ ...bizData, services: e.target.value })}
                   rows={3}
-                  placeholder="Highlight key services, return windows, warranties, and shipping details..."
+                  placeholder={L('Highlight key services, return windows, warranties, and shipping details...', 'اذكر الخدمات الأساسية وسياسة الإرجاع والضمان وتفاصيل الشحن...')}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-text-primary">AI Tone & Reply Style</label>
+                <label className="text-xs font-semibold text-text-primary">{L('AI Tone & Reply Style', 'نبرة الذكاء الاصطناعي وأسلوب الرد')}</label>
                 <Select
                   dir={isRTL ? 'rtl' : 'ltr'}
                   value={bizData.reply_style}
                   onChange={(e) => setBizData({ ...bizData, reply_style: e.target.value })}
                   options={[
-                    { value: 'friendly', label: 'Friendly & Professional (Recommended for most retail & support)' },
-                    { value: 'formal', label: 'Strictly Formal & Corporate (Suited for B2B, Legal & Finance)' },
-                    { value: 'casual', label: 'Casual & Youthful (Suited for lifestyle, apparel & influencer brands)' },
+                    { value: 'friendly', label: L('Friendly & Professional (Recommended for most retail & support)', 'ودود واحترافي (مناسب لمعظم أنشطة البيع والدعم)') },
+                    { value: 'formal', label: L('Strictly Formal & Corporate (Suited for B2B, Legal & Finance)', 'رسمي ومؤسسي (مناسب للأعمال بين الشركات والقانون والتمويل)') },
+                    { value: 'casual', label: L('Casual & Youthful (Suited for lifestyle, apparel & influencer brands)', 'عفوي وشبابي (مناسب لأسلوب الحياة والأزياء والعلامات الشخصية)') },
                   ]}
                 />
               </div>
@@ -433,7 +434,7 @@ export default function SettingsPage() {
                 loading={saving}
                 icon={<Save size={14} />}
               >
-                Save Business Profile
+                {L('Save Business Profile', 'حفظ ملف النشاط التجاري')}
               </Button>
             </CardFooter>
           </form>
@@ -449,9 +450,9 @@ export default function SettingsPage() {
                 <Lock size={20} />
               </div>
               <div>
-                <CardTitle>Security & Password Management</CardTitle>
+                <CardTitle>{L('Security & Password Management', 'الأمان وإدارة كلمة المرور')}</CardTitle>
                 <CardDescription>
-                  Ensure your account is protected with strong credentials.
+                  {L('Ensure your account is protected with strong credentials.', 'احمِ حسابك باستخدام بيانات اعتماد قوية.')}
                 </CardDescription>
               </div>
             </div>
@@ -460,7 +461,7 @@ export default function SettingsPage() {
           <form onSubmit={handlePasswordChange}>
             <CardContent className="space-y-4 max-w-md">
               <Input
-                label="Current Password"
+                label={L('Current Password', 'كلمة المرور الحالية')}
                 type="password"
                 value={passwords.currentPassword}
                 onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
@@ -470,21 +471,21 @@ export default function SettingsPage() {
               />
 
               <Input
-                label="New Password"
+                label={L('New Password', 'كلمة المرور الجديدة')}
                 type="password"
                 value={passwords.newPassword}
                 onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                placeholder="At least 8 characters"
+                placeholder={L('At least 8 characters', '٨ أحرف على الأقل')}
                 icon={<Lock size={14} />}
                 required
               />
 
               <Input
-                label="Confirm New Password"
+                label={L('Confirm New Password', 'تأكيد كلمة المرور الجديدة')}
                 type="password"
                 value={passwords.confirmPassword}
                 onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
-                placeholder="Re-enter new password"
+                placeholder={L('Re-enter new password', 'أعد إدخال كلمة المرور الجديدة')}
                 icon={<Lock size={14} />}
                 required
               />
@@ -497,7 +498,7 @@ export default function SettingsPage() {
                 loading={saving}
                 icon={<Save size={14} />}
               >
-                Update Password
+                {L('Update Password', 'تحديث كلمة المرور')}
               </Button>
             </CardFooter>
           </form>

@@ -25,7 +25,7 @@ function MiniCore({ size = 90 }: { size?: number }) {
       }} />
       <div className="relative flex items-center justify-center rounded-full border-2 border-brand/50" style={{
         width: s * 0.5, height: s * 0.5,
-        background: 'radial-gradient(circle at 38% 33%, var(--brand) 0%, rgba(0,232,122,0.2) 55%, transparent 80%)',
+        background: 'radial-gradient(circle at 38% 33%, var(--brand) 0%, color-mix(in srgb, var(--brand-cyan) 20%, transparent) 55%, transparent 80%)',
       }}>
         <svg width={s * 0.22} height={s * 0.22} viewBox="0 0 24 24" fill="currentColor" className="text-white drop-shadow-md">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>

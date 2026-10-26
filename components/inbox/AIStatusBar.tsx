@@ -45,20 +45,20 @@ export default function AIStatusBar({ conv, isRTL }: AIStatusBarProps) {
       {intent ? (
         <div className="flex items-center gap-1.5 flex-shrink-0 text-gray-700 dark:text-gray-300">
           <Zap size={11} className="text-warning" />
-          <span className="font-medium">Intent:</span>
+          <span className="font-medium">{L('Intent:', 'النية:')}</span>
           <span className="font-bold">{intent}</span>
         </div>
       ) : (
         <div className="flex items-center gap-1.5 flex-shrink-0 text-gray-400">
           <Zap size={11} />
-          <span>Analyzing intent...</span>
+          <span>{L('Analyzing intent...', 'جارٍ تحليل النية...')}</span>
         </div>
       )}
 
       {/* Sentiment */}
       <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md flex-shrink-0 ${sentimentConfig.bg} ${sentimentConfig.color}`}>
         <Activity size={11} />
-        <span className="font-bold capitalize text-[10px]">{sentiment}</span>
+        <span className="font-bold capitalize text-[10px]">{isRTL ? ({ positive: 'إيجابي', neutral: 'محايد', negative: 'سلبي' } as const)[sentiment] : sentiment}</span>
       </div>
 
       {/* Language / Dialect */}
@@ -71,8 +71,8 @@ export default function AIStatusBar({ conv, isRTL }: AIStatusBarProps) {
 
       {/* Confidence Bar */}
       {confidence > 0 && (
-        <div className="flex items-center gap-2 flex-shrink-0 ml-auto" title={`Confidence: ${(confidence * 100).toFixed(0)}%`}>
-          <span className="text-[10px] text-gray-500 font-medium">Confidence</span>
+        <div className="flex items-center gap-2 flex-shrink-0 ms-auto" title={`${L('Confidence', 'الثقة')}: ${(confidence * 100).toFixed(0)}%`}>
+          <span className="text-[10px] text-gray-500 font-medium">{L('Confidence', 'الثقة')}</span>
           <div className="w-16 h-1.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden flex-shrink-0">
             <div 
               className={`h-full rounded-full transition-all duration-500 ${confidence > 0.8 ? 'bg-success' : confidence > 0.5 ? 'bg-warning' : 'bg-error'}`}
@@ -86,7 +86,7 @@ export default function AIStatusBar({ conv, isRTL }: AIStatusBarProps) {
       {(conv as any).requires_human && (
         <div className="flex items-center gap-1.5 flex-shrink-0 text-error bg-error/10 px-2 py-0.5 rounded-md border border-error/20">
           <AlertTriangle size={11} />
-          <span className="font-bold text-[10px] uppercase">Human Intervention Required</span>
+          <span className="font-bold text-[10px] uppercase">{L('Human Intervention Required', 'يتطلب تدخلًا بشريًا')}</span>
         </div>
       )}
     </div>

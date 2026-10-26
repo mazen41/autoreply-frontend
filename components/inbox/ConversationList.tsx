@@ -136,19 +136,19 @@ export default function ConversationList({
             onClick={onRefresh}
             disabled={loading}
             className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary disabled:opacity-40 transition-colors"
-            title="Refresh"
+            title={L('Refresh', 'تحديث')}
           >
             <RefreshCw size={14} className={loading ? 'animate-spin text-brand' : ''} />
           </button>
           <button
             onClick={() => setShowFilters(v => !v)}
             className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-brand/10 text-brand' : 'hover:bg-surface-elevated text-text-secondary'}`}
-            title="Filters"
+            title={L('Filters', 'تصفية')}
           >
             <SlidersHorizontal size={14} />
           </button>
           {onToggleCollapse && (
-            <button onClick={onToggleCollapse} className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary" title="Collapse">
+            <button onClick={onToggleCollapse} className="p-1.5 rounded-lg hover:bg-surface-elevated text-text-secondary" title={L('Collapse', 'طيّ القائمة')}>
               <ChevronDown size={14} className="rotate-90" />
             </button>
           )}
@@ -178,7 +178,7 @@ export default function ConversationList({
       {showFilters && (
         <div className="px-3 py-2 border-b border-border bg-surface-elevated space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">Channel</span>
+            <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide">{L('Channel', 'القناة')}</span>
             <div className="flex gap-1 flex-wrap">
               {CHANNEL_OPTIONS.map(ch => (
                 <button
@@ -196,7 +196,7 @@ export default function ConversationList({
           {/* Channel account filter */}
           {channels.length > 0 && (
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">Account</span>
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">{L('Account', 'الحساب')}</span>
               <div className="w-36 shrink-0">
                 <Select
                   size="sm"
@@ -204,7 +204,7 @@ export default function ConversationList({
                   value={channelIdFilter ? String(channelIdFilter) : ''}
                   onChange={e => setChannelIdFilter(e.target.value ? Number(e.target.value) : '')}
                   options={[
-                    { value: '', label: 'All Accounts' },
+                    { value: '', label: L('All Accounts', 'كل الحسابات') },
                     ...channels.map(ch => ({
                       value: String(ch.id),
                       label: `${ch.page_name || ch.page_id || `Account #${ch.id}`} (${ch.type})`,
@@ -217,7 +217,7 @@ export default function ConversationList({
           {/* Bot filter */}
           {bots.length > 0 && (
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">Bot</span>
+              <span className="text-[10px] font-bold uppercase text-text-tertiary tracking-wide shrink-0">{L('Bot', 'البوت')}</span>
               <div className="w-32 shrink-0">
                 <Select
                   size="sm"
@@ -225,7 +225,7 @@ export default function ConversationList({
                   value={botFilter ? String(botFilter) : ''}
                   onChange={e => setBotFilter(e.target.value ? Number(e.target.value) : '')}
                   options={[
-                    { value: '', label: 'All Bots' },
+                    { value: '', label: L('All Bots', 'كل البوتات') },
                     ...bots.map(bot => ({
                       value: String(bot.id),
                       label: bot.name,
@@ -237,7 +237,7 @@ export default function ConversationList({
           )}
           {(channelFilter || channelIdFilter !== '' || botFilter !== '') && (
             <button onClick={() => { setChannelFilter(''); setChannelIdFilter(''); setBotFilter('') }} className="text-[10px] text-brand hover:underline flex items-center gap-1">
-              <X size={10} /> Clear filters
+              <X size={10} /> {L('Clear filters', 'مسح عوامل التصفية')}
             </button>
           )}
         </div>

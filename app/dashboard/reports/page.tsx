@@ -21,7 +21,7 @@ import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: string }) {
+function Sparkline({ data, color = 'var(--brand)', isRTL }: { data: number[]; color?: string; isRTL: boolean }) {
   if (data.length < 2) return null
   const width = 400
   const height = 90
@@ -32,7 +32,7 @@ function Sparkline({ data, color = 'var(--brand)' }: { data: number[]; color?: s
     return `${x},${y}`
   })
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Daily messages chart" className="w-full h-24 overflow-visible">
+    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={isRTL ? 'مخطط الرسائل اليومية' : 'Daily messages chart'} className="w-full h-24 overflow-visible">
       <polyline points={points.join(' ')} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
@@ -45,6 +45,7 @@ function getToken() {
 
 export default function ReportsPage() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [range, setRange] = useState('30d')
   const [loading, setLoading] = useState(true)
   const [dailyData, setDailyData] = useState<number[]>([])
@@ -74,7 +75,7 @@ export default function ReportsPage() {
     setError(null)
     try {
       const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again to load reports.')
+      if (!token) throw new Error(L('Your session expired. Sign in again to load reports.', 'انتهت جلستك. سجّل الدخول مجددًا لتحميل التقارير.'))
       const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
 
       const [dailyRes, channelRes, aiRes, questionsRes, timeRes] = await Promise.all([
@@ -86,7 +87,7 @@ export default function ReportsPage() {
       ])
 
       if (![dailyRes, channelRes, aiRes, questionsRes, timeRes].every((res) => res.ok)) {
-        throw new Error('Could not load all report data. Retry to refresh.')
+        throw new Error(L('Could not load all report data. Retry to refresh.', 'تعذر تحميل بيانات التقارير كاملة. أعد المحاولة للتحديث.'))
       }
       const [daily, channel, ai, questions, saved] = await Promise.all([
         dailyRes.json(), channelRes.json(), aiRes.json(), questionsRes.json(), timeRes.json(),
@@ -100,7 +101,7 @@ export default function ReportsPage() {
       setHourlyRate(Number(saved.estimate_inputs?.hourly_rate ?? 100))
       setHourlyRateCurrency(String(saved.estimate_inputs?.hourly_rate_currency ?? 'SAR'))
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not load reports.')
+      setError(cause instanceof Error ? cause.message : L('Could not load reports.', 'تعذر تحميل التقارير.'))
     } finally {
       setLoading(false)
     }
@@ -110,7 +111,7 @@ export default function ReportsPage() {
     const token = getToken()
     if (!token) return
     if (!Number.isFinite(minutesPerReply) || minutesPerReply < 1 || minutesPerReply > 60 || !Number.isFinite(hourlyRate) || hourlyRate < 0 || hourlyRate > 1000000) {
-      toast.error('Enter valid estimate values before saving.')
+      toast.error(L('Enter valid estimate values before saving.', 'أدخل قيمًا صحيحة للتقدير قبل الحفظ.'))
       return
     }
     setSavingEstimates(true)
@@ -120,11 +121,11 @@ export default function ReportsPage() {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
         body: JSON.stringify({ minutes_per_reply: minutesPerReply, hourly_rate: hourlyRate, currency: hourlyRateCurrency }),
       })
-      if (!response.ok) throw new Error('Could not save estimate settings')
-      toast.success('Estimate inputs saved')
+      if (!response.ok) throw new Error(L('Could not save estimate settings', 'تعذر حفظ إعدادات التقدير'))
+      toast.success(L('Estimate inputs saved', 'تم حفظ قيم التقدير'))
       await fetchReports()
     } catch {
-      toast.error('Could not save estimate inputs')
+      toast.error(L('Could not save estimate inputs', 'تعذر حفظ قيم التقدير'))
     } finally {
       setSavingEstimates(false)
     }
@@ -136,7 +137,7 @@ export default function ReportsPage() {
     try {
       const url = `${API}/api/reports/export/${format}?type=messages`
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() } })
-      if (!res.ok) throw new Error('Export failed')
+      if (!res.ok) throw new Error(L('Export failed', 'فشل تصدير التقرير'))
       const blob = await res.blob()
       const a = document.createElement('a')
       const objectUrl = window.URL.createObjectURL(blob)
@@ -145,18 +146,18 @@ export default function ReportsPage() {
       a.click()
       window.URL.revokeObjectURL(objectUrl)
     } catch {
-      toast.error('Could not export this report.')
+      toast.error(L('Could not export this report.', 'تعذر تصدير هذا التقرير.'))
     }
   }
 
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
-        title="Reports"
-        description="Comprehensive reporting on conversations, AI performance, and business impact."
+        title={L('Reports', 'التقارير')}
+        description={L('Comprehensive reporting on conversations, AI performance, and business impact.', 'تقارير شاملة عن المحادثات وأداء الذكاء الاصطناعي وأثره على النشاط.')}
         primaryAction={
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" icon={<Download size={14} />} onClick={() => handleExport('csv')}>
+          <Button variant="outline" size="sm" icon={<Download size={14} />} onClick={() => handleExport('csv')}>
               CSV
             </Button>
             <Button variant="outline" size="sm" icon={<FileText size={14} />} onClick={() => handleExport('pdf')}>
@@ -168,62 +169,62 @@ export default function ReportsPage() {
         <Tabs
           variant="pills"
           tabs={[
-            { id: '7d', label: '7 Days' },
-            { id: '30d', label: '30 Days' },
-            { id: '90d', label: '90 Days' },
+            { id: '7d', label: L('7 Days', '٧ أيام') },
+            { id: '30d', label: L('30 Days', '٣٠ يومًا') },
+            { id: '90d', label: L('90 Days', '٩٠ يومًا') },
           ]}
           activeTab={range}
           onChange={setRange}
         />
       </PageHeader>
 
-      {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchReports()} disabled={loading}>Retry</Button></div>}
+      {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchReports()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="AI share of replies"
+          label={L('AI share of replies', 'نسبة ردود الذكاء الاصطناعي')}
           value={`${aiPerformance?.ai_share_of_replies || 0}%`}
           icon={<Bot size={18} />}
           variant="ai"
-          subValue={`${aiPerformance?.auto_replies ?? 0} AI replies`}
+          subValue={`${aiPerformance?.auto_replies ?? 0} ${L('AI replies', 'ردود الذكاء الاصطناعي')}`}
         />
         <MetricCard
-          label="Median Response Time"
-          value={`${aiPerformance?.median_response_time_formatted || 'No data'}`}
+          label={L('Median Response Time', 'متوسط زمن الاستجابة')}
+          value={`${aiPerformance?.median_response_time_formatted || L('No data', 'لا توجد بيانات')}`}
           icon={<Clock size={18} />}
-          subValue="End-to-end"
+          subValue={L('End-to-end', 'من البداية إلى النهاية')}
         />
         <MetricCard
-          label="Time Saved"
+          label={L('Time Saved', 'الوقت المُوفّر')}
           value={`${timeSaved?.time_saved_hours ?? 0}h`}
           icon={<Zap size={18} />}
-          subValue={`${timeSaved?.messages_handled ?? 0} AI replies handled`}
+          subValue={`${timeSaved?.messages_handled ?? 0} ${L('AI replies handled', 'رد من الذكاء الاصطناعي تمت معالجته')}`}
         />
         <MetricCard
-          label="Estimated value saved"
+          label={L('Estimated value saved', 'القيمة التقديرية المُوفّرة')}
           value={`${(timeSaved?.estimated_value ?? 0).toLocaleString()} ${timeSaved?.estimate_inputs?.hourly_rate_currency ?? 'SAR'}`}
           icon={<TrendingUp size={18} />}
-          subValue={`${timeSaved?.estimate_inputs?.minutes_per_reply ?? 3} min/reply · ${timeSaved?.estimate_inputs?.hourly_rate ?? 100} ${timeSaved?.estimate_inputs?.hourly_rate_currency ?? 'SAR'}/hr estimate`}
+          subValue={`${timeSaved?.estimate_inputs?.minutes_per_reply ?? 3} ${L('min/reply', 'دقيقة/رد')} · ${timeSaved?.estimate_inputs?.hourly_rate ?? 100} ${timeSaved?.estimate_inputs?.hourly_rate_currency ?? 'SAR'} ${L('/hr estimate', '/ساعة تقديريًا')}`}
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Estimate inputs</CardTitle>
-          <CardDescription>These merchant-provided assumptions estimate time and value saved. They are estimates, not measured savings.</CardDescription>
+          <CardTitle>{L('Estimate inputs', 'مدخلات التقدير')}</CardTitle>
+          <CardDescription>{L('These merchant-provided assumptions estimate time and value saved. They are estimates, not measured savings.', 'تُستخدم هذه القيم التي يحددها التاجر لتقدير الوقت والقيمة المُوفّرة، وهي تقديرات وليست قياسات فعلية.')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-xs text-text-secondary">
-            Minutes per manual reply
+            {L('Minutes per manual reply', 'دقائق لكل رد يدوي')}
             <input type="number" min={1} max={60} value={minutesPerReply} onChange={(event) => setMinutesPerReply(event.target.value === '' ? 0 : Number(event.target.value))} className="h-10 w-40 rounded-xl border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15" />
           </label>
           <label className="flex flex-col gap-1 text-xs text-text-secondary">
-            Hourly rate
+            {L('Hourly rate', 'الأجر بالساعة')}
             <input type="number" min={0} step="0.01" max={1000000} value={hourlyRate} onChange={(event) => setHourlyRate(event.target.value === '' ? 0 : Number(event.target.value))} className="h-10 w-40 rounded-xl border border-border bg-surface-elevated px-3 text-sm text-text-primary outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15" />
           </label>
-          <Select dir={isRTL ? 'rtl' : 'ltr'} label="Currency" value={hourlyRateCurrency} onValueChange={setHourlyRateCurrency} options={['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => ({ value: currency, label: currency }))} />
-          <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates} disabled={loading || savingEstimates}>Save estimates</Button>
+          <Select dir={isRTL ? 'rtl' : 'ltr'} label={L('Currency', 'العملة')} value={hourlyRateCurrency} onValueChange={setHourlyRateCurrency} options={['SAR', 'EGP', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'USD', 'EUR'].map((currency) => ({ value: currency, label: currency }))} />
+          <Button variant="outline" onClick={saveEstimateInputs} loading={savingEstimates} disabled={loading || savingEstimates}>{L('Save estimates', 'حفظ التقديرات')}</Button>
         </CardContent>
       </Card>
 
@@ -235,16 +236,16 @@ export default function ReportsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Conversation Volume</CardTitle>
-                  <CardDescription className="mt-1">Daily message trends</CardDescription>
+                  <CardTitle>{L('Conversation Volume', 'حجم المحادثات')}</CardTitle>
+                  <CardDescription className="mt-1">{L('Daily message trends', 'اتجاهات الرسائل اليومية')}</CardDescription>
                 </div>
                 <Badge variant="outline">
-                  {dailyData.reduce((a, b) => a + b, 0).toLocaleString()} total
+                  {dailyData.reduce((a, b) => a + b, 0).toLocaleString(isRTL ? 'ar' : undefined)} {L('total', 'الإجمالي')}
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              {dailyData.length > 1 ? <Sparkline data={dailyData} color="var(--brand)" /> : <p className="py-8 text-center text-sm text-text-tertiary">No message history for this period.</p>}
+              {dailyData.length > 1 ? <Sparkline data={dailyData} color="var(--brand)" isRTL={isRTL} /> : <p className="py-8 text-center text-sm text-text-tertiary">{L('No message history for this period.', 'لا يوجد سجل رسائل خلال هذه الفترة.')}</p>}
             </CardContent>
           </Card>
         </div>
@@ -252,11 +253,11 @@ export default function ReportsPage() {
         {/* Channel Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Channel Distribution</CardTitle>
+            <CardTitle>{L('Channel Distribution', 'توزيع القنوات')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3.5">
-              {channelData.length === 0 ? <p className="text-sm text-text-tertiary">No channel message data.</p> : channelData.map((ch: any) => {
+              {channelData.length === 0 ? <p className="text-sm text-text-tertiary">{L('No channel message data.', 'لا توجد بيانات لرسائل القنوات.')}</p> : channelData.map((ch: any) => {
                 const total = channelData.reduce((sum: number, item: any) => sum + Number(item.messages_count || 0), 0)
                 const pct = total > 0 ? Math.round((Number(ch.messages_count || 0) / total) * 100) : 0
                 return (
@@ -267,7 +268,7 @@ export default function ReportsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-1">
                       <span className="text-xs font-medium text-text-primary capitalize">{ch.name || ch.type}</span>
-                      <span className="text-[11px] text-text-tertiary">{pct}% · {Number(ch.messages_count || 0)} messages</span>
+                      <span className="text-[11px] text-text-tertiary">{pct}% · {Number(ch.messages_count || 0)} {L('messages', 'رسالة')}</span>
                     </div>
                     <div className="h-1 bg-surface-elevated rounded-full overflow-hidden">
                       <div
@@ -289,14 +290,14 @@ export default function ReportsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Top Customer Questions</CardTitle>
-              <CardDescription className="mt-1">Most frequently asked questions handled by AI</CardDescription>
+              <CardTitle>{L('Top Customer Questions', 'أكثر أسئلة العملاء شيوعًا')}</CardTitle>
+              <CardDescription className="mt-1">{L('Most frequently asked questions handled by AI', 'الأسئلة الأكثر تكرارًا التي عالجها الذكاء الاصطناعي')}</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y divide-border/50">
-            {topQuestions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-text-tertiary">No customer questions found for this account.</p> : topQuestions.map((q: any, i: number) => (
+            {topQuestions.length === 0 ? <p className="px-5 py-8 text-center text-sm text-text-tertiary">{L('No customer questions found for this account.', 'لم يتم العثور على أسئلة عملاء لهذا الحساب.')}</p> : topQuestions.map((q: any, i: number) => (
               <div key={i} className="flex items-center gap-4 px-5 py-3 hover:bg-surface-elevated/40 transition-colors">
                 <div className="w-7 h-7 rounded-md bg-surface-elevated flex items-center justify-center text-xs font-bold text-text-tertiary shrink-0">
                   {i + 1}

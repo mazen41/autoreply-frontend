@@ -65,6 +65,7 @@ interface WorkflowExecution {
 
 export default function WorkflowContent() {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [workflows, setWorkflows] = useState<Workflow[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -98,12 +99,12 @@ export default function WorkflowContent() {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(`Could not load workflows (HTTP ${res.status}).`)
+      if (!res.ok) throw new Error(L(`Could not load workflows (HTTP ${res.status}).`, `تعذر تحميل مسارات العمل (HTTP ${res.status}).`))
       setWorkflows(Array.isArray(data) ? data : (data.data || []))
     } catch (error) {
       console.error('Workflow loading failed:', error)
       setWorkflows([])
-      setLoadError(error instanceof Error ? error.message : 'Could not load workflows.')
+      setLoadError(isRTL ? 'تعذر تحميل مسارات العمل.' : (error instanceof Error ? error.message : 'Could not load workflows.'))
     } finally {
       setLoading(false)
     }
@@ -118,11 +119,11 @@ export default function WorkflowContent() {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(`Could not load execution history (HTTP ${res.status}).`)
+      if (!res.ok) throw new Error(L(`Could not load execution history (HTTP ${res.status}).`, `تعذر تحميل سجل التنفيذ (HTTP ${res.status}).`))
       setExecutions(data.data || data || [])
     } catch (error) {
       setExecutions([])
-      toast.error(error instanceof Error ? error.message : 'Could not load execution history.')
+      toast.error(isRTL ? 'تعذر تحميل سجل التنفيذ.' : (error instanceof Error ? error.message : 'Could not load execution history.'))
     }
   }
 
@@ -217,7 +218,7 @@ export default function WorkflowContent() {
     return (
       <div dir={isRTL ? 'rtl' : 'ltr'} className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-surface p-6">
         <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
-        <span className="text-sm text-text-tertiary">Loading workflow automations...</span>
+        <span className="text-sm text-text-tertiary">{L('Loading workflow automations...', 'جارٍ تحميل أتمتة سير العمل...')}</span>
       </div>
     )
   }
@@ -249,10 +250,10 @@ export default function WorkflowContent() {
             onClick={() => setShowExecutions(false)}
             icon={<ChevronLeft size={14} />}
           >
-            Back to Workflows
+            {L('Back to Workflows', 'العودة إلى مسارات العمل')}
           </Button>
           <div>
-            <h2 className="text-base font-bold text-text-primary">Execution Audit Log</h2>
+            <h2 className="text-base font-bold text-text-primary">{L('Execution Audit Log', 'سجل تدقيق التنفيذ')}</h2>
             <p className="text-xs text-text-tertiary">{selectedWorkflow.name}</p>
           </div>
         </div>
@@ -260,8 +261,8 @@ export default function WorkflowContent() {
         <Card>
           <CardHeader className="pb-3 border-b border-border/60">
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Runs</CardTitle>
-              <Badge variant="outline">{selectedWorkflow.execution_count} Total Executions</Badge>
+              <CardTitle>{L('Recent Runs', 'عمليات التشغيل الأخيرة')}</CardTitle>
+              <Badge variant="outline">{selectedWorkflow.execution_count} {L('Total Executions', 'إجمالي مرات التنفيذ')}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -269,8 +270,8 @@ export default function WorkflowContent() {
               <div className="py-12">
                 <EmptyState
                   icon={History}
-                  title="No execution runs recorded"
-                  description="Events will log here automatically when incoming messages trigger this workflow."
+                  title={L('No execution runs recorded', 'لا توجد عمليات تنفيذ مسجلة')}
+                  description={L('Events will log here automatically when incoming messages trigger this workflow.', 'ستُسجل الأحداث هنا تلقائيًا عند تشغيل مسار العمل بواسطة الرسائل الواردة.')}
                 />
               </div>
             ) : (
@@ -291,7 +292,7 @@ export default function WorkflowContent() {
                       <div className="flex items-center gap-2">
                         {item.status === 'failed' && !item.test_mode && selectedWorkflow && (
                           <Button variant="outline" size="xs" icon={<Play size={11} />} onClick={() => replayFailedActions(selectedWorkflow.id, item.id)}>
-                            Replay failed actions
+                            {L('Replay failed actions', 'إعادة تنفيذ الإجراءات الفاشلة')}
                           </Button>
                         )}
                         <span className="text-text-tertiary">{new Date(item.created_at).toLocaleString()}</span>
@@ -321,11 +322,11 @@ export default function WorkflowContent() {
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
       <PageHeader
-        title="Workflows & Rule Automations"
-        description="Build event-driven if/then automation recipes to route chats, tag conversations, notify internal teams, and trigger AI actions automatically."
+        title={L('Workflows & Rule Automations', 'مسارات العمل والأتمتة بالقواعد')}
+        description={L('Build event-driven if/then automation recipes to route chats, tag conversations, notify internal teams, and trigger AI actions automatically.', 'أنشئ قواعد آلية قائمة على الأحداث لتوجيه المحادثات وإضافة الوسوم وإخطار الفريق وتشغيل إجراءات الذكاء الاصطناعي.')}
         badge={
           <Badge variant="ai" dot>
-            Event Triggers & Actions
+            {L('Event Triggers & Actions', 'المحفزات والإجراءات')}
           </Badge>
         }
         primaryAction={
@@ -337,32 +338,32 @@ export default function WorkflowContent() {
             }}
             icon={<Plus size={14} />}
           >
-            Create Workflow
+            {L('Create Workflow', 'إنشاء مسار عمل')}
           </Button>
         }
       />
 
-      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchWorkflows()}>Retry</Button></div>}
+      {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchWorkflows()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
 
       {/* KPI Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          label="Total Automations"
+          label={L('Total Automations', 'إجمالي الأتمتة')}
           value={workflows.length}
-          subValue={`${activeCount} active rules`}
+          subValue={`${activeCount} ${L('active rules', 'قاعدة نشطة')}`}
           icon={<GitFork size={18} />}
         />
         <MetricCard
-          label="Active Recipes"
+          label={L('Active Recipes', 'قواعد نشطة')}
           value={activeCount}
-          subValue="Listening to live events"
+          subValue={L('Listening to live events', 'تستقبل الأحداث المباشرة')}
           icon={<Play size={18} />}
           variant="ai"
         />
         <MetricCard
-          label="Total Runs Executed"
+          label={L('Total Runs Executed', 'إجمالي مرات التشغيل')}
           value={totalRuns.toLocaleString()}
-          subValue="Automated events triggered"
+          subValue={L('Automated events triggered', 'حدثًا آليًا تم تشغيله')}
           icon={<Activity size={18} />}
         />
       </div>
@@ -371,23 +372,23 @@ export default function WorkflowContent() {
       <FilterBar
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search workflows by rule name or action..."
+        searchPlaceholder={L('Search workflows by rule name or action...', 'ابحث باسم القاعدة أو الإجراء...')}
         tabs={[
-          { id: 'all', label: 'All Workflows', count: workflows.length },
-          { id: 'active', label: 'Active', count: activeCount },
-          { id: 'paused', label: 'Paused', count: workflows.length - activeCount },
+          { id: 'all', label: L('All Workflows', 'كل مسارات العمل'), count: workflows.length },
+          { id: 'active', label: L('Active', 'نشط'), count: activeCount },
+          { id: 'paused', label: L('Paused', 'متوقف مؤقتًا'), count: workflows.length - activeCount },
         ]}
         activeTab={statusFilter}
         onTabChange={setStatusFilter}
       />
 
       {/* Workflows Directory */}
-      {loadError ? <Card className="p-6 text-sm text-text-muted">Workflow data is unavailable until the request succeeds.</Card> : filteredWorkflows.length === 0 ? (
+      {loadError ? <Card className="p-6 text-sm text-text-muted">{L('Workflow data is unavailable until the request succeeds.', 'بيانات مسارات العمل غير متاحة حتى ينجح الطلب.')}</Card> : filteredWorkflows.length === 0 ? (
         <Card className="py-12">
           <EmptyState
             icon={GitFork}
-            title="No workflow automations found"
-            description="Create custom rules to automatically categorize customer chats, set priority levels, and notify sales agents."
+            title={L('No workflow automations found', 'لا توجد مسارات عمل آلية')}
+            description={L('Create custom rules to automatically categorize customer chats, set priority levels, and notify sales agents.', 'أنشئ قواعد لتصنيف محادثات العملاء وتحديد الأولويات وإخطار فريق المبيعات تلقائيًا.')}
             primaryAction={
               <Button
                 variant="primary"
@@ -493,7 +494,7 @@ export default function WorkflowContent() {
                     size="xs"
                     onClick={() => handleDuplicate(workflow.id)}
                     icon={<Copy size={12} />}
-                    title="Duplicate"
+                    title={L('Duplicate', 'إنشاء نسخة')}
                   />
                   <Button
                     variant="ghost"
@@ -501,7 +502,7 @@ export default function WorkflowContent() {
                     onClick={() => handleDelete(workflow.id)}
                     className="text-text-tertiary hover:text-error hover:bg-error/10"
                     icon={<Trash2 size={12} />}
-                    title="Delete"
+                    title={L('Delete', 'حذف')}
                   />
                 </div>
               </div>
@@ -523,6 +524,7 @@ function WorkflowBuilder({
   onCancel: () => void
 }) {
   const { isRTL } = useLang()
+  const L = (en: string, ar: string) => isRTL ? ar : en
   const [name, setName] = useState(workflow?.name || '')
   const [description, setDescription] = useState(workflow?.description || '')
   const [trigger, setTrigger] = useState<{ type: string; config: Record<string, any> }>(() => {
@@ -563,16 +565,16 @@ function WorkflowBuilder({
       (action.type === 'assign_agent' && !Number(action.config?.agent_id))
     )
     let problem = ''
-    if (!name.trim()) problem = 'Please assign a workflow name.'
-    else if (!trigger.type) problem = 'Please specify a trigger condition.'
-    else if (trigger.type === 'keyword' && triggerValues.length === 0) problem = 'Enter at least one keyword so this workflow has a specific trigger.'
-    else if (trigger.type === 'tag_added' && triggerTags.length === 0) problem = 'Enter the tag that should trigger this workflow.'
-    else if (hasUnfilteredAutoReply) problem = 'Add a condition before using an automatic reply for every inbound message.'
-    else if (hasIncompleteCondition) problem = 'Complete every condition before publishing.'
-    else if (actions.length === 0) problem = 'Add at least one action before publishing.'
-    else if (invalidAction?.type === 'send_message') problem = 'Write the automated message before publishing.'
-    else if (invalidAction?.type === 'add_tag') problem = 'Enter a tag name before publishing.'
-    else if (invalidAction?.type === 'assign_agent') problem = 'Enter an active team member user ID for the assignment action.'
+    if (!name.trim()) problem = L('Please assign a workflow name.', 'أدخل اسمًا لمسار العمل.')
+    else if (!trigger.type) problem = L('Please specify a trigger condition.', 'حدد شرط تشغيل.')
+    else if (trigger.type === 'keyword' && triggerValues.length === 0) problem = L('Enter at least one keyword so this workflow has a specific trigger.', 'أدخل كلمة مفتاحية واحدة على الأقل لتحديد محفز مسار العمل.')
+    else if (trigger.type === 'tag_added' && triggerTags.length === 0) problem = L('Enter the tag that should trigger this workflow.', 'أدخل الوسم الذي سيشغّل مسار العمل.')
+    else if (hasUnfilteredAutoReply) problem = L('Add a condition before using an automatic reply for every inbound message.', 'أضف شرطًا قبل إعداد رد تلقائي على كل رسالة واردة.')
+    else if (hasIncompleteCondition) problem = L('Complete every condition before publishing.', 'أكمل جميع الشروط قبل النشر.')
+    else if (actions.length === 0) problem = L('Add at least one action before publishing.', 'أضف إجراءً واحدًا على الأقل قبل النشر.')
+    else if (invalidAction?.type === 'send_message') problem = L('Write the automated message before publishing.', 'اكتب الرسالة الآلية قبل النشر.')
+    else if (invalidAction?.type === 'add_tag') problem = L('Enter a tag name before publishing.', 'أدخل اسم الوسم قبل النشر.')
+    else if (invalidAction?.type === 'assign_agent') problem = L('Enter an active team member user ID for the assignment action.', 'أدخل معرّف مستخدم عضو فريق نشط لإجراء الإسناد.')
     if (problem) {
       setValidationError(problem)
       toast.error(problem)
@@ -588,7 +590,7 @@ function WorkflowBuilder({
         ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows/${workflow.id}`
         : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/workflows`
 
-      if (!token) throw new Error('Your session expired. Sign in again.')
+      if (!token) throw new Error(L('Your session expired. Sign in again.', 'انتهت جلستك. سجّل الدخول مجددًا.'))
       const normalizedTrigger = trigger.type === 'keyword'
         ? { type: 'keyword', conditions: { keywords: triggerValues, match_type: 'any' } }
         : trigger.type === 'business_hours'
@@ -622,10 +624,10 @@ function WorkflowBuilder({
         const details = payload?.errors ? Object.values(payload.errors).flat().join(' ') : ''
         throw new Error(payload?.error || details || payload?.message || `Workflow could not be saved (HTTP ${response.status}).`)
       }
-      toast.success(workflow ? 'Workflow updated' : 'Workflow created successfully')
+      toast.success(workflow ? L('Workflow updated', 'تم تحديث مسار العمل') : L('Workflow created successfully', 'تم إنشاء مسار العمل بنجاح'))
       onSave()
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : 'Failed to save workflow.'
+      const message = cause instanceof Error ? cause.message : L('Failed to save workflow.', 'تعذر حفظ مسار العمل.')
       setValidationError(message)
       toast.error(message)
     } finally {
@@ -645,16 +647,16 @@ function WorkflowBuilder({
     <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-4xl space-y-6 p-4 md:p-8">
       <div className="flex items-center justify-between">
         <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft size={14} />}>
-          Cancel & Return
+          {L('Cancel & Return', 'إلغاء والعودة')}
         </Button>
         <Button variant="primary" onClick={handleSave} loading={saving}>
-          {workflow ? 'Save Updates' : 'Publish Workflow'}
+          {workflow ? L('Save Updates', 'حفظ التغييرات') : L('Publish Workflow', 'نشر مسار العمل')}
         </Button>
       </div>
 
       <PageHeader
-        title={workflow ? 'Edit Workflow Recipe' : 'New Automation Recipe'}
-        description="Define triggers, conditions, and automated actions to run on live customer interactions."
+        title={workflow ? L('Edit Workflow Recipe', 'تعديل مسار العمل') : L('New Automation Recipe', 'مسار أتمتة جديد')}
+        description={L('Define triggers, conditions, and automated actions to run on live customer interactions.', 'حدد المحفزات والشروط والإجراءات الآلية التي تُنفذ عند تفاعل العملاء.')}
       />
 
       <Card className="space-y-6 p-6">
@@ -662,18 +664,18 @@ function WorkflowBuilder({
         {/* Core Metadata */}
         <div className="space-y-4">
           <Input
-            label="Recipe Name *"
+            label={L('Recipe Name *', 'اسم مسار العمل *')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., VIP Route to Sales Lead"
+            placeholder={L('e.g., VIP Route to Sales Lead', 'مثال: توجيه العملاء المميزين إلى مسؤول المبيعات')}
             required
           />
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-text-primary">Description</label>
+            <label className="text-xs font-semibold text-text-primary">{L('Description', 'الوصف')}</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Explain the intent and behavior of this automation..."
+              placeholder={L('Explain the intent and behavior of this automation...', 'اشرح هدف هذه الأتمتة وطريقة عملها...')}
               rows={2}
             />
           </div>
@@ -683,35 +685,35 @@ function WorkflowBuilder({
         <div className="p-5 rounded-xl bg-warning/5 border border-warning/20 space-y-4">
           <div className="flex items-center gap-2 text-warning">
             <Zap size={16} />
-            <h4 className="text-xs font-bold uppercase tracking-wider">Step 1: When Trigger Event Occurs</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider">{L('Step 1: When Trigger Event Occurs', 'الخطوة 1: عند وقوع حدث التشغيل')}</h4>
           </div>
           <Select
             dir={isRTL ? 'rtl' : 'ltr'}
             value={trigger.type}
             onChange={(e) => setTrigger({ ...trigger, type: e.target.value, config: {} })}
             options={[
-              { value: 'first_contact', label: 'First Customer Message' },
-              { value: 'message_received', label: 'New Inbound Customer Message' },
-              { value: 'keyword', label: 'Specific Keyword Detected' },
-              { value: 'business_hours', label: 'Business Working Hours Check' },
-              { value: 'tag_added', label: 'Customer Tag Assigned' },
+              { value: 'first_contact', label: L('First Customer Message', 'أول رسالة من العميل') },
+              { value: 'message_received', label: L('New Inbound Customer Message', 'رسالة واردة جديدة من العميل') },
+              { value: 'keyword', label: L('Specific Keyword Detected', 'اكتشاف كلمة مفتاحية محددة') },
+              { value: 'business_hours', label: L('Business Working Hours Check', 'التحقق من ساعات عمل النشاط') },
+              { value: 'tag_added', label: L('Customer Tag Assigned', 'إضافة وسم للعميل') },
             ]}
           />
           {trigger.type === 'keyword' && (
             <Input
-              label="Keyword to Match"
+              label={L('Keyword to Match', 'الكلمة المفتاحية للمطابقة')}
               value={trigger.config?.keyword || ''}
               onChange={(e) => setTrigger({ ...trigger, config: { ...trigger.config, keyword: e.target.value } })}
-              placeholder="e.g., refund, cancel, discount"
+              placeholder={L('e.g., refund, cancel, discount', 'مثال: استرداد، إلغاء، خصم')}
             />
           )}
           {trigger.type === 'tag_added' && (
             <Input
-              label="Tags to Match"
+              label={L('Tags to Match', 'الوسوم المطلوب مطابقتها')}
               value={trigger.config?.tag || ''}
               onChange={(e) => setTrigger({ ...trigger, config: { ...trigger.config, tag: e.target.value } })}
-              placeholder="e.g., VIP, prospect"
-              helperText="Separate several tags with commas."
+              placeholder={L('e.g., VIP, prospect', 'مثال: مميز، عميل محتمل')}
+              helperText={L('Separate several tags with commas.', 'افصل بين الوسوم بفواصل.')}
             />
           )}
         </div>
@@ -721,16 +723,16 @@ function WorkflowBuilder({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-info">
               <Sliders size={16} />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Step 2: Filter by Conditions (Optional)</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider">{L('Step 2: Filter by Conditions (Optional)', 'الخطوة 2: التصفية حسب الشروط (اختياري)')}</h4>
             </div>
             <Button variant="outline" size="xs" onClick={addCondition} icon={<Plus size={12} />}>
-              Add Rule
+              {L('Add Rule', 'إضافة قاعدة')}
             </Button>
           </div>
 
           {conditions.length === 0 ? (
             <p className="text-xs text-text-tertiary italic">
-              No filters set. All triggered conversations will proceed to execute actions unconditionally.
+              {L('No filters set. All triggered conversations will proceed to execute actions unconditionally.', 'لم يتم تحديد عوامل تصفية. ستنتقل كل المحادثات التي تحقق الحدث إلى تنفيذ الإجراءات دون شروط.')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -761,9 +763,9 @@ function WorkflowBuilder({
                       setConditions(updated)
                     }}
                     options={[
-                      { value: 'equals', label: 'Equals' },
-                      { value: 'not_equals', label: 'Does Not Equal' },
-                      { value: 'contains', label: 'Contains' },
+                    { value: 'equals', label: L('Equals', 'يساوي') },
+                      { value: 'not_equals', label: L('Does Not Equal', 'لا يساوي') },
+                      { value: 'contains', label: L('Contains', 'يحتوي على') },
                     ]}
                   />
                   <Input
@@ -774,7 +776,7 @@ function WorkflowBuilder({
                       updated[idx].config = { ...updated[idx].config, value: e.target.value }
                       setConditions(updated)
                     }}
-                    placeholder="Match value..."
+                    placeholder={L('Match value...', 'قيمة المطابقة...')}
                   />
                   <Button
                     variant="ghost"
@@ -795,10 +797,10 @@ function WorkflowBuilder({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-brand">
               <GitFork size={16} />
-              <h4 className="text-xs font-bold uppercase tracking-wider">Step 3: Execute Actions</h4>
+              <h4 className="text-xs font-bold uppercase tracking-wider">{L('Step 3: Execute Actions', 'الخطوة 3: تنفيذ الإجراءات')}</h4>
             </div>
             <Button variant="outline" size="xs" onClick={addAction} icon={<Plus size={12} />}>
-              Add Action
+              {L('Add Action', 'إضافة إجراء')}
             </Button>
           </div>
 
@@ -806,14 +808,14 @@ function WorkflowBuilder({
             {actions.map((act, idx) => (
               <div key={idx} className="p-3.5 rounded-lg bg-surface border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-text-primary">Action #{idx + 1}</span>
+                  <span className="text-xs font-bold text-text-primary">{L('Action', 'إجراء')} #{idx + 1}</span>
                   <Button
                     variant="ghost"
                     size="xs"
                     onClick={() => setActions(actions.filter((_, i) => i !== idx))}
                     className="text-text-tertiary hover:text-error"
                   >
-                    Remove
+                    {L('Remove', 'إزالة')}
                   </Button>
                 </div>
 
@@ -827,9 +829,9 @@ function WorkflowBuilder({
                       setActions(updated)
                     }}
                     options={[
-                      { value: 'send_message', label: 'Send Automated Message' },
-                      { value: 'add_tag', label: 'Add Contact Tag' },
-                      { value: 'assign_agent', label: 'Assign to Agent' },
+                      { value: 'send_message', label: L('Send Automated Message', 'إرسال رسالة آلية') },
+                      { value: 'add_tag', label: L('Add Contact Tag', 'إضافة وسم لجهة الاتصال') },
+                      { value: 'assign_agent', label: L('Assign to Agent', 'تعيين إلى وكيل') },
                     ]}
                   />
                 </div>
@@ -842,7 +844,7 @@ function WorkflowBuilder({
                       updated[idx].config = { ...updated[idx].config, message: e.target.value }
                       setActions(updated)
                     }}
-                    placeholder="Enter automated reply content..."
+                    placeholder={L('Enter automated reply content...', 'اكتب محتوى الرد الآلي...')}
                     rows={2}
                   />
                 )}
@@ -855,22 +857,22 @@ function WorkflowBuilder({
                       updated[idx].config = { ...updated[idx].config, tag: e.target.value }
                       setActions(updated)
                     }}
-                    placeholder="Tag name (e.g. VIP, Inactive, Wholesale)..."
+                    placeholder={L('Tag name (e.g. VIP, Inactive, Wholesale)...', 'اسم الوسم (مثل: مميز، غير نشط، جملة)...')}
                   />
                 )}
                 {act.type === 'assign_agent' && (
                   <Input
                     type="number"
                     min="1"
-                    label="Agent user ID"
-                    helperText="Use the ID of an active team member in this business."
+                    label={L('Agent user ID', 'معرّف مستخدم الوكيل')}
+                    helperText={L('Use the ID of an active team member in this business.', 'استخدم معرّف عضو فريق نشط في هذا النشاط.')}
                     value={act.config?.agent_id || ''}
                     onChange={(e) => {
                       const updated = [...actions]
                       updated[idx].config = { ...updated[idx].config, agent_id: e.target.value ? Number(e.target.value) : '' }
                       setActions(updated)
                     }}
-                    placeholder="Active team member user ID"
+                    placeholder={L('Active team member user ID', 'معرّف عضو الفريق النشط')}
                   />
                 )}
               </div>

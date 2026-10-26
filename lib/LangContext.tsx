@@ -22,17 +22,17 @@ const LangContext = createContext<LangContextType>({
   isRTL: true,
 })
 
-export function LangProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>('ar')
+export function LangProvider({ children, initialLang = 'ar' }: { children: React.ReactNode; initialLang?: Language }) {
+  const [lang, setLang] = useState<Language>(initialLang)
 
   useEffect(() => {
     const saved = cookies.get('naz-lang') as Language
-    if (saved) {
+    if (saved === 'ar' || saved === 'en') {
       setLang(saved)
     } else {
-      cookies.set('naz-lang', 'ar', { path: '/', maxAge: 31536000 })
+      cookies.set('naz-lang', initialLang, { path: '/', maxAge: 31536000 })
     }
-  }, [])
+  }, [initialLang])
 
   useEffect(() => {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
