@@ -7,7 +7,7 @@ interface BrandWordmarkProps {
 }
 
 /** Dark-backed version of the full neon wordmark, sized for brand moments. */
-export default function BrandWordmark({ className = '', priority = false, width = 'min(78vw, 320px)' }: BrandWordmarkProps) {
+export default function BrandWordmark({ className = '', priority = false, width = 'min(62vw, 220px)' }: BrandWordmarkProps) {
   return (
     <span
       className={`inline-flex max-w-full items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#050617] p-2 shadow-[0_0_32px_rgba(58,80,255,0.16)] ${className}`}

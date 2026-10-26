@@ -100,7 +100,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ ...springs.gentle, delay: 0.05 }}
         >
-          <BrandWordmark width="min(78%, 300px)" className="rounded-xl p-1.5" priority />
+          <BrandWordmark width="min(64%, 210px)" className="rounded-xl p-1" priority />
         </motion.div>
 
         {/* Core + system status */}
