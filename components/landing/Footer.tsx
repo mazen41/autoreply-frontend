@@ -2,9 +2,15 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLang } from '../../lib/LangContext'
 import { useAuth } from '../../lib/AuthContext'
-import { Bot } from 'lucide-react'
+
+const FOOTER_LINKS = {
+  productLinks: ['/#features', '/pricing', '/integrations', '/security'],
+  companyLinks: ['/about', '/blog', '/careers', '/contact'],
+  supportLinks: ['/help-center', '/docs', '/status', '/privacy'],
+} as const
 
 export default function Footer() {
   const { t, isRTL } = useLang()
@@ -18,7 +24,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <img src="/icons/logo_icon.png" alt="NazBiz" className="w-10 h-10 object-contain" />
+              <Image src="/icons/logo_icon.png" alt="NazBiz" width={40} height={40} className="h-10 w-10 object-contain" />
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full accent-subtle-bg accent-text border border-border">AI OS</span>
             </div>
             <p className="text-sm leading-relaxed mb-5 max-w-xs text-tertiary-color">
@@ -45,7 +51,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {(t.footer.productLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</a>
+                  <Link href={FOOTER_LINKS.productLinks[i] || '/'} className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</Link>
                 </li>
               ))}
             </ul>
@@ -59,7 +65,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {(t.footer.companyLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</a>
+                  <Link href={FOOTER_LINKS.companyLinks[i] || '/'} className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</Link>
                 </li>
               ))}
             </ul>
@@ -73,7 +79,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {(t.footer.supportLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <a href="#" className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</a>
+                  <Link href={FOOTER_LINKS.supportLinks[i] || '/'} className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</Link>
                 </li>
               ))}
             </ul>

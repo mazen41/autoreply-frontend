@@ -69,6 +69,18 @@ export default function ChannelCard({
 }: ChannelCardProps) {
   const [expanded, setExpanded] = useState(false)
   const isConnected = instances.length > 0
+  const localizedChannel = isRTL ? {
+    instagram: ['إنستغرام', 'اربط حساباً احترافياً لاستقبال الرسائل المباشرة المدعومة والرد على التعليقات.'],
+    whatsapp: ['واتساب للأعمال', 'اربط WhatsApp Cloud أو اتصال واتساب متوافقاً؛ تختلف الميزات حسب مزود الخدمة.'],
+    facebook: ['فيسبوك ماسنجر', 'اربط صفحة فيسبوك لمحادثات ماسنجر المدعومة والرد على التعليقات.'],
+    gmail: ['Gmail وGoogle Workspace', 'اربط صندوق بريد لمزامنة المحادثات وإرسال الردود المدعومة.'],
+    salla: ['متجر سلة', 'اربط متجر سلة لمزامنة المنتجات والطلبات واستخدامها في المحادثات.'],
+    telegram: ['تيليجرام', 'اربط بوت تيليجرام لمحادثات العملاء.'],
+    shopify: ['شوبيفاي', 'اربط متجر شوبيفاي لمزامنة المنتجات والعملاء والطلبات.'],
+    woocommerce: ['WooCommerce', 'اربط متجر WooCommerce لمزامنة المنتجات والعملاء والطلبات.'],
+  }[channel.id] : null
+  const channelName = localizedChannel?.[0] || channel.name
+  const channelDescription = localizedChannel?.[1] || channel.description
 
   // Check if any instance requires attention
   const hasWarning = instances.some(
@@ -120,11 +132,11 @@ export default function ChannelCard({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-text-primary tracking-tight">
-                  {channel.name}
+                  {channelName}
                 </h3>
               </div>
               <p className="text-xs text-text-tertiary mt-0.5 line-clamp-1">
-                {channel.description}
+                {channelDescription}
               </p>
             </div>
           </div>
@@ -171,7 +183,7 @@ export default function ChannelCard({
               const accountWarningMessage = inst.status_message
                 || inst.integration?.sync_error
                 || (inst.comment_webhook_status === 'error'
-                  ? `Comment webhook needs attention${inst.comment_webhook_error_code ? ` (${inst.comment_webhook_error_code})` : ''}`
+                  ? isRTL ? `تحتاج خدمة إشعارات التعليقات إلى متابعة${inst.comment_webhook_error_code ? ` (${inst.comment_webhook_error_code})` : ''}` : `Comment webhook needs attention${inst.comment_webhook_error_code ? ` (${inst.comment_webhook_error_code})` : ''}`
                   : null)
 
               return (
@@ -192,13 +204,13 @@ export default function ChannelCard({
                         )}
                       </div>
                       <div className="text-[10px] text-text-tertiary truncate">
-                        <span dir="ltr">ID: {inst.page_id || inst.id}</span>
+                        <span dir="ltr">{isRTL ? 'المعرّف:' : 'ID:'} {inst.page_id || inst.id}</span>
                         {accountWarningMessage && ` • ${accountWarningMessage}`}
                       </div>
                       {inst.integration && (
                         <div className="text-[10px] text-text-tertiary mt-1">
-                          {inst.integration.sync_counts?.products ?? 0} products · {inst.integration.sync_counts?.orders ?? 0} orders · {inst.integration.sync_counts?.customers ?? 0} customers
-                          {inst.integration.last_synced_at && ` · Synced ${new Date(inst.integration.last_synced_at).toLocaleString()}`}
+                          {inst.integration.sync_counts?.products ?? 0} {isRTL ? 'منتج' : 'products'} · {inst.integration.sync_counts?.orders ?? 0} {isRTL ? 'طلب' : 'orders'} · {inst.integration.sync_counts?.customers ?? 0} {isRTL ? 'عميل' : 'customers'}
+                          {inst.integration.last_synced_at && ` · ${isRTL ? 'تمت المزامنة' : 'Synced'} ${new Date(inst.integration.last_synced_at).toLocaleString(isRTL ? 'ar' : 'en')}`}
                         </div>
                       )}
                     </div>
@@ -210,10 +222,10 @@ export default function ChannelCard({
                       disabled={channel.disabled}
                       title={
                         inst.ai_enabled && inst.effective_ai_enabled === false
-                          ? 'AI is enabled for this channel, but replies are paused until an active agent is available.'
+                        ? isRTL ? 'الرد الآلي مفعّل لهذه القناة، لكن الردود متوقفة مؤقتاً لعدم وجود وكيل نشط.' : 'AI is enabled for this channel, but replies are paused until an active agent is available.'
                           : inst.ai_enabled
-                          ? 'AI Auto-Reply is active. Click to pause.'
-                          : 'AI Auto-Reply is off. Click to activate.'
+                          ? isRTL ? 'الرد الآلي مفعّل. اضغط لإيقافه مؤقتاً.' : 'AI Auto-Reply is active. Click to pause.'
+                          : isRTL ? 'الرد الآلي متوقف. اضغط لتفعيله.' : 'AI Auto-Reply is off. Click to activate.'
                       }
                       aria-label={isRTL
                         ? (inst.ai_enabled ? 'إيقاف الرد الآلي لهذا الحساب' : 'تفعيل الرد الآلي لهذا الحساب')
@@ -251,7 +263,7 @@ export default function ChannelCard({
                     <span className="text-[10px] text-text-tertiary">
                       {accountWarning ? (
                         <span className="text-warning font-medium" title={accountWarningMessage || undefined}>
-                          {accountWarningMessage || 'Connection needs attention'}
+                          {accountWarningMessage || (isRTL ? 'الاتصال يحتاج إلى متابعة' : 'Connection needs attention')}
                         </span>
                       ) : inst.integration?.sync_status === 'syncing' || inst.integration?.sync_status === 'queued' ? (
                         (isRTL ? 'مزامنة المتجر جارية' : 'Store sync in progress')
@@ -266,7 +278,7 @@ export default function ChannelCard({
                           type="button"
                           onClick={() => onSync(inst)}
                           className="px-2 py-1 rounded text-[10px] font-semibold text-brand hover:bg-brand/10 transition-colors"
-                          title="Sync store data now"
+                          title={isRTL ? 'مزامنة بيانات المتجر الآن' : 'Sync store data now'}
                         >
                           {isRTL ? 'مزامنة الآن' : 'Sync now'}
                         </button>
@@ -327,7 +339,7 @@ export default function ChannelCard({
             <div className="text-xs text-text-secondary leading-relaxed">
               {channel.category === 'ecommerce'
                 ? (isRTL ? 'اربط هذا المتجر لمزامنة المنتجات والطلبات واستخدام بياناتها في المحادثات.' : 'Connect this store to sync product and order data for commerce-aware conversations.')
-                : isRTL ? `اربط ${channel.name} لاستقبال رسائل العملاء المدعومة وإرسال الردود.` : `Connect ${channel.name} to receive supported customer messages and send supported replies.`}
+                : isRTL ? `اربط ${channelName} لاستقبال رسائل العملاء المدعومة وإرسال الردود.` : `Connect ${channel.name} to receive supported customer messages and send supported replies.`}
             </div>
             <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary pt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-success/80" />
@@ -371,7 +383,7 @@ export default function ChannelCard({
             className="w-full text-xs"
             onClick={onConnect}
           >
-            {isRTL ? `ربط ${channel.name}` : `Connect ${channel.name}`}
+            {isRTL ? `ربط ${channelName}` : `Connect ${channel.name}`}
           </Button>
         )}
       </div>

@@ -35,15 +35,31 @@ export interface ChannelConnectWizardProps {
   onClose: () => void
   initialChannel?: ChannelOption | null
   onContinueConnection: (channel: ChannelOption) => Promise<void>
+  isRTL?: boolean
 }
 
-export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, onContinueConnection }: ChannelConnectWizardProps) {
+export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, onContinueConnection, isRTL = false }: ChannelConnectWizardProps) {
   const [step, setStep] = useState<1 | 2>(initialChannel ? 2 : 1)
   const [selectedChannel, setSelectedChannel] = useState<ChannelOption>(initialChannel || ALL_CHANNELS[0])
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchFilter, setSearchFilter] = useState('')
+  const t = (en: string, ar: string) => isRTL ? ar : en
+  const channelLabel = (channel: ChannelOption) => isRTL ? ({
+    instagram: 'إنستغرام', facebook: 'فيسبوك ماسنجر', whatsapp: 'واتساب للأعمال', telegram: 'تيليجرام',
+    gmail: 'Gmail وGoogle Workspace', salla: 'سلة', shopify: 'شوبيفاي', woocommerce: 'WooCommerce',
+  }[channel.id]) : channel.name
+  const channelDescription = (channel: ChannelOption) => isRTL ? ({
+    instagram: 'رسائل مباشرة مدعومة وردود على التعليقات للحسابات الاحترافية.',
+    facebook: 'محادثات الصفحة المدعومة والرد على التعليقات.',
+    whatsapp: 'واجهة Cloud API أو اتصال متوافق؛ تعتمد الميزات المتاحة على المزود.',
+    telegram: 'محادثات العملاء عبر بوت تيليجرام متصل.',
+    gmail: 'مزامنة محادثات البريد الإلكتروني وإرسال الردود المدعومة.',
+    salla: 'مزامنة كتالوج المتجر وبيانات الطلبات لدعم المحادثات.',
+    shopify: 'مزامنة كتالوج المتجر والعملاء والطلبات.',
+    woocommerce: 'مزامنة كتالوج المتجر والعملاء والطلبات.',
+  }[channel.id]) : channel.description
 
   const handleSelectChannel = (channel: ChannelOption) => {
     setSelectedChannel(channel)
@@ -67,20 +83,21 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
   const filteredChannels = ALL_CHANNELS.filter((channel) => {
     const matchesCategory = activeCategory === 'all' || channel.category === activeCategory
     const query = searchFilter.toLowerCase()
-    return matchesCategory && (channel.name.toLowerCase().includes(query) || channel.description.toLowerCase().includes(query))
+    return matchesCategory && (channel.name.toLowerCase().includes(query) || channel.description.toLowerCase().includes(query) || channelLabel(channel).toLowerCase().includes(query) || channelDescription(channel).toLowerCase().includes(query))
   })
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" className="p-0 overflow-hidden">
+      <div dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="px-6 py-4 bg-surface-elevated/40 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center font-bold text-xs">{step}</div>
           <div>
             <h3 className="text-sm font-bold text-text-primary tracking-tight">
-              {step === 1 ? 'Step 1: Choose Integration' : `Step 2: Connect ${selectedChannel.name}`}
+              {step === 1 ? t('Step 1: Choose Integration', 'الخطوة 1: اختر التكامل') : t(`Step 2: Connect ${selectedChannel.name}`, `الخطوة 2: ربط ${channelLabel(selectedChannel)}`)}
             </h3>
             <p className="text-[11px] text-text-tertiary">
-              {step === 1 ? 'Select a supported channel or store integration' : 'Continue with the secure setup for this integration'}
+              {step === 1 ? t('Select a supported channel or store integration', 'اختر قناة أو تكاملاً مع متجرك') : t('Continue with the secure setup for this integration', 'تابع إعداد الاتصال الآمن لهذا التكامل')}
             </p>
           </div>
         </div>
@@ -94,22 +111,22 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
               {[
-                { id: 'all', label: 'All Channels' },
-                { id: 'social', label: 'Social' },
-                { id: 'messaging', label: 'Direct Messaging' },
-                { id: 'ecommerce', label: 'E-Commerce' },
-                { id: 'email', label: 'Email' },
+                { id: 'all', label: t('All Channels', 'كل القنوات') },
+                { id: 'social', label: t('Social', 'التواصل الاجتماعي') },
+                { id: 'messaging', label: t('Direct Messaging', 'المراسلة المباشرة') },
+                { id: 'ecommerce', label: t('E-Commerce', 'التجارة الإلكترونية') },
+                { id: 'email', label: t('Email', 'البريد الإلكتروني') },
               ].map((category) => (
                 <button key={category.id} type="button" onClick={() => setActiveCategory(category.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors shrink-0 ${activeCategory === category.id ? 'bg-brand/10 border-brand/30 text-brand font-semibold' : 'bg-surface-elevated border-border text-text-secondary hover:text-text-primary'}`}>
                   {category.label}
                 </button>
               ))}
             </div>
-            <div className="w-full sm:w-56"><Input placeholder="Search platforms..." value={searchFilter} onChange={(event) => setSearchFilter(event.target.value)} /></div>
+            <div className="w-full sm:w-56"><Input placeholder={t('Search platforms...', 'ابحث عن منصة...')} value={searchFilter} onChange={(event) => setSearchFilter(event.target.value)} /></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto pr-1">
             {filteredChannels.map((channel) => (
-              <button key={channel.id} type="button" onClick={() => handleSelectChannel(channel)} className="p-4 rounded-xl border border-border bg-surface-elevated/40 hover:bg-surface-elevated hover:border-brand/40 text-left transition-all flex flex-col justify-between group shadow-xs">
+              <button key={channel.id} type="button" onClick={() => handleSelectChannel(channel)} className={`p-4 rounded-xl border border-border bg-surface-elevated/40 hover:bg-surface-elevated hover:border-brand/40 ${isRTL ? 'text-right' : 'text-left'} transition-all flex flex-col justify-between group shadow-xs`}>
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2.5">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center p-2 bg-surface-card border" style={{ borderColor: `color-mix(in srgb, ${channel.brandColor} 30%, var(--border))` }}>
@@ -122,10 +139,10 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
                       )}
                     </div>
                   </div>
-                  <h4 className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">{channel.name}</h4>
-                  <p className="text-[11px] text-text-tertiary mt-1 line-clamp-2 leading-relaxed">{channel.description}</p>
+                  <h4 className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">{channelLabel(channel)}</h4>
+                  <p className="text-[11px] text-text-tertiary mt-1 line-clamp-2 leading-relaxed">{channelDescription(channel)}</p>
                 </div>
-                <div className="pt-3 mt-3 border-t border-border/50 flex items-center justify-between text-[11px] font-semibold text-brand"><span>Connect</span><ArrowRight className="w-3.5 h-3.5" /></div>
+                <div className="pt-3 mt-3 border-t border-border/50 flex items-center justify-between text-[11px] font-semibold text-brand"><span>{t('Connect', 'ربط')}</span>{isRTL ? <ArrowLeft className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}</div>
               </button>
             ))}
           </div>
@@ -144,23 +161,24 @@ export default function ChannelConnectWizard({ isOpen, onClose, initialChannel, 
                 <ChannelIcon type={selectedChannel.id as ChannelIconId} size={28} />
               )}
             </div>
-            <div><h4 className="text-sm font-bold text-text-primary">Connect {selectedChannel.name} to NazBiz</h4><p className="text-xs text-text-secondary mt-0.5">Review the authorization or connection steps for this integration.</p></div>
+            <div><h4 className="text-sm font-bold text-text-primary">{t(`Connect ${selectedChannel.name} to NazBiz`, `ربط ${channelLabel(selectedChannel)} بـ NazBiz`)}</h4><p className="text-xs text-text-secondary mt-0.5">{t('Review the authorization or connection steps for this integration.', 'راجع خطوات التفويض أو الاتصال لهذا التكامل.')}</p></div>
           </div>
           <div className="p-4 rounded-xl bg-surface-elevated/40 border border-border space-y-3">
-            <div className="text-xs font-semibold text-text-primary flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-brand" /><span>Connection permissions</span></div>
+            <div className="text-xs font-semibold text-text-primary flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-brand" /><span>{t('Connection permissions', 'أذونات الاتصال')}</span></div>
             <ul className="space-y-2 text-xs text-text-secondary">
-              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Available messaging and store features depend on this integration.</span></li>
-              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>Review provider permissions or connection details before continuing.</span></li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>{t('Available messaging and store features depend on this integration.', 'تعتمد ميزات المراسلة والمتجر المتاحة على هذا التكامل.')}</span></li>
+              <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" /><span>{t('Review provider permissions or connection details before continuing.', 'راجع أذونات المزود أو تفاصيل الاتصال قبل المتابعة.')}</span></li>
             </ul>
           </div>
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs"><Lock className="w-4 h-4 shrink-0" /><span>Only continue if the displayed connection method and requested access are expected.</span></div>
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-success/10 border border-success/20 text-success text-xs"><Lock className="w-4 h-4 shrink-0" /><span>{t('Only continue if the displayed connection method and requested access are expected.', 'تابع فقط إذا كانت طريقة الاتصال والصلاحيات المطلوبة متوقعة.')}</span></div>
           {authError && <div role="alert" className="rounded-lg border border-error/30 bg-error/5 px-3 py-2 text-xs text-error">{authError}</div>}
           <div className="flex items-center justify-between pt-2">
-            <Button variant="outline" size="sm" icon={<ArrowLeft className="w-3.5 h-3.5" />} onClick={() => setStep(1)}>Back</Button>
-            <Button variant="primary" size="md" loading={authLoading} onClick={handleAuthenticate}>Continue setup</Button>
+            <Button variant="outline" size="sm" icon={isRTL ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowLeft className="w-3.5 h-3.5" />} onClick={() => setStep(1)}>{t('Back', 'رجوع')}</Button>
+            <Button variant="primary" size="md" loading={authLoading} onClick={handleAuthenticate}>{authLoading ? t('Connecting…', 'جارٍ الاتصال…') : t('Continue setup', 'متابعة الإعداد')}</Button>
           </div>
         </div>
       )}
+      </div>
     </Modal>
   )
 }

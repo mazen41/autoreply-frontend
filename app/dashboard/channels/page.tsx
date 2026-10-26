@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 import PageHeader from '../../../components/ui/PageHeader'
@@ -125,6 +126,15 @@ const CHANNELS_CATALOG: ChannelDef[] = [
 export default function ChannelsPage() {
   const { isRTL } = useLang()
   const L = (en: string, ar: string) => isRTL ? ar : en
+  const goLiveCheckLabels: Record<string, string> = {
+    connected_channel: L('Connect at least one channel', 'اربط قناة واحدة على الأقل'),
+    active_agent: L('Create an active agent with a supported provider and assign a connected channel', 'أنشئ وكيلاً نشطاً بمزود مدعوم وأسند إليه قناة متصلة'),
+    provider_configured: L('Configure a supported AI provider', 'أعدّ مزوداً مدعوماً للذكاء الاصطناعي'),
+    knowledge_or_instructions: L('Add business knowledge or AI instructions', 'أضف معرفة النشاط أو تعليمات الذكاء الاصطناعي'),
+    test_reply_generated: L('Generate a successful test reply using the current agent setup', 'أنشئ رداً تجريبياً ناجحاً باستخدام إعدادات الوكيل الحالية'),
+    consent_policy_acknowledged: L('Acknowledge the marketing consent and opt-out policy', 'أقرّ بسياسة موافقة الرسائل التسويقية وإلغاء الاشتراك'),
+    handoff_recipient_configured: L('Set an email recipient for human handoffs', 'حدد بريداً إلكترونياً لإشعارات التحويل إلى موظف'),
+  }
   const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
   const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
@@ -148,10 +158,30 @@ export default function ChannelsPage() {
   // Special direct connect modals
   const [activeModalChannel, setActiveModalChannel] = useState<ChannelDef | null>(null)
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type })
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    const arabicMessages: Record<string, string> = {
+      'Select a business first.': 'اختر نشاطاً تجارياً أولاً.',
+      'Go-live settings saved.': 'تم حفظ متطلبات التفعيل.',
+      'Could not save go-live settings.': 'تعذر حفظ متطلبات التفعيل.',
+      'Test reply generated and setup checklist refreshed.': 'تم إنشاء الرد التجريبي وتحديث قائمة التحقق.',
+      'The AI test reply failed.': 'تعذر إنشاء الرد التجريبي للذكاء الاصطناعي.',
+      'WooCommerce authorization was cancelled.': 'تم إلغاء تفويض WooCommerce.',
+      'WooCommerce connected. Store sync has started.': 'تم ربط WooCommerce وبدأت مزامنة المتجر.',
+      'Could not verify the WooCommerce connection.': 'تعذر التحقق من اتصال WooCommerce.',
+      'Channel connected successfully!': 'تم ربط القناة بنجاح!',
+      'Shopify connected. Initial store sync has started.': 'تم ربط Shopify وبدأت المزامنة الأولية للمتجر.',
+      'Channel account disconnected': 'تم فصل حساب القناة.',
+      'Failed to update AI setting': 'تعذر تحديث إعداد الذكاء الاصطناعي.',
+      'Disconnect failed': 'تعذر فصل الاتصال.',
+      'Store sync started': 'بدأت مزامنة المتجر.',
+      'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
+      'Telegram bot connected!': 'تم ربط بوت تيليجرام بنجاح!',
+      'AI Auto-Reply enabled for this account': 'تم تفعيل الرد الآلي لهذا الحساب.',
+      'AI Auto-Reply paused': 'تم إيقاف الرد الآلي مؤقتاً.',
+    }
+    setToast({ message: isRTL ? (arabicMessages[message] || message) : message, type })
     setTimeout(() => setToast(null), 4000)
-  }
+  }, [isRTL])
 
   const fetchChannels = useCallback(async () => {
     setLoading(true)
@@ -341,7 +371,7 @@ export default function ChannelsPage() {
       void Promise.resolve().then(() => setWizardOpen(true))
       window.history.replaceState({}, '', window.location.pathname)
     }
-  }, [fetchChannels])
+  }, [fetchChannels, showToast])
 
   // Toggle AI Auto-Reply
   const handleToggleAI = async (instanceId: number, currentStatus: boolean) => {
@@ -590,8 +620,8 @@ export default function ChannelsPage() {
         <section className="rounded-2xl border border-border bg-surface-card p-5" aria-labelledby="ai-setup-title">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 id="ai-setup-title" className="text-sm font-semibold text-text-primary">AI go-live checklist</h2>
-              <p className="mt-1 text-xs text-text-secondary">Replies stay off until setup is complete and a test reply succeeds.</p>
+            <h2 id="ai-setup-title" className="text-sm font-semibold text-text-primary">{L('AI go-live checklist', 'قائمة التحقق قبل تفعيل الذكاء الاصطناعي')}</h2>
+              <p className="mt-1 text-xs text-text-secondary">{L('Replies stay off until setup is complete and a test reply succeeds.', 'تبقى الردود متوقفة حتى يكتمل الإعداد وينجح الرد التجريبي.')}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => void runAiSetupTest()} disabled={testReplyLoading}>
               {testReplyLoading ? 'Generating test reply…' : 'Generate test reply'}
@@ -603,19 +633,19 @@ export default function ChannelsPage() {
                 {check.passed
                   ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                   : <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />}
-                <span>{check.label}</span>
+                <span>{goLiveCheckLabels[key] || check.label}</span>
               </li>
             ))}
           </ul>
           <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
-            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>{L('I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored.', 'أقرّ بأن الرسائل التسويقية تتطلب موافقة مسبقة، وأن طلبات الإيقاف أو إلغاء الاشتراك ستُحترم.')} <a className="text-brand underline" href="/privacy">{L('Privacy policy', 'سياسة الخصوصية')}</a></>} className="text-xs" />
-            <label className="space-y-1 text-xs text-text-secondary">Human handoff notification email
+            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>{L('I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored.', 'أقرّ بأن الرسائل التسويقية تتطلب موافقة مسبقة، وأن طلبات الإيقاف أو إلغاء الاشتراك ستُحترم.')} <Link className="text-brand underline" href="/privacy">{L('Privacy policy', 'سياسة الخصوصية')}</Link></>} className="text-xs" />
+            <label className="space-y-1 text-xs text-text-secondary">{L('Human handoff notification email', 'بريد إشعارات التحويل إلى موظف')}
               <input type="email" className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm" value={goLiveSettings.handoff_notification_email || ''} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, handoff_notification_email: event.target.value })} placeholder="support@example.com" />
             </label>
-            <div className="md:col-span-2"><Button variant="outline" size="sm" onClick={() => void saveGoLiveSettings()} disabled={savingGoLiveSettings}>{savingGoLiveSettings ? 'Saving…' : 'Save go-live requirements'}</Button></div>
+            <div className="md:col-span-2"><Button variant="outline" size="sm" onClick={() => void saveGoLiveSettings()} disabled={savingGoLiveSettings}>{savingGoLiveSettings ? L('Saving…', 'جارٍ الحفظ…') : L('Save go-live requirements', 'حفظ متطلبات التفعيل')}</Button></div>
           </div>
-          {testReply && <p className="mt-3 rounded-lg bg-surface-elevated p-3 text-xs text-text-secondary">Test reply: {testReply}</p>}
-          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">Setup verified. You can enable AI replies on a connected channel.</p>}
+          {testReply && <p className="mt-3 rounded-lg bg-surface-elevated p-3 text-xs text-text-secondary">{L('Test reply:', 'الرد التجريبي:')} {testReply}</p>}
+          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">{L('Setup verified. You can enable AI replies on a connected channel.', 'تم التحقق من الإعداد. يمكنك تفعيل ردود الذكاء الاصطناعي على قناة متصلة.')}</p>}
         </section>
       )}
 
@@ -785,12 +815,13 @@ export default function ChannelsPage() {
         onClose={() => setWizardOpen(false)}
         initialChannel={selectedWizardChannel}
         onContinueConnection={handleChannelConnection}
+        isRTL={isRTL}
       />
 
       <Modal
         isOpen={settingsInstance !== null}
         onClose={() => setSettingsInstance(null)}
-        title={settingsInstance?.page_name || 'Account settings'}
+        title={settingsInstance?.page_name || L('Account settings', 'إعدادات الحساب')}
         description={L('Connection status and account controls for this channel.', 'حالة الاتصال وإعدادات الحساب لهذه القناة.')}
         size="md"
         footer={settingsInstance ? <Button variant="outline" onClick={() => setSettingsInstance(null)}>{L('Close', 'إغلاق')}</Button> : undefined}

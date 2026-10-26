@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
+import LanguageToggle from './LanguageToggle'
 import WhatsAppConnect from '../channels/WhatsAppConnect'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
@@ -1005,11 +1006,14 @@ export default function OnboardingWizard() {
             </div>
             <span className="text-sm font-black text-white tracking-tight">NazBiz</span>
           </div>
-          {step <= 4 && (
-            <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-accent/10 border border-accent/20 text-accent">
-              {isRTL ? `${step} / 4` : `Step ${step} of 4`}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {step <= 4 && (
+              <div className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-accent/10 border border-accent/20 text-accent">
+                {isRTL ? `${step} / 4` : `Step ${step} of 4`}
+              </div>
+            )}
+            <LanguageToggle />
+          </div>
         </div>
 
         {/* Main card */}

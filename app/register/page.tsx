@@ -1,10 +1,12 @@
 import { Suspense } from 'react'
 import AuthLeftPanel from '../../components/auth/AuthLeftPanel'
 import RegisterForm from '../../components/auth/RegisterForm'
+import LanguageToggle from '../../components/auth/LanguageToggle'
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--background)' }}>
+    <div className="relative min-h-screen flex" style={{ background: 'var(--background)' }}>
+      <LanguageToggle className="absolute top-4 z-30" style={{ insetInlineEnd: '1rem' }} />
       <div className="hidden lg:block" style={{ width: '42%' }}>
         <AuthLeftPanel mode="register" />
       </div>

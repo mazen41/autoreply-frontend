@@ -40,6 +40,24 @@ function token() {
 export default function AutomationControlsPage() {
   const { isRTL } = useLang()
   const t = (en: string, ar: string) => isRTL ? ar : en
+  const rolloutFlagTranslations: Record<string, { name: string; description: string }> = {
+    phase3_no_agent_fail_closed: {
+      name: 'إيقاف الردود الآلية وإنشاء مهمة تحويل عند عدم توفر وكيل مناسب',
+      description: 'يوقف الرد الآلي وينشئ مهمة لموظف عندما لا يوجد وكيل نشط مؤهل للمحادثة.',
+    },
+    phase3_setup_verification_required: {
+      name: 'التحقق من الإعداد قبل تفعيل الذكاء الاصطناعي',
+      description: 'يشترط اجتياز قائمة التحقق قبل تفعيل الردود على القنوات.',
+    },
+    phase5_workflow_reply_safety: {
+      name: 'إيقاف ردود سير العمل أثناء تولي الموظف للمحادثة',
+      description: 'يمنع إجراءات إرسال الرسائل من سير العمل عندما يتولى موظف المحادثة.',
+    },
+    phase5_sequence_takeover_guard: {
+      name: 'إيقاف التسلسلات أثناء تولي الموظف للمحادثة',
+      description: 'يمنع تسجيل المحادثة في التسلسلات وإرسال رسائلها أثناء تولي موظف لها.',
+    },
+  }
   const [businessId, setBusinessId] = useState<number | null>(null)
   const [paused, setPaused] = useState(false)
   const [campaigns, setCampaigns] = useState<Row[]>([])
@@ -195,7 +213,7 @@ export default function AutomationControlsPage() {
     <Card className="overflow-hidden"><CardContent className="space-y-4 p-5 md:p-6">
       <div><h2 className="text-sm font-semibold text-text-primary">{t('Safety behavior', 'سلوكيات الأمان')}</h2><p className="mt-1 text-sm text-text-secondary">{t('Platform-wide safety settings are managed globally. Business-specific settings can be managed here when available.', 'تتم إدارة إعدادات الأمان العامة على مستوى المنصة. ويمكن إدارة إعدادات النشاط عند توفرها.')}</p></div>
       {loading ? <p className="rounded-xl bg-surface-elevated p-4 text-sm text-text-tertiary">{t('Loading settings…', 'جارٍ تحميل الإعدادات…')}</p> : rolloutFlags.length === 0 && error ? <p className="rounded-xl bg-surface-elevated p-4 text-sm text-text-tertiary">{t('Could not load safety settings.', 'تعذر تحميل إعدادات الأمان.')}</p> : rolloutFlags.length === 0 ? <p className="rounded-xl bg-surface-elevated p-4 text-sm text-text-tertiary">{t('No rollout settings are available.', 'لا توجد إعدادات تفعيل متاحة.')}</p> : rolloutFlags.map((flag) => <div key={flag.key} className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-4">
-        <div className="min-w-0"><p className="text-sm font-medium text-text-primary">{flag.name}</p><p className="mt-1 text-sm text-text-secondary">{flag.description || flag.key}</p><p className="mt-1 text-xs text-text-tertiary">{flag.global ? t('Enabled globally', 'مفعل على مستوى المنصة') : flag.enabled ? t('Enabled for this business', 'مفعل لهذا النشاط') : t('Off by default', 'متوقف افتراضيًا')}</p></div>
+        <div className="min-w-0"><p className="text-sm font-medium text-text-primary">{isRTL ? rolloutFlagTranslations[flag.key]?.name || flag.name : flag.name}</p><p className="mt-1 text-sm text-text-secondary">{isRTL ? rolloutFlagTranslations[flag.key]?.description || flag.description || flag.key : flag.description || flag.key}</p><p className="mt-1 text-xs text-text-tertiary">{flag.global ? t('Enabled globally', 'مفعل على مستوى المنصة') : flag.enabled ? t('Enabled for this business', 'مفعل لهذا النشاط') : t('Off by default', 'متوقف افتراضيًا')}</p></div>
         {!flag.global && <Button variant={flag.enabled ? 'outline' : 'primary'} disabled={busy || loading || Boolean(error) || !businessId} onClick={() => toggleRolloutFlag(flag)}>{flag.enabled ? t('Disable', 'تعطيل') : t('Enable', 'تفعيل')}</Button>}
       </div>)}
     </CardContent></Card>
