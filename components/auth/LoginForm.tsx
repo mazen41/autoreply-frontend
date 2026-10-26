@@ -9,7 +9,8 @@ import { springs } from '../../lib/motion'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
 import Checkbox from '../ui/Checkbox'
-import { Mail, Lock, Eye, EyeOff, Check, Loader2, Play } from 'lucide-react'
+import BrandWordmark from '../brand/BrandWordmark'
+import { Mail, Lock, Eye, EyeOff, Check, Loader2 } from 'lucide-react'
 
 type LoginField = 'email' | 'password'
 
@@ -123,9 +124,8 @@ export default function LoginForm() {
       transition={springs.standard}
     >
       <div className="relative z-10">
-        <Link href="/" className="flex items-center gap-2.5 justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40">
-          <Play size={20} className="text-brand fill-brand" />
-          <span className="text-2xl font-black text-text-primary tracking-tight">NazBiz</span>
+        <Link href="/" aria-label="Nazeer Business home" className="flex justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40">
+          <BrandWordmark width="220px" className="rounded-xl p-1.5" priority />
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>

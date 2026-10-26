@@ -8,6 +8,7 @@ import { useLang } from '../../lib/LangContext'
 import toast from 'react-hot-toast'
 import SocialLoginButtons from '../ui/SocialLoginButtons'
 import Checkbox from '../ui/Checkbox'
+import BrandWordmark from '../brand/BrandWordmark'
 
 type RegisterField = 'name' | 'email' | 'password' | 'confirm'
 
@@ -132,9 +133,8 @@ export default function RegisterForm() {
     <motion.div className="relative w-full overflow-hidden rounded-2xl p-5 sm:p-7 premium-card" style={{ background: 'var(--surface-elevated)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-premium)' }} initial={{ opacity: 0, y: 18, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>
       <div className="absolute inset-0 pointer-events-none lg:hidden" style={{ backgroundImage: 'radial-gradient(circle at 15% 12%, var(--accent-subtle) 0%, transparent 35%), radial-gradient(circle at 88% 8%, var(--accent-secondary-subtle) 0%, transparent 28%), linear-gradient(var(--accent-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--accent-subtle) 1px, transparent 1px)', backgroundSize: '100% 100%, 100% 100%, 34px 34px, 34px 34px', opacity: 0.55 }} />
       <div className="relative z-10">
-        <Link href="/" className="flex items-center gap-2.5 justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2" style={{ '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--accent)', filter: 'drop-shadow(0 0 8px var(--accent-focus))' }}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <span className="text-2xl font-black" style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>Naz</span>
+        <Link href="/" aria-label="Nazeer Business home" className="flex justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2" style={{ '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>
+          <BrandWordmark width="220px" className="rounded-xl p-1.5" priority />
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>

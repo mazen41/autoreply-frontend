@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import BrandWordmark from '../brand/BrandWordmark'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import { springs, variants } from '../../lib/motion'
@@ -99,7 +100,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ ...springs.gentle, delay: 0.05 }}
         >
-          <img src="/icons/logo_icon.png" alt="NazBiz" className="w-16 h-16 object-contain drop-shadow-xl" />
+          <BrandWordmark width="min(78%, 300px)" className="rounded-xl p-1.5" priority />
         </motion.div>
 
         {/* Core + system status */}

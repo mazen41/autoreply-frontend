@@ -7,7 +7,7 @@ import OSExperience from '../components/landing/OSExperience'
 import { useLang } from '../lib/LangContext'
 import { useAuth } from '../lib/AuthContext'
 import { springs, variants } from '../lib/motion'
-import Image from 'next/image'
+import BrandWordmark from '../components/brand/BrandWordmark'
 import { Zap, MessageSquare, ArrowRight, CheckCircle } from 'lucide-react'
 
 const PROOF_POINTS = [
@@ -54,13 +54,9 @@ function Hero() {
         initial="hidden"
         animate="visible"
       >
-        {/* Logo */}
+        {/* Full brand mark */}
         <motion.div variants={variants.fadeUp} transition={springs.standard} className="flex justify-center">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-border bg-surface/60 backdrop-blur-sm">
-            <Image src="/icons/logo_icon.png" alt="NazBiz" width={28} height={28} className="object-contain" />
-            <span className="text-sm font-bold text-text-primary">NazBiz</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand/10 text-brand border border-brand/20">{isRTL ? 'مدعوم بالذكاء الاصطناعي' : 'AI POWERED'}</span>
-          </div>
+          <BrandWordmark priority />
         </motion.div>
 
         {/* Headline */}
