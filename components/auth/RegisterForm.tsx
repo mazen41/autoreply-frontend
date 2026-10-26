@@ -134,7 +134,7 @@ export default function RegisterForm() {
       <div className="absolute inset-0 pointer-events-none lg:hidden" style={{ backgroundImage: 'radial-gradient(circle at 15% 12%, var(--accent-subtle) 0%, transparent 35%), radial-gradient(circle at 88% 8%, var(--accent-secondary-subtle) 0%, transparent 28%), linear-gradient(var(--accent-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--accent-subtle) 1px, transparent 1px)', backgroundSize: '100% 100%, 100% 100%, 34px 34px, 34px 34px', opacity: 0.55 }} />
       <div className="relative z-10">
         <Link href="/" aria-label="Nazeer Business home" className="flex justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2" style={{ '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}>
-          <BrandWordmark width="112px" className="rounded-lg" priority />
+          <BrandWordmark width="56px" priority />
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>

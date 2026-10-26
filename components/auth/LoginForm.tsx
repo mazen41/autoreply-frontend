@@ -125,7 +125,7 @@ export default function LoginForm() {
     >
       <div className="relative z-10">
         <Link href="/" aria-label="Nazeer Business home" className="flex justify-center mb-8 lg:hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40">
-          <BrandWordmark width="112px" className="rounded-lg" priority />
+          <BrandWordmark width="56px" priority />
         </Link>
 
         <motion.div initial={{ opacity: 0, y: 16, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.5 }}>

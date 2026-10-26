@@ -7,10 +7,10 @@ interface BrandWordmarkProps {
 }
 
 /** Dark-backed version of the full neon wordmark, sized for brand moments. */
-export default function BrandWordmark({ className = '', priority = false, width = 'min(48vw, 150px)' }: BrandWordmarkProps) {
+export default function BrandWordmark({ className = '', priority = false, width = 'min(32vw, 75px)' }: BrandWordmarkProps) {
   return (
     <span
-      className={`inline-flex max-w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#050617] p-1 shadow-[0_0_20px_rgba(58,80,255,0.12)] ${className}`}
+      className={`inline-flex max-w-full items-center justify-center overflow-hidden ${className}`}
       style={{ width }}
     >
       <Image
@@ -18,7 +18,7 @@ export default function BrandWordmark({ className = '', priority = false, width 
         alt="Nazeer Business"
         width={1945}
         height={808}
-        sizes="(max-width: 640px) 78vw, 320px"
+        sizes="(max-width: 640px) 32vw, 75px"
         priority={priority}
         className="block h-auto w-full object-contain"
       />
