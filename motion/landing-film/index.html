@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --ground: #080b14;
+        --surface: #101626;
+        --line: #1c263a;
+        --blue: #1769ff;
+        --cyan: #00d9ff;
+        --violet: #713cff;
+        --ink: #f8fafc;
+        --muted: #94a3b8;
+      }
+      * { box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; margin: 0; overflow: hidden; background: var(--ground); }
+      body { color: var(--ink); font-family: Inter, Arial, sans-serif; }
+      #root { position: relative; isolation: isolate; width: 100%; height: 100%; overflow: hidden; background: var(--ground); }
+      #scene-light, #scene-grid, #scene-vignette { position: absolute; inset: 0; pointer-events: none; }
+      #scene-light { z-index: 0; background: radial-gradient(ellipse at 57% 48%, rgba(23,105,255,.24), transparent 43%), radial-gradient(ellipse at 84% 14%, rgba(113,60,255,.17), transparent 35%), radial-gradient(ellipse at 12% 82%, rgba(0,217,255,.09), transparent 34%); }
+      #scene-grid { z-index: 1; opacity: .42; background-image: linear-gradient(rgba(148,163,184,.065) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.065) 1px, transparent 1px); background-size: 64px 64px; transform: perspective(950px) rotateX(54deg) scale(1.55); transform-origin: center 90%; mask-image: linear-gradient(to bottom, transparent 17%, #000 72%, transparent); }
+      #scene-vignette { z-index: 2; background: radial-gradient(ellipse at center, transparent 37%, rgba(8,11,20,.18) 76%, rgba(8,11,20,.72) 120%); }
+      #brand-mark { position: absolute; top: 64px; left: 90px; z-index: 7; display: flex; align-items: center; gap: 16px; color: var(--ink); font-size: 26px; font-weight: 700; letter-spacing: -.04em; }
+      #brand-mark img { width: 48px; height: 48px; object-fit: contain; }
+      #brand-mark span { color: var(--muted); font-size: 18px; font-weight: 500; letter-spacing: 0; }
+      #top-status { position: absolute; top: 72px; right: 94px; z-index: 7; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 17px; }
+      #status-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 18px rgba(34,197,94,.55); }
+      #inbox-window { position: absolute; left: 50%; top: 51%; z-index: 4; width: 1450px; height: 755px; overflow: hidden; border: 1px solid rgba(148,163,184,.22); border-radius: 30px; background: rgba(16,22,38,.92); box-shadow: 0 50px 140px rgba(0,0,0,.46), 0 0 80px rgba(23,105,255,.12), inset 0 1px 0 rgba(255,255,255,.07); transform: translate(-50%,-50%); }
+      #window-bar { position: absolute; inset: 0 0 auto; z-index: 4; height: 66px; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid rgba(148,163,184,.15); background: rgba(8,11,20,.55); }
+      .window-dot { width: 10px; height: 10px; border-radius: 50%; background: #334155; }
+      #window-label { margin-left: 16px; color: #e2e8f0; font-size: 16px; font-weight: 600; }
+      #preview-pill { margin-left: auto; border: 1px solid rgba(23,105,255,.45); border-radius: 999px; padding: 8px 13px; color: #94bcff; background: rgba(23,105,255,.1); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+      #thread-sidebar { position: absolute; top: 66px; bottom: 0; left: 0; width: 390px; padding: 30px 22px; border-right: 1px solid rgba(148,163,184,.14); background: rgba(8,11,20,.3); }
+      #sidebar-heading { margin: 0 0 22px 8px; color: var(--muted); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+      .thread-item { display: flex; align-items: center; gap: 14px; height: 86px; padding: 0 14px; border: 1px solid transparent; border-radius: 16px; color: var(--muted); }
+      .thread-item.selected { border-color: rgba(23,105,255,.42); background: rgba(23,105,255,.1); color: var(--ink); }
+      .avatar { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 auto; border: 1px solid rgba(148,163,184,.2); border-radius: 14px; color: #bfdbfe; background: rgba(23,105,255,.18); font-size: 14px; font-weight: 700; }
+      .thread-name { font-size: 14px; font-weight: 600; }
+      .thread-preview { margin-top: 6px; color: var(--muted); font-size: 12px; }
+      #channel-stack { position: absolute; top: 610px; left: 24px; z-index: 5; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+      .channel-chip { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 11px; border: 1px solid rgba(148,163,184,.18); border-radius: 999px; background: rgba(8,11,20,.66); color: #cbd5e1; }
+      .channel-chip b { font-size: 10px; font-weight: 800; }
+      #conversation { position: absolute; top: 168px; right: 0; bottom: 0; left: 390px; overflow: hidden; }
+      #conversation-meta { position: absolute; z-index: 5; top: 12px; left: 50px; right: 50px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 14px; }
+      #conversation-meta strong { color: var(--ink); font-size: 17px; }
+      #tms-host { position: absolute; inset: 0; z-index: 5; }
+      #knowledge-chip { position: absolute; z-index: 5; left: 24px; top: 470px; display: flex; align-items: center; gap: 12px; width: 330px; min-height: 74px; padding: 13px 16px; border: 1px solid rgba(0,217,255,.24); border-radius: 18px; background: rgba(8,11,20,.88); box-shadow: 0 12px 40px rgba(0,0,0,.26); }
+      #knowledge-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 auto; border: 1px solid rgba(0,217,255,.3); border-radius: 13px; color: var(--cyan); background: rgba(0,217,255,.08); font-size: 18px; }
+      #knowledge-chip strong { display: block; color: #e2e8f0; font-size: 13px; }
+      #knowledge-chip small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+      #signal-lines { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+      .signal { fill: none; stroke: url(#signal-gradient); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 7 14; opacity: .82; }
+      #ai-badge { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(113,60,255,.38); border-radius: 999px; background: rgba(20,17,43,.88); color: #d8ccff; box-shadow: 0 0 24px rgba(113,60,255,.12); font-size: 12px; }
+      #ai-spark { color: #a78bfa; font-size: 17px; }
+      #chapter-line { position: absolute; left: 50%; bottom: 62px; z-index: 6; color: rgba(226,232,240,.64); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; transform: translateX(-50%); }
+      @media (prefers-reduced-motion: reduce) { #scene-grid { transform: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="8" data-width="1920" data-height="1080" data-fps="24">
+      <div id="scene-light" class="clip" data-start="0" data-duration="8" data-track-index="0" data-layout-ignore></div>
+      <div id="scene-grid" class="clip" data-start="0" data-duration="8" data-track-index="1" data-layout-ignore></div>
+      <div id="brand-mark">
+        <img src="assets/logo_icon.png" alt="" />
+        <div>NazBiz <span>Customer conversations</span></div>
+      </div>
+      <div id="top-status" class="clip" data-start="0" data-duration="8" data-track-index="8"><span id="status-dot"></span><span>One workspace · connected channels</span></div>
+
+      <div id="inbox-window" data-layout-allow-overflow>
+        <div id="window-bar"><span class="window-dot"></span><span class="window-dot"></span><span class="window-dot"></span><span id="window-label">NazBiz <span style="color:#64748b">/</span> Inbox</span><span id="preview-pill">Product preview</span><div id="ai-badge" class="clip" data-start="0" data-duration="8" data-track-index="6"><span id="ai-spark">✦</span><span>AI-assisted reply</span></div></div>
+        <aside id="thread-sidebar">
+          <p id="sidebar-heading">Conversations</p>
+          <div class="thread-item selected"><span class="avatar">AM</span><div><div class="thread-name">Amira M.</div><div class="thread-preview">Could you help me choose?</div></div></div>
+          <div class="thread-item"><span class="avatar" style="color:#ddd6fe;background:rgba(113,60,255,.16)">YK</span><div><div class="thread-name">Youssef K.</div><div class="thread-preview">Thanks for the details</div></div></div>
+          <div class="thread-item"><span class="avatar" style="color:#a5f3fc;background:rgba(0,217,255,.11)">SA</span><div><div class="thread-name">Salma A.</div><div class="thread-preview">I have another question</div></div></div>
+        </aside>
+        <div id="channel-stack" class="clip" data-start="0" data-duration="8" data-track-index="5">
+          <span class="channel-chip"><b style="color:#e4405f">IG</b> Instagram</span>
+          <span class="channel-chip"><b style="color:#1877f2">f</b> Facebook</span>
+          <span class="channel-chip"><b style="color:#25d366">WA</b> WhatsApp</span>
+        </div>
+        <div id="conversation">
+          <svg id="signal-lines" viewBox="0 0 1060 590" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="signal-gradient"><stop stop-color="#1769ff"/><stop offset="1" stop-color="#00d9ff"/></linearGradient></defs>
+            <path id="signal-one" class="signal" d="M 92 175 C 275 130, 290 270, 474 248" />
+            <path id="signal-two" class="signal" d="M 126 425 C 338 468, 355 312, 546 333" />
+          </svg>
+        </div>
+        <div id="knowledge-chip" class="clip" data-start="0" data-duration="8" data-track-index="6"><span id="knowledge-icon">⌁</span><span><strong>Business knowledge</strong><small>Context for a helpful reply</small></span></div>
+      </div>
+      <div id="tms-host" class="clip" data-start="0" data-duration="8" data-track-index="5" data-composition-id="thread-message-stack" data-composition-src="compositions/thread-message-stack.html" data-width="1920" data-height="1080"></div>
+      <div id="scene-vignette" class="clip" data-start="0" data-duration="8" data-track-index="10" data-layout-ignore></div>
+      <div id="chapter-line" class="clip" data-start="0" data-duration="8" data-track-index="10">A message becomes a conversation</div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#scene-grid", { backgroundPosition: "0px 0px" }, { backgroundPosition: "0px 64px", duration: 8, ease: "none" }, 0);
+      tl.fromTo("#signal-one", { strokeDashoffset: 180 }, { strokeDashoffset: 0, duration: 1.3, ease: "power2.inOut" }, 1.3);
+      tl.fromTo("#signal-two", { strokeDashoffset: 180 }, { strokeDashoffset: 0, duration: 1.5, ease: "power2.inOut" }, 2.05);
+      tl.set("#signal-lines", { opacity: 0 }, 0);
+      tl.to("#signal-lines", { opacity: 0.82, duration: 0.16 }, 1.28);
+      tl.to("#signal-lines", { opacity: 0, duration: 0.24 }, 7.25);
+      tl.fromTo("#ai-badge", { y: 8, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.38, ease: "power3.out" }, 4.15);
+      tl.to("#ai-badge", { opacity: 0, y: -4, duration: 0.24, ease: "power2.in" }, 7.42);
+      tl.fromTo("#knowledge-chip", { x: 24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.42, ease: "power3.out" }, 4.7);
+      tl.to("#knowledge-chip", { opacity: 0, x: 10, duration: 0.22, ease: "power2.in" }, 7.4);
+      tl.fromTo("#chapter-line", { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 6.05);
+      tl.to("#chapter-line", { opacity: 0, duration: 0.2, ease: "power2.in" }, 7.55);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
