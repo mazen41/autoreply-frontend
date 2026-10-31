@@ -7,9 +7,9 @@ import { useLang } from '../../lib/LangContext'
 import { useAuth } from '../../lib/AuthContext'
 
 const FOOTER_LINKS = {
-  productLinks: ['/#features', '/pricing', '/integrations', '/security'],
-  companyLinks: ['/about', '/blog', '/careers', '/contact'],
-  supportLinks: ['/help-center', '/docs', '/status', '/privacy'],
+  productLinks: ['/#features', '/pricing', '/#how-it-works'],
+  companyLinks: ['/blog', '/privacy', '/terms'],
+  supportLinks: ['/help-center', 'mailto:support@nazbiz.io'],
 } as const
 
 export default function Footer() {
@@ -19,28 +19,17 @@ export default function Footer() {
   return (
     <footer className="relative pt-16 pb-8 border-t border-divider">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-[2fr_1fr_1fr_1fr] gap-10 mb-12">
+        <div className="mb-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
 
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
               <Image src="/icons/logo_icon.png" alt="NazBiz" width={40} height={40} className="h-10 w-10 object-contain" />
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full accent-subtle-bg accent-text border border-border">AI OS</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full accent-subtle-bg text-primary-color border border-border">NazBiz</span>
             </div>
             <p className="text-sm leading-relaxed mb-5 max-w-xs text-tertiary-color">
-              {isRTL ? t.footer.tagline : 'Your AI employee that never sleeps.'}
+              {t.footer.tagline}
             </p>
-            {/* Social */}
-            <div className="flex items-center gap-3">
-              {['𝕏', 'in', 'f'].map((s, i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all duration-200 surface-elevated border border-border text-tertiary-color hover:border-accent-secondary hover:text-accent-secondary"
-                >
-                  {s}
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Product */}
@@ -79,7 +68,9 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {(t.footer.supportLinks || []).map((link: string, i: number) => (
                 <li key={i}>
-                  <Link href={FOOTER_LINKS.supportLinks[i] || '/'} className="text-sm text-secondary-color hover:text-accent-secondary transition-colors duration-200">{link}</Link>
+                  {FOOTER_LINKS.supportLinks[i]?.startsWith('mailto:')
+                    ? <a href={FOOTER_LINKS.supportLinks[i]} className="text-sm text-secondary-color transition-colors hover:text-accent-secondary">{link}</a>
+                    : <Link href={FOOTER_LINKS.supportLinks[i] || '/'} className="text-sm text-secondary-color transition-colors hover:text-accent-secondary">{link}</Link>}
                 </li>
               ))}
             </ul>
@@ -89,15 +80,9 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-divider">
           <div className="text-xs text-tertiary-color">
-            {isRTL ? t.footer.copyright : '© 2025. All rights reserved.'}
+            {t.footer.copyright}
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full status-live accent-bg accent-shadow-lg" aria-hidden="true" />
-              <span className="text-xs text-tertiary-color">
-                {isRTL ? 'جميع الأنظمة تعمل' : 'All systems operational'}
-              </span>
-            </div>
             {user && (
               <Link href="/dashboard" className="btn-primary text-xs">
                 {isRTL ? 'لوحة التحكم' : 'Dashboard'}

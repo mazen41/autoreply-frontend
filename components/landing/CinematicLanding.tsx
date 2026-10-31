@@ -1,35 +1,46 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { ReactNode } from 'react'
 import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
+  Activity,
   BookOpen,
   Bot,
   Check,
-  CircleHelp,
+  Clock3,
   Mail,
   MessageCircle,
   MessagesSquare,
   Radio,
   Sparkles,
+  Store,
+  ThumbsUp,
   Workflow,
   Zap,
 } from 'lucide-react'
 import { useAuth } from '../../lib/AuthContext'
 import { useLang } from '../../lib/LangContext'
+import { useHydratedReducedMotion } from '../../lib/useHydratedReducedMotion'
 import ChannelConverge from './ChannelConverge'
 import HeroHeadline from './HeroHeadline'
+import Pricing from './Pricing'
+import FAQ from './FAQ'
+
+if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger)
 
 const CHANNELS = [
-  { name: 'Instagram', label: 'IG', color: '#E4405F', brand: 'instagram' },
-  { name: 'Facebook', label: 'f', color: '#1877F2', brand: 'facebook' },
-  { name: 'WhatsApp', label: 'WA', color: '#25D366', Icon: MessageCircle },
-  { name: 'Gmail', label: 'G', color: '#EA4335', Icon: Mail },
-  { name: 'Telegram', label: 'TG', color: '#2AABEE', Icon: Radio },
+  { name: 'Instagram', color: '#E4405F', brand: 'instagram' },
+  { name: 'Facebook', color: '#1877F2', brand: 'facebook' },
+  { name: 'WhatsApp', color: '#25D366', Icon: MessageCircle },
+  { name: 'Gmail', color: '#EA4335', Icon: Mail },
+  { name: 'Telegram', color: '#2AABEE', Icon: Radio },
 ]
 
 const CAPABILITIES = [
@@ -54,6 +65,16 @@ const CAPABILITIES = [
     Icon: Workflow,
     accent: 'var(--brand-violet)',
   },
+  {
+    eyebrow: { en: 'CONNECTED COMMERCE', ar: 'التجارة المتصلة' },
+    title: { en: 'Keep store conversations in context.', ar: 'اربط المحادثات بسياق متجرك.' },
+    body: {
+      en: 'Connect Salla, Shopify, or WooCommerce, then assign the right store to each agent. Available product and order actions depend on the provider and your setup.',
+      ar: 'اربط سلة أو Shopify أو WooCommerce، ثم عيّن المتجر المناسب لكل وكيل. تعتمد إجراءات المنتجات والطلبات المتاحة على المزود وإعدادك.',
+    },
+    Icon: Store,
+    accent: 'var(--brand-magenta)',
+  },
 ]
 
 function Reveal({
@@ -65,7 +86,7 @@ function Reveal({
   className?: string
   delay?: number
 }) {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
 
   return (
     <motion.div
@@ -81,19 +102,16 @@ function Reveal({
 }
 
 function SectionHeading({
-  eyebrow,
   title,
   body,
   align = 'center',
 }: {
-  eyebrow: string
   title: string
   body?: string
   align?: 'center' | 'start'
 }) {
   return (
     <div className={align === 'center' ? 'mx-auto max-w-3xl text-center' : 'max-w-2xl'}>
-      <span className="sr-only">{eyebrow}</span>
       <h2 className="text-balance text-4xl font-black leading-[1.03] tracking-[-0.045em] sm:text-5xl lg:text-6xl"
         style={{ color: 'var(--text-primary)' }}>
         {title}
@@ -104,73 +122,32 @@ function SectionHeading({
 }
 
 function HeroPreview({ isRTL }: { isRTL: boolean }) {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
 
   return (
     <motion.div
-      className="relative mx-auto w-full max-w-[780px] [perspective:1400px]"
-      initial={reduceMotion ? false : { opacity: 0, y: 32, rotateY: isRTL ? -5 : 5, scale: 0.96 }}
+      className="relative mx-auto w-full max-w-[660px]"
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0, rotateY: 0, scale: 1 }}
-      transition={{ duration: 1, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="absolute -inset-8 rounded-[36px] blur-3xl" aria-hidden="true"
-        style={{ background: 'radial-gradient(ellipse, var(--accent-outline), transparent 68%)' }} />
-
-      <div className="relative overflow-hidden rounded-[22px] border shadow-2xl sm:rounded-[28px]"
-        style={{ borderColor: 'var(--border-strong)', background: 'var(--surface)', boxShadow: 'var(--shadow-premium)' }}>
-        <div className="flex h-11 items-center gap-2 border-b px-4 sm:h-12 sm:px-5" style={{ borderColor: 'var(--border)' }}>
-          <span className="h-2.5 w-2.5 rounded-full bg-error/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-          <span className="ms-2 text-[10px] font-semibold tracking-wide sm:text-xs" style={{ color: 'var(--text-tertiary)' }}>NazBiz / Inbox</span>
-          <span className="ms-auto inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold sm:text-[10px]" style={{ borderColor: 'var(--border)', color: 'var(--text-tertiary)' }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--brand-cyan)' }} />
-            {isRTL ? 'معاينة توضيحية' : 'Illustrative preview'}
-          </span>
-        </div>
-
-        <div className="relative flex items-center justify-center overflow-hidden bg-[#0D1526] px-2 pb-4 pt-6 sm:px-6 sm:pb-6">
-          <ChannelConverge isRTL={isRTL} reduceMotion={!!reduceMotion} />
-          <div className="absolute bottom-3 start-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-[10px] backdrop-blur-md sm:bottom-5 sm:start-5 sm:text-xs"
-            style={{ borderColor: 'rgba(148,163,184,.22)', background: 'rgba(13,21,38,.76)', color: '#dbeafe' }}>
-            <Sparkles size={13} style={{ color: 'var(--brand-cyan)' }} />
-            {isRTL ? 'كل قناة، تيار واحد' : 'Every channel, one stream'}
-          </div>
-        </div>
-      </div>
-
-      <motion.div
-        className="absolute -end-4 top-[14%] hidden items-center gap-2 rounded-2xl border px-3 py-2.5 shadow-xl backdrop-blur-xl sm:flex lg:-end-8"
-        animate={reduceMotion ? undefined : { y: [0, -7, 0] }}
-        transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ borderColor: 'var(--border-strong)', background: 'color-mix(in srgb, var(--surface) 88%, transparent)', color: 'var(--text-secondary)' }}
-      >
-        <span className="grid h-8 w-8 place-items-center rounded-xl" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}><MessagesSquare size={15} /></span>
-        <span className="text-[11px] font-semibold">{isRTL ? 'صندوق وارد موحد' : 'Unified inbox'}</span>
-      </motion.div>
-
-      <motion.div
-        className="absolute -start-4 bottom-[15%] hidden items-center gap-2 rounded-2xl border px-3 py-2.5 shadow-xl backdrop-blur-xl sm:flex lg:-start-8"
-        animate={reduceMotion ? undefined : { y: [0, 6, 0] }}
-        transition={{ duration: 6.2, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ borderColor: 'var(--border-strong)', background: 'color-mix(in srgb, var(--surface) 88%, transparent)', color: 'var(--text-secondary)' }}
-      >
-        <span className="grid h-8 w-8 place-items-center rounded-xl" style={{ background: 'var(--ai-subtle)', color: 'var(--ai-accent)' }}><Bot size={15} /></span>
-        <span className="text-[11px] font-semibold">{isRTL ? 'وكيلك ومعرفته' : 'Your agent + knowledge'}</span>
-      </motion.div>
+      <ChannelConverge isRTL={isRTL} reduceMotion={!!reduceMotion} />
+      <p className="mx-auto max-w-sm text-center text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+        {isRTL ? 'رسائل من قنواتك، يعمل عليها فريقك من مساحة واحدة.' : 'Messages from your channels, brought into one workspace for your team.'}
+      </p>
     </motion.div>
   )
 }
 
 function ChannelRail({ isRTL }: { isRTL: boolean }) {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
 
   return (
     <div className="relative mx-auto mt-12 max-w-5xl overflow-hidden rounded-2xl border px-4 py-4 sm:px-7 sm:py-5"
       style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 84%, transparent)' }}>
       <div className="absolute inset-y-1/2 start-8 end-8 hidden h-px -translate-y-1/2 md:block" style={{ background: 'linear-gradient(90deg, transparent, var(--border-strong) 18%, var(--border-strong) 82%, transparent)' }} />
       <div className="relative flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-        {CHANNELS.map(({ name, label, color, Icon, brand }, index) => (
+        {CHANNELS.map(({ name, color, Icon, brand }, index) => (
           <motion.div
             key={name}
             className="flex items-center gap-2.5 rounded-xl border px-3 py-2.5 sm:px-4"
@@ -187,7 +164,6 @@ function ChannelRail({ isRTL }: { isRTL: boolean }) {
               {!brand && Icon ? <Icon size={15} strokeWidth={2.2} aria-hidden="true" /> : null}
             </span>
             <span className="text-xs font-semibold sm:text-sm">{name}</span>
-            <span className="sr-only">{label}</span>
           </motion.div>
         ))}
       </div>
@@ -199,16 +175,16 @@ function ChannelRail({ isRTL }: { isRTL: boolean }) {
 }
 
 function FlowDemo({ isRTL }: { isRTL: boolean }) {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
   const labels = isRTL
-    ? { eyebrow: 'من الرسالة إلى الرد', title: 'تجربة واضحة، وفريقك في الصورة.', question: 'هل يمكنكم مساعدتي في اختيار هدية؟', response: 'بالتأكيد، لمن ستختار الهدية؟', context: 'سياق النشاط التجاري', result: 'رد مساعد جاهز للمراجعة', caption: 'مثال توضيحي — تعتمد الردود على إعدادات الوكيل ومعلومات نشاطك.' }
-    : { eyebrow: 'FROM MESSAGE TO REPLY', title: 'A clear flow, with your team in the picture.', question: 'Can you help me choose a gift?', response: 'Of course. Who are you shopping for?', context: 'Business context', result: 'AI-assisted reply', caption: 'Illustrative example. Replies depend on your agent setup and business information.' }
+    ? { title: 'تجربة واضحة، وفريقك في الصورة.', question: 'هل يمكنكم مساعدتي في اختيار هدية؟', response: 'بالتأكيد، لمن ستختار الهدية؟', context: 'سياق النشاط التجاري', result: 'رد مساعد جاهز للمراجعة', caption: 'مثال توضيحي — تعتمد الردود على إعدادات الوكيل ومعلومات نشاطك.' }
+    : { title: 'A clear flow, with your team in the picture.', question: 'Can you help me choose a gift?', response: 'Of course. Who are you shopping for?', context: 'Business context', result: 'AI-assisted reply', caption: 'Illustrative example. Replies depend on your agent setup and business information.' }
 
   return (
     <section id="how-it-works" className="relative overflow-hidden px-4 py-24 sm:px-6 lg:py-32">
       <div className="absolute start-1/2 top-1/2 h-[460px] w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" aria-hidden="true" style={{ background: 'radial-gradient(ellipse, var(--ai-subtle), transparent 68%)' }} />
       <div className="relative mx-auto max-w-7xl">
-        <Reveal><SectionHeading eyebrow={labels.eyebrow} title={labels.title} body={isRTL ? 'اجمع القنوات، أضف معرفة نشاطك، واترك للوكيل التعامل مع الردود التي أعددته لها.' : 'Bring channels together, add your business knowledge, and let your agent handle the replies you configure it for.'} /></Reveal>
+        <Reveal><SectionHeading title={labels.title} body={isRTL ? 'اجمع القنوات، أضف معرفة نشاطك، واترك للوكيل التعامل مع الردود التي أعددته لها.' : 'Bring channels together, add your business knowledge, and let your agent handle the replies you configure it for.'} /></Reveal>
 
         <div className="relative mt-14 grid items-stretch gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:gap-5">
           <Reveal delay={0.05} className="h-full">
@@ -257,7 +233,7 @@ function FlowDemo({ isRTL }: { isRTL: boolean }) {
 }
 
 function WorkflowStory({ isRTL }: { isRTL: boolean }) {
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
   const items = isRTL
     ? [{ n: '01', title: 'يصل حدث من العميل', sub: 'مثلاً: تم إرسال رسالة', Icon: MessageCircle }, { n: '02', title: 'تُطبّق شروط التسلسل', sub: 'الانتظار والإجراءات التي أعددتها', Icon: Workflow }, { n: '03', title: 'تُنفّذ الخطوة التالية', sub: 'حسب القنوات والإعدادات', Icon: Zap }]
     : [{ n: '01', title: 'A customer event arrives', sub: 'For example: a message is received', Icon: MessageCircle }, { n: '02', title: 'Sequence rules are applied', sub: 'The waits and actions you configured', Icon: Workflow }, { n: '03', title: 'The next step runs', sub: 'According to your channel setup', Icon: Zap }]
@@ -266,7 +242,7 @@ function WorkflowStory({ isRTL }: { isRTL: boolean }) {
     <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:py-28">
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.82fr_1.18fr] lg:items-center">
         <Reveal>
-          <SectionHeading align="start" eyebrow={isRTL ? 'تسلسلات وسير عمل' : 'SEQUENCES & WORKFLOWS'} title={isRTL ? 'متابعة منظمة، حسب قواعدك.' : 'Follow-up that runs on your rules.'} body={isRTL ? 'أنشئ تسلسلات متعددة الخطوات وسير عمل يبدأ من أحداث العميل، مع تحكمك في التوقيت والقنوات.' : 'Build multi-step sequences and event-triggered workflows, with control over timing and channels.'} />
+          <SectionHeading align="start" title={isRTL ? 'متابعة منظمة، حسب قواعدك.' : 'Follow-up that runs on your rules.'} body={isRTL ? 'أنشئ تسلسلات متعددة الخطوات وسير عمل يبدأ من أحداث العميل، مع تحكمك في التوقيت والقنوات.' : 'Build multi-step sequences and event-triggered workflows, with control over timing and channels.'} />
           <Link href="/dashboard/sequences" className="mt-7 inline-flex items-center gap-2 text-sm font-bold transition-colors hover:opacity-80" style={{ color: 'var(--accent)' }}>
             {isRTL ? 'استكشف الأتمتة' : 'Explore automations'} <ArrowUpRight size={16} />
           </Link>
@@ -292,15 +268,100 @@ function WorkflowStory({ isRTL }: { isRTL: boolean }) {
   )
 }
 
+function AnalyticsStory({ isRTL }: { isRTL: boolean }) {
+  const items = isRTL
+    ? [
+        { title: 'حجم المحادثات', detail: 'الإجمالي والجديدة والمفتوحة والمغلقة', Icon: MessageCircle },
+        { title: 'نشاط الذكاء الاصطناعي', detail: 'الردود والتصعيدات ونسبة الردود', Icon: Bot },
+        { title: 'سرعة الاستجابة', detail: 'وسيط زمن أول رد', Icon: Clock3 },
+        { title: 'ملاحظات العملاء', detail: 'تقييمات CSAT المتاحة', Icon: ThumbsUp },
+      ]
+    : [
+        { title: 'Conversation volume', detail: 'Total, new, open, and closed', Icon: MessageCircle },
+        { title: 'AI activity', detail: 'Replies, escalations, and reply share', Icon: Bot },
+        { title: 'Response speed', detail: 'Median time to first reply', Icon: Clock3 },
+        { title: 'Customer feedback', detail: 'Available CSAT ratings', Icon: ThumbsUp },
+      ]
+
+  return (
+    <section className="px-4 py-20 sm:px-6 lg:py-28">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-center lg:gap-16">
+        <Reveal>
+          <SectionHeading
+            align="start"
+            title={isRTL ? 'تابع ما يحدث في محادثاتك.' : 'See what is happening in your conversations.'}
+            body={isRTL
+              ? 'راجع حجم المحادثات ونشاط الوكلاء وسرعة الرد وملاحظات العملاء من صفحة التحليلات.'
+              : 'Review conversation volume, agent activity, response speed, and customer feedback in Analytics.'}
+          />
+          <Link href="/dashboard/analytics" className="mt-7 inline-flex items-center gap-2 text-sm font-bold transition-colors hover:opacity-80" style={{ color: 'var(--accent)' }}>
+            {isRTL ? 'استكشف التحليلات' : 'Explore analytics'} <ArrowUpRight size={16} />
+          </Link>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div className="overflow-hidden rounded-[28px] border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="flex items-center justify-between gap-4 border-b px-5 py-4 sm:px-7" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}><Activity size={19} aria-hidden="true" /></span>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{isRTL ? 'نظرة عامة على النشاط' : 'Activity overview'}</p>
+                  <p className="mt-0.5 text-xs" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'مؤشرات متاحة في مساحة العمل' : 'Metrics available in your workspace'}</p>
+                </div>
+              </div>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'آخر ٣٠ يوماً' : 'Last 30 days'}</span>
+            </div>
+            <ul className="px-5 sm:px-7" aria-label={isRTL ? 'مؤشرات التحليلات' : 'Analytics metrics'}>
+              {items.map(({ title, detail, Icon }, index) => (
+                <li key={title} className="grid grid-cols-[auto_1fr] items-center gap-4 border-b py-4 last:border-b-0 sm:py-5" style={{ borderColor: 'var(--border)' }}>
+                  <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: index === 1 ? 'var(--ai-subtle)' : 'var(--surface-elevated)', color: index === 1 ? 'var(--ai-accent)' : 'var(--text-secondary)' }}><Icon size={17} aria-hidden="true" /></span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</span>
+                    <span className="mt-1 block text-sm leading-5" style={{ color: 'var(--text-secondary)' }}>{detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="border-t px-5 py-3 text-xs leading-5 sm:px-7" style={{ borderColor: 'var(--border)', color: 'var(--text-tertiary)' }}>
+              {isRTL ? 'تختلف النتائج بحسب نشاط مساحة العمل والفترة المحددة.' : 'Results depend on workspace activity and the selected date range.'}
+            </p>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  )
+}
+
 export default function CinematicLanding() {
   const { isRTL } = useLang()
   const { user } = useAuth()
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useHydratedReducedMotion()
+  const pageRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
+  const scrollTintRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (reduceMotion || !pageRef.current || !heroRef.current || !scrollTintRef.current) return
+
+    const context = gsap.context(() => {
+      gsap.to(scrollTintRef.current, {
+        opacity: 0.42,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      })
+    }, pageRef)
+
+    return () => context.revert()
+  }, [reduceMotion])
   const copy = isRTL
     ? {
-        badge: 'منصة مراسلات مدعومة بالذكاء الاصطناعي',
-        titleA: 'محادثات عملائك',
-        titleB: 'تستحق مساحة أذكى.',
+        titleA: 'محادثاتك',
+        titleB: 'في مكان واحد.',
         body: 'اجمع قنوات المراسلة، وأعدّ وكلاء الذكاء الاصطناعي بمعرفة نشاطك، وتابع كل محادثة من مكان واحد.',
         primary: user ? 'افتح لوحة التحكم' : 'ابدأ الآن',
         secondary: 'كيف يعمل',
@@ -313,12 +374,10 @@ export default function CinematicLanding() {
         ctaTitle: 'ابدأ من محادثاتك الحالية.',
         ctaBody: 'أنشئ مساحة عملك، واربط قناة، ثم اضبط الوكيل بما يناسب نشاطك.',
         cta: user ? 'لوحة التحكم' : 'إنشاء حساب',
-        commerce: 'تستخدم متجراً إلكترونياً؟ اربط التكاملات المتاحة من القنوات.',
       }
     : {
-        badge: 'AI-assisted customer messaging',
-        titleA: 'Customer conversations',
-        titleB: 'deserve a smarter home.',
+        titleA: 'One inbox.',
+        titleB: 'Every channel.',
         body: 'Bring messaging channels together, configure AI agents with your business knowledge, and keep every conversation in one workspace.',
         primary: user ? 'Open dashboard' : 'Get started',
         secondary: 'See how it works',
@@ -331,22 +390,14 @@ export default function CinematicLanding() {
         ctaTitle: 'Start with the conversations you already have.',
         ctaBody: 'Create your workspace, connect a channel, and configure an agent for your business.',
         cta: user ? 'Go to dashboard' : 'Create an account',
-        commerce: 'Use a commerce store? Connect an available integration from Channels.',
       }
 
-  const capabilitiesTitle = isRTL ? CAPABILITIES[0].eyebrow.ar : CAPABILITIES[0].eyebrow.en
-
   return (
-    <div className="relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
-      <section className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden px-4 pb-16 pt-16 sm:px-6 sm:pt-20 lg:flex lg:items-center lg:pb-20 lg:pt-24">
-        <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 74% 30%, var(--ai-subtle), transparent 34%), radial-gradient(circle at 14% 76%, var(--accent-subtle), transparent 29%)' }} />
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[68%] opacity-40" aria-hidden="true" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0)', backgroundSize: '38px 38px', maskImage: 'linear-gradient(to bottom, black, transparent)' }} />
-
+    <div ref={pageRef} className="relative isolate overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div ref={scrollTintRef} className="pointer-events-none absolute inset-0 -z-10 opacity-0" aria-hidden="true" style={{ background: 'linear-gradient(180deg, var(--accent-subtle), var(--ai-subtle) 45%, transparent 82%)' }} />
+      <section ref={heroRef} className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden px-4 pb-16 pt-16 sm:px-6 sm:pt-20 lg:flex lg:items-center lg:pb-20 lg:pt-24">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[.87fr_1.13fr] lg:gap-8">
           <div className={isRTL ? 'text-right' : 'text-left'}>
-            <motion.div initial={reduceMotion ? false : { opacity: 0, x: isRTL ? 14 : -14 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className={`mb-6 flex ${isRTL ? 'justify-end' : 'justify-start'}`}>
-              <span className="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold sm:text-sm" style={{ borderColor: 'var(--accent-outline)', background: 'var(--surface)', color: 'var(--text-secondary)' }}><Sparkles size={14} style={{ color: 'var(--ai-accent)' }} />{copy.badge}</span>
-            </motion.div>
             <HeroHeadline lineA={copy.titleA} lineB={copy.titleB} reduceMotion={!!reduceMotion} />
             <motion.p initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.18 }} className="mt-6 max-w-xl text-base leading-7 sm:text-lg sm:leading-8" style={{ color: 'var(--text-secondary)' }}>{copy.body}</motion.p>
             <motion.div initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className={`mt-8 flex flex-wrap items-center gap-3 ${isRTL ? 'justify-end' : 'justify-start'}`}>
@@ -357,20 +408,16 @@ export default function CinematicLanding() {
                 {copy.secondary}<ArrowDown size={15} style={{ color: 'var(--accent)' }} />
               </a>
             </motion.div>
-            <motion.div initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.48, duration: 0.55 }} className={`mt-8 flex items-center gap-2 text-xs ${isRTL ? 'justify-end' : 'justify-start'}`} style={{ color: 'var(--text-tertiary)' }}>
-              <CircleHelp size={14} style={{ color: 'var(--brand-cyan)' }} />{isRTL ? 'أنت تحدد القنوات وسلوك الوكيل.' : 'You choose the channels and configure your agent.'}
-            </motion.div>
           </div>
 
           <HeroPreview isRTL={isRTL} />
         </div>
 
-        <div className="pointer-events-none absolute bottom-0 start-1/2 hidden h-24 w-px -translate-x-1/2 lg:block" style={{ background: 'linear-gradient(transparent, var(--border-strong))' }} />
       </section>
 
-      <section className="px-4 pb-16 sm:px-6 lg:pb-24">
+      <section id="features" className="px-4 pb-16 sm:px-6 lg:pb-24">
         <div className="mx-auto max-w-7xl">
-          <Reveal><SectionHeading eyebrow={copy.channels} title={copy.channels} body={copy.channelsBody} /></Reveal>
+          <Reveal><SectionHeading title={copy.channels} body={copy.channelsBody} /></Reveal>
           <ChannelRail isRTL={isRTL} />
         </div>
       </section>
@@ -379,26 +426,28 @@ export default function CinematicLanding() {
 
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:py-28">
         <div className="mx-auto max-w-7xl">
-          <Reveal><SectionHeading eyebrow={capabilitiesTitle} title={copy.capabilities} body={copy.capabilityBody} /></Reveal>
-          <div className="mt-12 grid gap-4 lg:grid-cols-3">
+          <Reveal><SectionHeading title={copy.capabilities} body={copy.capabilityBody} /></Reveal>
+          <div className="mx-auto mt-14 max-w-6xl border-t" style={{ borderColor: 'var(--border)' }}>
             {CAPABILITIES.map(({ eyebrow, title, body, Icon, accent }, index) => (
-              <Reveal key={eyebrow.en} delay={index * 0.1}>
-                <motion.article whileHover={reduceMotion ? undefined : { y: -5 }} className="group relative h-full overflow-hidden rounded-3xl border p-7 sm:p-9" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                  <div className="absolute -end-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: accent }} />
-                  <div className="relative">
-                    <Icon size={28} style={{ color: accent }} strokeWidth={1.8} />
-                    <h3 className="mt-7 max-w-xs text-2xl font-bold leading-snug tracking-tight" style={{ color: 'var(--text-primary)' }}>{isRTL ? title.ar : title.en}</h3>
-                    <p className="mt-3 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{isRTL ? body.ar : body.en}</p>
+              <Reveal key={eyebrow.en} delay={index * 0.08}>
+                <article className="grid gap-4 border-b py-7 sm:py-9 md:grid-cols-[0.95fr_1.05fr] md:items-start md:gap-12" style={{ borderColor: 'var(--border)' }}>
+                  <div className="flex items-start gap-4">
+                    <Icon className="mt-1 shrink-0" size={21} style={{ color: accent }} strokeWidth={1.8} aria-hidden="true" />
+                    <h3 className="max-w-xl text-2xl font-bold leading-snug tracking-tight sm:text-3xl" style={{ color: 'var(--text-primary)' }}>{isRTL ? title.ar : title.en}</h3>
                   </div>
-                </motion.article>
+                  <p className="max-w-2xl text-base leading-7 md:ps-5" style={{ color: 'var(--text-secondary)' }}>{isRTL ? body.ar : body.en}</p>
+                </article>
               </Reveal>
             ))}
           </div>
-          <p className="mt-5 text-center text-xs" style={{ color: 'var(--text-tertiary)' }}>{copy.commerce}</p>
         </div>
       </section>
 
       <WorkflowStory isRTL={isRTL} />
+      <AnalyticsStory isRTL={isRTL} />
+
+      <Pricing />
+      <FAQ />
 
       <section className="px-4 pb-24 pt-8 sm:px-6 lg:pb-32">
         <Reveal>

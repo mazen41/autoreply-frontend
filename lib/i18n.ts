@@ -20,6 +20,8 @@ export const translations = {
       campaigns: 'الحملات',
       sequences: 'التسلسلات',
       analytics: 'التحليلات',
+      features: 'المميزات',
+      howItWorks: 'كيف يعمل',
       commandCenter: 'مركز التحكم',
       aiNetwork: 'شبكة الذكاء',
     },
@@ -93,12 +95,12 @@ export const translations = {
     faq: {
       title: 'الأسئلة الشائعة',
       items: [
-        { q: 'هل أحتاج خبرة تقنية لاستخدام ناز؟', a: 'لا إطلاقاً. ناز مصمم ليكون سهل الاستخدام لأي صاحب عمل. الإعداد يستغرق أقل من 10 دقائق.' },
-        { q: 'هل الذكاء الاصطناعي سيرد بدلاً مني أم يقترح ردوداً؟', a: 'يمكنك اختيار الوضعين. إما رد تلقائي كامل أو اقتراح ردود تراجعها وتوافق عليها.' },
-        { q: 'ما هي القنوات المدعومة؟', a: 'انستغرام، فيسبوك، واتساب، Gmail، تيك توك، وX (تويتر). قريباً: سناب شات وتيليغرام.' },
-        { q: 'هل بياناتي آمنة؟', a: 'نعم. نستخدم تشفير SSL من طرف لطرف وبياناتك لا تُشارك مع أي طرف ثالث.' },
-        { q: 'هل يمكنني إلغاء الاشتراك في أي وقت؟', a: 'نعم، يمكنك إلغاء اشتراكك في أي وقت دون أي رسوم إضافية.' },
-        { q: 'هل هناك فترة تجربة مجانية؟', a: 'نعم! كل الباقات تأتي مع 14 يوم تجربة مجانية كاملة بدون بطاقة ائتمان.' },
+        { q: 'كيف أبدأ باستخدام ناز؟', a: 'أنشئ مساحة عمل، واربط قناة متاحة، ثم أنشئ وكيلاً واربطه بالقناة واضبط معلومات نشاطك قبل تفعيل الردود.' },
+        { q: 'هل يرد الوكيل تلقائياً؟', a: 'يعتمد ذلك على إعدادات الوكيل والقناة. بعد ربط الوكيل وتفعيل الردود، يتبع النظام الإعدادات وسياسات القناة.' },
+        { q: 'ما القنوات والمتاجر التي يمكن ربطها؟', a: 'تشمل قنوات المراسلة Instagram وFacebook وWhatsApp وGmail وTelegram. وتشمل تكاملات المتاجر Salla وShopify وWooCommerce، بحسب الإتاحة وإعداد الحساب.' },
+        { q: 'هل يمكن ربط أكثر من متجر؟', a: 'يمكن ربط متاجر متعددة، ثم اختيار المتاجر التي يسمح للوكيل باستخدامها من إعدادات الوكيل.' },
+        { q: 'كيف أراجع الأسعار الحالية؟', a: 'تعرض صفحة الأسعار الخطط المتاحة والأسعار التي يرسلها النظام حالياً.' },
+        { q: 'أين أجد معلومات الخصوصية؟', a: 'راجع سياسة الخصوصية لمعرفة كيفية التعامل مع بيانات الحساب والمحادثات.' },
       ],
     },
     finalCta: {
@@ -352,13 +354,13 @@ export const translations = {
     },
     // Footer
     footer: {
-      tagline: 'ندير مراسلاتك و مبيعاتك بذكاء',
+      tagline: 'مساحة واحدة لمحادثات العملاء ووكلاء الذكاء الاصطناعي.',
       product: 'المنتج',
-      productLinks: ['المميزات', 'التسعير', 'التكامل', 'الأمان'],
+      productLinks: ['المميزات', 'الأسعار', 'كيف يعمل'],
       company: 'الشركة',
-      companyLinks: ['عن ناز', 'المدونة', 'الوظائف', 'اتصل بنا'],
+      companyLinks: ['المدونة', 'الخصوصية', 'الشروط'],
       support: 'الدعم',
-      supportLinks: ['مركز المساعدة', 'الوثائق', 'حالة النظام', 'الخصوصية'],
+      supportLinks: ['مركز المساعدة', 'راسل الدعم'],
       copyright: '© 2026 ناز. جميع الحقوق محفوظة',
     },
     // Empty States
@@ -392,6 +394,8 @@ export const translations = {
       campaigns: 'Campaigns',
       sequences: 'Sequences',
       analytics: 'Analytics',
+      features: 'Features',
+      howItWorks: 'How it works',
       commandCenter: 'Command Center',
       aiNetwork: 'AI Network',
     },
@@ -465,12 +469,12 @@ export const translations = {
     faq: {
       title: 'Frequently Asked Questions',
       items: [
-        { q: 'Do I need technical experience to use Naz?', a: 'Not at all. Naz is designed to be easy for any business owner. Setup takes less than 10 minutes.' },
-        { q: 'Will AI reply for me or suggest replies?', a: 'You can choose both modes — fully automatic replies or suggested replies for you to review and approve.' },
-        { q: 'Which channels are supported?', a: 'Messaging: Instagram, Facebook Messenger, WhatsApp, Gmail, and Telegram. Store connections: Salla, Shopify, and WooCommerce. TikTok messaging and comment automation are not currently supported.' },
-        { q: 'Is my data secure?', a: 'Yes. We use end-to-end SSL encryption and your data is never shared with any third party.' },
-        { q: 'Can I cancel anytime?', a: 'Yes, you can cancel your subscription at any time with no additional fees.' },
-        { q: 'Is there a free trial?', a: 'Yes! All plans come with a 14-day full free trial with no credit card required.' },
+        { q: 'How do I get started?', a: 'Create a workspace, connect an available channel, then create an agent, assign it to the channel, and add your business information before enabling replies.' },
+        { q: 'Does the agent reply automatically?', a: 'That depends on your agent and channel settings. Once the agent is assigned and replies are enabled, it follows those settings and the channel’s policies.' },
+        { q: 'Which channels and stores can I connect?', a: 'Messaging includes Instagram, Facebook, WhatsApp, Gmail, and Telegram. Store integrations include Salla, Shopify, and WooCommerce, subject to account availability and setup.' },
+        { q: 'Can I connect more than one store?', a: 'You can connect multiple stores and choose which ones an agent is allowed to use in its settings.' },
+        { q: 'Where can I see current prices?', a: 'The pricing page shows the plans and prices currently returned by the service.' },
+        { q: 'Where can I read about privacy?', a: 'Review the Privacy Policy for information about how account and conversation data is handled.' },
       ],
     },
     finalCta: {
@@ -724,13 +728,13 @@ export const translations = {
     },
     // Footer
     footer: {
-      tagline: 'Manage Your Messages And Sales With AI',
+      tagline: 'One workspace for customer conversations and AI agents.',
       product: 'PRODUCT',
-      productLinks: ['Features', 'Pricing', 'Integrations', 'Security'],
+      productLinks: ['Features', 'Pricing', 'How it works'],
       company: 'COMPANY',
-      companyLinks: ['About Naz', 'Blog', 'Careers', 'Contact'],
+      companyLinks: ['Blog', 'Privacy', 'Terms'],
       support: 'SUPPORT',
-      supportLinks: ['Help Center', 'Documentation', 'System Status', 'Privacy'],
+      supportLinks: ['Help center', 'Email support'],
       copyright: '© 2026 Naz. All rights reserved',
     },
     // Empty States

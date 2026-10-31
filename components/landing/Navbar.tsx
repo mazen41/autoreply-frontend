@@ -9,12 +9,12 @@ import { useLang } from '../../lib/LangContext'
 import { useTheme } from '../../lib/ThemeContext'
 import { useAuth } from '../../lib/AuthContext'
 import { springs } from '../../lib/motion'
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, Menu, X } from 'lucide-react'
 
 const NAV_LINKS = [
-  { labelKey: 'commandCenter', href: '#command-center' },
-  { labelKey: 'aiNetwork',     href: '#ai-brain' },
-  { labelKey: 'pricing',       href: '#pricing' },
+  { labelKey: 'features', href: '#features' },
+  { labelKey: 'howItWorks', href: '#how-it-works' },
+  { labelKey: 'pricing', href: '#pricing' },
 ]
 
 export default function Navbar() {
@@ -53,7 +53,8 @@ export default function Navbar() {
     return () => window.clearTimeout(closeOnNavigation)
   }, [mobileOpen, pathname])
 
-  const linkLabel = (key: string) => key === 'commandCenter' ? t.nav.commandCenter : key === 'aiNetwork' ? t.nav.aiNetwork : t.pricing.title
+  const linkLabel = (key: string) => key === 'features' ? t.nav.features : key === 'howItWorks' ? t.nav.howItWorks : t.pricing.title
+  const sectionHref = (href: string) => pathname === '/' ? href : `/${href}`
 
   return (
     <nav
@@ -88,7 +89,7 @@ export default function Navbar() {
             {NAV_LINKS.map(({ labelKey, href }) => (
               <motion.a
                 key={href}
-                href={href}
+                href={sectionHref(href)}
                 className="text-sm font-medium relative text-text-secondary hover:text-accent-secondary transition-colors duration-200"
                 whileHover={{ y: -1 }}
                 transition={springs.snap}
@@ -108,12 +109,6 @@ export default function Navbar() {
 
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Live indicator */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full surface-elevated border">
-              <div className="w-1.5 h-1.5 rounded-full bg-success" aria-hidden="true" />
-              <span className="text-xs font-medium text-text-secondary">{isRTL ? 'مباشر' : 'Live'}</span>
-            </div>
-
             <button
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -163,7 +158,7 @@ export default function Navbar() {
             aria-expanded={mobileOpen}
             aria-controls="landing-mobile-menu"
           >
-            {mobileOpen ? '✕' : '☰'}
+            {mobileOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
           </button>
         </div>
 
@@ -184,7 +179,7 @@ export default function Navbar() {
               {NAV_LINKS.map(({ labelKey, href }) => (
                 <a
                   key={href}
-                  href={href}
+                  href={sectionHref(href)}
                   className="block py-2.5 px-3 text-sm font-medium rounded-lg text-text-secondary hover:text-accent-secondary"
                   onClick={() => setMobileOpen(false)}
                 >

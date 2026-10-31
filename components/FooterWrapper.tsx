@@ -5,9 +5,10 @@ import Footer from './Footer'
 
 export default function FooterWrapper() {
   const pathname = usePathname()
+  const landingFooterRoutes = ['/', '/pricing', '/integrations', '/security', '/about', '/careers', '/contact', '/help-center', '/docs', '/status']
 
-  // Don't show footer on dashboard pages
-  if (pathname?.startsWith('/dashboard')) {
+  // These marketing pages render their own landing footer.
+  if (pathname?.startsWith('/dashboard') || landingFooterRoutes.includes(pathname ?? '')) {
     return null
   }
 

@@ -53,7 +53,7 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
       const root = rootRef.current!
 
       if (reduceMotion) {
-        gsap.set('.cc-path', { opacity: 0.5 })
+        gsap.set('.cc-path', { opacity: 0.55 })
         gsap.set('.cc-node', { opacity: 1, scale: 1 })
         gsap.set('.cc-core', { opacity: 1, scale: 1 })
         return
@@ -61,12 +61,9 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
 
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
-      tl.set('.cc-core', { scale: 0, opacity: 0 })
-        .set('.cc-node', { scale: 0, opacity: 0 })
-        .set('.cc-path', { opacity: 0 })
-        .to('.cc-core', { scale: 1, opacity: 1, duration: 0.7, ease: 'back.out(1.8)' })
-        .to('.cc-node', { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08 }, '-=0.3')
-        .to('.cc-path', { opacity: 0.55, duration: 0.6, stagger: 0.06 }, '-=0.3')
+      tl.fromTo('.cc-core', { scale: 0.82, opacity: 0.72 }, { scale: 1, opacity: 1, duration: 0.65, immediateRender: false })
+        .fromTo('.cc-node', { scale: 0.84, opacity: 0.72 }, { scale: 1, opacity: 1, duration: 0.48, stagger: 0.07, immediateRender: false }, '-=0.26')
+        .fromTo('.cc-path', { opacity: 0.2 }, { opacity: 0.55, duration: 0.6, stagger: 0.06, immediateRender: false }, '-=0.22')
 
       // Continuous particle streams: small dots travel each path into the core.
       CHANNELS.forEach((ch, i) => {
@@ -115,10 +112,10 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
   return (
     <svg
       ref={rootRef}
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={`0 70 ${W} ${H - 70}`}
       className="w-full h-auto max-w-[640px] mx-auto"
       role="img"
-      aria-label="Channels converging into one unified conversation stream"
+      aria-label={isRTL ? 'قنوات المراسلة تلتقي في مسار موحد للمحادثات' : 'Messaging channels converging into one conversation stream'}
     >
       <defs>
         <radialGradient id="cc-core-grad" cx="50%" cy="50%" r="50%">
@@ -135,7 +132,7 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
         </filter>
       </defs>
 
-      <g className="cc-rig" style={{ transform: isRTL ? 'scaleX(-1)' : undefined, transformOrigin: 'center' }}>
+      <g className="cc-rig">
         {CHANNELS.map((ch) => {
           const from = sourcePoint(ch.angle)
           const d = curvePath(from, CORE)
@@ -154,7 +151,7 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
                   fontSize={ch.id === 'fb' ? 20 : 12}
                   fontWeight={800}
                   fill={ch.color}
-                  style={{ transform: isRTL ? `scaleX(-1)` : undefined, transformOrigin: `${from.x}px ${from.y}px` }}
+                  style={{ transformOrigin: `${from.x}px ${from.y}px` }}
                 >
                   {ch.label}
                 </text>

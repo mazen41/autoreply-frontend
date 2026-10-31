@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import { variants, springs } from '../../lib/motion'
+import { useHydratedReducedMotion } from '../../lib/useHydratedReducedMotion'
 
 interface Package {
   id: number
@@ -31,26 +32,37 @@ function getToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
+async function requestPackages(): Promise<Package[]> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
+  if (!response.ok) throw new Error(`Packages request failed (${response.status})`)
+  const data = await response.json()
+  return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
+}
+
 export default function Pricing() {
   const { t, isRTL } = useLang()
   const [annual, setAnnual] = useState(false)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const reduceMotion = useHydratedReducedMotion()
 
   useEffect(() => {
-    fetchPackages()
+    let active = true
+    requestPackages()
+      .then((items) => { if (active) setPackages(items) })
+      .catch(() => { if (active) setError(true) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
   }, [])
 
-  const fetchPackages = async () => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
-      const data = await response.json()
-      setPackages(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []))
-    } catch (error) {
-      console.error('Failed to fetch packages:', error)
-    } finally {
-      setLoading(false)
-    }
+  const retryPackages = () => {
+    setError(false)
+    setLoading(true)
+    requestPackages()
+      .then(setPackages)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false))
   }
 
   const getPrice = (pkg: Package) => annual ? pkg.price_yearly : pkg.price_monthly
@@ -58,10 +70,9 @@ export default function Pricing() {
   if (loading) {
     return (
       <section id="pricing" className="py-24 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="spinner-lg" style={{ color: 'var(--accent)' }}></div>
-          </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-live="polite">
+          <h2 className="text-balance text-3xl font-black sm:text-4xl" style={{ color: 'var(--text-primary)' }}>{t.pricing.title}</h2>
+          <div className="mt-8 h-40 animate-pulse rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} />
         </div>
       </section>
     )
@@ -69,54 +80,48 @@ export default function Pricing() {
 
   return (
     <section id="pricing" className="py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
-          variants={variants.fadeUp}
-          initial="hidden"
-          whileInView="visible"
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView={reduceMotion ? undefined : 'visible'}
           viewport={{ once: true, margin: '-60px' }}
+          variants={variants.fadeUp}
           transition={springs.standard}
-          className="text-center mb-4"
+          className="mb-8 flex flex-col items-center gap-5 text-center lg:flex-row lg:items-end lg:justify-between lg:text-start"
         >
           <h2
-            className={`text-3xl sm:text-4xl font-black ${isRTL ? 'font-arabic' : ''}`}
-            style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+            className={`max-w-xl text-balance text-3xl font-black tracking-tight sm:text-4xl ${isRTL ? 'font-arabic' : ''}`}
+            style={{ color: 'var(--text-primary)' }}
           >
             {t.pricing.title}
           </h2>
+          <p className="max-w-md text-sm leading-6 sm:text-base" style={{ color: 'var(--text-secondary)' }}>
+            {isRTL ? 'قارن الخطط والأسعار الحالية، ثم اختر ما يناسب استخدامك.' : 'Compare the current plans and prices, then choose the one that fits your needs.'}
+          </p>
         </motion.div>
 
-        {/* Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-12">
-          <span className="text-sm font-medium text-tertiary-color">
-            {t.pricing.monthly}
-          </span>
-          <button
-            onClick={() => setAnnual(!annual)}
-            className="relative w-12 h-6 rounded-full transition-all duration-300 bg-surface-elevated border-border hover:bg-accent hover:text-accent"
-          >
-            <span
-              className="absolute top-1 w-4 h-4 rounded-full bg-white"
-            >
-              {annual && <span className="absolute top-0.5 w-4 h-4 rounded-full bg-black" /> }
-            </span>
+        <div className={`mb-10 flex items-center gap-3 ${isRTL ? 'justify-start' : 'justify-start'}`}>
+          <span className="text-sm font-medium" style={{ color: annual ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>{t.pricing.monthly}</span>
+          <button type="button" role="switch" aria-checked={annual} aria-label={isRTL ? 'تبديل الفوترة الشهرية والسنوية' : 'Switch monthly and annual billing'} onClick={() => setAnnual(!annual)} className="relative h-7 w-12 rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" style={{ background: annual ? 'var(--accent)' : 'var(--surface-elevated)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent)' }}>
+            <span className="absolute top-1 h-4 w-4 rounded-full bg-white transition-all" style={{ insetInlineStart: annual ? '1.65rem' : '0.25rem' }} />
           </button>
-          <span className="text-sm font-medium text-primary-color">
-            {t.pricing.annual}
-            {annual && (
-              <span className="ms-2 text-xs font-semibold text-accent-color">
-                ({t.pricing.annualSave})
-              </span>
-            )}
-          </span>
+          <span className="text-sm font-medium" style={{ color: annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>{t.pricing.annual}</span>
         </div>
 
+        {error || packages.length === 0 ? (
+          <div className="border-y py-8 text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }} role="status">
+            {error
+              ? (isRTL ? 'تعذر تحميل الخطط الآن. أعد المحاولة أو تواصل مع الدعم.' : 'Plans could not be loaded right now. Please try again or contact support.')
+              : (isRTL ? 'لا توجد خطط متاحة حالياً.' : 'There are no plans available right now.')}
+            {error && <button type="button" onClick={retryPackages} className="ms-3 underline underline-offset-4" style={{ color: 'var(--accent)' }}>{isRTL ? 'إعادة المحاولة' : 'Try again'}</button>}
+          </div>
+        ) : (
         <motion.div
-          variants={variants.staggerContainer}
-          initial="hidden"
-          whileInView="visible"
+          variants={reduceMotion ? undefined : variants.staggerContainer}
+          initial={reduceMotion ? false : 'hidden'}
+          whileInView={reduceMotion ? undefined : 'visible'}
           viewport={{ once: true, margin: '-40px' }}
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-start"
+          className="grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2 xl:grid-cols-3"
         >
           {packages.map((pkg) => (
             <PricingCard
@@ -129,6 +134,7 @@ export default function Pricing() {
             />
           ))}
         </motion.div>
+        )}
       </div>
     </section>
   )
@@ -150,60 +156,13 @@ function PricingCard({
     ? rawFeatures
     : (typeof rawFeatures === 'string' ? (() => { try { const parsed = JSON.parse(rawFeatures); return Array.isArray(parsed) ? parsed : [] } catch { return [] } })() : [])
 
-  if (pkg.is_popular) {
-    return (
-      <motion.div
-        variants={variants.fadeUp}
-        whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
-        className="relative rounded-2xl p-[2px] flex flex-col border border-brand/40 bg-brand/5"
-        style={{
-          background: 'conic-gradient(from var(--angle, 0deg), var(--accent), var(--accent-end), var(--accent))',
-          animation: 'rotateBorder 3s linear infinite',
-          transform: 'scale(1.03)',
-        }}
-      >
-        {/* Badge */}
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-          <span
-            className="text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap bg-accent accent-shadow-lg text-on-accent"
-          >
-            {t.pricing.mostPopular}
-          </span>
-        </div>
-
-        <div
-          className="Card rounded-2xl flex flex-col h-full p-6 mouse-hover-hover"
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            boxShadow: '0 4px 16px var(--shadow-sm)',
-          }}
-        >
-          <CardInner
-            name={name}
-            description={description}
-            price={price}
-            annual={annual}
-            isRTL={isRTL}
-            t={t}
-            features={features}
-            popular={true}
-            pkg={pkg}
-          />
-        </div>
-      </motion.div>
-    )
-  }
-
   return (
     <motion.div
       variants={variants.fadeUp}
-      whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.12)' }}
-      className="Card rounded-2xl p-6 flex flex-col mouse-hover-hover"
+      whileHover={{ y: -3 }}
+      className="relative flex flex-col border-y py-7 first:border-t-0 md:px-2 xl:px-5"
       style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        boxShadow: '0 4px 16px var(--shadow-sm)',
+        borderColor: 'var(--border)',
       }}
     >
       <CardInner
@@ -214,7 +173,7 @@ function PricingCard({
         isRTL={isRTL}
         t={t}
         features={features}
-        popular={false}
+        popular={pkg.is_popular}
         pkg={pkg}
       />
     </motion.div>
@@ -229,7 +188,7 @@ function CardInner({
   price: number
   annual: boolean
   isRTL: boolean
-  t: { pricing: { monthly: string; startFree: string } }
+  t: { pricing: { monthly: string; startFree: string; mostPopular: string } }
   features: string[]
   popular?: boolean
   pkg: Package
@@ -275,19 +234,24 @@ function CardInner({
   return (
     <>
       <div className="mb-6">
-        <h3 className="font-bold text-xl mb-1 text-primary-color">{name}</h3>
-        <p className="text-xs mb-4 text-tertiary-color">{description}</p>
-        <div className="flex items-end gap-1">
-          <span className="text-4xl font-black text-primary-color" style={{ letterSpacing: '-0.03em' }}>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-bold text-primary-color">{name}</h3>
+            <p className="mt-1 text-sm leading-6 text-tertiary-color">{description}</p>
+          </div>
+          {popular && <span className="shrink-0 text-xs font-semibold" style={{ color: 'var(--accent)' }}>{t.pricing.mostPopular}</span>}
+        </div>
+        <div className="mb-6 flex items-baseline gap-2">
+          <span className="text-3xl font-black text-primary-color" style={{ letterSpacing: '-0.03em' }}>
             {price === 0 ? 'Free' : `${price} SAR`}
           </span>
           {price > 0 && (
-            <span className="text-sm mb-2 text-tertiary-color">/{t.pricing.monthly}</span>
+            <span className="text-sm text-tertiary-color">/{annual ? (isRTL ? 'سنة' : 'year') : (isRTL ? 'شهر' : 'month')}</span>
           )}
         </div>
       </div>
 
-      <ul className="space-y-3 flex-1 mb-6">
+      <ul className="mb-7 flex-1 space-y-3">
         {features.map((f, j) => (
           <li key={j} className="flex items-center gap-2 text-sm text-secondary-color">
             <span style={{ color: 'var(--accent)', fontSize: 14 }}>✓</span>
@@ -298,9 +262,8 @@ function CardInner({
 
       <button
         onClick={handlePlanClick}
-        className={`block w-full text-center py-3 rounded-xl text-sm font-bold cursor-pointer transition-all duration-200 ${
-          popular ? 'btn-lime' : 'btn-ghost'
-        }`}
+        className="mt-auto inline-flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-bold transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+        style={{ background: popular ? 'var(--brand)' : 'var(--surface-elevated)', color: popular ? 'var(--brand-text)' : 'var(--text-primary)', outlineColor: 'var(--accent)' }}
       >
         {token ? (isRTL ? 'اشترك الآن' : 'Subscribe Now') : t.pricing.startFree}
       </button>

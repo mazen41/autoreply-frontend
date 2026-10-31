@@ -45,20 +45,21 @@ export default function HeroHeadline({ lineA, lineB, reduceMotion }: HeroHeadlin
     })
     const words = [...splitA.words, ...splitB.words]
 
-    gsap.set(words, { opacity: 0, y: 34, rotateX: -40, filter: 'blur(6px)' })
-
-    const tl = gsap.timeline({ delay: 0.1 })
-    tl.to(words, {
-      opacity: 1,
-      y: 0,
-      rotateX: 0,
-      filter: 'blur(0px)',
-      duration: 0.9,
-      stagger: 0.07,
-      ease: 'power3.out',
-    })
+    const ctx = gsap.context(() => {
+      gsap.set(words, { opacity: 0, y: 34, rotateX: -40, filter: 'blur(6px)' })
+      gsap.timeline({ delay: 0.1 }).to(words, {
+        opacity: 1,
+        y: 0,
+        rotateX: 0,
+        filter: 'blur(0px)',
+        duration: 0.9,
+        stagger: 0.07,
+        ease: 'power3.out',
+      })
+    }, h1Ref)
 
     return () => {
+      ctx.revert()
       splitA.revert()
       splitB.revert()
     }
@@ -67,7 +68,7 @@ export default function HeroHeadline({ lineA, lineB, reduceMotion }: HeroHeadlin
   return (
     <h1
       ref={h1Ref}
-      className="max-w-2xl text-balance text-[clamp(2.65rem,5.8vw,5.5rem)] font-black leading-[1.02] tracking-[-0.055em] opacity-0 [perspective:600px]"
+      className="max-w-2xl text-balance text-[clamp(2.65rem,5.2vw,4.75rem)] font-black leading-[1.04] tracking-[-0.04em] opacity-0 [perspective:600px]"
       style={{ color: 'var(--text-primary)' }}
     >
       <span ref={lineARef}>{lineA}</span>

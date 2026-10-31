@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useId } from 'react'
 import { useLang } from '../../lib/LangContext'
 
 function AccordionItem({
@@ -13,6 +13,7 @@ function AccordionItem({
 }) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState(0)
+  const panelId = useId()
 
   useEffect(() => {
     if (contentRef.current) {
@@ -29,6 +30,9 @@ function AccordionItem({
       }}
     >
       <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
         className="w-full flex items-center justify-between p-5 text-left gap-4"
         onClick={onToggle}
       >
@@ -51,10 +55,12 @@ function AccordionItem({
       </button>
 
       <div
+        id={panelId}
+        aria-hidden={!isOpen}
         style={{
           height,
           overflow: 'hidden',
-          transition: 'height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          transition: 'height 0.28s cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
         <div ref={contentRef} className="px-5 pb-5">
@@ -75,15 +81,19 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="py-24">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="faq" className="px-4 py-20 sm:px-6 lg:py-28">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+        <div>
         <h2
-          className={`text-3xl sm:text-4xl font-black text-center mb-12 ${isRTL ? 'font-arabic' : ''}`}
-          style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+          className={`max-w-md text-balance text-3xl font-black sm:text-4xl ${isRTL ? 'font-arabic' : ''}`}
+          style={{ color: 'var(--text-primary)' }}
         >
           {t.faq.title}
         </h2>
-
+        <p className="mt-4 max-w-sm text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+          {isRTL ? 'إجابات مباشرة عن إعداد مساحة العمل والقنوات والتكاملات.' : 'Clear answers about setting up your workspace, channels, and integrations.'}
+        </p>
+        </div>
         <div className="space-y-3">
           {t.faq.items.map((item, i) => (
             <AccordionItem
