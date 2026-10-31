@@ -129,10 +129,10 @@ function HeroPreview({ isRTL }: { isRTL: boolean }) {
           </span>
         </div>
 
-        <div className="relative flex items-center justify-center overflow-hidden bg-[#080B14] px-2 pb-4 pt-6 sm:px-6 sm:pb-6">
+        <div className="relative flex items-center justify-center overflow-hidden bg-[#0D1526] px-2 pb-4 pt-6 sm:px-6 sm:pb-6">
           <ChannelConverge isRTL={isRTL} reduceMotion={!!reduceMotion} />
           <div className="absolute bottom-3 start-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-[10px] backdrop-blur-md sm:bottom-5 sm:start-5 sm:text-xs"
-            style={{ borderColor: 'rgba(148,163,184,.22)', background: 'rgba(8,11,20,.76)', color: '#dbeafe' }}>
+            style={{ borderColor: 'rgba(148,163,184,.22)', background: 'rgba(13,21,38,.76)', color: '#dbeafe' }}>
             <Sparkles size={13} style={{ color: 'var(--brand-cyan)' }} />
             {isRTL ? 'كل قناة، تيار واحد' : 'Every channel, one stream'}
           </div>

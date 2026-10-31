@@ -103,20 +103,20 @@
 }
 
 .dark {
-  /* Official Nazeer Business dark theme */
-  --background: #080B14;
-  --surface: #101626;
-  --surface-secondary: #101626;
-  --surface-elevated: #101626;
-  --surface-hover: #1C263A;
-  --surface-card: #101626;
-  --surface-overlay: #101626;
+  /* Official Nazeer Business dark theme — brightened one step, same palette */
+  --background: #0D1526;
+  --surface: #151E36;
+  --surface-secondary: #151E36;
+  --surface-elevated: #1A2440;
+  --surface-hover: #26324F;
+  --surface-card: #151E36;
+  --surface-overlay: #1A2440;
 
-  --border: #1C263A;
-  --border-strong: #2B3852;
-  --border-subtle: rgba(148, 163, 184, 0.12);
-  --border-hover: #3A4966;
-  --divider: rgba(148, 163, 184, 0.14);
+  --border: #263352;
+  --border-strong: #3A4A72;
+  --border-subtle: rgba(148, 163, 184, 0.16);
+  --border-hover: #4A5C85;
+  --divider: rgba(148, 163, 184, 0.18);
 
   --brand: #1769FF;
   --brand-hover: #3B82FF;
@@ -154,7 +154,7 @@
   --shadow-premium: 0 12px 36px rgba(0,0,0,0.8);
   --on-accent-text: #FFFFFF;
 
-  --bg-primary: #080B14;
+  --bg-primary: #0D1526;
   --accent-primary: #1769FF;
 
   /* ── Legacy alias tokens (dark theme overrides) ── */
