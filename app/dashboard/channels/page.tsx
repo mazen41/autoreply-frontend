@@ -176,15 +176,15 @@ export default function ChannelsPage() {
       'Store sync started': 'بدأت مزامنة المتجر.',
       'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
       'Telegram bot connected!': 'تم ربط بوت تيليجرام بنجاح!',
-      'AI Auto-Reply enabled for this account': 'تم تفعيل الرد الآلي لهذا الحساب.',
-      'AI Auto-Reply paused': 'تم إيقاف الرد الآلي مؤقتاً.',
+      'Replies resumed for this account': 'تم استئناف الردود لهذا الحساب.',
+      'Replies paused for this account': 'تم إيقاف الردود لهذا الحساب مؤقتاً.',
     }
     setToast({ message: isRTL ? (arabicMessages[message] || message) : message, type })
     setTimeout(() => setToast(null), 4000)
   }, [isRTL])
 
-  const fetchChannels = useCallback(async () => {
-    setLoading(true)
+  const fetchChannels = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     setErrorState(null)
     try {
       const token = getToken()
@@ -200,10 +200,12 @@ export default function ChannelsPage() {
         throw new Error(`Failed to load channels: ${res.status}`)
       }
     } catch (e: unknown) {
-      setApiChannels([])
-      setErrorState(e instanceof Error ? e.message : 'Could not load channels.')
+      if (showLoading) {
+        setApiChannels([])
+        setErrorState(e instanceof Error ? e.message : 'Could not load channels.')
+      }
     } finally {
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
   }, [])
 
@@ -394,10 +396,11 @@ export default function ChannelsPage() {
         throw new Error(result.message || result.error || 'AI setting update failed.')
       }
       setApiChannels((prev) => prev.map((item) => item.id === instanceId ? { ...item, ai_enabled: !currentStatus } : item))
+      await fetchChannels(false)
       showToast(
         !currentStatus
-          ? 'AI Auto-Reply enabled for this account'
-          : 'AI Auto-Reply paused'
+          ? 'Replies resumed for this account'
+          : 'Replies paused for this account'
       )
     } catch (e) {
       console.error(e)
@@ -811,8 +814,12 @@ export default function ChannelsPage() {
 
       {/* ─── Channel Connect Multi-Step Wizard Modal ──────────────────────── */}
       <ChannelConnectWizard
+        key={selectedWizardChannel?.id || 'all-channels'}
         isOpen={wizardOpen}
-        onClose={() => setWizardOpen(false)}
+        onClose={() => {
+          setWizardOpen(false)
+          setSelectedWizardChannel(null)
+        }}
         initialChannel={selectedWizardChannel}
         onContinueConnection={handleChannelConnection}
         isRTL={isRTL}
@@ -831,20 +838,32 @@ export default function ChannelsPage() {
             <dt className="text-text-muted">{L('Channel', 'القناة')}</dt><dd className="font-medium capitalize">{settingsInstance.type}</dd>
             <dt className="text-text-muted">{L('Account ID', 'معرّف الحساب')}</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
             <dt className="text-text-muted">{L('Connection', 'الاتصال')}</dt><dd className="capitalize">{settingsInstance.status || L('Connected', 'متصل')}</dd>
-            <dt className="text-text-muted">{L('AI replies', 'ردود الذكاء الاصطناعي')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Enabled', 'مفعّلة') : L('Paused', 'متوقفة مؤقتًا')}</dd>
-            {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">{L('Pause reason', 'سبب الإيقاف')}</dt><dd>{settingsInstance.ai_pause_reason}</dd></>}
+            {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && <>
+              <dt className="text-text-muted">{L('Reply status', 'حالة الردود')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Active', 'نشطة') : L('Paused', 'متوقفة مؤقتاً')}</dd>
+              {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">{L('Agent setup', 'إعداد الوكيل')}</dt><dd>{settingsInstance.ai_pause_reason === 'no_active_agent'
+                ? L('Assign an active agent to this channel in Bots.', 'عيّن وكيلاً نشطاً لهذه القناة من صفحة الوكلاء.')
+                : settingsInstance.ai_pause_reason === 'multiple_active_agents_without_primary'
+                  ? L('Choose a primary agent for this channel in Bots.', 'اختر وكيلاً أساسياً لهذه القناة من صفحة الوكلاء.')
+                  : settingsInstance.ai_pause_reason}</dd></>}
+            </>}
             {settingsInstance.comment_webhook_status && <><dt className="text-text-muted">{L('Comment webhook', 'خطاف التعليقات')}</dt><dd className="capitalize">{settingsInstance.comment_webhook_status}{settingsInstance.comment_webhook_error_code ? ` (${settingsInstance.comment_webhook_error_code})` : ''}</dd></>}
             {settingsInstance.integration?.store_url && <><dt className="text-text-muted">{L('Store URL', 'رابط المتجر')}</dt><dd className="break-all">{settingsInstance.integration.store_url}</dd></>}
             {settingsInstance.integration?.sync_status && <><dt className="text-text-muted">{L('Store sync', 'مزامنة المتجر')}</dt><dd className="capitalize">{settingsInstance.integration.sync_status}</dd></>}
             {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">{L('Sync issue', 'مشكلة المزامنة')}</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
           </dl>
           {settingsInstance.status_message && <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-warning">{settingsInstance.status_message}</p>}
-          <div className="flex justify-end border-t border-border pt-4">
-            <Button variant={settingsInstance.ai_enabled ? 'outline' : 'primary'} onClick={() => {
-              void handleToggleAI(settingsInstance.id, settingsInstance.ai_enabled)
-              setSettingsInstance(null)
-            }}>{settingsInstance.ai_enabled ? L('Pause AI replies', 'إيقاف ردود الذكاء الاصطناعي') : L('Enable AI replies', 'تفعيل ردود الذكاء الاصطناعي')}</Button>
-          </div>
+          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && (
+            <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+              <p className="text-xs text-text-tertiary">
+                {L('An active agent must be assigned in Bots. This control only pauses or resumes this account.', 'يجب تعيين وكيل نشط من صفحة الوكلاء. هذا المفتاح يوقف الردود لهذا الحساب أو يستأنفها فقط.')}{' '}
+                <Link href="/dashboard/bots" className="font-semibold text-brand hover:underline">{L('Manage agents', 'إدارة الوكلاء')}</Link>
+              </p>
+              <Button variant={settingsInstance.ai_enabled ? 'outline' : 'primary'} onClick={() => {
+                void handleToggleAI(settingsInstance.id, settingsInstance.ai_enabled)
+                setSettingsInstance(null)
+              }}>{settingsInstance.ai_enabled ? L('Pause replies', 'إيقاف الردود مؤقتاً') : L('Resume replies', 'استئناف الردود')}</Button>
+            </div>
+          )}
         </div>}
       </Modal>
 

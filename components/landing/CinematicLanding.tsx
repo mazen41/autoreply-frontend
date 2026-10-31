@@ -21,6 +21,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../lib/AuthContext'
 import { useLang } from '../../lib/LangContext'
+import ChannelConverge from './ChannelConverge'
+import HeroHeadline from './HeroHeadline'
 
 const CHANNELS = [
   { name: 'Instagram', label: 'IG', color: '#E4405F', brand: 'instagram' },
@@ -91,16 +93,12 @@ function SectionHeading({
 }) {
   return (
     <div className={align === 'center' ? 'mx-auto max-w-3xl text-center' : 'max-w-2xl'}>
-      <div className="mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-[0.16em]"
-        style={{ borderColor: 'var(--accent-outline)', color: 'var(--accent)', background: 'var(--accent-subtle)' }}>
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--brand-cyan)' }} />
-        {eyebrow}
-      </div>
-      <h2 className="text-balance text-3xl font-black leading-tight tracking-[-0.045em] sm:text-4xl lg:text-5xl"
+      <span className="sr-only">{eyebrow}</span>
+      <h2 className="text-balance text-4xl font-black leading-[1.03] tracking-[-0.045em] sm:text-5xl lg:text-6xl"
         style={{ color: 'var(--text-primary)' }}>
         {title}
       </h2>
-      {body && <p className="mx-auto mt-4 max-w-2xl text-base leading-7 sm:text-lg" style={{ color: 'var(--text-secondary)' }}>{body}</p>}
+      {body && <p className="mx-auto mt-5 max-w-2xl text-base leading-7 sm:text-lg" style={{ color: 'var(--text-secondary)' }}>{body}</p>}
     </div>
   )
 }
@@ -131,23 +129,12 @@ function HeroPreview({ isRTL }: { isRTL: boolean }) {
           </span>
         </div>
 
-        <div className="relative aspect-[1.56] overflow-hidden bg-[#080B14]">
-          <video
-            className="absolute inset-0 h-full w-full object-cover"
-            src="/video/nazbiz-conversation-loop.mp4"
-            poster="/video/nazbiz-conversation-poster.jpg"
-            autoPlay={!reduceMotion}
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            aria-hidden="true"
-          />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#080B14]/65 to-transparent" />
+        <div className="relative flex items-center justify-center overflow-hidden bg-[#080B14] px-2 pb-4 pt-6 sm:px-6 sm:pb-6">
+          <ChannelConverge isRTL={isRTL} reduceMotion={!!reduceMotion} />
           <div className="absolute bottom-3 start-3 flex items-center gap-2 rounded-xl border px-3 py-2 text-[10px] backdrop-blur-md sm:bottom-5 sm:start-5 sm:text-xs"
             style={{ borderColor: 'rgba(148,163,184,.22)', background: 'rgba(8,11,20,.76)', color: '#dbeafe' }}>
             <Sparkles size={13} style={{ color: 'var(--brand-cyan)' }} />
-            {isRTL ? 'محادثة توضيحية' : 'Conversation flow preview'}
+            {isRTL ? 'كل قناة، تيار واحد' : 'Every channel, one stream'}
           </div>
         </div>
       </div>
@@ -292,7 +279,7 @@ function WorkflowStory({ isRTL }: { isRTL: boolean }) {
               <motion.div whileHover={reduceMotion ? undefined : { x: isRTL ? -3 : 3 }} className="relative flex items-center gap-4 py-4 sm:gap-5 sm:py-5">
                 <div className="relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-2xl border" style={{ borderColor: 'var(--accent-outline)', background: 'var(--surface-elevated)', color: index === 1 ? 'var(--ai-accent)' : 'var(--accent)', boxShadow: '0 0 26px var(--accent-subtle)' }}><Icon size={19} /></div>
                 <div className="min-w-0 flex-1 rounded-2xl border p-4 sm:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                  <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-bold sm:text-base" style={{ color: 'var(--text-primary)' }}>{title}</h3><span className="font-mono text-[10px]" style={{ color: 'var(--text-disabled)' }}>{n}</span></div>
+                  <h3 className="text-sm font-bold sm:text-base" style={{ color: 'var(--text-primary)' }}>{title}</h3>
                   <p className="mt-1 text-xs sm:text-sm" style={{ color: 'var(--text-tertiary)' }}>{sub}</p>
                   {index === 1 && <div className="mt-4 flex gap-1.5">{[0, 1, 2, 3, 4, 5, 6].map((dot) => <motion.span key={dot} className="h-1 rounded-full" animate={reduceMotion ? undefined : { opacity: [0.25, 0.8, 0.25] }} transition={{ duration: 1.8, delay: dot * 0.1, repeat: Infinity }} style={{ width: dot === 3 ? 30 : 8, background: 'var(--ai-accent)' }} />)}</div>}
                 </div>
@@ -360,9 +347,7 @@ export default function CinematicLanding() {
             <motion.div initial={reduceMotion ? false : { opacity: 0, x: isRTL ? 14 : -14 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} className={`mb-6 flex ${isRTL ? 'justify-end' : 'justify-start'}`}>
               <span className="inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-semibold sm:text-sm" style={{ borderColor: 'var(--accent-outline)', background: 'var(--surface)', color: 'var(--text-secondary)' }}><Sparkles size={14} style={{ color: 'var(--ai-accent)' }} />{copy.badge}</span>
             </motion.div>
-            <motion.h1 initial={reduceMotion ? false : { opacity: 0, y: 22, filter: 'blur(8px)' }} animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} transition={{ duration: 0.8, delay: 0.05, ease: [0.16, 1, 0.3, 1] }} className="max-w-2xl text-balance text-[clamp(2.65rem,5.8vw,5.5rem)] font-black leading-[1.02] tracking-[-0.055em]" style={{ color: 'var(--text-primary)' }}>
-              {copy.titleA}<br /><span style={{ background: 'var(--brand-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{copy.titleB}</span>
-            </motion.h1>
+            <HeroHeadline lineA={copy.titleA} lineB={copy.titleB} reduceMotion={!!reduceMotion} />
             <motion.p initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.18 }} className="mt-6 max-w-xl text-base leading-7 sm:text-lg sm:leading-8" style={{ color: 'var(--text-secondary)' }}>{copy.body}</motion.p>
             <motion.div initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className={`mt-8 flex flex-wrap items-center gap-3 ${isRTL ? 'justify-end' : 'justify-start'}`}>
               <Link href={user ? '/dashboard' : '/register'} className="group inline-flex min-h-12 items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold transition-transform hover:-translate-y-0.5" style={{ background: 'var(--brand)', color: 'var(--brand-text)', boxShadow: '0 10px 28px var(--accent-subtle)' }}>
@@ -398,16 +383,12 @@ export default function CinematicLanding() {
           <div className="mt-12 grid gap-4 lg:grid-cols-3">
             {CAPABILITIES.map(({ eyebrow, title, body, Icon, accent }, index) => (
               <Reveal key={eyebrow.en} delay={index * 0.1}>
-                <motion.article whileHover={reduceMotion ? undefined : { y: -5 }} className="group relative h-full overflow-hidden rounded-3xl border p-6 sm:p-7" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <motion.article whileHover={reduceMotion ? undefined : { y: -5 }} className="group relative h-full overflow-hidden rounded-3xl border p-7 sm:p-9" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                   <div className="absolute -end-16 -top-16 h-40 w-40 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100" style={{ background: accent }} />
                   <div className="relative">
-                    <div className="mb-8 flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-[0.16em]" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? eyebrow.ar : eyebrow.en}</span>
-                      <span className="grid h-11 w-11 place-items-center rounded-2xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface-elevated)', color: accent }}><Icon size={19} /></span>
-                    </div>
-                    <h3 className="max-w-xs text-xl font-bold leading-snug tracking-tight" style={{ color: 'var(--text-primary)' }}>{isRTL ? title.ar : title.en}</h3>
+                    <Icon size={28} style={{ color: accent }} strokeWidth={1.8} />
+                    <h3 className="mt-7 max-w-xs text-2xl font-bold leading-snug tracking-tight" style={{ color: 'var(--text-primary)' }}>{isRTL ? title.ar : title.en}</h3>
                     <p className="mt-3 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{isRTL ? body.ar : body.en}</p>
-                    <div className="mt-8 flex items-center gap-2 text-xs font-semibold" style={{ color: accent }}><span className="font-mono">0{index + 1}</span><span className="h-px w-8" style={{ background: accent }} /><span>{isRTL ? 'مكوّن في مساحة عملك' : 'Part of your workspace'}</span></div>
                   </div>
                 </motion.article>
               </Reveal>

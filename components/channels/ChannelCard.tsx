@@ -81,6 +81,7 @@ export default function ChannelCard({
   }[channel.id] : null
   const channelName = localizedChannel?.[0] || channel.name
   const channelDescription = localizedChannel?.[1] || channel.description
+  const supportsAiReplies = channel.category !== 'ecommerce'
 
   // Check if any instance requires attention
   const hasWarning = instances.some(
@@ -215,36 +216,47 @@ export default function ChannelCard({
                       )}
                     </div>
 
-                    {/* AI Toggle Button */}
-                    <button
-                      type="button"
-                      onClick={() => onToggleAI(inst.id, inst.ai_enabled)}
-                      disabled={channel.disabled}
-                      title={
-                        inst.ai_enabled && inst.effective_ai_enabled === false
-                        ? isRTL ? 'الرد الآلي مفعّل لهذه القناة، لكن الردود متوقفة مؤقتاً لعدم وجود وكيل نشط.' : 'AI is enabled for this channel, but replies are paused until an active agent is available.'
-                          : inst.ai_enabled
-                          ? isRTL ? 'الرد الآلي مفعّل. اضغط لإيقافه مؤقتاً.' : 'AI Auto-Reply is active. Click to pause.'
-                          : isRTL ? 'الرد الآلي متوقف. اضغط لتفعيله.' : 'AI Auto-Reply is off. Click to activate.'
-                      }
-                      aria-label={isRTL
-                        ? (inst.ai_enabled ? 'إيقاف الرد الآلي لهذا الحساب' : 'تفعيل الرد الآلي لهذا الحساب')
-                        : (inst.ai_enabled ? 'Pause AI replies for this account' : 'Enable AI replies for this account')}
-                      className={`px-2 py-1 rounded-md text-[10px] font-mono font-semibold tracking-wider uppercase inline-flex items-center gap-1.5 border transition-all ${
-                        inst.ai_enabled
-                          ? 'bg-brand/10 border-brand/30 text-brand hover:bg-brand/15'
-                          : 'bg-surface border-border text-text-muted hover:text-text-primary'
-                      }`}
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      <span>{channel.disabled
-                        ? (isRTL ? 'الردود متوقفة' : 'Replies off')
-                        : inst.ai_enabled && inst.effective_ai_enabled === false
-                          ? (isRTL ? 'مفعّل مؤقتاً' : 'Paused')
-                          : inst.ai_enabled
-                            ? (isRTL ? 'الذكاء مفعّل' : 'AI On')
-                            : (isRTL ? 'الذكاء متوقف' : 'AI Off')}</span>
-                    </button>
+                    {/* Per-account reply pause; an assigned active agent is still required. */}
+                    {supportsAiReplies && (
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className={`rounded-md border px-2 py-1 text-[10px] font-semibold ${
+                          (inst.effective_ai_enabled ?? inst.ai_enabled)
+                            ? 'border-success/30 bg-success/10 text-success'
+                            : 'border-warning/30 bg-warning/10 text-warning'
+                        }`}>
+                          {(inst.effective_ai_enabled ?? inst.ai_enabled)
+                            ? (isRTL ? 'الردود نشطة' : 'Replies active')
+                            : inst.ai_pause_reason === 'no_active_agent' || inst.ai_pause_reason === 'multiple_active_agents_without_primary'
+                              ? (isRTL ? 'يلزم إعداد وكيل' : 'Agent setup needed')
+                              : (isRTL ? 'الردود متوقفة' : 'Replies paused')}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onToggleAI(inst.id, inst.ai_enabled)}
+                          disabled={channel.disabled}
+                          title={isRTL
+                            ? 'هذا المفتاح يوقف أو يستأنف الردود لهذا الحساب فقط. يجب أيضاً تعيين وكيل نشط من صفحة الوكلاء.'
+                            : 'This pauses or resumes replies for this account only. An active agent must also be assigned in Bots.'}
+                          aria-label={isRTL
+                            ? (inst.ai_enabled ? 'إيقاف الردود مؤقتاً لهذا الحساب' : 'استئناف الردود لهذا الحساب')
+                            : (inst.ai_enabled ? 'Pause replies for this account' : 'Resume replies for this account')}
+                          className={`px-2 py-1 rounded-md text-[10px] font-semibold inline-flex items-center gap-1.5 border transition-all ${
+                            inst.ai_enabled
+                              ? 'bg-brand/10 border-brand/30 text-brand hover:bg-brand/15'
+                              : 'bg-surface border-border text-text-muted hover:text-text-primary'
+                          }`}
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          <span>{inst.ai_enabled
+                            ? (isRTL ? 'إيقاف الردود' : 'Pause replies')
+                            : (isRTL ? 'استئناف الردود' : 'Resume replies')}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {!supportsAiReplies && inst.integration && (
+                      <span className="text-[10px] text-text-tertiary">{isRTL ? 'بيانات المتجر متاحة للوكلاء' : 'Store data for agents'}</span>
+                    )}
                   </div>
 
                   {inst.ai_pause_reason === 'no_active_agent' && (
