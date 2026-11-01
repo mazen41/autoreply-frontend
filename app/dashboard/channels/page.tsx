@@ -18,6 +18,7 @@ import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 import ShopifyConnect from '../../../components/channels/ShopifyConnect'
 import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
 import Checkbox from '../../../components/ui/Checkbox'
+import Switch from '../../../components/ui/Switch'
 import Modal from '../../../components/ui/Modal'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
@@ -47,6 +48,8 @@ type AiSetupChecklist = {
 type GoLiveSettings = { consent_policy_acknowledged: boolean; handoff_notification_email: string | null }
 type ApiChannel = ChannelInstance & {
   type: string
+  auto_order_confirmation_enabled?: boolean | null
+  effective_auto_order_confirmation_enabled?: boolean
   metadata?: Record<string, unknown>
   business_id?: number
   integration?: ChannelInstance['integration'] & {
@@ -139,6 +142,7 @@ export default function ChannelsPage() {
   const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
   const [testReplyLoading, setTestReplyLoading] = useState(false)
+  const [savingOrderSubmissionId, setSavingOrderSubmissionId] = useState<number | null>(null)
   const [testReply, setTestReply] = useState<string | null>(null)
   const [goLiveSettings, setGoLiveSettings] = useState<GoLiveSettings>({ consent_policy_acknowledged: false, handoff_notification_email: '' })
   const [savingGoLiveSettings, setSavingGoLiveSettings] = useState(false)
@@ -172,6 +176,8 @@ export default function ChannelsPage() {
       'Shopify connected. Initial store sync has started.': 'تم ربط Shopify وبدأت المزامنة الأولية للمتجر.',
       'Channel account disconnected': 'تم فصل حساب القناة.',
       'Failed to update AI setting': 'تعذر تحديث إعداد الذكاء الاصطناعي.',
+      'Automatic order submission updated.': 'تم تحديث الإرسال التلقائي للطلبات.',
+      'Could not update automatic order submission.': 'تعذر تحديث الإرسال التلقائي للطلبات.',
       'Disconnect failed': 'تعذر فصل الاتصال.',
       'Store sync started': 'بدأت مزامنة المتجر.',
       'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
@@ -405,6 +411,37 @@ export default function ChannelsPage() {
     } catch (e) {
       console.error(e)
       showToast(e instanceof Error ? e.message : 'Failed to update AI setting', 'error')
+    }
+  }
+
+  const handleToggleOrderSubmission = async (instanceId: number, enabled: boolean) => {
+    setSavingOrderSubmissionId(instanceId)
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Your session expired. Sign in again.')
+
+      const response = await fetch(`${API}/api/channels/${instanceId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
+        body: JSON.stringify({ auto_order_confirmation_enabled: enabled }),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.message || result.error || 'Could not update automatic order submission.')
+
+      setSettingsInstance((current) => current?.id === instanceId
+        ? { ...current, auto_order_confirmation_enabled: enabled, effective_auto_order_confirmation_enabled: enabled }
+        : current)
+      await fetchChannels(false)
+      showToast('Automatic order submission updated.', 'success')
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Could not update automatic order submission.', 'error')
+    } finally {
+      setSavingOrderSubmissionId((current) => current === instanceId ? null : current)
     }
   }
 
@@ -852,6 +889,34 @@ export default function ChannelsPage() {
             {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">{L('Sync issue', 'مشكلة المزامنة')}</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
           </dl>
           {settingsInstance.status_message && <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-warning">{settingsInstance.status_message}</p>}
+          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && (
+            <div className="rounded-xl border border-warning/25 bg-warning/5 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-text-primary">{L('Automatic order submission', 'إرسال الطلبات تلقائياً')}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                    {L('When enabled, a customer’s explicit order confirmation submits the order to this conversation’s active store. This can create real orders.', 'عند التفعيل، يؤدي تأكيد العميل الصريح إلى إرسال الطلب إلى المتجر النشط للمحادثة. قد ينشئ ذلك طلبات فعلية.')}
+                  </p>
+                  <p className="mt-2 text-[11px] text-text-tertiary">
+                    {settingsInstance.auto_order_confirmation_enabled === null || settingsInstance.auto_order_confirmation_enabled === undefined
+                      ? L('This channel follows the business default.', 'تتبع هذه القناة الإعداد الافتراضي للنشاط التجاري.')
+                      : L('This setting overrides the business default for this channel.', 'يتجاوز هذا الإعداد القيمة الافتراضية للنشاط لهذه القناة.')}{' '}
+                    {L('Currently', 'الحالة الحالية')}: {settingsInstance.effective_auto_order_confirmation_enabled
+                      ? L('On', 'مفعّل')
+                      : L('Off', 'متوقف')}.
+                  </p>
+                </div>
+                <Switch
+                  checked={Boolean(settingsInstance.effective_auto_order_confirmation_enabled)}
+                  onChange={(enabled) => void handleToggleOrderSubmission(settingsInstance.id, enabled)}
+                  disabled={savingOrderSubmissionId === settingsInstance.id}
+                  size="sm"
+                  label={L('Allow order submission', 'السماح بإرسال الطلبات')}
+                  description={savingOrderSubmissionId === settingsInstance.id ? L('Saving…', 'جارٍ الحفظ…') : undefined}
+                />
+              </div>
+            </div>
+          )}
           {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && (
             <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
               <p className="text-xs text-text-tertiary">
