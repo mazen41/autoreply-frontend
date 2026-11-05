@@ -16,15 +16,14 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     if (reducedMotion) return
 
     const lenis = lenisRef.current?.lenis
-    const update = (time: number) => lenis?.raf(time * 1000)
+    if (!lenis) return
+
     const refresh = () => ScrollTrigger.refresh()
-    gsap.ticker.add(update)
-    gsap.ticker.lagSmoothing(0)
     lenis?.on('scroll', ScrollTrigger.update)
     window.addEventListener('load', refresh, { once: true })
+    requestAnimationFrame(refresh)
 
     return () => {
-      gsap.ticker.remove(update)
       window.removeEventListener('load', refresh)
       lenis?.off('scroll', ScrollTrigger.update)
     }
@@ -33,7 +32,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   if (reducedMotion) return <>{children}</>
 
   return (
-    <ReactLenis root options={{ autoRaf: false, anchors: true }} ref={lenisRef}>
+    <ReactLenis root options={{ autoRaf: true, anchors: true }} ref={lenisRef}>
       {children}
     </ReactLenis>
   )
