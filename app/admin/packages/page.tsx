@@ -14,7 +14,9 @@ interface Package {
   price_monthly: number
   price_yearly: number
   ai_replies_limit: number
+  ai_credits_monthly: number
   channels_limit: number
+  max_team_members: number
   tools_limit: number
   blog_posts_limit: number
   features: string[]
@@ -26,7 +28,7 @@ interface Package {
 }
 
 export default function AdminPackagesPage() {
-  const { t, isRTL } = useLang()
+  const { isRTL } = useLang()
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -40,7 +42,9 @@ export default function AdminPackagesPage() {
     price_monthly: 0,
     price_yearly: 0,
     ai_replies_limit: -1,
+    ai_credits_monthly: 0,
     channels_limit: -1,
+    max_team_members: -1,
     tools_limit: -1,
     blog_posts_limit: -1,
     features: [] as string[],
@@ -50,11 +54,7 @@ export default function AdminPackagesPage() {
     sort_order: 0,
   })
 
-  useEffect(() => {
-    fetchPackages()
-  }, [])
-
-  const fetchPackages = async () => {
+  async function fetchPackages() {
     try {
       const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/packages`, {
@@ -69,13 +69,18 @@ export default function AdminPackagesPage() {
 
       const data = await response.json()
       setPackages(data)
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to fetch packages:', error)
-      setError(error.message || 'Failed to load packages')
+      setError(error instanceof Error ? error.message : 'Failed to load packages')
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void fetchPackages() }, 0)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   const handleCreate = () => {
     setEditingPackage(null)
@@ -87,7 +92,9 @@ export default function AdminPackagesPage() {
       price_monthly: 0,
       price_yearly: 0,
       ai_replies_limit: -1,
+      ai_credits_monthly: 0,
       channels_limit: -1,
+      max_team_members: -1,
       tools_limit: -1,
       blog_posts_limit: -1,
       features: [],
@@ -109,7 +116,9 @@ export default function AdminPackagesPage() {
       price_monthly: pkg.price_monthly,
       price_yearly: pkg.price_yearly,
       ai_replies_limit: pkg.ai_replies_limit,
+      ai_credits_monthly: pkg.ai_credits_monthly ?? 0,
       channels_limit: pkg.channels_limit,
+      max_team_members: pkg.max_team_members ?? -1,
       tools_limit: pkg.tools_limit,
       blog_posts_limit: pkg.blog_posts_limit,
       features: pkg.features || [],
@@ -140,9 +149,9 @@ export default function AdminPackagesPage() {
       }
 
       fetchPackages()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to delete package:', error)
-      setError(error.message)
+      setError(error instanceof Error ? error.message : 'Failed to delete package')
     }
   }
 
@@ -171,9 +180,9 @@ export default function AdminPackagesPage() {
 
       setShowModal(false)
       fetchPackages()
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to save package:', error)
-      setError(error.message)
+      setError(error instanceof Error ? error.message : 'Failed to save package')
     }
   }
 
@@ -285,11 +294,15 @@ export default function AdminPackagesPage() {
             <div className="space-y-2 mb-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
               <div className="flex justify-between">
                 <span>{isRTL ? 'ردود AI' : 'AI Replies'}:</span>
-                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.ai_replies_limit)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{Number(pkg.ai_credits_monthly ?? 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span>{isRTL ? 'قنوات' : 'Channels'}:</span>
                 <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.channels_limit)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{isRTL ? 'أعضاء الفريق' : 'Team members'}:</span>
+                <span style={{ color: 'var(--text-primary)' }}>{getLimitDisplay(pkg.max_team_members ?? -1)}</span>
               </div>
               <div className="flex justify-between">
                 <span>{isRTL ? 'أدوات' : 'Tools'}:</span>
@@ -438,7 +451,7 @@ export default function AdminPackagesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
                 <div>
                   <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
                     {isRTL ? 'حد الردود' : 'AI Replies'}
@@ -447,6 +460,19 @@ export default function AdminPackagesPage() {
                     type="number"
                     value={formData.ai_replies_limit}
                     onChange={(e) => setFormData({ ...formData, ai_replies_limit: parseInt(e.target.value) || -1 })}
+                    className="w-full px-4 py-3 rounded-xl bg-transparent"
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {isRTL ? 'رصيد الذكاء الاصطناعي الشهري' : 'Monthly AI credits'}
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.ai_credits_monthly}
+                    onChange={(e) => setFormData({ ...formData, ai_credits_monthly: Math.max(0, parseInt(e.target.value, 10) || 0) })}
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
                     style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
@@ -462,6 +488,20 @@ export default function AdminPackagesPage() {
                     className="w-full px-4 py-3 rounded-xl bg-transparent"
                     style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+                    {isRTL ? 'أعضاء الفريق' : 'Team members'}
+                  </label>
+                  <input
+                    type="number"
+                    min={-1}
+                    value={formData.max_team_members}
+                    onChange={(e) => setFormData({ ...formData, max_team_members: parseInt(e.target.value, 10) || -1 })}
+                    className="w-full px-4 py-3 rounded-xl bg-transparent"
+                    style={{ border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+                  />
+                  <span className="mt-1 block text-xs" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? '-1 يعني بلا حدود' : '-1 means unlimited'}</span>
                 </div>
                 <div>
                   <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>

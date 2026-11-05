@@ -2,6 +2,7 @@
 
 import React from 'react'
 import BrandWordmark from '../brand/BrandWordmark'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
 import { springs, variants } from '../../lib/motion'
@@ -62,8 +63,17 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
         { icon: <Rocket size={16} />, text: t.auth.features.ready5min },
       ]
 
+  const integrations = [
+    { name: 'Instagram', src: '/icons/instagram.svg' },
+    { name: 'WhatsApp', src: '/icons/whatsapp.svg' },
+    { name: 'Facebook', src: '/icons/facebook.svg' },
+    { name: 'Salla', src: '/icons/sllla.svg' },
+    { name: 'Shopify', src: '/icons/shopify.svg' },
+    { name: 'WooCommerce', src: '/icons/woocommerce-icon.svg' },
+  ]
+
   return (
-    <div className="hidden lg:flex flex-col justify-between p-10 relative overflow-hidden h-full bg-surface border-r border-border">
+    <div className="hidden lg:flex flex-col justify-between p-10 xl:p-14 relative overflow-hidden h-full bg-surface border-r border-border">
 
       {/* Animated radial gradient background — slow-moving brand glow */}
       <motion.div
@@ -200,6 +210,20 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             </motion.div>
           ))}
         </motion.div>
+
+        <div className="mt-8" aria-label={isRTL ? 'القنوات والمتاجر المدعومة' : 'Supported channels and stores'}>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
+            {isRTL ? 'قنوات ومتاجر متصلة' : 'CONNECTED CHANNELS & STORES'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {integrations.map((item) => (
+              <span key={item.name} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated/70 px-3 py-2 text-[11px] font-semibold text-text-secondary">
+                <Image src={item.src} alt="" aria-hidden="true" width={16} height={16} className="h-4 w-4 object-contain" />
+                {item.name}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Live activity ticker */}

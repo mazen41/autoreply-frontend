@@ -9,7 +9,7 @@ import { useLang } from '../../../lib/LangContext'
 import Select from '../../../components/ui/Select'
 import Switch from '../../../components/ui/Switch'
 
-type Provider = 'gemini' | 'groq' | 'claude'
+type Provider = 'gemini' | 'groq' | 'claude' | 'openai'
 
 type Settings = {
   app_name: string
@@ -29,6 +29,7 @@ type Settings = {
   groq_configured: boolean
   openai_api_key: string | null
   openai_configured: boolean
+  openai_model: string | null
   claude_api_key: string | null
   claude_model: string | null
   claude_configured: boolean
@@ -67,6 +68,7 @@ const defaults = {
   groq_api_key: '',
   groq_model: 'openai/gpt-oss-120b',
   openai_api_key: '',
+  openai_model: 'gpt-4o',
   claude_api_key: '',
   claude_model: 'claude-haiku-4-5-20251001',
   vision_provider: 'openai' as 'openai' | 'gemini',
@@ -119,6 +121,7 @@ export default function AdminSettingsPage() {
         ai_streaming: Boolean(data.ai_streaming),
         gemini_model: data.gemini_model || 'gemini-2.5-flash',
         groq_model: data.groq_model || 'openai/gpt-oss-120b',
+        openai_model: data.openai_model || 'gpt-4o',
         claude_model: data.claude_model || 'claude-haiku-4-5-20251001',
         vision_provider: data.vision_provider || 'openai',
         vision_openai_model: data.vision_openai_model || 'gpt-4o',
@@ -170,7 +173,7 @@ export default function AdminSettingsPage() {
 
   const providerReady = (provider: Provider) => provider === 'groq'
     ? settings?.groq_configured
-    : provider === 'claude' ? settings?.claude_configured : settings?.gemini_configured
+    : provider === 'claude' ? settings?.claude_configured : provider === 'openai' ? settings?.openai_configured : settings?.gemini_configured
   const primaryConfigured = providerReady(formData.ai_provider)
   const fallbackConfigured = providerReady(formData.ai_fallback_provider)
 
@@ -189,10 +192,10 @@ export default function AdminSettingsPage() {
         <Panel>
           <div className="mb-5 flex items-center justify-between"><div><h2 className="text-xl font-black text-white/70 dark:text-white">{isRTL ? 'مزود الذكاء الاصطناعي' : 'AI Provider'}</h2><p className="text-sm text-white/70 dark:text-white/70">{isRTL ? 'تستخدم جميع طلبات الذكاء الاصطناعي هذا المزود.' : 'All system AI requests follow this selection.'}</p></div><Bot className="text-white/50" /></div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {(['gemini', 'groq', 'claude'] as Provider[]).map((provider) => {
+            {(['gemini', 'groq', 'claude', 'openai'] as Provider[]).map((provider) => {
               const selected = formData.ai_provider === provider
               const configured = providerReady(provider)
-              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-white/40 bg-white/50 shadow-lg shadow-black/30 dark:bg-white/40' : 'border-white/10 bg-white hover:border-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-white/70 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? 'جاهز' : 'Ready') : (isRTL ? 'يتطلب مفتاحاً' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-white/70 dark:text-white/70">{provider === 'gemini' ? 'Google Gemini' : provider === 'groq' ? 'Groq' : 'Anthropic Claude'}</p></button>
+              return <button key={provider} onClick={() => update('ai_provider', provider)} className={`rounded-2xl border p-4 text-left transition ${selected ? 'border-white/40 bg-white/50 shadow-lg shadow-black/30 dark:bg-white/40' : 'border-white/10 bg-white hover:border-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8'}`}><div className="flex items-center justify-between"><span className="text-lg font-black capitalize text-white/70 dark:text-white">{provider}</span><Badge tone={configured ? 'emerald' : 'amber'}>{configured ? (isRTL ? 'جاهز' : 'Ready') : (isRTL ? 'يتطلب مفتاحاً' : 'Needs key')}</Badge></div><p className="mt-2 text-sm text-white/70 dark:text-white/70">{provider === 'gemini' ? 'Google Gemini' : provider === 'groq' ? 'Groq' : provider === 'openai' ? 'OpenAI' : 'Anthropic Claude'}</p></button>
             })}
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -204,6 +207,7 @@ export default function AdminSettingsPage() {
                   { value: 'gemini', label: 'Google Gemini' },
                   { value: 'groq', label: 'Groq' },
                   { value: 'claude', label: 'Anthropic Claude' },
+                  { value: 'openai', label: 'OpenAI' },
                 ]}
               />
             </Field>
@@ -216,6 +220,7 @@ export default function AdminSettingsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Gemini Model"><input className={inputClass} value={formData.gemini_model} onChange={(e) => update('gemini_model', e.target.value)} /></Field>
             <Field label="Groq Model"><input className={inputClass} value={formData.groq_model} onChange={(e) => update('groq_model', e.target.value)} /></Field>
+            <Field label="OpenAI Model"><input className={inputClass} value={formData.openai_model} onChange={(e) => update('openai_model', e.target.value)} /></Field>
             <Field label="Claude Model"><input className={inputClass} value={formData.claude_model} onChange={(e) => update('claude_model', e.target.value)} /></Field>
             <Field label={isRTL ? 'درجة الحرارة' : 'Temperature'}><input className={inputClass} type="number" min="0" max="2" step="0.1" value={formData.ai_temperature} onChange={(e) => update('ai_temperature', Number(e.target.value))} /></Field>
             <Field label={isRTL ? 'الحد الأقصى للرموز' : 'Max tokens'}><input className={inputClass} type="number" min="50" max="8000" value={formData.ai_max_tokens} onChange={(e) => update('ai_max_tokens', Number(e.target.value))} /></Field>

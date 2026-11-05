@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
@@ -18,7 +19,6 @@ import {
   Mail,
   MessageCircle,
   MessagesSquare,
-  Radio,
   Sparkles,
   Store,
   ThumbsUp,
@@ -36,11 +36,14 @@ import FAQ from './FAQ'
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger)
 
 const CHANNELS = [
-  { name: 'Instagram', color: '#E4405F', brand: 'instagram' },
-  { name: 'Facebook', color: '#1877F2', brand: 'facebook' },
-  { name: 'WhatsApp', color: '#25D366', Icon: MessageCircle },
+  { name: 'Instagram', color: '#E4405F', icon: '/icons/instagram.svg' },
+  { name: 'Facebook', color: '#1877F2', icon: '/icons/facebook.svg' },
+  { name: 'WhatsApp', color: '#25D366', icon: '/icons/whatsapp.svg' },
   { name: 'Gmail', color: '#EA4335', Icon: Mail },
-  { name: 'Telegram', color: '#2AABEE', Icon: Radio },
+  { name: 'Telegram', color: '#2AABEE', icon: '/icons/telegram.svg' },
+  { name: 'Salla', color: '#00B4D8', icon: '/icons/sllla.svg' },
+  { name: 'Shopify', color: '#95BF47', icon: '/icons/shopify.svg' },
+  { name: 'WooCommerce', color: '#96588A', icon: '/icons/woocommerce-icon.svg' },
 ]
 
 const CAPABILITIES = [
@@ -147,7 +150,7 @@ function ChannelRail({ isRTL }: { isRTL: boolean }) {
       style={{ borderColor: 'var(--border)', background: 'color-mix(in srgb, var(--surface) 84%, transparent)' }}>
       <div className="absolute inset-y-1/2 start-8 end-8 hidden h-px -translate-y-1/2 md:block" style={{ background: 'linear-gradient(90deg, transparent, var(--border-strong) 18%, var(--border-strong) 82%, transparent)' }} />
       <div className="relative flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-        {CHANNELS.map(({ name, color, Icon, brand }, index) => (
+        {CHANNELS.map(({ name, color, Icon, icon }, index) => (
           <motion.div
             key={name}
             className="flex items-center gap-2.5 rounded-xl border px-3 py-2.5 sm:px-4"
@@ -159,9 +162,8 @@ function ChannelRail({ isRTL }: { isRTL: boolean }) {
             style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text-secondary)' }}
           >
             <span className="grid h-7 w-7 place-items-center rounded-lg" style={{ background: `${color}14`, color }}>
-              {brand === 'instagram' ? <span aria-hidden="true" className="text-[21px] leading-none">◎</span> : null}
-              {brand === 'facebook' ? <span aria-hidden="true" className="pt-1 text-[24px] font-black leading-[20px]">f</span> : null}
-              {!brand && Icon ? <Icon size={15} strokeWidth={2.2} aria-hidden="true" /> : null}
+              {icon ? <Image src={icon} alt="" aria-hidden="true" width={16} height={16} className="h-4 w-4 object-contain" /> : null}
+              {!icon && Icon ? <Icon size={15} strokeWidth={2.2} aria-hidden="true" /> : null}
             </span>
             <span className="text-xs font-semibold sm:text-sm">{name}</span>
           </motion.div>

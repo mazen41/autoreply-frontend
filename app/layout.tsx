@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import './globals.css'
+import 'lenis/dist/lenis.css'
 import { LangProvider } from '../lib/LangContext'
 import type { Language } from '../lib/i18n'
 import { ThemeProvider } from '../lib/ThemeContext'

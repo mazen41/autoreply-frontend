@@ -5,14 +5,16 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BarChart3, Bell, Box, CreditCard, FileText, Home, LogOut, Menu, Moon, Search, Settings, Shield, Sun, Users, X, Bot } from 'lucide-react'
+import { BarChart3, Bell, Box, BrainCircuit, CreditCard, FileText, Home, LogOut, Menu, Moon, Search, Settings, Shield, Sun, Users, X, Bot } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useLang } from '../../lib/LangContext'
 
 const navItems = [
   { path: '/admin', ar: 'نظرة عامة', en: 'Overview', icon: Home },
+  { path: '/admin/analytics', ar: 'تحليلات الزوار', en: 'Visitor Analytics', icon: BarChart3 },
   { path: '/admin/users', ar: 'المستخدمون', en: 'Users', icon: Users },
   { path: '/admin/packages', ar: 'الباقات', en: 'Packages', icon: Box },
+  { path: '/admin/ai-engine', ar: 'محرك الذكاء الاصطناعي', en: 'AI Engine', icon: BrainCircuit },
   { path: '/admin/payments', ar: 'المدفوعات', en: 'Payments', icon: CreditCard },
   { path: '/admin/blog', ar: 'المدونة', en: 'Blog', icon: FileText },
   { path: '/admin/settings', ar: 'الإعدادات', en: 'Settings', icon: Settings },

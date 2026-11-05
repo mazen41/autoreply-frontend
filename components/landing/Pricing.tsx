@@ -41,7 +41,6 @@ async function requestPackages(): Promise<Package[]> {
 
 export default function Pricing() {
   const { t, isRTL } = useLang()
-  const [annual, setAnnual] = useState(false)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -64,8 +63,6 @@ export default function Pricing() {
       .catch(() => setError(true))
       .finally(() => setLoading(false))
   }
-
-  const getPrice = (pkg: Package) => annual ? pkg.price_yearly : pkg.price_monthly
 
   if (loading) {
     return (
@@ -96,17 +93,9 @@ export default function Pricing() {
             {t.pricing.title}
           </h2>
           <p className="max-w-md text-sm leading-6 sm:text-base" style={{ color: 'var(--text-secondary)' }}>
-            {isRTL ? 'قارن الخطط والأسعار الحالية، ثم اختر ما يناسب استخدامك.' : 'Compare the current plans and prices, then choose the one that fits your needs.'}
+            {isRTL ? 'كل الخطط تشمل قنواتك ومتاجرك وأدوات الأتمتة بلا حدود. اختر رصيد AI الشهري المناسب لفريقك.' : 'Every plan includes unlimited channels, stores, and automation. Choose the monthly AI credit allowance that fits your team.'}
           </p>
         </motion.div>
-
-        <div className={`mb-10 flex items-center gap-3 ${isRTL ? 'justify-start' : 'justify-start'}`}>
-          <span className="text-sm font-medium" style={{ color: annual ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>{t.pricing.monthly}</span>
-          <button type="button" role="switch" aria-checked={annual} aria-label={isRTL ? 'تبديل الفوترة الشهرية والسنوية' : 'Switch monthly and annual billing'} onClick={() => setAnnual(!annual)} className="relative h-7 w-12 rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" style={{ background: annual ? 'var(--accent)' : 'var(--surface-elevated)', borderColor: 'var(--border-strong)', outlineColor: 'var(--accent)' }}>
-            <span className="absolute top-1 h-4 w-4 rounded-full bg-white transition-all" style={{ insetInlineStart: annual ? '1.65rem' : '0.25rem' }} />
-          </button>
-          <span className="text-sm font-medium" style={{ color: annual ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>{t.pricing.annual}</span>
-        </div>
 
         {error || packages.length === 0 ? (
           <div className="border-y py-8 text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }} role="status">
@@ -121,31 +110,31 @@ export default function Pricing() {
           initial={reduceMotion ? false : 'hidden'}
           whileInView={reduceMotion ? undefined : 'visible'}
           viewport={{ once: true, margin: '-40px' }}
-          className="grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2 xl:grid-cols-3"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
         >
           {packages.map((pkg) => (
             <PricingCard
               key={pkg.id}
               pkg={pkg}
-              price={getPrice(pkg)}
-              annual={annual}
+              price={pkg.price_monthly}
               isRTL={isRTL}
               t={t}
             />
           ))}
         </motion.div>
         )}
+
+        <CreditPacks isRTL={isRTL} />
       </div>
     </section>
   )
 }
 
 function PricingCard({
-  pkg, price, annual, isRTL, t,
+  pkg, price, isRTL, t,
 }: {
   pkg: Package
   price: number
-  annual: boolean
   isRTL: boolean
   t: { pricing: { monthly: string; mostPopular: string; startFree: string } }
 }) {
@@ -160,16 +149,17 @@ function PricingCard({
     <motion.div
       variants={variants.fadeUp}
       whileHover={{ y: -3 }}
-      className="relative flex flex-col border-y py-7 first:border-t-0 md:px-2 xl:px-5"
+      className="relative flex min-h-full flex-col rounded-3xl border p-6 transition-transform hover:-translate-y-1 sm:p-7"
       style={{
-        borderColor: 'var(--border)',
+        borderColor: pkg.is_popular ? 'var(--accent)' : 'var(--border)',
+        background: 'var(--surface)',
+        boxShadow: pkg.is_popular ? '0 20px 70px color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--shadow-card)',
       }}
     >
       <CardInner
         name={name}
         description={description}
         price={price}
-        annual={annual}
         isRTL={isRTL}
         t={t}
         features={features}
@@ -181,12 +171,11 @@ function PricingCard({
 }
 
 function CardInner({
-  name, description, price, annual, isRTL, t, features, popular = false, pkg,
+  name, description, price, isRTL, t, features, popular = false, pkg,
 }: {
   name: string
   description: string
   price: number
-  annual: boolean
   isRTL: boolean
   t: { pricing: { monthly: string; startFree: string; mostPopular: string } }
   features: string[]
@@ -195,8 +184,10 @@ function CardInner({
 }) {
   const router = useRouter()
   const token = getToken()
+  const [actionError, setActionError] = useState('')
 
   const handlePlanClick = async () => {
+    setActionError('')
     if (price === 0) {
       if (token) {
         try {
@@ -211,22 +202,22 @@ function CardInner({
               billing_cycle: 'monthly',
             }),
           })
-          if (response.ok) {
-            router.push('/dashboard')
-          } else {
-            router.push('/dashboard')
+          if (!response.ok) {
+            const result = await response.json().catch(() => ({}))
+            throw new Error(result.message || (isRTL ? 'تعذر تفعيل الباقة المجانية.' : 'Could not activate the free plan.'))
           }
-        } catch {
           router.push('/dashboard')
+        } catch (error) {
+          setActionError(error instanceof Error ? error.message : (isRTL ? 'تعذر الاتصال بالخادم. حاول مرة أخرى.' : 'Could not connect to the server. Please try again.'))
         }
       } else {
         router.push(`/register?package=${pkg.id}&billing=monthly`)
       }
     } else {
       if (token) {
-        router.push(`/checkout?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+        router.push(`/checkout?package=${pkg.id}&billing=monthly`)
       } else {
-        router.push(`/register?package=${pkg.id}&billing=${annual ? 'yearly' : 'monthly'}`)
+        router.push(`/register?package=${pkg.id}&billing=monthly`)
       }
     }
   }
@@ -243,10 +234,10 @@ function CardInner({
         </div>
         <div className="mb-6 flex items-baseline gap-2">
           <span className="text-3xl font-black text-primary-color" style={{ letterSpacing: '-0.03em' }}>
-            {price === 0 ? 'Free' : `${price} SAR`}
+            {price === 0 ? (isRTL ? 'مجاناً' : 'Free') : `${price} SAR`}
           </span>
           {price > 0 && (
-            <span className="text-sm text-tertiary-color">/{annual ? (isRTL ? 'سنة' : 'year') : (isRTL ? 'شهر' : 'month')}</span>
+            <span className="text-sm text-tertiary-color">/{isRTL ? 'شهرياً' : 'month'}</span>
           )}
         </div>
       </div>
@@ -267,6 +258,38 @@ function CardInner({
       >
         {token ? (isRTL ? 'اشترك الآن' : 'Subscribe Now') : t.pricing.startFree}
       </button>
+      {actionError && <p role="alert" className="mt-3 text-xs leading-5" style={{ color: 'var(--error)' }}>{actionError}</p>}
     </>
+  )
+}
+
+function CreditPacks({ isRTL }: { isRTL: boolean }) {
+  const packs = [
+    { credits: '5,000', price: '25' },
+    { credits: '15,000', price: '65' },
+    { credits: '30,000', price: '119' },
+    { credits: '75,000', price: '249' },
+  ]
+
+  return (
+    <section className="mt-10 rounded-3xl border p-5 sm:mt-14 sm:p-8" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }} aria-labelledby="ai-credit-packs">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h3 id="ai-credit-packs" className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{isRTL ? 'رصيد AI إضافي' : 'Extra AI credits'}</h3>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'اختر رصيداً إضافياً عند الحاجة، دون تغيير باقتك.' : 'Add more capacity when needed without changing your plan.'}</p>
+        </div>
+        <a href="mailto:support@nazbiz.io?subject=AI%20credit%20top-up" className="text-sm font-semibold underline underline-offset-4" style={{ color: 'var(--accent)' }}>{isRTL ? 'اطلب رصيداً إضافياً' : 'Request a top-up'}</a>
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {packs.map((pack) => (
+          <div key={pack.credits} className="rounded-2xl border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface-elevated)' }}>
+            <p className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>{pack.credits}</p>
+            <p className="mt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'رصيد AI' : 'AI credits'}</p>
+            <p className="mt-3 text-sm font-bold" style={{ color: 'var(--accent)' }}>{pack.price} SAR</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-xs leading-5" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'تتم معالجة شراء الرصيد الإضافي حالياً عبر فريق الدعم.' : 'Top-up purchases are currently arranged through the support team.'}</p>
+    </section>
   )
 }

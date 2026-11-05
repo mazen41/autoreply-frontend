@@ -13,21 +13,22 @@ type ChannelConvergeProps = {
   reduceMotion: boolean
 }
 
-// Five channel sources, arranged around an arc, each with its brand colour,
-// converging on a single path toward the core. The idea: every channel a
-// customer uses becomes one stream the business actually works from.
+// Communication channels and commerce stores converge into one workspace.
 const CHANNELS = [
-  { id: 'ig', label: 'IG', color: '#E4405F', angle: -52 },
-  { id: 'fb', label: 'f', color: '#1877F2', angle: -26 },
-  { id: 'wa', label: 'WA', color: '#25D366', angle: 0 },
-  { id: 'gm', label: 'G', color: '#EA4335', angle: 26 },
-  { id: 'tg', label: 'TG', color: '#2AABEE', angle: 52 },
+  { id: 'ig', label: 'Instagram', color: '#E4405F', angle: -63, icon: '/icons/instagram.svg' },
+  { id: 'fb', label: 'Facebook', color: '#1877F2', angle: -45, icon: '/icons/facebook.svg' },
+  { id: 'wa', label: 'WhatsApp', color: '#25D366', angle: -27, icon: '/icons/whatsapp.svg' },
+  { id: 'gm', label: 'Gmail', color: '#EA4335', angle: -9, icon: null },
+  { id: 'tg', label: 'Telegram', color: '#2AABEE', angle: 9, icon: '/icons/telegram.svg' },
+  { id: 'salla', label: 'Salla', color: '#00B4D8', angle: 27, icon: '/icons/sllla.svg' },
+  { id: 'shopify', label: 'Shopify', color: '#95BF47', angle: 45, icon: '/icons/shopify.svg' },
+  { id: 'woo', label: 'WooCommerce', color: '#96588A', angle: 63, icon: '/icons/woocommerce-icon.svg' },
 ]
 
-const W = 640
-const H = 520
-const CORE = { x: W / 2, y: H - 108 }
-const RADIUS = 300
+const W = 700
+const H = 560
+const CORE = { x: W / 2, y: H - 105 }
+const RADIUS = 330
 
 function sourcePoint(angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180
@@ -144,17 +145,11 @@ export default function ChannelConverge({ isRTL, reduceMotion }: ChannelConverge
               ))}
               <g className="cc-node" style={{ transformOrigin: `${from.x}px ${from.y}px` }}>
                 <circle cx={from.x} cy={from.y} r={22} fill="var(--surface)" stroke={ch.color} strokeWidth={1.5} />
-                <text
-                  x={from.x}
-                  y={from.y + 5}
-                  textAnchor="middle"
-                  fontSize={ch.id === 'fb' ? 20 : 12}
-                  fontWeight={800}
-                  fill={ch.color}
-                  style={{ transformOrigin: `${from.x}px ${from.y}px` }}
-                >
-                  {ch.label}
-                </text>
+                {ch.icon ? (
+                  <image href={ch.icon} x={from.x - 11} y={from.y - 11} width={22} height={22} preserveAspectRatio="xMidYMid meet" />
+                ) : (
+                  <text x={from.x} y={from.y + 5} textAnchor="middle" fontSize={13} fontWeight={800} fill={ch.color} style={{ transformOrigin: `${from.x}px ${from.y}px` }}>G</text>
+                )}
               </g>
             </g>
           )

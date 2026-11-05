@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import LanguageToggle from './LanguageToggle'
@@ -10,6 +9,9 @@ import WhatsAppConnect from '../channels/WhatsAppConnect'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import { Mail, Star, Share2, Music, MessageCircleMore } from 'lucide-react'
+import Image from 'next/image'
+import gsap from 'gsap'
+import { useHydratedReducedMotion } from '../../lib/useHydratedReducedMotion'
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 interface OnboardingData {
@@ -109,7 +111,7 @@ function ProgressBar({ step, total, isRTL }: { step: number; total: number; isRT
           className="h-full rounded-full"
           style={{ background: 'var(--brand)' }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] as any }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
       <div className="flex items-center justify-between mt-2.5">
@@ -317,7 +319,7 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               <input type="time" value={data.workingFrom}
                 onChange={e => setData({ ...data, workingFrom: e.target.value })}
                 className="flex-1 px-3 py-2 rounded-xl text-sm transition-all duration-200"
-                style={{ ...inputStyle, colorScheme: 'dark' } as any}
+                style={{ ...inputStyle, colorScheme: 'dark' }}
                 onFocus={inputFocus} onBlur={inputBlur}
               />
             </div>
@@ -326,7 +328,7 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               <input type="time" value={data.workingTo}
                 onChange={e => setData({ ...data, workingTo: e.target.value })}
                 className="flex-1 px-3 py-2 rounded-xl text-sm transition-all duration-200"
-                style={{ ...inputStyle, colorScheme: 'dark' } as any}
+                style={{ ...inputStyle, colorScheme: 'dark' }}
                 onFocus={inputFocus} onBlur={inputBlur}
               />
             </div>
@@ -503,7 +505,7 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                   } else {
                     alert(isRTL ? 'فشل رفع الملف' : 'Failed to upload file')
                   }
-                } catch (err) {
+                } catch {
                   alert(isRTL ? 'حدث خطأ أثناء الرفع' : 'Error uploading file')
                 }
               }}
@@ -537,7 +539,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
   }
 
-  const saveChannelStep = async (channelId: string) => {
+  const saveChannelStep = useCallback(async (channelId: string) => {
     const token = getToken()
     if (!token) return
     try {
@@ -549,7 +551,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     } catch (e) {
       console.error('Failed to save channel step:', e)
     }
-  }
+  }, [API])
 
   const handleConnect = async (id: string) => {
     setConnecting(id)
@@ -566,7 +568,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
         })
         const result = await response.json().catch(() => ({}))
         if (!response.ok || !result.url) throw new Error(isRTL ? 'تعذر بدء ربط القناة. حاول مرة أخرى أو اربطها من صفحة القنوات.' : (result.message || 'Could not start channel connection'))
-        window.location.href = result.url
+        window.location.assign(result.url)
       } catch (error) {
         console.error('Channel connection could not start:', error)
         setConnecting(null)
@@ -578,7 +580,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
         })
         if (res.ok) {
           const json = await res.json()
-          if (json.url) window.location.href = json.url
+          if (json.url) window.location.assign(json.url)
         }
       } catch (e) {
         console.error(e)
@@ -601,7 +603,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [setData, data])
+  }, [setData, data, saveChannelStep])
 
   return (
     <div>
@@ -639,7 +641,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
                   style={{ background: `${ch.color}15`, border: `1px solid ${ch.color}25` }}>
                   {typeof ch.icon === 'string' ? (
                     ch.icon.startsWith('/') ? (
-                      <img src={ch.icon} alt={ch.label} className="w-5 h-5 object-contain" />
+                      <Image src={ch.icon} alt={ch.label} width={20} height={20} className="h-5 w-5 object-contain" />
                     ) : (
                       <span className="text-xl">{ch.icon}</span>
                     )
@@ -715,9 +717,6 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
 // ─── CELEBRATION ──────────────────────────────────────────────────────────────
 function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boolean; onGo: () => void }) {
-  const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
-  const trialStr = trialEnd.toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-
   return (
     <div className="text-center">
       {/* Checkmark animation */}
@@ -785,8 +784,8 @@ function Celebration({ data, isRTL, onGo }: { data: OnboardingData; isRTL: boole
 
         <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
           {isRTL
-            ? `تجربتك المجانية تنتهي في ${trialStr} — لا يلزم بطاقة ائتمانية الآن`
-            : `Your free trial ends on ${trialStr} — no credit card required now`}
+            ? 'تبدأ الفترة التجريبية لمدة 14 يوماً بعد إكمال الإعداد — لا يلزم بطاقة ائتمانية الآن'
+            : 'Your 14-day trial starts after setup — no credit card required now'}
         </p>
       </motion.div>
     </div>
@@ -803,6 +802,8 @@ export default function OnboardingWizard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
+  const reducedMotion = useHydratedReducedMotion()
+  const rootRef = React.useRef<HTMLDivElement>(null)
 
   const [data, setData] = useState<OnboardingData>({
     businessType: '',
@@ -862,7 +863,15 @@ export default function OnboardingWizard() {
               workingFrom:      b.working_from       || prev.workingFrom,
               workingTo:        b.working_to         || prev.workingTo,
               services:         b.services           || prev.services,
-              faqs:             b.faqs?.length       ? b.faqs.map((f: any) => ({ question: f.question ?? f.q ?? '', answer: f.answer ?? f.a ?? '' })) : prev.faqs,
+              faqs:             Array.isArray(b.faqs) && b.faqs.length
+                ? b.faqs.map((faq: unknown) => {
+                    const item = faq && typeof faq === 'object' ? faq as Record<string, unknown> : {}
+                    return {
+                      question: String(item.question ?? item.q ?? ''),
+                      answer: String(item.answer ?? item.a ?? ''),
+                    }
+                  })
+                : prev.faqs,
               replyStyle:       b.reply_style        || prev.replyStyle,
               connectedChannel: channelParam || b.connected_channel || prev.connectedChannel,
             }))
@@ -888,6 +897,17 @@ export default function OnboardingWizard() {
     loadProgress()
   }, [])
 
+  useEffect(() => {
+    if (loading || reducedMotion || !rootRef.current) return
+    const context = gsap.context(() => {
+      gsap.fromTo('.onboarding-aside, .onboarding-card',
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.72, stagger: 0.12, ease: 'power3.out', clearProps: 'all' },
+      )
+    }, rootRef)
+    return () => context.revert()
+  }, [loading, reducedMotion])
+
   const canProceed = () => {
     if (step === 1) return data.businessType !== ''
     if (step === 2) return data.businessName.trim() !== ''
@@ -896,7 +916,7 @@ export default function OnboardingWizard() {
 
   const saveStep = async (stepNum: number) => {
     const token = getToken()
-    if (!token) return
+    if (!token) throw new Error(isRTL ? 'انتهت جلسة الدخول. سجّل الدخول مرة أخرى ثم أكمل الإعداد.' : 'Your sign-in session expired. Sign in again to continue setup.')
     const endpoints: Record<number, string> = {
       1: `${API}/api/onboarding/step1`,
       2: `${API}/api/onboarding/step2`,
@@ -917,24 +937,31 @@ export default function OnboardingWizard() {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        console.error(`Step ${stepNum} save failed:`, err)
+        throw new Error(err.message || (isRTL ? 'تعذر حفظ هذه الخطوة. تحقق من الاتصال وحاول مرة أخرى.' : 'This step could not be saved. Check your connection and try again.'))
       } else if (stepNum === 1) {
         const result = await res.json().catch(() => ({}))
         if (result.business_id) window.localStorage.setItem('naz_selected_business_id', String(result.business_id))
       }
-    } catch (e) {
-      console.error(`Step ${stepNum} network error:`, e)
+    } catch (cause) {
+      if (cause instanceof Error) throw cause
+      throw new Error(isRTL ? 'تعذر الاتصال بالخادم. حاول مرة أخرى.' : 'Could not connect to the server. Please try again.')
     }
   }
 
   const next = async () => {
     if (!canProceed()) return
+    setError('')
     setSaving(true)
-    await saveStep(step)
-    setSaving(false)
-    setDirection(1)
-    setStep(s => s + 1)
-    window.scrollTo(0, 0)
+    try {
+      await saveStep(step)
+      setDirection(1)
+      setStep(s => s + 1)
+      window.scrollTo({ top: 0, behavior: reducedMotion ? 'instant' : 'smooth' })
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : (isRTL ? 'تعذر حفظ هذه الخطوة. حاول مرة أخرى.' : 'This step could not be saved. Please try again.'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   const back = () => {
@@ -954,7 +981,7 @@ export default function OnboardingWizard() {
       const packageId = searchParams.get('package')
       const billingCycle = searchParams.get('billing')
       if (result.setup_ready && packageId) {
-        window.location.href = `/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`
+        router.push(`/checkout?package=${packageId}${billingCycle ? `&billing=${billingCycle}` : ''}`)
       } else {
         router.replace('/dashboard/channels')
       }
@@ -991,15 +1018,15 @@ export default function OnboardingWizard() {
   )
 
   return (
-    <div className="min-h-screen flex items-start justify-center py-10 px-4 bg-[var(--background)] relative overflow-hidden">
+    <div ref={rootRef} className="min-h-screen flex items-start justify-center py-6 px-4 sm:py-10 sm:px-6 bg-[var(--background)] relative overflow-hidden">
       {/* Deep background glows */}
       <div className="fixed -top-24 -right-24 w-72 h-72 rounded-full bg-accent/[0.06] blur-3xl pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[var(--brand)]/[0.06] blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-xl relative z-10">
+      <div className="w-full max-w-6xl relative z-10">
 
         {/* Top bar: logo + step badge */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-[var(--brand)] flex items-center justify-center">
               <span className="text-white text-xs font-black">N</span>
@@ -1016,8 +1043,32 @@ export default function OnboardingWizard() {
           </div>
         </div>
 
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(250px,0.72fr)_minmax(0,1.28fr)] lg:gap-7">
+        <aside className="onboarding-aside hidden lg:block rounded-3xl border p-7 xl:p-8" style={{ background: 'var(--surface)', borderColor: 'var(--border)', boxShadow: 'var(--shadow-premium)' }}>
+          <div className="mb-8 grid h-12 w-12 place-items-center rounded-2xl" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>
+            <span className="text-lg font-black">N</span>
+          </div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>{isRTL ? 'ابدأ مساحة عملك' : 'SET UP YOUR WORKSPACE'}</p>
+          <h1 className="mb-3 text-2xl font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{isRTL ? 'خطوات قليلة، ومساحة عمل جاهزة.' : 'A few steps to a workspace that fits your business.'}</h1>
+          <p className="mb-8 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'أضف معلومات نشاطك، اضبط أسلوب الرد، ثم اربط القنوات التي يستخدمها عملاؤك.' : 'Add your business details, tune the reply style, then connect the channels your customers use.'}</p>
+          <div className="space-y-3">
+            {(isRTL ? ['نوع النشاط', 'معلومات النشاط', 'إعداد الذكاء الاصطناعي', 'ربط قناة'] : ['Business type', 'Business details', 'AI preferences', 'Connect a channel']).map((label, index) => (
+              <div key={label} className="flex items-center gap-3 rounded-2xl border p-3" style={{ borderColor: index + 1 === step ? 'var(--accent-outline)' : 'var(--border)', background: index + 1 === step ? 'var(--accent-subtle)' : 'var(--surface-elevated)' }}>
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold" style={{ background: index + 1 <= step ? 'var(--accent)' : 'var(--surface-hover)', color: index + 1 <= step ? 'var(--on-accent-text)' : 'var(--text-tertiary)' }}>{index + 1 < step ? '✓' : `0${index + 1}`}</span>
+                <span className="text-sm font-semibold" style={{ color: index + 1 === step ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'تواصل وتجارة في مكان واحد' : 'MESSAGING AND COMMERCE, TOGETHER'}</p>
+            <div className="flex flex-wrap gap-3">
+              {['/icons/instagram.svg', '/icons/whatsapp.svg', '/icons/facebook.svg', '/icons/sllla.svg', '/icons/shopify.svg', '/icons/woocommerce-icon.svg'].map((src) => <span key={src} className="grid h-9 w-9 place-items-center rounded-xl border" style={{ background: 'var(--surface-elevated)', borderColor: 'var(--border)' }}><Image src={src} alt="" aria-hidden="true" width={18} height={18} className="h-[18px] w-[18px] object-contain" /></span>)}
+            </div>
+          </div>
+        </aside>
+
         {/* Main card */}
-        <div className="rounded-3xl p-7 bg-[var(--surface)] border border-[var(--border)] shadow-2xl shadow-black/40 relative overflow-hidden">
+        <div className="onboarding-card rounded-3xl p-5 sm:p-7 xl:p-9 bg-[var(--surface)] border border-[var(--border)] shadow-2xl shadow-black/10 relative overflow-hidden">
           {/* inner subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-accent/[0.02] to-[var(--brand)]/[0.02] pointer-events-none" />
 
@@ -1031,7 +1082,7 @@ export default function OnboardingWizard() {
                 custom={direction}
                 variants={variants}
                 initial="enter" animate="center" exit="exit"
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as any }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               >
                 {step === 1 && <Step1 data={data} setData={setData} isRTL={isRTL} />}
                 {step === 2 && <Step2 data={data} setData={setData} isRTL={isRTL} />}
@@ -1093,6 +1144,7 @@ export default function OnboardingWizard() {
               </div>
             )}
           </div>
+        </div>
         </div>
 
         {step <= 4 && (
