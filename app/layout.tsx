@@ -8,6 +8,7 @@ import { ThemeProvider } from '../lib/ThemeContext'
 import { AuthProvider } from '../lib/AuthContext'
 import { Space_Grotesk, Cairo } from 'next/font/google'
 import FooterWrapper from '../components/FooterWrapper'
+import InternalAnalytics from '../components/analytics/InternalAnalytics'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -40,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={initialLang} dir={initialLang === 'ar' ? 'rtl' : 'ltr'} className={isLight ? '' : 'dark'} suppressHydrationWarning>
       <body className={`${spaceGrotesk.variable} ${cairo.variable}`}>
+        <InternalAnalytics />
         {/* AI Operating System background — persists across all pages */}
         <div className="os-bg" aria-hidden="true">
           <div className="orb-lime" />
