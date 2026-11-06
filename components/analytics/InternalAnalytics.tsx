@@ -6,7 +6,11 @@ import { usePathname } from 'next/navigation'
 const PROPERTY_ID = 'prop_naz_internal'
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io').replace(/\/+$/, '')
 
-type NazAnalytics = ((method: string, ...args: unknown[]) => void) & { q?: unknown[][] }
+type NazAnalytics = ((method: string, ...args: unknown[]) => void) & {
+  init?: (propertyId: string) => void
+  page?: () => void
+  q?: unknown[][]
+}
 
 declare global {
   interface Window {
@@ -53,7 +57,8 @@ export default function InternalAnalytics() {
       }
     }
 
-    tracker('page')
+    if (typeof tracker.page === 'function') tracker.page()
+    else tracker('page')
   }, [pathname])
 
   return null
