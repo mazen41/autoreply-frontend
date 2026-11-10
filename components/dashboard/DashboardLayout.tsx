@@ -847,7 +847,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClose={() => setCommandPaletteOpen(false)}
         />
 
-        <GuidedTours businessId={selectedBusinessId} />
+        <GuidedTours businessId={selectedBusinessId} setupCompleted={user?.onboarding_completed ?? true} />
 
         {/* ── Help modal ────────────────────────────────────────────────── */}
         <AnimatePresence>

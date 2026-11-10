@@ -37,7 +37,7 @@ function getSteps(ar: boolean, enabledFeatures: string[]): TourStep[] {
     : steps.filter((step) => !step.id.startsWith('workflow-'))
 }
 
-export default function GuidedTours({ businessId }: { businessId: number | null }) {
+export default function GuidedTours({ businessId, setupCompleted }: { businessId: number | null; setupCompleted: boolean }) {
   const { isRTL } = useLang()
   const router = useRouter()
   const pathname = usePathname()
@@ -190,7 +190,10 @@ export default function GuidedTours({ businessId }: { businessId: number | null 
     : Math.max(24, (viewportHeight() - 300) / 2)
 
   return <>
-    {!active && <button type="button" onClick={begin} aria-label={isRTL ? 'ابدأ دليل استخدام NazBiz' : 'Start the NazBiz product guide'} className="fixed bottom-5 z-[70] inline-flex items-center gap-2 rounded-full border border-brand/25 bg-surface-card px-4 py-2.5 text-xs font-semibold text-text-primary shadow-xl transition hover:border-brand/50 hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-brand ltr:right-5 rtl:left-5"><CircleHelp size={16} className="text-brand" />{isRTL ? 'دليل المنتج' : 'Product guide'}</button>}
+    {!active && <div className="fixed bottom-5 z-[70] flex flex-col gap-2 ltr:right-5 rtl:left-5">
+      {!setupCompleted && <button type="button" onClick={() => router.push('/onboarding')} className="inline-flex items-center justify-center gap-2 rounded-full border border-brand/25 bg-surface-card px-4 py-2.5 text-xs font-semibold text-text-primary shadow-xl transition hover:border-brand/50 hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-brand">{isRTL ? 'إكمال إعداد مساحة العمل' : 'Continue workspace setup'} <ArrowRight size={15} /></button>}
+      <button type="button" onClick={begin} aria-label={isRTL ? 'ابدأ دليل استخدام NazBiz' : 'Start the NazBiz product guide'} className="inline-flex items-center justify-center gap-2 rounded-full border border-brand/25 bg-surface-card px-4 py-2.5 text-xs font-semibold text-text-primary shadow-xl transition hover:border-brand/50 hover:bg-brand/5 focus-visible:outline-2 focus-visible:outline-brand"><CircleHelp size={16} className="text-brand" />{isRTL ? 'دليل المنتج' : 'Product guide'}</button>
+    </div>}
     {status === 'not_started' && <div className="fixed inset-0 z-[80] grid place-items-center bg-black/55 p-4 backdrop-blur-sm">
       <section role="dialog" aria-modal="true" aria-labelledby="tour-welcome-title" dir={isRTL ? 'rtl' : 'ltr'} className="w-full max-w-xl rounded-3xl border border-border bg-surface-card p-6 shadow-2xl sm:p-8">
         <div className="flex items-start justify-between gap-4"><div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><BookOpen size={23} /></span><span><span className="block text-xs font-semibold uppercase tracking-wider text-brand">NazBiz</span><span className="mt-1 block text-xs text-text-tertiary">{isRTL ? 'دليل تفاعلي لمساحة عملك' : 'Interactive workspace tour'}</span></span></div><button type="button" onClick={skip} aria-label={isRTL ? 'سأستكشف بنفسي' : 'Explore on my own'} className="rounded-lg p-2 text-text-tertiary hover:bg-surface-elevated"><X size={18} /></button></div>
