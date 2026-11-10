@@ -6,10 +6,13 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import LanguageToggle from './LanguageToggle'
 import WhatsAppConnect from '../channels/WhatsAppConnect'
+import ShopifyConnect from '../channels/ShopifyConnect'
+import WooCommerceConnect from '../channels/WooCommerceConnect'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
-import { Mail, Star, Share2, Music, MessageCircleMore } from 'lucide-react'
+import { Mail, Share2, Music, MessageCircleMore } from 'lucide-react'
 import Image from 'next/image'
+import BrandLoading from '../brand/BrandLoading'
 import gsap from 'gsap'
 import { useHydratedReducedMotion } from '../../lib/useHydratedReducedMotion'
 
@@ -68,7 +71,6 @@ export const CHANNEL_ICONS: Record<string, string | React.ComponentType<{ size?:
   woocommerce: '/icons/woocommerce-icon.svg',
   salla: '/icons/sllla.svg',
   gmail: Mail,
-  reviews: Star,
   twitter: Share2,
   tiktok: Music,
   webchat: MessageCircleMore,
@@ -80,7 +82,8 @@ const CHANNELS = [
   { id: 'gmail',    icon: CHANNEL_ICONS.gmail,    label: 'Gmail',           color: 'var(--brand)', note: '' },
   { id: 'instagram',icon: CHANNEL_ICONS.instagram,label: 'Instagram',       color: 'var(--brand)', note: '' },
   { id: 'facebook', icon: CHANNEL_ICONS.facebook, label: 'Facebook',        color: 'var(--brand)', note: '' },
-  { id: 'reviews',  icon: CHANNEL_ICONS.reviews,  label: 'Google Reviews',  color: 'var(--brand)', note: '' },
+  { id: 'shopify', icon: CHANNEL_ICONS.shopify, label: 'Shopify', color: '#95BF47', note: '' },
+  { id: 'woocommerce', icon: CHANNEL_ICONS.woocommerce, label: 'WooCommerce', color: '#96588A', note: '' },
 ]
 
 const COUNTRIES = ['السعودية','الإمارات','مصر','الكويت','البحرين','قطر','الأردن','المغرب','تونس','Other']
@@ -341,6 +344,7 @@ function Step2({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
 // ─── STEP 3: AI BRAIN ─────────────────────────────────────────────────────────
 function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: OnboardingData) => void; isRTL: boolean }) {
+  const [uploadState, setUploadState] = useState<{ busy: boolean; message: string; error: boolean }>({ busy: false, message: '', error: false })
   const addFaq = () => setData({ ...data, faqs: [...data.faqs, { question: '', answer: '' }] })
   const removeFaq = (i: number) => setData({ ...data, faqs: data.faqs.filter((_, j) => j !== i) })
   const updateFaq = (i: number, field: 'question' | 'answer', val: string) => {
@@ -491,37 +495,43 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
               onChange={async (e) => {
                 const file = e.target.files?.[0]
                 if (!file) return
+                e.currentTarget.value = ''
+                if (file.size > 10 * 1024 * 1024) {
+                  setUploadState({ busy: false, message: isRTL ? 'حجم الملف يتجاوز 10 ميجابايت.' : 'The file is larger than 10 MB.', error: true })
+                  return
+                }
                 const token = document.cookie.replace(/(?:(?:^|.*;\s*)naz_token\s*=\s*([^;]*).*$)|^.*$/, "$1")
                 const formData = new FormData()
                 formData.append('file', file)
+                setUploadState({ busy: true, message: '', error: false })
                 try {
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/upload-knowledge`, {
+                  const api = process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io'
+                  const res = await fetch(`${api}/api/onboarding/upload-knowledge`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
                     body: formData,
                   })
-                  if (res.ok) {
-                    alert(isRTL ? 'تم رفع الملف بنجاح' : 'File uploaded successfully')
-                  } else {
-                    alert(isRTL ? 'فشل رفع الملف' : 'Failed to upload file')
-                  }
-                } catch {
-                  alert(isRTL ? 'حدث خطأ أثناء الرفع' : 'Error uploading file')
+                  const result = await res.json().catch(() => ({}))
+                  if (!res.ok) throw new Error(result.message || result.error || (isRTL ? 'فشل رفع الملف. تحقق من نوع الملف وحاول مرة أخرى.' : 'Upload failed. Check the file type and try again.'))
+                  setUploadState({ busy: false, message: result.duplicate ? (isRTL ? 'هذا الملف مضاف بالفعل.' : 'This file is already uploaded.') : (isRTL ? 'تم رفع الملف وإضافته إلى قاعدة المعرفة.' : 'File uploaded and added to your knowledge base.'), error: false })
+                } catch (cause) {
+                  setUploadState({ busy: false, message: cause instanceof Error ? cause.message : (isRTL ? 'تعذر الاتصال بالخادم لرفع الملف.' : 'Could not reach the server to upload this file.'), error: true })
                 }
               }}
               className="hidden"
               id="knowledge-file-input"
             />
-            <label htmlFor="knowledge-file-input" className="cursor-pointer">
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📄</div>
+            <label htmlFor="knowledge-file-input" className={`cursor-pointer ${uploadState.busy ? 'pointer-events-none opacity-60' : ''}`}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>{uploadState.busy ? '⏳' : '📄'}</div>
               <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
-                {isRTL ? 'انقر لرفع ملف' : 'Click to upload file'}
+                {uploadState.busy ? (isRTL ? 'جارٍ رفع الملف...' : 'Uploading file...') : (isRTL ? 'انقر لرفع ملف' : 'Click to upload file')}
               </div>
               <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                 {isRTL ? 'PDF, XLSX, XLS (حد أقصى 10MB)' : 'PDF, XLSX, XLS (max 10MB)'}
               </div>
             </label>
           </div>
+          {uploadState.message && <p role={uploadState.error ? 'alert' : 'status'} className="mt-2 text-xs leading-5" style={{ color: uploadState.error ? 'var(--error)' : 'var(--success)' }}>{uploadState.message}</p>}
         </div>
       </div>
     </div>
@@ -531,9 +541,12 @@ function Step3({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 // ─── STEP 4: CONNECT CHANNEL ──────────────────────────────────────────────────
 function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: OnboardingData) => void; isRTL: boolean }) {
   const [connecting, setConnecting] = useState<string | null>(null)
+  const [connectedChannels, setConnectedChannels] = useState<string[]>(data.connectedChannel ? [data.connectedChannel] : [])
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false)
+  const [showShopifyModal, setShowShopifyModal] = useState(false)
+  const [showWooCommercePanel, setShowWooCommercePanel] = useState(false)
 
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.nazbiz.io'
 
   const getToken = () => {
     return document.cookie.split(';').find(c => c.trim().startsWith('naz_token='))?.split('=')[1] || ''
@@ -553,18 +566,37 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
     }
   }, [API])
 
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+    fetch(`${API}/api/channels`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((result) => {
+        const types = Array.isArray(result?.data) ? result.data.map((channel: { type?: string }) => channel.type).filter((type: unknown): type is string => typeof type === 'string') : []
+        setConnectedChannels((current) => Array.from(new Set([...current, ...types])))
+      })
+      .catch(() => {})
+  }, [API])
+
   const handleConnect = async (id: string) => {
     setConnecting(id)
     const token = getToken()
 
     if (id === 'whatsapp') {
       setShowWhatsAppModal(true)
+    } else if (id === 'shopify') {
+      setShowShopifyModal(true)
+      setConnecting(null)
+    } else if (id === 'woocommerce') {
+      setShowWooCommercePanel(true)
+      setConnecting(null)
     } else if (id === 'salla' || id === 'facebook' || id === 'instagram') {
       try {
         const endpoint = id === 'salla' ? 'salla' : 'facebook'
         const response = await fetch(`${API}/api/channels/connect/${endpoint}`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() },
+          body: JSON.stringify({ return_to: 'onboarding' }),
         })
         const result = await response.json().catch(() => ({}))
         if (!response.ok || !result.url) throw new Error(isRTL ? 'تعذر بدء ربط القناة. حاول مرة أخرى أو اربطها من صفحة القنوات.' : (result.message || 'Could not start channel connection'))
@@ -575,8 +607,8 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       }
     } else if (id === 'gmail') {
       try {
-        const res = await fetch(`${API}/api/channels/connect/gmail`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+        const res = await fetch(`${API}/api/channels/connect/gmail?return_to=onboarding`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() },
         })
         if (res.ok) {
           const json = await res.json()
@@ -597,6 +629,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
       if (e.data?.type === 'facebook_connected' || e.data?.type === 'instagram_connected') {
         const ch = e.data?.type === 'instagram_connected' ? 'instagram' : 'facebook'
         setData({ ...data, connectedChannel: ch })
+        setConnectedChannels((current) => Array.from(new Set([...current, ch])))
         saveChannelStep(ch)
         setConnecting(null)
       }
@@ -625,7 +658,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
 
       <div className="space-y-3 mb-5">
         {CHANNELS.map((ch, i) => {
-          const connected = data.connectedChannel === ch.id
+          const connected = connectedChannels.includes(ch.id)
           const isConnecting = connecting === ch.id
           return (
             <motion.div key={ch.id}
@@ -692,6 +725,7 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
           isConnected={false}
           onConnected={() => {
             setData({ ...data, connectedChannel: 'whatsapp' })
+            setConnectedChannels((current) => Array.from(new Set([...current, 'whatsapp'])))
             saveChannelStep('whatsapp')
             setShowWhatsAppModal(false)
             setConnecting(null)
@@ -701,6 +735,47 @@ function Step4({ data, setData, isRTL }: { data: OnboardingData; setData: (d: On
             setConnecting(null)
           }}
         />
+      )}
+
+      {showShopifyModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl">
+            <ShopifyConnect
+              isConnected={false}
+              onClose={() => setShowShopifyModal(false)}
+              onConnect={async (shop) => {
+                const response = await fetch(`${API}/api/channels/shopify/connect`, {
+                  method: 'POST',
+                  headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
+                  body: JSON.stringify({ ...shop, return_to: 'onboarding' }),
+                })
+                const result = await response.json().catch(() => ({}))
+                if (!response.ok || !result.authorization_url) throw new Error(result.error || (isRTL ? 'تعذر بدء ربط Shopify.' : 'Could not start Shopify connection.'))
+                window.location.assign(result.authorization_url)
+              }}
+              onDisconnect={async () => setShowShopifyModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {showWooCommercePanel && (
+        <div className="mt-4">
+          <WooCommerceConnect
+            isConnected={false}
+            onConnect={async (store) => {
+              const response = await fetch(`${API}/api/channels/woocommerce/connect`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
+                body: JSON.stringify({ ...store, return_to: 'onboarding' }),
+              })
+              const result = await response.json().catch(() => ({}))
+              if (!response.ok || !result.authorization_url) throw new Error(result.error || (isRTL ? 'تعذر بدء ربط WooCommerce.' : 'Could not start WooCommerce connection.'))
+              window.location.assign(result.authorization_url)
+            }}
+            onDisconnect={async () => setShowWooCommercePanel(false)}
+          />
+        </div>
       )}
 
       {/* Skip */}
@@ -833,7 +908,29 @@ export default function OnboardingWizard() {
     const loadProgress = async () => {
       const token = getToken()
       if (!token) { setLoading(false); return }
-      const channelParam = searchParams.get('channel') || (searchParams.get('success') ? 'salla' : null)
+      let channelParam = searchParams.get('channel')
+      const connectedBySuccess: Record<string, string> = {
+        salla_connected: 'salla', shopify_connected: 'shopify', facebook_connected: 'facebook',
+        instagram_connected: 'instagram', gmail_connected: 'gmail',
+      }
+      const successParam = searchParams.get('success')
+      channelParam = channelParam || (successParam ? connectedBySuccess[successParam] || null : null)
+
+      if (searchParams.get('connection') === 'woocommerce' && searchParams.get('connection_state')) {
+        try {
+          const statusResponse = await fetch(`${API}/api/channels/woocommerce/connection-status?state=${encodeURIComponent(searchParams.get('connection_state') || '')}`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+          })
+          const connectionResult = await statusResponse.json().catch(() => ({}))
+          if (statusResponse.ok && connectionResult.status === 'connected') channelParam = 'woocommerce'
+          else setError(connectionResult.error || (isRTL ? 'تعذر إكمال ربط WooCommerce. يمكنك المحاولة مرة أخرى من هذه الخطوة.' : 'WooCommerce connection did not finish. You can retry from this step.'))
+        } catch {
+          setError(isRTL ? 'تعذر التحقق من ربط WooCommerce.' : 'Could not verify the WooCommerce connection.')
+        }
+      }
+
+      const callbackError = searchParams.get('error')
+      if (callbackError) setError(isRTL ? 'تعذر ربط القناة. حاول مرة أخرى من هذه الخطوة.' : 'The channel could not be connected. Please try again from this step.')
 
       try {
         const res = await fetch(`${API}/api/onboarding/status`, {
@@ -1011,14 +1108,10 @@ export default function OnboardingWizard() {
     exit:   (d: number) => ({ opacity: 0, x: d > 0 ? -40 : 40 }),
   }
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-      <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
+  if (loading) return <BrandLoading label={isRTL ? 'جارٍ تحميل الإعداد' : 'Loading setup'} />
 
   return (
-    <div ref={rootRef} className="min-h-screen flex items-start justify-center py-6 px-4 sm:py-10 sm:px-6 bg-[var(--background)] relative overflow-hidden">
+    <div ref={rootRef} className="min-h-screen flex items-start justify-center py-6 px-4 sm:py-10 sm:px-6 bg-[var(--background)] relative overflow-x-clip">
       {/* Deep background glows */}
       <div className="fixed -top-24 -right-24 w-72 h-72 rounded-full bg-accent/[0.06] blur-3xl pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-72 h-72 rounded-full bg-[var(--brand)]/[0.06] blur-3xl pointer-events-none" />

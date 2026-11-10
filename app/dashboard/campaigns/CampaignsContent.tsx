@@ -149,7 +149,7 @@ export default function CampaignsContent() {
   ]
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       {/* 1. Page Header */}
       <PageHeader
         title={isRTL ? 'حملات البث والمراسلة' : 'Marketing & Broadcast Campaigns'}
@@ -177,6 +177,7 @@ export default function CampaignsContent() {
             <Button
               variant="primary"
               size="sm"
+              data-tour="campaigns-create"
               onClick={() => setIsWizardOpen(true)}
               icon={<Plus size={14} />}
             >

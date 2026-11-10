@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
   const responseTime = medianMinutes == null ? L('No data', 'لا توجد بيانات') : medianMinutes < 1 ? `${Math.round(medianMinutes * 60)} ${L('sec', 'ثانية')}` : `${medianMinutes} ${L('min', 'دقيقة')}`
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader title={L('Analytics', 'التحليلات')} description={L('Understand conversation volume, AI activity, and customer feedback across your business.', 'تابع حجم المحادثات ونشاط الذكاء الاصطناعي وملاحظات العملاء عبر نشاطك التجاري.')} primaryAction={
         <Button variant="secondary" size="sm" onClick={() => void fetchAnalytics()} disabled={loading} icon={<RefreshCw size={14} className={loading ? 'animate-spin' : ''} />}>{L('Refresh', 'تحديث')}</Button>
       }>

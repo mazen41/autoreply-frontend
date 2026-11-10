@@ -148,7 +148,7 @@ export default function SequencesPage() {
   }
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader
         title={L('Automated sequences', 'التسلسلات التلقائية')}
         description={L('Build timed, personalized follow-ups triggered by customer activity across your connected channels.', 'أنشئ رسائل متابعة مخصصة تُرسل تلقائيًا وفق نشاط العملاء عبر قنواتك المتصلة.')}
@@ -159,7 +159,7 @@ export default function SequencesPage() {
         }
         primaryAction={
           <Link href="/dashboard/sequences/new">
-            <Button variant="primary" icon={<Plus size={14} />}>
+            <Button data-tour="sequences-create" variant="primary" icon={<Plus size={14} />}>
               {L('Create sequence', 'إنشاء تسلسل')}
             </Button>
           </Link>

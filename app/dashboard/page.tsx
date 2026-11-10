@@ -520,7 +520,7 @@ export default function DashboardPage() {
 
   /* ── render ── */
   return (
-    <div className="min-h-screen pb-12">
+    <div data-tour="dashboard-overview" className="mx-auto min-h-screen w-full max-w-[1760px] space-y-6 pb-12">
 
       {/* ═══════════════════════════════════════════════════════════════════════
           HEADER BANNER
@@ -651,6 +651,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               label={label('Total Messages', 'إجمالي الرسائل')}
+              helpText={label('Inbound and outbound messages counted for the selected period and filters.', 'إجمالي الرسائل الواردة والصادرة خلال الفترة والفلاتر المحددة.')}
               value={(stats?.total_messages ?? 0).toLocaleString()}
               subValue={`${periodLabel} · ${selectedChannel?.page_name || selectedChannel?.type || label('all channels', 'كل القنوات')}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
               variant="hero"
@@ -668,6 +669,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               label={label('AI Reply Rate', 'معدل ردود الذكاء الاصطناعي')}
+              helpText={label('Share of eligible conversations that received an automated AI reply in this period.', 'نسبة المحادثات المؤهلة التي تلقت ردًا آليًا من الذكاء الاصطناعي خلال هذه الفترة.')}
               value={`${aiShare}%`}
               subValue={`${autoReplies.toLocaleString(isRTL ? 'ar-EG' : 'en-US')} ${label('auto-replies', 'رد تلقائي')}`}
               variant="ai"
@@ -685,6 +687,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               label={label('Median Response', 'متوسط زمن الرد')}
+              helpText={label('Median time between a customer message and the first reply recorded for it.', 'الوقت الوسيط بين رسالة العميل وأول رد مسجل عليها.')}
               value={aiPerformance?.median_response_time_formatted || '—'}
               subValue={label('Message to first reply', 'من استلام الرسالة إلى أول رد')}
               icon={<Clock size={17} />}
@@ -701,6 +704,7 @@ export default function DashboardPage() {
           ) : (
             <MetricCard
               label={label('Active Channels', 'القنوات النشطة')}
+              helpText={label('Connected channel accounts available to this workspace.', 'حسابات القنوات المتصلة والمتاحة لمساحة العمل هذه.')}
               value={channels.length}
               subValue={label('Connected accounts', 'الحسابات المتصلة')}
               icon={<Radio size={17} />}

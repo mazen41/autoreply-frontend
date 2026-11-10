@@ -127,7 +127,7 @@ export default function MultimodalContent() {
   }
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader title={L('Media processing', 'معالجة الوسائط')} description={L('Incoming voice and image messages use the server-configured AI providers. Provider credentials and processing behavior are managed by the server.', 'تُعالج الرسائل الصوتية والصور الواردة باستخدام مزوّدي الذكاء الاصطناعي المحددين على الخادم، وتُدار بيانات اعتمادهم وطريقة المعالجة من إعدادات الخادم.')} />
 
       {!businessId && <p role="status" className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-sm text-warning">{L('Select a business before managing media settings.', 'اختر نشاطًا تجاريًا قبل إدارة إعدادات الوسائط.')}</p>}

@@ -256,7 +256,7 @@ export default function AIKnowledgeContent() {
   }), [files, fileSearch, fileStatusFilter])
 
   return (
-    <main className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
+    <main className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
       <PageHeader
         title={isRTL ? 'قاعدة المعرفة' : 'AI Knowledge'}
@@ -325,6 +325,7 @@ export default function AIKnowledgeContent() {
         <div className="space-y-4">
           {/* Upload Dropzone */}
           <div
+            data-tour="knowledge-sources"
             onDragEnter={(event) => { event.preventDefault(); setIsDragging(true) }}
             onDragOver={(event) => event.preventDefault()}
             onDragLeave={(event) => {

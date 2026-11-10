@@ -227,13 +227,13 @@ export default function TeamPage() {
   }
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader
         title={L('Team', 'الفريق')}
         description={L('Manage team access, roles, invitations, and member permissions for this business.', 'أدر وصول الفريق وأدواره ودعواته وصلاحيات أعضائه لهذا النشاط.')}
         primaryAction={
           canManageTeam ? (
-            <Button variant="primary"
+            <Button data-tour="team-invite" variant="primary"
               icon={<UserPlus size={14} />}
               onClick={() => setShowInviteModal(true)}
             >

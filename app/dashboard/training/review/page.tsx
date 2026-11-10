@@ -55,7 +55,7 @@ export default function TrainingReviewPage() {
   }
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader title={L('Review AI Corrections', 'مراجعة تصحيحات الذكاء الاصطناعي')} description={L('Approve or reject agent overrides to train the AI and improve future responses.', 'وافق أو ارفض تعديلات الوكلاء لتدريب الذكاء الاصطناعي وتحسين الردود المستقبلية.')} breadcrumbs={[{ label: L('Training', 'التدريب'), href: '/dashboard/training' }, { label: L('Review corrections', 'مراجعة التصحيحات') }]} />
       <Card><CardContent className="p-0"><TrainingReview onApprove={handleApprove} onReject={handleReject} /></CardContent></Card>
     </main>

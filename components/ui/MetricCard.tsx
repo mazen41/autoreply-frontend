@@ -4,6 +4,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { springs } from '../../lib/motion'
 import Card from './Card'
+import { CircleHelp } from 'lucide-react'
 
 export interface MetricCardProps {
   label: string
@@ -18,6 +19,7 @@ export interface MetricCardProps {
   variant?: 'default' | 'ai' | 'warning' | 'hero'
   onClick?: () => void
   className?: string
+  helpText?: string
 }
 
 export default function MetricCard({
@@ -29,6 +31,7 @@ export default function MetricCard({
   variant = 'default',
   onClick,
   className = '',
+  helpText,
 }: MetricCardProps) {
   const shouldReduceMotion = useReducedMotion()
   const isInteractive = !!onClick
@@ -66,11 +69,14 @@ export default function MetricCard({
           >
             {label}
           </span>
+          <div className="flex items-start gap-2">
+          {helpText && <button type="button" title={helpText} aria-label={helpText} className="mt-0.5 text-text-tertiary hover:text-brand focus-visible:outline-2 focus-visible:outline-brand"><CircleHelp size={14} /></button>}
           {icon && (
             <div className={`p-2 rounded-lg shrink-0 border ${iconVariantClass}`}>
               {icon}
             </div>
           )}
+          </div>
         </div>
 
         <div className="space-y-1">

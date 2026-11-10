@@ -212,7 +212,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
         <Skeleton className="h-8 w-64 mb-2" />
         <Skeleton className="h-4 w-96 mb-6" />
         <Skeleton className="h-10 w-full mb-6" rounded="lg" />
@@ -229,7 +229,7 @@ export default function SettingsPage() {
   return (
     <motion.main
       dir={isRTL ? 'rtl' : 'ltr'}
-      className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8"
+      className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8"
       variants={variants.page}
       initial="hidden"
       animate="visible"

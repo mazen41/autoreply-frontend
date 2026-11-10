@@ -10,7 +10,7 @@ export default function WorkflowBuilderPage() {
   const returnToWorkflows = () => router.push('/dashboard/workflows')
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto min-h-[calc(100vh-5rem)] w-full max-w-[1520px]">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto min-h-[calc(100vh-5rem)] w-full w-full max-w-[1760px]">
       <WorkflowBuilder
         workflow={null}
         onSave={returnToWorkflows}

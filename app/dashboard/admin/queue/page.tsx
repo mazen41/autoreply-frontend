@@ -109,7 +109,7 @@ export default function QueueMonitorPage() {
   }, [fetchStats])
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <PageHeader title={L('Queue Monitor', 'مراقبة الطوابير')} description={L('Monitor queue workers and failed jobs.', 'راقب عمال الطوابير والمهام الفاشلة.')} />

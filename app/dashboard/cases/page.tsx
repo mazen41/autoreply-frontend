@@ -128,7 +128,7 @@ export default function CasesPage() {
     finally { setBusy(false) }
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <PageHeader title={L('Cases', 'الحالات')} description={L('Track customer issues with ownership, priority, order links, and private team notes.', 'تابع مشكلات العملاء مع تحديد المسؤول والأولوية وربط الطلبات والملاحظات الداخلية.')} breadcrumbs={[{ label: L('Dashboard', 'لوحة التحكم'), href: '/dashboard' }, { label: L('Cases', 'الحالات') }]} primaryAction={<Button variant="secondary" size="sm" onClick={() => void load()} disabled={loading} icon={<RefreshCw size={14} className={loading ? 'animate-spin' : ''} />}>{L('Refresh', 'تحديث')}</Button>} />
     {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)]">

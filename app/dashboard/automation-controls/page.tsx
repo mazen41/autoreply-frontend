@@ -203,7 +203,7 @@ export default function AutomationControlsPage() {
     </CardContent></Card>
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <PageHeader title={t('Automation run controls', 'التحكم في تشغيل الأتمتة')} description={t('Pause all queued campaigns, sequences, proactive sends, and workflows for this business, or manage each run separately.', 'أوقف مؤقتًا الحملات والتسلسلات والرسائل الاستباقية وسير العمل لهذا النشاط، أو تحكم في كل عنصر على حدة.')} primaryAction={<Button variant="secondary" size="sm" disabled={loading || busy || !businessId} onClick={() => businessId && void load(businessId)} icon={<RefreshCw size={14} className={loading ? 'animate-spin' : ''} />}>{t('Refresh status', 'تحديث الحالة')}</Button>} />
     {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" disabled={loading || !businessId} onClick={() => businessId && void load(businessId)}>{t('Retry', 'إعادة المحاولة')}</Button></div>}
     <Card className={`overflow-hidden border ${paused ? 'border-warning/40 bg-warning/5' : 'border-success/20'}`}><CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 md:p-6">

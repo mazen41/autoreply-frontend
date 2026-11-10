@@ -333,7 +333,7 @@ export default function InboxPage() {
       >
         {/* Panel 1 — Conversation List */}
         {!leftCollapsed && (
-          <div className="flex flex-shrink-0 h-full flex-col overflow-hidden" style={{ width: 280 }}>
+          <div data-tour="inbox-list" className="flex flex-shrink-0 h-full flex-col overflow-hidden" style={{ width: 280 }}>
             <HandoffTaskQueue onSelect={handleSelectConversation} onResolved={() => fetchConversations()} />
             <div className="min-h-0 flex-1 overflow-hidden">
             <ConversationList
@@ -420,7 +420,7 @@ export default function InboxPage() {
       >
         {/* Step 1: Conversation list */}
         {mobileView === 'list' && (
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div data-tour="inbox-list" className="flex-1 flex flex-col h-full overflow-hidden">
             <HandoffTaskQueue onSelect={handleSelectConversation} onResolved={() => fetchConversations()} />
             <div className="min-h-0 flex-1 overflow-hidden">
             <ConversationList

@@ -141,14 +141,14 @@ export default function BotsPage() {
   }), [bots, query, statusFilter])
 
   return (
-    <main className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
+    <main className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8 2xl:px-10" dir={isRTL ? 'rtl' : 'ltr'}>
       <PageHeader
         title={isRTL ? 'الوكلاء الذكيون' : 'AI Bots & Agents'}
         description={isRTL
           ? 'أنشئ الوكلاء، وعيّن قنوات التواصل والمتاجر ومصادر المعرفة التي يمكنهم استخدامها.'
           : 'Create agents and configure the channels, stores, and knowledge sources they can use.'}
         breadcrumbs={[{ label: 'NazBiz', href: '/dashboard' }, { label: isRTL ? 'الوكلاء' : 'AI Bots' }]}
-        primaryAction={<Button icon={<Plus size={16} />} onClick={openCreate}>{isRTL ? 'إنشاء وكيل' : 'Create agent'}</Button>}
+        primaryAction={<Button data-tour="bots-create" icon={<Plus size={16} />} onClick={openCreate}>{isRTL ? 'إنشاء وكيل' : 'Create agent'}</Button>}
         secondaryActions={<Button variant="secondary" size="sm" onClick={() => void fetchBots()} loading={loading} icon={<RefreshCw size={14} />}>{isRTL ? 'تحديث' : 'Refresh'}</Button>}
       />
 

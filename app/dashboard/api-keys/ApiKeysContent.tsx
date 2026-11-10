@@ -215,7 +215,7 @@ export default function ApiKeysContent() {
   }
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader
         title={L('API Keys', 'مفاتيح API')}
         description={L('Provision programmatic authentication tokens to interface with NazBiz APIs, automated webhooks, and third-party CRM connectors.', 'أنشئ رموز مصادقة لاستخدام واجهات NazBiz وخطافات الويب الآلية وربط أنظمة إدارة العملاء الخارجية.')}

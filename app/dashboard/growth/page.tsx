@@ -112,7 +112,7 @@ export default function GrowthToolsPage() {
     }
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <PageHeader title={L('Growth tools', 'أدوات النمو')} description={L('Set up website chat, shareable links, QR codes, and campaign attribution.', 'جهّز دردشة الموقع والروابط القابلة للمشاركة ورموز QR وقياس الحملات.')} breadcrumbs={[{ label: L('Dashboard', 'لوحة التحكم'), href: '/dashboard' }, { label: L('Growth tools', 'أدوات النمو') }]} primaryAction={<Button variant="secondary" size="sm" disabled={busy} onClick={() => void load()}>{L('Refresh', 'تحديث')}</Button>} />
     {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" disabled={busy} onClick={() => void load()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}{notice && <p role="status" className="rounded-xl border border-success/30 bg-success/5 p-3 text-sm text-success">{notice}</p>}
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">

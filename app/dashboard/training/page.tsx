@@ -213,7 +213,7 @@ export default function TrainingDashboard() {
   return (
     <motion.main
       dir={isRTL ? 'rtl' : 'ltr'}
-      className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8 page-enter"
+      className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8 page-enter"
       variants={variants.page}
       initial="hidden"
       animate="visible"

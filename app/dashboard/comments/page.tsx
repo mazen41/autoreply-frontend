@@ -428,7 +428,7 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
 
   return (
     <main
-      className="mx-auto h-full max-w-[1520px] space-y-6 overflow-y-auto p-4 md:p-8"
+      className="mx-auto h-full w-full max-w-[1760px] space-y-6 overflow-y-auto p-4 md:p-8 2xl:px-10"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <PageHeader

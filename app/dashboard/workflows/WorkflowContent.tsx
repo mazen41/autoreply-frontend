@@ -242,7 +242,7 @@ export default function WorkflowContent() {
 
   if (showExecutions && selectedWorkflow) {
     return (
-      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -320,7 +320,7 @@ export default function WorkflowContent() {
   }
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader
         title={L('Workflows & Rule Automations', 'مسارات العمل والأتمتة بالقواعد')}
         description={L('Build event-driven if/then automation recipes to route chats, tag conversations, notify internal teams, and trigger AI actions automatically.', 'أنشئ قواعد آلية قائمة على الأحداث لتوجيه المحادثات وإضافة الوسوم وإخطار الفريق وتشغيل إجراءات الذكاء الاصطناعي.')}
@@ -332,6 +332,8 @@ export default function WorkflowContent() {
         primaryAction={
           <Button
             variant="primary"
+            data-tour="workflows-create"
+            data-tour-action="workflow-create"
             onClick={() => {
               setEditingWorkflow(null)
               setShowBuilder(true)
@@ -625,6 +627,7 @@ function WorkflowBuilder({
         throw new Error(payload?.error || details || payload?.message || `Workflow could not be saved (HTTP ${response.status}).`)
       }
       toast.success(workflow ? L('Workflow updated', 'تم تحديث مسار العمل') : L('Workflow created successfully', 'تم إنشاء مسار العمل بنجاح'))
+      if (!workflow) window.dispatchEvent(new Event('naz:tour-workflow-created'))
       onSave()
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : L('Failed to save workflow.', 'تعذر حفظ مسار العمل.')
@@ -649,7 +652,7 @@ function WorkflowBuilder({
         <Button variant="outline" size="sm" onClick={onCancel} icon={<ChevronLeft size={14} />}>
           {L('Cancel & Return', 'إلغاء والعودة')}
         </Button>
-        <Button variant="primary" onClick={handleSave} loading={saving}>
+        <Button data-tour="workflow-publish" variant="primary" onClick={handleSave} loading={saving}>
           {workflow ? L('Save Updates', 'حفظ التغييرات') : L('Publish Workflow', 'نشر مسار العمل')}
         </Button>
       </div>
@@ -682,7 +685,7 @@ function WorkflowBuilder({
         </div>
 
         {/* 1. TRIGGER SECTION */}
-        <div className="p-5 rounded-xl bg-warning/5 border border-warning/20 space-y-4">
+        <div data-tour="workflow-trigger" className="p-5 rounded-xl bg-warning/5 border border-warning/20 space-y-4">
           <div className="flex items-center gap-2 text-warning">
             <Zap size={16} />
             <h4 className="text-xs font-bold uppercase tracking-wider">{L('Step 1: When Trigger Event Occurs', 'الخطوة 1: عند وقوع حدث التشغيل')}</h4>
@@ -719,7 +722,7 @@ function WorkflowBuilder({
         </div>
 
         {/* 2. CONDITIONS SECTION */}
-        <div className="p-5 rounded-xl bg-info/5 border border-info/20 space-y-4">
+        <div data-tour="workflow-conditions" className="p-5 rounded-xl bg-info/5 border border-info/20 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-info">
               <Sliders size={16} />
@@ -793,7 +796,7 @@ function WorkflowBuilder({
         </div>
 
         {/* 3. ACTIONS SECTION */}
-        <div className="p-5 rounded-xl bg-brand/5 border border-brand/20 space-y-4">
+        <div data-tour="workflow-actions" className="p-5 rounded-xl bg-brand/5 border border-brand/20 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-brand">
               <GitFork size={16} />

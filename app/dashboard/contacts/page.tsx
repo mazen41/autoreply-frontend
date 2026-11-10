@@ -183,7 +183,7 @@ export default function ContactsPage() {
     : '—'
 
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 xl:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 sm:p-6 xl:p-8">
       <PageHeader
         title={L('Contacts', 'جهات الاتصال')}
         description={L('A clear view of customer profiles, conversations, consent, and orders across your workspace.', 'عرض واضح لملفات العملاء والمحادثات والموافقات والطلبات في مساحة العمل.')}

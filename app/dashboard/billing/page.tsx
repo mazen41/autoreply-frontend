@@ -203,7 +203,7 @@ export default function BillingPage() {
     </div>
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <PageHeader title={L('Plans & Billing', 'الباقات والفوترة')} description={L('A clear view of your plan, what it includes, what you have used, and how AI credits are counted.', 'عرض واضح لباقتك ومزاياها واستخدامك الحالي وطريقة احتساب رصيد الذكاء الاصطناعي.')} primaryAction={<Link href="/pricing"><Button variant="primary" icon={<ArrowUpRight size={14} />}>{L('Compare plans', 'مقارنة الباقات')}</Button></Link>} />
     {error && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void fetchSubscription()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
     {loading ? <div className="py-16 text-center text-sm text-text-muted" role="status">{L('Loading your plan and usage…', 'جارٍ تحميل الباقة والاستخدام…')}</div> : plan ? <>
@@ -224,7 +224,7 @@ export default function BillingPage() {
         </div>
       </section>}
 
-      <section aria-labelledby="ai-credit-title" className="space-y-4">
+      <section data-tour="billing-credits" aria-labelledby="ai-credit-title" className="space-y-4">
         <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">{L('AI usage', 'استخدام الذكاء الاصطناعي')}</p><h2 id="ai-credit-title" className="mt-1 text-xl font-bold">{L('AI credit balance, usage, and top-ups', 'رصيد الذكاء الاصطناعي والاستخدام والشحن')}</h2><p className="mt-1 max-w-4xl text-sm leading-6 text-text-muted">{L('AI credits pay for model work such as writing replies, understanding requests, and processing supported media. The amount used depends on the model and the size of each request.', 'يُستخدم رصيد الذكاء الاصطناعي لتشغيل النماذج، مثل كتابة الردود وفهم الطلبات ومعالجة الوسائط المدعومة. ويتغير الاستهلاك حسب النموذج وحجم كل طلب.')}</p></div>
         <Card>
           <CardHeader className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:justify-between">

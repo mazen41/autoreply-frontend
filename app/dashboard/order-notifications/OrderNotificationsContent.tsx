@@ -10,7 +10,7 @@ import { useLang } from '../../../lib/LangContext'
 export default function OrderNotificationsContent() {
   const { isRTL } = useLang()
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader title={isRTL ? 'إشعارات الطلبات' : 'Order notifications'} description={isRTL ? 'تحديثات تلقائية للعملاء عند تغيّر حالة طلبات المتاجر.' : 'Automatic customer updates for commerce order events.'} />
 
       <Card><CardContent className="p-5 md:p-6">

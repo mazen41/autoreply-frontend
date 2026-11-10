@@ -128,7 +128,7 @@ export default function HandoffsPage() {
     finally { setBusyTask(null) }
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <PageHeader title={L('Handoff inbox', 'صندوق المتابعات')} description={L('Assign escalated requests, set priority and due times, and record how each request was resolved.', 'أسند الطلبات المصعّدة وحدد الأولوية وموعد الاستحقاق وسجّل طريقة حل كل طلب.')} breadcrumbs={[{ label: L('Dashboard', 'لوحة التحكم'), href: '/dashboard' }, { label: L('Handoffs', 'المتابعات') }]} primaryAction={<Button variant="secondary" size="sm" onClick={() => void load()} disabled={loading} icon={<RefreshCw size={14} className={loading ? 'animate-spin' : ''} />}>{L('Refresh', 'تحديث')}</Button>} />
     {error && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 p-3 text-sm text-error"><span>{error}</span><Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
     <Card><CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(12rem,0.8fr)_minmax(12rem,0.8fr)_auto_minmax(14rem,1.2fr)_auto] md:items-end">

@@ -121,7 +121,7 @@ export default function WhatsAppPage() {
   const connectHref = '/dashboard/channels?connect=true'
 
   return (
-    <main className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
+    <main className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8 2xl:px-10" dir={isRTL ? 'rtl' : 'ltr'}>
       <PageHeader
         title={isRTL ? 'واتساب للأعمال' : 'WhatsApp Business'}
         description={isRTL

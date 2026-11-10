@@ -9,6 +9,7 @@ import { useLang } from '../../lib/LangContext'
 import NotificationCenter from '../NotificationCenter'
 import DarkModeToggle from '../DarkModeToggle'
 import CommandPalette from '../ui/CommandPalette'
+import GuidedTours from '../GuidedTours'
 import Avatar from '../ui/Avatar'
 import Tooltip from '../ui/Tooltip'
 import {
@@ -833,7 +834,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               'flex-1 w-full mx-auto flex flex-col outline-none',
               isInboxPage
                 ? 'p-0 max-w-none h-[calc(100vh-56px)]'
-                : 'p-4 sm:p-6 lg:p-8 max-w-7xl',
+                : 'p-4 sm:p-6 lg:p-8 max-w-none',
             ].join(' ')}
           >
             {children}
@@ -845,6 +846,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           isOpen={commandPaletteOpen}
           onClose={() => setCommandPaletteOpen(false)}
         />
+
+        <GuidedTours businessId={selectedBusinessId} />
 
         {/* ── Help modal ────────────────────────────────────────────────── */}
         <AnimatePresence>

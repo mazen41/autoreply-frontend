@@ -151,7 +151,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
       <PageHeader
         title={L('Reports', 'التقارير')}
         description={L('Comprehensive reporting on conversations, AI performance, and business impact.', 'تقارير شاملة عن المحادثات وأداء الذكاء الاصطناعي وأثره على النشاط.')}

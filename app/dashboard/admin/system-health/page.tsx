@@ -65,7 +65,7 @@ export default function AdminSystemHealthPage() {
     </div>
   }
 
-  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto max-w-[1520px] space-y-6 p-4 md:p-8">
+  return <main dir={isRTL ? 'rtl' : 'ltr'} className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8">
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div><h1 className="text-2xl font-bold text-[var(--text-primary)]">{L('System health & delivery', 'صحة النظام والتسليم')}</h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">{L('Connection authorization is shown separately from message delivery evidence.', 'حالة الاتصال منفصلة عن دليل تسليم الرسائل.')}</p></div>

@@ -612,7 +612,7 @@ export default function ChannelsPage() {
 
   return (
     <motion.div
-      className="space-y-6"
+      className="mx-auto w-full max-w-[1760px] space-y-6"
       dir={isRTL ? 'rtl' : 'ltr'}
       variants={variants.page}
       initial="hidden"
@@ -633,6 +633,7 @@ export default function ChannelsPage() {
           <Button
             variant="primary"
             size="md"
+            data-tour="channels-connect"
             icon={<Plus size={16} />}
             onClick={() => {
               setSelectedWizardChannel(null)
