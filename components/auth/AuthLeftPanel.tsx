@@ -37,34 +37,11 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
     { name: 'WooCommerce', src: '/icons/woocommerce-icon.svg', tag: 'API' },
   ]
 
-  const stats = [
-    {
-      value: '500+',
-      label: isRTL ? 'متجر وشركة نشطة' : 'Active Businesses',
-      accent: 'var(--brand)',
-    },
-    {
-      value: '3.2M',
-      label: isRTL ? 'رد آلي ذكي مُنجز' : 'Automated Replies',
-      accent: 'var(--text-primary)',
-    },
-    {
-      value: '8s',
-      label: isRTL ? 'متوسط سرعة الرد' : 'Avg Reply Speed',
-      accent: 'var(--brand-cyan)',
-    },
-    {
-      value: '99.4%',
-      label: isRTL ? 'دقة الإجابة والمعرفة' : 'Intent Accuracy',
-      accent: 'var(--success)',
-    },
-  ]
-
   const featurePills = isLogin
     ? [
         {
           icon: <Zap size={16} className="text-brand" />,
-          title: isRTL ? 'رد فوري خلال 8 ثوانٍ' : 'Instant 8s Response Time',
+          title: isRTL ? 'رد فوري على مدار الساعة' : 'Instant 24/7 Autonomous Reply',
           desc: isRTL ? 'الرد على مدار الساعة بدون انقطاع' : 'Continuous 24/7 autonomous engagement',
         },
         {
@@ -144,7 +121,7 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             <span>
               {isLogin
                 ? (isRTL ? 'منصة الأتمتة الرائدة للأعمال' : 'AI Autonomous Commerce Platform')
-                : (isRTL ? 'انضم لأكثر من 500 متجر ناجح' : 'Powering 500+ Modern Businesses')}
+                : (isRTL ? 'أتمتة ذكية متكاملة لنشاطك التجاري' : 'Autonomous AI For Modern Commerce')}
             </span>
           </div>
           <h1 className="text-3xl font-black leading-tight tracking-tight text-text-primary sm:text-4xl">
@@ -196,8 +173,8 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
               </div>
             </div>
             <div className="flex items-center gap-1.5 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
-              <Clock size={11} />
-              <span>{isRTL ? 'رد خلال 7 ثوانٍ' : 'Replied in 7s'}</span>
+              <Sparkles size={11} />
+              <span>{isRTL ? 'رد فوري ذكي' : 'Instant AI Reply'}</span>
             </div>
           </div>
 
@@ -288,21 +265,24 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
         </div>
       </div>
 
-      {/* Bottom KPI Counters */}
-      <div className="relative z-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map((s, i) => (
-          <div
-            key={i}
-            className="rounded-xl border border-border bg-surface-elevated/50 p-2.5 text-center transition-colors hover:bg-surface-elevated"
-          >
-            <div className="text-lg font-black tracking-tight" style={{ color: s.accent }}>
-              {s.value}
-            </div>
-            <div className="mt-0.5 text-[10px] font-medium leading-tight text-text-tertiary">
-              {s.label}
-            </div>
-          </div>
-        ))}
+      {/* Bottom Trust & Compliance Bar */}
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-elevated/60 px-4 py-3 text-xs text-text-tertiary">
+        <div className="flex items-center gap-2">
+          <ShieldCheck size={16} className="text-brand shrink-0" />
+          <span className="font-semibold text-text-secondary">
+            {isRTL ? 'بيانات مشفرة وآمنة بالكامل' : 'Enterprise Grade Security & Encryption'}
+          </span>
+        </div>
+        <div className="flex items-center gap-3.5 text-[11px] font-medium">
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
+            {isRTL ? 'ربط سحابي رسمي' : 'Official Cloud APIs'}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Lock size={12} className="text-text-tertiary" />
+            {isRTL ? 'حماية خصوصية متقدمة' : 'Privacy Protected'}
+          </span>
+        </div>
       </div>
     </aside>
   )
