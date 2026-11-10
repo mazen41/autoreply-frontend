@@ -48,7 +48,7 @@ function getSteps(ar: boolean, enabledFeatures: string[]): TourStep[] {
     },
     {
       id: 'inbox',
-      href: '/inbox',
+      href: '/dashboard/inbox',
       target: '[data-tour="inbox-list"]',
       title: ar ? 'صندوق الوارد الموحد' : 'Unified Multi-Channel Inbox',
       body: ar ? 'تصل جميع رسائل قنواتك إلى هذا المكان الموحد. يمكنك مراجعة المحادثات، والتدخل يدوياً في أي لحظة.' : 'All incoming messages across all channels arrive here. Review AI chats or step in manually anytime.',
@@ -462,7 +462,7 @@ export default function GuidedTours({
             <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-brand via-brand-violet to-brand-cyan" />
 
             <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <span className="flex h-5 items-center justify-center rounded-full bg-brand/15 px-2 text-[10px] font-black uppercase tracking-wider text-brand">
                   {isRTL ? `خطوة ${currentStep + 1} من ${steps.length}` : `Step ${currentStep + 1} of ${steps.length}`}
                 </span>
@@ -530,10 +530,18 @@ export default function GuidedTours({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={skip}
-                  className="rounded-xl px-2.5 py-2 text-text-tertiary transition-colors hover:text-text-primary"
+                  onClick={() => goTo(currentStep + 1)}
+                  className="rounded-xl border border-border px-2.5 py-2 font-semibold text-text-secondary transition-colors hover:border-brand/40 hover:bg-brand/5 hover:text-text-primary"
                 >
-                  {isRTL ? 'إنهاء الجولة' : 'Skip Tour'}
+                  {isRTL ? 'تخطي هذه الصفحة' : 'Skip this page'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={skip}
+                  className="rounded-xl px-2.5 py-2 font-semibold text-text-tertiary transition-colors hover:text-error"
+                >
+                  {isRTL ? 'إنهاء الجولة' : 'Skip full tour'}
                 </button>
 
                 <button
