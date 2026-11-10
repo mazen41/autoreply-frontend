@@ -15,8 +15,8 @@ const token = () => typeof document === 'undefined' ? '' : decodeURIComponent(do
 const viewportWidth = () => typeof window === 'undefined' ? 384 : window.innerWidth
 const viewportHeight = () => typeof window === 'undefined' ? 700 : window.innerHeight
 
-function getSteps(ar: boolean): TourStep[] {
-  return [
+function getSteps(ar: boolean, enabledFeatures: string[]): TourStep[] {
+  const steps: TourStep[] = [
     { id: 'dashboard', href: '/dashboard', target: '[data-tour="dashboard-overview"]', title: ar ? 'لوحة التحكم' : 'Your command center', body: ar ? 'تعرّف على مؤشرات نشاطك وأداء الذكاء الاصطناعي والقنوات وآخر المحادثات.' : 'See your activity, AI performance, connected channels, and recent conversations in one overview.' },
     { id: 'channels', href: '/dashboard/channels', target: '[data-tour="channels-connect"]', title: ar ? 'اربط قنواتك' : 'Connect your channels', body: ar ? 'اربط Instagram وFacebook وWhatsApp وGmail وTelegram. أسند الحسابات إلى وكيل نشط لتفعيل الردود.' : 'Connect Instagram, Facebook, WhatsApp, Gmail, and Telegram. Assign connected accounts to an active agent to enable replies.' },
     { id: 'agents', href: '/dashboard/bots', target: '[data-tour="bots-create"]', title: ar ? 'جهّز مساعد الذكاء الاصطناعي' : 'Configure your AI assistant', body: ar ? 'أنشئ وكيلاً، واختر نبرة الرد والتعليمات، ثم عيّن القنوات والمتاجر المسموح بها.' : 'Create an agent, choose its reply style and instructions, then assign its permitted channels and stores.' },
@@ -32,16 +32,20 @@ function getSteps(ar: boolean): TourStep[] {
     { id: 'team', href: '/dashboard/team', target: '[data-tour="team-invite"]', title: ar ? 'أضف فريقك' : 'Bring in your team', body: ar ? 'ادعُ أعضاء الفريق وحدد أدوارهم لتوزيع مسؤولية المحادثات.' : 'Invite teammates and assign roles so they can own the right conversations.' },
     { id: 'credits', href: '/dashboard/billing', target: '[data-tour="billing-credits"]', title: ar ? 'افهم رصيد الذكاء الاصطناعي' : 'Understand AI credits', body: ar ? 'يُستهلك الرصيد عند إتمام مهام الذكاء الاصطناعي. تابع الرصيد الشهري والمشتَرى والاستخدام هنا.' : 'Credits are consumed when AI work completes. Monitor monthly and purchased balances and usage here.' },
   ]
+  return enabledFeatures.includes('advanced_automation')
+    ? steps
+    : steps.filter((step) => !step.id.startsWith('workflow-'))
 }
 
 export default function GuidedTours({ businessId }: { businessId: number | null }) {
   const { isRTL } = useLang()
   const router = useRouter()
   const pathname = usePathname()
-  const steps = useMemo(() => getSteps(isRTL), [isRTL])
   const [status, setStatus] = useState<TourStatus>('not_started')
   const [currentStep, setCurrentStep] = useState(0)
   const [loadedBusiness, setLoadedBusiness] = useState<number | null>(null)
+  const [enabledFeatures, setEnabledFeatures] = useState<string[]>([])
+  const steps = useMemo(() => getSteps(isRTL, enabledFeatures), [enabledFeatures, isRTL])
   const [rect, setRect] = useState<TargetRect | null>(null)
   const [error, setError] = useState('')
 
@@ -55,7 +59,7 @@ export default function GuidedTours({ businessId }: { businessId: number | null 
     })
     const body = await response.json().catch(() => ({}))
     if (!response.ok) throw new Error(body.message || `Product guide request failed (${response.status}).`)
-    return body as { status: TourStatus; current_step: number }
+    return body as { status: TourStatus; current_step: number; enabled_features?: string[] }
   }, [businessId])
 
   useEffect(() => {
@@ -66,6 +70,7 @@ export default function GuidedTours({ businessId }: { businessId: number | null 
     api('GET').then((state) => {
       if (cancelled) return
       setStatus(state.status)
+      setEnabledFeatures(state.enabled_features || [])
       setCurrentStep(Math.min(state.current_step, steps.length - 1))
       setLoadedBusiness(businessId)
     }).catch((cause: unknown) => {
