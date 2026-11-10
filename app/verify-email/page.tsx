@@ -32,7 +32,15 @@ function VerifyEmailContent() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || data.errors?.otp?.[0] || (isRTL ? 'رمز التحقق غير صحيح.' : 'Invalid verification code.'))
       toast.success(isRTL ? 'تم تأكيد البريد الإلكتروني. سجّل الدخول.' : 'Email verified. Please log in.')
-      window.location.href = `/login?email=${encodeURIComponent(email)}`
+      const redirectParams = new URLSearchParams()
+      const signupChoice = searchParams.get('signup_choice')
+      if (signupChoice) redirectParams.set('signup_choice', signupChoice)
+      const selectedPackage = searchParams.get('package')
+      const selectedBilling = searchParams.get('billing')
+      if (selectedPackage) redirectParams.set('package', selectedPackage)
+      if (selectedBilling) redirectParams.set('billing', selectedBilling)
+      const redirect = signupChoice ? `/onboarding?${redirectParams.toString()}` : ''
+      window.location.href = `/login?email=${encodeURIComponent(email)}${redirect ? `&redirect=${encodeURIComponent(redirect)}` : ''}`
     } catch (err) {
       const msg = err instanceof Error ? err.message : (isRTL ? 'تعذر التحقق من البريد الإلكتروني.' : 'Verification failed.')
       setError(msg)

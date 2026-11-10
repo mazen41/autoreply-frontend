@@ -53,5 +53,9 @@
     "typescript": "^5",
     "vite": "^6.4.1",
     "vitest": "^4.1.11"
+  },
+  "optionalDependencies": {
+    "@esbuild/win32-x64": "^0.25.12",
+    "@rollup/rollup-win32-x64-msvc": "^4.68.2"
   }
 }

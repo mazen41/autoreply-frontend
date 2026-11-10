@@ -9,6 +9,7 @@ import Badge from '../../../components/ui/Badge'
 import Input from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
 import Tabs from '../../../components/ui/Tabs'
+import ContextualExplainer from '../../../components/dashboard/ContextualExplainer'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
@@ -282,6 +283,26 @@ export default function AIKnowledgeContent() {
             {isRTL ? 'إعادة فهرسة المعرفة' : 'Re-index knowledge'}
           </Button>
         }
+
+      />
+
+      <ContextualExplainer
+        id="ai-knowledge"
+        title={isRTL ? 'قاعدة المعرفة ومصادر المعلومات' : 'Domain Knowledge Base & RAG Engine'}
+        whatItDoes={isRTL
+          ? 'تخزن مستنداتك وكتالوجاتك وسياساتك، ويقوم النظام بفهرستها ليستند إليها المساعد في إجاباته.'
+          : 'Stores your products, documents, and policies, indexing vector chunks for accurate AI retrieval.'}
+        whyItMatters={isRTL
+          ? 'يضمن أن المساعد الذكي يجيب بدقة تامة عن منتجاتك وأسعارك وسياساتك دون أي أخطاء أو تأليف.'
+          : 'Guarantees factual accuracy about your offerings, prices, and terms without AI hallucinations.'}
+        whatYouCanDo={isRTL
+          ? 'ارفع ملفات PDF أو Excel، أضف الأسئلة الشائعة يدوياً، أو اختبر إجابات الذكاء مباشرة في نافذة التجربة.'
+          : 'Upload catalogs (PDF/Excel), manage custom Q&A pairs, or test inquiries in the live simulator.'}
+        whatHappensNext={isRTL
+          ? 'بمجرد إضافة أي مستند، يبحث الذكاء الاصطناعي فيه فورياً عند كل استفسار من العملاء عبر قنواتك.'
+          : 'When a customer asks a question on any channel, the AI searches this knowledge base and replies in seconds.'}
+        actionLabel={isRTL ? 'رفع أول مستند' : 'Upload Document'}
+        onAction={() => fileInputRef.current?.click()}
       />
 
       {loadError && <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-error/30 bg-error/5 px-4 py-3 text-sm text-error"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchKnowledge()}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</Button></div>}

@@ -3,11 +3,13 @@
 import React, { useState } from 'react'
 import { useLang } from '../../lib/LangContext'
 
-export default function SocialLoginButtons({ redirectTo, packageId, billingCycle, rememberMe }: {
+export default function SocialLoginButtons({ redirectTo, packageId, billingCycle, rememberMe, signupChoice, disabled = false }: {
   redirectTo?: string
   packageId?: string
   billingCycle?: string
   rememberMe?: boolean
+  signupChoice?: 'trial' | 'paid'
+  disabled?: boolean
 } = {}) {
   const { isRTL, t } = useLang()
   const [loading, setLoading] = useState<'google' | 'facebook' | null>(null)
@@ -21,6 +23,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       if (redirectTo) params.set('redirect', redirectTo)
       if (packageId) params.set('package', packageId)
       if (billingCycle) params.set('billing', billingCycle)
+      if (signupChoice) params.set('signup_choice', signupChoice)
       params.set('remember_me', String(rememberMe ?? false))
       const qs = params.toString() ? `?${params.toString()}` : ''
 
@@ -56,7 +59,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       {/* Google Button */}
       <button
         onClick={() => handleSocialLogin('google')}
-        disabled={loading !== null}
+        disabled={loading !== null || disabled}
         className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed btn-ghost focus-visible:outline-none focus-visible:ring-2"
         style={{ boxShadow: 'none', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}
         onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)' } }}
@@ -81,7 +84,7 @@ export default function SocialLoginButtons({ redirectTo, packageId, billingCycle
       {/* Facebook Button */}
       <button
         onClick={() => handleSocialLogin('facebook')}
-        disabled={loading !== null}
+        disabled={loading !== null || disabled}
         className="w-full py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed btn-lime focus-visible:outline-none focus-visible:ring-2"
         style={{ color: 'var(--on-accent-text)', boxShadow: 'none', '--tw-ring-color': 'var(--accent-focus)' } as React.CSSProperties}
         onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = 'var(--shadow-soft)' } }}

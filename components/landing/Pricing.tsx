@@ -36,7 +36,8 @@ async function requestPackages(): Promise<Package[]> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/packages`)
   if (!response.ok) throw new Error(`Packages request failed (${response.status})`)
   const data = await response.json()
-  return Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
+  const packages = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
+  return packages.filter((pkg: Package) => Number(pkg.price_monthly) > 0 || Number(pkg.price_yearly) > 0)
 }
 
 export default function Pricing() {
@@ -97,14 +98,12 @@ export default function Pricing() {
           </p>
         </motion.div>
 
-        {error || packages.length === 0 ? (
+        {error && (
           <div className="border-y py-8 text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }} role="status">
-            {error
-              ? (isRTL ? 'تعذر تحميل الخطط الآن. أعد المحاولة أو تواصل مع الدعم.' : 'Plans could not be loaded right now. Please try again or contact support.')
-              : (isRTL ? 'لا توجد خطط متاحة حالياً.' : 'There are no plans available right now.')}
-            {error && <button type="button" onClick={retryPackages} className="ms-3 underline underline-offset-4" style={{ color: 'var(--accent)' }}>{isRTL ? 'إعادة المحاولة' : 'Try again'}</button>}
+            {isRTL ? 'تعذر تحميل الأسعار المدفوعة الآن. يمكنك بدء التجربة أو إعادة المحاولة.' : 'Paid plan prices could not be loaded. You can start the trial or retry.'}
+            <button type="button" onClick={retryPackages} className="ms-3 underline underline-offset-4" style={{ color: 'var(--accent)' }}>{isRTL ? 'إعادة المحاولة' : 'Try again'}</button>
           </div>
-        ) : (
+        )}
         <motion.div
           variants={reduceMotion ? undefined : variants.staggerContainer}
           initial={reduceMotion ? false : 'hidden'}
@@ -112,6 +111,7 @@ export default function Pricing() {
           viewport={{ once: true, margin: '-40px' }}
           className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
         >
+          <TrialPricingCard isRTL={isRTL} />
           {packages.map((pkg) => (
             <PricingCard
               key={pkg.id}
@@ -122,12 +122,29 @@ export default function Pricing() {
             />
           ))}
         </motion.div>
-        )}
 
         <CreditPacks isRTL={isRTL} />
       </div>
     </section>
   )
+}
+
+function TrialPricingCard({ isRTL }: { isRTL: boolean }) {
+  const router = useRouter()
+  const signedIn = Boolean(getToken())
+  const features = isRTL
+    ? ['كل مزايا Business لمدة 14 يوماً', '80,000 رصيد AI خلال التجربة', 'قنوات ومتاجر وأتمتة بلا حدود', 'لا تُفرض رسوم تلقائياً بعد انتهاء التجربة']
+    : ['All Business features for 14 days', '80,000 AI credits during the trial', 'Unlimited channels, stores, and automation', 'No automatic charge when the trial ends']
+
+  return <motion.div variants={variants.fadeUp} className="relative flex min-h-full flex-col rounded-3xl border p-6 sm:p-7" style={{ borderColor: 'var(--accent)', background: 'var(--surface)', boxShadow: '0 20px 70px color-mix(in srgb, var(--accent) 12%, transparent)' }}>
+    <span className="mb-3 w-fit rounded-full px-3 py-1 text-[11px] font-bold" style={{ background: 'var(--accent-subtle)', color: 'var(--accent)' }}>{isRTL ? 'تجربة محدودة المدة' : 'LIMITED-TIME TRIAL'}</span>
+    <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{isRTL ? 'تجربة Business' : 'Business Trial'}</h3>
+    <p className="mt-2 min-h-12 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'جرّب جميع مزايا باقة الأعمال لمدة 14 يوماً، ثم اختر باقة مدفوعة للمتابعة.' : 'Try the complete Business plan for 14 days, then choose a paid plan to continue.'}</p>
+    <p className="my-5 text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{isRTL ? '14 يوماً' : '14 days'} <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{isRTL ? 'مجاناً' : 'free'}</span></p>
+    <ul className="mb-7 flex-1 space-y-3 text-sm" style={{ color: 'var(--text-secondary)' }}>{features.map(feature => <li key={feature} className="flex gap-2"><span aria-hidden="true" style={{ color: 'var(--accent)' }}>✓</span>{feature}</li>)}</ul>
+    <button type="button" onClick={() => router.push(signedIn ? '/dashboard/billing' : '/register?trial=1')} className="w-full rounded-xl px-4 py-3 text-sm font-bold" style={{ background: 'var(--accent)', color: 'var(--on-accent-text)' }}>{signedIn ? (isRTL ? 'إدارة الباقة' : 'Manage plan') : (isRTL ? 'ابدأ تجربة 14 يوماً' : 'Start 14-day trial')}</button>
+    <p className="mt-3 text-center text-xs leading-5" style={{ color: 'var(--text-tertiary)' }}>{isRTL ? 'لن نخصم أي مبلغ تلقائياً. تختار باقتك المدفوعة بنفسك.' : 'No automatic payment. You choose a paid plan yourself.'}</p>
+  </motion.div>
 }
 
 function PricingCard({
@@ -188,37 +205,10 @@ function CardInner({
 
   const handlePlanClick = async () => {
     setActionError('')
-    if (price === 0) {
-      if (token) {
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions/create-free`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              package_id: pkg.id,
-              billing_cycle: 'monthly',
-            }),
-          })
-          if (!response.ok) {
-            const result = await response.json().catch(() => ({}))
-            throw new Error(result.message || (isRTL ? 'تعذر تفعيل الباقة المجانية.' : 'Could not activate the free plan.'))
-          }
-          router.push('/dashboard')
-        } catch (error) {
-          setActionError(error instanceof Error ? error.message : (isRTL ? 'تعذر الاتصال بالخادم. حاول مرة أخرى.' : 'Could not connect to the server. Please try again.'))
-        }
-      } else {
-        router.push(`/register?package=${pkg.id}&billing=monthly`)
-      }
+    if (token) {
+      router.push(`/checkout?package=${pkg.id}&billing=monthly`)
     } else {
-      if (token) {
-        router.push(`/checkout?package=${pkg.id}&billing=monthly`)
-      } else {
-        router.push(`/register?package=${pkg.id}&billing=monthly`)
-      }
+      router.push(`/register?package=${pkg.id}&billing=monthly`)
     }
   }
 
@@ -234,7 +224,7 @@ function CardInner({
         </div>
         <div className="mb-6 flex items-baseline gap-2">
           <span className="text-3xl font-black text-primary-color" style={{ letterSpacing: '-0.03em' }}>
-            {price === 0 ? (isRTL ? 'مجاناً' : 'Free') : `${price} SAR`}
+            {`${price} SAR`}
           </span>
           {price > 0 && (
             <span className="text-sm text-tertiary-color">/{isRTL ? 'شهرياً' : 'month'}</span>

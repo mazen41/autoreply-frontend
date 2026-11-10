@@ -33,6 +33,7 @@ import Input, { Textarea } from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
 import FilterBar from '../../../components/ui/FilterBar'
 import EmptyState from '../../../components/ui/EmptyState'
+import ContextualExplainer from '../../../components/dashboard/ContextualExplainer'
 import toast from 'react-hot-toast'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
@@ -343,6 +344,32 @@ export default function WorkflowContent() {
             {L('Create Workflow', 'إنشاء مسار عمل')}
           </Button>
         }
+      />
+
+      <ContextualExplainer
+        id="workflows"
+        title={L('Automated Workflows & Rules Engine', 'محرك مسارات العمل والأتمتة الذكية')}
+        whatItDoes={L(
+          'Executes automated actions when specific events happen across your channels without human intervention.',
+          'ينفذ إجراءات آلية مخصصة فور وقوع أحداث معينة عبر قنواتك دون الحاجة لتدخل بشري.'
+        )}
+        whyItMatters={L(
+          'Eliminates repetitive tasks, cuts response delays, and routes leads instantly to the right agent or department.',
+          'يوفر وقت فريقك، يلغي التأخير في الرد، ويوجه العملاء المحتملين فورياً للموظف أو الإجراء المناسب.'
+        )}
+        whatYouCanDo={L(
+          'Define trigger events, set filter conditions (e.g. after business hours), and choose actions like auto-replies or tags.',
+          'حدد حدث البدء (مثل رسالة جديدة)، أضف الشروط المنطقية، واختر الإجراء (مثل رد فوري أو إضافة وسم).'
+        )}
+        whatHappensNext={L(
+          'Once published and active, NazBiz monitors live channel events 24/7 and triggers this workflow automatically.',
+          'بمجرد النشر، يراقب النظام أحداث قنواتك على مدار الساعة وينفذ هذا المسار تلقائياً عند تحقق الشروط.'
+        )}
+        actionLabel={L('Create First Workflow', 'أنشئ أول مسار عمل')}
+        onAction={() => {
+          setEditingWorkflow(null)
+          setShowBuilder(true)
+        }}
       />
 
       {loadError && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{loadError}</span><Button variant="outline" size="sm" onClick={() => void fetchWorkflows()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}

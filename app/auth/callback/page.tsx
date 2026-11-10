@@ -17,6 +17,7 @@ function CallbackHandler() {
   const redirectTo = searchParams.get('redirect')
   const packageId = searchParams.get('package')
   const billingCycle = searchParams.get('billing')
+  const signupChoice = searchParams.get('signup_choice')
   const rememberMe = searchParams.get('remember_me') === '1'
   const code = searchParams.get('code')
 
@@ -62,6 +63,7 @@ function CallbackHandler() {
         if (!redirectUrl) {
           if (session.is_new_user) {
             const params = new URLSearchParams()
+            if (signupChoice) params.set('signup_choice', signupChoice)
             if (packageId) params.set('package', packageId)
             if (billingCycle) params.set('billing', billingCycle)
             const queryString = params.toString()
@@ -103,6 +105,7 @@ function CallbackHandler() {
         const needsOnboarding = !selectedBusiness || !user.onboarding_completed
         if (!redirectTo && needsOnboarding) {
           const params = new URLSearchParams()
+          if (signupChoice) params.set('signup_choice', signupChoice)
           if (packageId) params.set('package', packageId)
           if (billingCycle) params.set('billing', billingCycle)
           const queryString = params.toString()
@@ -117,7 +120,7 @@ function CallbackHandler() {
     }
 
     void completeSignIn()
-  }, [errorParam, redirectTo, packageId, billingCycle, rememberMe, code, router])
+  }, [errorParam, redirectTo, packageId, billingCycle, signupChoice, rememberMe, code, router])
 
   if (error) {
     return (
