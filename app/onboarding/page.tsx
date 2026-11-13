@@ -1,19 +1,20 @@
 import { Suspense } from 'react'
 import OnboardingWizard from '../../components/auth/OnboardingWizard'
-import SmoothScroll from '../../components/ui/SmoothScroll'
 
 export default function OnboardingPage() {
   return (
-    <SmoothScroll>
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--background)' }}>
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent)]"></div>
-        </div>
-      </div>
-    }>
-      <OnboardingWizard />
-    </Suspense>
-    </SmoothScroll>
+    <main className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center" style={{ background: 'var(--background)' }}>
+            <div className="text-center">
+              <div className="inline-block h-10 w-10 animate-spin rounded-full border-2 border-brand border-t-transparent" />
+            </div>
+          </div>
+        }
+      >
+        <OnboardingWizard />
+      </Suspense>
+    </main>
   )
 }

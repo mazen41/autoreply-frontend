@@ -3,6 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useLang } from '../../../lib/LangContext'
+import { getBusinessHeaders } from '../../../lib/businessContext'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
@@ -12,7 +13,7 @@ function getToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 
-type Status = 'verifying' | 'success' | 'failed' | 'error'
+type Status = 'verifying' | 'processing' | 'success' | 'failed' | 'error'
 
 function CallbackContent() {
   const searchParams = useSearchParams()
@@ -23,7 +24,13 @@ function CallbackContent() {
 
   useEffect(() => {
     // MyFatoorah returns ?paymentId=... or ?Id=... in the query string
+    const centralPaymentId = searchParams.get('central_payment_id')
     const paymentId = searchParams.get('paymentId') ?? searchParams.get('Id')
+
+    if (centralPaymentId) {
+      verifyCentralPayment(centralPaymentId)
+      return
+    }
 
     if (!paymentId) {
       setStatus('error')
@@ -58,6 +65,50 @@ function CallbackContent() {
     }
   }
 
+  const verifyCentralPayment = async (centralPaymentId: string) => {
+    const token = getToken()
+    if (!token) {
+      setStatus('error')
+      setMessage(isRTL ? 'سجّل الدخول للتحقق من حالة الدفع.' : 'Sign in to verify your payment status.')
+      return
+    }
+
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/payment/central-status/${encodeURIComponent(centralPaymentId)}`,
+          { headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() }, cache: 'no-store' }
+        )
+        const data = await response.json()
+        if (response.status === 404) {
+          setStatus('error')
+          setMessage(data.message || (isRTL ? 'لم يتم العثور على عملية الدفع.' : 'Payment was not found.'))
+          return
+        }
+        if (data.status === 'completed') {
+          setStatus('success')
+          setMessage(isRTL ? 'تم التحقق من الدفع وتفعيل الاشتراك.' : 'Payment verified and subscription activated.')
+          setTimeout(() => router.push('/dashboard'), 3000)
+          return
+        }
+        if (data.status === 'failed') {
+          setStatus('failed')
+          setMessage(isRTL ? 'لم يكتمل الدفع. يمكنك المحاولة مرة أخرى.' : 'Payment was not completed. You can try again.')
+          return
+        }
+      } catch {
+        // Keep polling. A temporary response failure must not turn a paid
+        // checkout into a false failure screen.
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    }
+
+    setStatus('processing')
+    setMessage(isRTL
+      ? 'استلمنا نتيجة الدفع ونعمل على تفعيل اشتراكك. أعد تحميل الصفحة بعد قليل.'
+      : 'We received the payment result and are activating your subscription. Refresh this page shortly.')
+  }
+
   const config = {
     verifying: {
       icon: (
@@ -65,6 +116,12 @@ function CallbackContent() {
       ),
       title: isRTL ? 'جاري التحقق من الدفع...' : 'Verifying payment...',
       subtitle: isRTL ? 'يرجى الانتظار، لا تغلق هذه الصفحة' : 'Please wait, do not close this page',
+      color: 'var(--accent)',
+    },
+    processing: {
+      icon: <div className="text-7xl mb-6">⏳</div>,
+      title: isRTL ? 'جارٍ تأكيد الاشتراك' : 'Subscription confirmation pending',
+      subtitle: message,
       color: 'var(--accent)',
     },
     success: {
