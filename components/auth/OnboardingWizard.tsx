@@ -982,9 +982,21 @@ export default function OnboardingWizard() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       const token = getToken()
-                      window.location.href = `${API}/api/channels/connect/salla?token=${encodeURIComponent(token)}`
+                      try {
+                        const res = await fetch(`${API}/api/channels/connect/salla`, {
+                          method: 'POST',
+                          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+                        })
+                        const data = await res.json().catch(() => ({}))
+                        if (!res.ok || !data.url) {
+                          throw new Error(data.message || data.error || 'Could not get Salla authorization URL')
+                        }
+                        window.location.href = data.url
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : 'Salla connection failed')
+                      }
                     }}
                     className={`rounded-xl px-3 py-1.5 text-xs font-bold ${
                       connectedChannels.includes('salla')
@@ -1011,9 +1023,21 @@ export default function OnboardingWizard() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       const token = getToken()
-                      window.location.href = `${API}/api/channels/connect/facebook?token=${encodeURIComponent(token)}`
+                      try {
+                        const res = await fetch(`${API}/api/channels/connect/facebook`, {
+                          method: 'POST',
+                          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+                        })
+                        const data = await res.json().catch(() => ({}))
+                        if (!res.ok || !data.url) {
+                          throw new Error(data.message || data.error || 'Could not get Facebook/Instagram authorization URL')
+                        }
+                        window.location.href = data.url
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : 'Instagram connection failed')
+                      }
                     }}
                     className={`rounded-xl px-3 py-1.5 text-xs font-bold ${
                       connectedChannels.includes('instagram')
