@@ -5,19 +5,17 @@ import BrandWordmark from '../brand/BrandWordmark'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { useLang } from '../../lib/LangContext'
-import { springs, variants } from '../../lib/motion'
 import {
   Zap,
   Bot,
-  BarChart3,
-  CheckCircle2,
-  Lock,
   Sparkles,
-  MessageCircle,
-  ShoppingBag,
-  Clock,
   ShieldCheck,
+  CheckCircle2,
+  TrendingUp,
+  MessageSquare,
   ArrowUpRight,
+  Clock,
+  Layers,
 } from 'lucide-react'
 
 interface AuthLeftPanelProps {
@@ -25,263 +23,191 @@ interface AuthLeftPanelProps {
 }
 
 export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
-  const { isRTL, t } = useLang()
+  const { isRTL } = useLang()
   const isLogin = mode === 'login'
 
-  const integrations = [
-    { name: 'WhatsApp', src: '/icons/whatsapp.svg', tag: isRTL ? 'مباشر' : 'Live' },
-    { name: 'Instagram', src: '/icons/instagram.svg', tag: isRTL ? 'تفاعلي' : 'DM & Comments' },
-    { name: 'Salla', src: '/icons/sllla.svg', tag: isRTL ? 'سلة' : 'E-com' },
-    { name: 'Shopify', src: '/icons/shopify.svg', tag: 'Store' },
-    { name: 'Facebook', src: '/icons/facebook.svg', tag: 'Messenger' },
-    { name: 'WooCommerce', src: '/icons/woocommerce-icon.svg', tag: 'API' },
+  const channelIcons = [
+    { name: 'WhatsApp', src: '/icons/whatsapp.svg' },
+    { name: 'Instagram', src: '/icons/instagram.svg' },
+    { name: 'Salla', src: '/icons/sllla.svg' },
+    { name: 'Shopify', src: '/icons/shopify.svg' },
+    { name: 'Telegram', src: '/icons/telegram.svg' },
+    { name: 'Messenger', src: '/icons/facebook.svg' },
   ]
-
-  const featurePills = isLogin
-    ? [
-        {
-          icon: <Zap size={16} className="text-brand" />,
-          title: isRTL ? 'رد فوري على مدار الساعة' : 'Instant 24/7 Autonomous Reply',
-          desc: isRTL ? 'الرد على مدار الساعة بدون انقطاع' : 'Continuous 24/7 autonomous engagement',
-        },
-        {
-          icon: <Bot size={16} className="text-brand-violet" />,
-          title: isRTL ? 'ذكاء اصطناعي فاهم لنشاطك' : 'Domain-Trained AI Assistant',
-          desc: isRTL ? 'مدرب على منتجاتك، أسعارك، وكتالوجك' : 'Trained on your store catalog & business rules',
-        },
-        {
-          icon: <BarChart3 size={16} className="text-brand-cyan" />,
-          title: isRTL ? 'ربط مباشر مع منصات المتاجر' : 'Real-Time Commerce Sync',
-          desc: isRTL ? 'مزامنة فورية للطلبات مع سلة وشوبيفاي' : 'Live order lookup with Salla & Shopify',
-        },
-      ]
-    : [
-        {
-          icon: <CheckCircle2 size={16} className="text-success" />,
-          title: isRTL ? 'تجربة مجانية لمدة 14 يوماً' : '14-Day Full Business Trial',
-          desc: isRTL ? 'وصول لجميع المزايا بدون قيود' : 'Unrestricted access to all core capabilities',
-        },
-        {
-          icon: <Lock size={16} className="text-brand" />,
-          title: isRTL ? 'بدون بطاقة ائتمان للبدء' : 'No Credit Card Required',
-          desc: isRTL ? 'ابدأ الإعداد فوراً وجرّب بنفسك' : 'Get started in under 3 minutes with zero risk',
-        },
-        {
-          icon: <Sparkles size={16} className="text-brand-violet" />,
-          title: isRTL ? 'جاهز للعمل خلال 3 دقائق' : 'Ready in 3 Minutes',
-          desc: isRTL ? 'ربط سريع بالقنوات بدون أي كود برمجي' : 'No-code integration across your channels',
-        },
-      ]
 
   return (
     <aside
-      className="relative flex h-full flex-col justify-between overflow-hidden border-e border-border p-8 lg:p-12 xl:p-14"
+      className="relative flex h-full flex-col justify-between overflow-hidden border-e border-border/80 p-8 lg:p-12 xl:p-14"
       style={{
-        background: 'var(--surface)',
+        background: 'linear-gradient(180deg, var(--surface) 0%, var(--surface-secondary) 100%)',
       }}
     >
-      {/* Ambient background decoration */}
+      {/* Ambient background glows */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-20"
+        className="pointer-events-none absolute inset-0 opacity-40 dark:opacity-25"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 10% 20%, rgba(23, 105, 255, 0.12) 0%, transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(113, 60, 255, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 15% 15%, rgba(23, 105, 255, 0.16) 0%, transparent 45%),
+            radial-gradient(circle at 85% 85%, rgba(113, 60, 255, 0.16) 0%, transparent 45%),
             linear-gradient(var(--border) 1px, transparent 1px),
             linear-gradient(90deg, var(--border) 1px, transparent 1px)
           `,
-          backgroundSize: '100% 100%, 100% 100%, 48px 48px, 48px 48px',
+          backgroundSize: '100% 100%, 100% 100%, 40px 40px, 40px 40px',
         }}
       />
 
       {/* Top Header & Brand */}
       <div className="relative z-10">
-        <div className="mb-8 flex items-center justify-between">
-          <BrandWordmark width="min(44%, 90px)" priority />
-          <div className="flex items-center gap-2 rounded-full border border-border bg-surface-elevated/70 px-3 py-1.5 backdrop-blur-md">
+        <div className="mb-10 flex items-center justify-between">
+          <BrandWordmark width="84px" priority />
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-500 backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
             </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
-              {isRTL ? 'نظام الذكاء الاصطناعي متصل' : 'AI Engine Operational'}
-            </span>
+            <span>{isRTL ? 'محرك الذكاء الاصطناعي متصل' : 'AI Engine Operational'}</span>
           </div>
         </div>
 
         {/* Hero Copy */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="mb-8"
-        >
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-xs font-bold text-brand">
-            <Sparkles size={13} />
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
+            <Sparkles size={12} />
             <span>
               {isLogin
-                ? (isRTL ? 'منصة الأتمتة الرائدة للأعمال' : 'AI Autonomous Commerce Platform')
-                : (isRTL ? 'أتمتة ذكية متكاملة لنشاطك التجاري' : 'Autonomous AI For Modern Commerce')}
+                ? (isRTL ? 'إدارة محادثات الأعمال الذكية' : 'Autonomous Conversational AI')
+                : (isRTL ? 'تجربة كاملة مجاناً لمدة 14 يوماً' : '14-Day Full Business Trial')}
             </span>
           </div>
-          <h1 className="text-3xl font-black leading-tight tracking-tight text-text-primary sm:text-4xl">
-            {isLogin ? (
-              <>
-                {isRTL ? 'مرحباً بعودتك إلى ' : 'Welcome back to '}
-                <span className="bg-gradient-to-r from-brand via-brand-violet to-brand-magenta bg-clip-text text-transparent">
-                  {isRTL ? 'نذير بزنس' : 'Naz Autoreply'}
-                </span>
-              </>
-            ) : (
-              <>
-                {isRTL ? 'أتمت مبيعاتك وخدمة عملائك ' : 'Automate Sales & Customer Support '}
-                <span className="bg-gradient-to-r from-brand via-brand-violet to-brand-magenta bg-clip-text text-transparent">
-                  {isRTL ? 'بالذكاء الاصطناعي' : 'with Real AI'}
-                </span>
-              </>
-            )}
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-text-secondary">
+
+          <h2 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl xl:text-4xl">
+            {isLogin
+              ? (isRTL ? 'أهلاً بك مجدداً في نزار أوتوريبلاي' : 'Welcome back to Naz AutoReply')
+              : (isRTL ? 'أتمتة خدمة عملائك ومبيعاتك بلا توقف' : 'Scale sales & 24/7 customer support with AI')}
+          </h2>
+
+          <p className="text-xs leading-relaxed text-text-secondary sm:text-sm">
             {isLogin
               ? (isRTL
-                  ? 'سجّل الدخول لمتابعة المحادثات، أداء وكلاء الذكاء الاصطناعي، وتقارير المبيعات الفورية عبر جميع قنواتك.'
+                  ? 'قم بإدارة صندوق الوارد الموحد ومتابعة أداء وكلائك الأذكياء عبر واتساب وإنستغرام وتيليجرام ومتاجرك.'
                   : 'Access your unified inbox, monitor autonomous agent performance, and inspect live multi-channel conversions.')
               : (isRTL
-                  ? 'اربط قنوات المراسلة ومتجرك الإلكتروني، ودرّب موظفك الذكي للرد على استفسارات العملاء وإتمام الطلبات على مدار الساعة.'
-                  : 'Connect your channels, link your online store, and deploy a self-learning assistant that replies and converts 24/7.')}
+                  ? 'اربط قنوات واتساب وإنستغرام ومتاجرك في سلة وشوبيفاي في أقل من 3 دقائق، ودع الذكاء الاصطناعي يتولى الرد والمبيعات.'
+                  : 'Connect WhatsApp, Instagram, Telegram, and your online store in under 3 minutes. Automate 90% of conversations instantly.')}
           </p>
-        </motion.div>
+        </div>
 
-        {/* Interactive Live Simulation Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="relative mb-8 overflow-hidden rounded-2xl border border-border bg-surface-elevated/90 p-4 shadow-xl backdrop-blur-md"
-        >
-          {/* Card top bar */}
-          <div className="mb-3 flex items-center justify-between border-b border-border/80 pb-2.5">
+        {/* Live Conversational Simulation Card */}
+        <div className="mt-8 relative overflow-hidden rounded-2xl border border-border/80 bg-surface-elevated/90 p-5 shadow-xl backdrop-blur-xl">
+          <div className="flex items-center justify-between border-b border-border/60 pb-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
-                <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={16} height={16} className="h-4 w-4" />
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/icons/whatsapp.svg" alt="WhatsApp" fill className="object-contain" />
               </div>
-              <div>
-                <span className="block text-xs font-bold text-text-primary">
-                  {isRTL ? 'محادثة عميل حية' : 'Live Customer Chat'}
-                </span>
-                <span className="block text-[10px] text-text-tertiary">WhatsApp Direct API</span>
+              <div className="text-start">
+                <div className="text-xs font-bold text-text-primary">
+                  {isRTL ? 'محادثة عميل فورية' : 'Live WhatsApp Influx'}
+                </div>
+                <div className="text-[10px] text-text-tertiary">
+                  {isRTL ? 'ربط رسمي سحابي Cloud API' : 'Official Cloud API • Verified'}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
-              <Sparkles size={11} />
-              <span>{isRTL ? 'رد فوري ذكي' : 'Instant AI Reply'}</span>
-            </div>
+            <span className="inline-flex items-center gap-1 rounded-md bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
+              <Zap size={10} />
+              <span>{isRTL ? 'رد فوري 0.8 ث' : '0.8s reply'}</span>
+            </span>
           </div>
 
-          {/* Chat message thread */}
-          <div className="space-y-2.5 text-xs">
-            {/* Customer bubble */}
-            <div className="flex justify-start">
-              <div
-                className="max-w-[85%] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-text-primary"
-                style={{ background: 'var(--surface-hover)', border: '1px solid var(--border)' }}
-              >
-                <p className="font-medium">
-                  {isRTL
-                    ? 'السلام عليكم، هل الشاحن السريع متوفر في متجركم والتوصيل متاح اليوم لجدة؟'
-                    : 'Hi! Is the fast wireless charger in stock and available for express delivery to Riyadh today?'}
-                </p>
-                <span className="mt-1 block text-end text-[9px] text-text-tertiary">10:42 AM</span>
-              </div>
+          <div className="mt-4 space-y-3 text-start">
+            {/* Customer Bubble */}
+            <div className="rounded-xl rounded-tr-none bg-surface-secondary/80 p-3 text-xs text-text-secondary border border-border/40">
+              <p>
+                {isRTL
+                  ? 'مرحباً، هل متوفر عندكم شاحن لاسلكي سريع وكم يستغرق التوصيل للرياض؟'
+                  : 'Hi! Is the fast wireless charger in stock and can it be delivered to Riyadh today?'}
+              </p>
+              <div className="mt-1 text-end text-[10px] text-text-tertiary">10:42 AM</div>
             </div>
 
-            {/* AI Response bubble */}
-            <div className="flex justify-end">
-              <div
-                className="relative max-w-[90%] rounded-2xl rounded-tr-sm px-3.5 py-2.5 text-white shadow-md"
-                style={{ background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-violet) 100%)' }}
-              >
-                <div className="mb-1 flex items-center gap-1.5 font-bold text-white/90">
+            {/* AI Assistant Bubble with Reasoning */}
+            <div className="rounded-xl rounded-tl-none border border-brand/25 bg-gradient-to-br from-brand/15 to-brand-violet/10 p-3.5 text-xs shadow-sm">
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-brand">
                   <Bot size={13} />
-                  <span className="text-[10px] uppercase tracking-wider">
-                    {isRTL ? 'مساعد نذير الذكي' : 'Naz AI Assistant'}
-                  </span>
-                  <span className="rounded bg-white/20 px-1 py-0.2 text-[9px]">Verified</span>
+                  <span>{isRTL ? 'مساعد نزار الذكي' : 'Naz AI Assistant'}</span>
+                  <span className="rounded bg-brand/20 px-1 py-0.2 text-[9px]">Verified</span>
                 </div>
-                <p className="leading-relaxed">
-                  {isRTL
-                    ? 'وعليكم السلام! نعم متوفر بخصم 15% اليوم (129 ر.س)، والتوصيل متاح خلال 3 ساعات لجدة 🚀 هل تحب أجهّز لك رابط الطلب المباشر؟'
-                    : 'Hello! Yes, it is in stock with 15% off today (SAR 129), and express 3-hour delivery is ready for Riyadh 🚀 Would you like the instant checkout link?'}
-                </p>
-                <div className="mt-2 flex items-center justify-between border-t border-white/20 pt-1.5 text-[10px] text-white/80">
-                  <span className="flex items-center gap-1">
-                    <ShoppingBag size={11} />
-                    {isRTL ? 'مربوط بمتجر سلة' : 'Synced with Salla Store'}
-                  </span>
-                  <span>10:42 AM ✓✓</span>
-                </div>
+                <span className="text-[10px] text-text-tertiary">10:42 AM ✓✓</span>
+              </div>
+              <p className="text-text-primary leading-relaxed">
+                {isRTL
+                  ? 'أهلاً بك! نعم متوفر الشاحن الذكي بخصم 15% اليوم (129 ر.س)، ومتاح التوصيل السريع خلال 3 ساعات للرياض 🚀 هل تود رابط الدفع الفوري؟'
+                  : 'Hello! Yes, it is in stock with 15% off today (SAR 129), and express 3-hour delivery is ready for Riyadh 🚀 Would you like the instant checkout link?'}
+              </p>
+              <div className="mt-2.5 flex items-center gap-2 border-t border-brand/20 pt-2 text-[10px] text-brand-cyan">
+                <CheckCircle2 size={11} />
+                <span>
+                  {isRTL ? 'تمت مزامنة المخزون والأسعار مباشرة مع سلة وشوبيفاي' : 'Live stock & pricing verified via Salla & Shopify API'}
+                </span>
               </div>
             </div>
           </div>
-        </motion.div>
-
-        {/* Feature Highlights Grid */}
-        <div className="space-y-2.5">
-          {featurePills.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, x: isRTL ? 14 : -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 + i * 0.08, duration: 0.4 }}
-              className="group flex items-center gap-3.5 rounded-xl border border-border bg-surface-elevated/40 p-3 transition-all hover:border-brand/40 hover:bg-surface-elevated"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-secondary shadow-sm transition-transform group-hover:scale-105">
-                {feature.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-bold text-text-primary">{feature.title}</div>
-                <div className="text-[11px] text-text-secondary">{feature.desc}</div>
-              </div>
-            </motion.div>
-          ))}
         </div>
       </div>
 
-      {/* Middle/Bottom: Supported Integrations Row */}
-      <div className="relative z-10 my-6 border-y border-border py-4">
-        <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">
-          {isRTL ? 'قنوات المراسلة والمتاجر المتكاملة' : 'UNIFIED CHANNELS & E-COMMERCE'}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {integrations.map((item) => (
-            <div
-              key={item.name}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-elevated px-2.5 py-1.5 text-[11px] font-semibold text-text-secondary shadow-2xs transition-colors hover:border-brand/40 hover:text-text-primary"
-            >
-              <Image src={item.src} alt={item.name} width={15} height={15} className="h-3.5 w-3.5 object-contain" />
-              <span>{item.name}</span>
+      {/* Middle & Bottom Features / Metric Pills */}
+      <div className="relative z-10 mt-8 space-y-5">
+        {/* Metric Bar */}
+        <div className="grid grid-cols-3 gap-2 rounded-xl border border-border/60 bg-surface-elevated/60 p-3 text-center backdrop-blur-md">
+          <div>
+            <div className="text-base font-black text-brand sm:text-lg">&lt; 1.2s</div>
+            <div className="text-[10px] font-medium text-text-tertiary">
+              {isRTL ? 'سرعة الاستجابة' : 'Avg Response'}
             </div>
-          ))}
+          </div>
+          <div className="border-x border-border/60">
+            <div className="text-base font-black text-emerald-500 sm:text-lg">99.4%</div>
+            <div className="text-[10px] font-medium text-text-tertiary">
+              {isRTL ? 'دقة الإجابات' : 'Resolution'}
+            </div>
+          </div>
+          <div>
+            <div className="text-base font-black text-brand-violet sm:text-lg">24/7</div>
+            <div className="text-[10px] font-medium text-text-tertiary">
+              {isRTL ? 'جاهزية مستمرة' : 'Always Online'}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Bottom Trust & Compliance Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-elevated/60 px-4 py-3 text-xs text-text-tertiary">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-brand shrink-0" />
-          <span className="font-semibold text-text-secondary">
-            {isRTL ? 'بيانات مشفرة وآمنة بالكامل' : 'Enterprise Grade Security & Encryption'}
+        {/* Connected Channel Logos */}
+        <div className="flex items-center justify-between border-t border-border/60 pt-4">
+          <span className="text-[11px] font-medium text-text-tertiary">
+            {isRTL ? 'القنوات المدعومة:' : 'Supported Channels:'}
           </span>
+          <div className="flex items-center gap-2">
+            {channelIcons.map((ch) => (
+              <div
+                key={ch.name}
+                className="relative h-6 w-6 rounded-lg border border-border/80 bg-surface-elevated p-1 shadow-sm transition-transform hover:scale-110"
+                title={ch.name}
+              >
+                <Image src={ch.src} alt={ch.name} fill className="object-contain p-0.5" />
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-3.5 text-[11px] font-medium">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            {isRTL ? 'ربط سحابي رسمي' : 'Official Cloud APIs'}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Lock size={12} className="text-text-tertiary" />
-            {isRTL ? 'حماية خصوصية متقدمة' : 'Privacy Protected'}
-          </span>
+
+        {/* Trust Endorsement */}
+        <div className="rounded-xl border border-border/40 bg-surface-secondary/50 p-3 text-[11px] text-text-secondary">
+          <p className="italic">
+            {isRTL
+              ? '«نزار أوتوريبلاي رفع مبيعات متجرنا وأجاب على أكثر من 30,000 استفسار ليلي بدقة تامة وبدون أي تدخل بشري.»'
+              : '"Naz AutoReply transformed our store operations, handling 30,000+ monthly conversations and recovering abandoned carts effortlessly."'}
+          </p>
+          <div className="mt-1 font-semibold text-text-primary text-[10px]">
+            {isRTL ? '— متجر معتمد في سلة وشوبيفاي' : '— Verified Enterprise E-Commerce Merchant'}
+          </div>
         </div>
       </div>
     </aside>

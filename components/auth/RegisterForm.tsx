@@ -23,6 +23,8 @@ import {
   Zap,
   CheckCircle2,
   AlertCircle,
+  ArrowRight,
+  ArrowLeft,
 } from 'lucide-react'
 
 type RegisterField = 'name' | 'email' | 'password' | 'confirm'
@@ -49,11 +51,9 @@ export default function RegisterForm() {
 
   const [packages, setPackages] = useState<SignupPackage[]>([])
   const [planChoice, setPlanChoice] = useState<'trial' | 'paid' | null>(
-    initialChoice === 'trial' || searchParams.get('trial') === '1'
-      ? 'trial'
-      : initialChoice === 'paid' || (packageId && packageId !== 'trial')
-        ? 'paid'
-        : null
+    initialChoice === 'paid' || (packageId && packageId !== 'trial')
+      ? 'paid'
+      : 'trial'
   )
   const [selectedPackageId, setSelectedPackageId] = useState(packageId || '')
   const [selectedBillingCycle, setSelectedBillingCycle] = useState<'monthly' | 'yearly'>(
@@ -89,7 +89,10 @@ export default function RegisterForm() {
         if (packageId && available.some((item: SignupPackage) => String(item.id) === packageId)) {
           setPlanChoice('paid')
           setSelectedPackageId(packageId)
-        } else if (available.length > 0 && (!selectedPackageId || !available.some((item: SignupPackage) => String(item.id) === selectedPackageId))) {
+        } else if (
+          available.length > 0 &&
+          (!selectedPackageId || !available.some((item: SignupPackage) => String(item.id) === selectedPackageId))
+        ) {
           setSelectedPackageId(String(available[0].id))
         }
       })
@@ -99,7 +102,9 @@ export default function RegisterForm() {
   // Validation rules
   const requiredMessage = isRTL ? 'هذا الحقل مطلوب' : 'This field is required'
   const invalidEmailMessage = isRTL ? 'أدخل بريداً إلكترونياً صالحاً' : 'Enter a valid email address'
-  const termsMessage = isRTL ? 'يجب الموافقة على الشروط وسياسة الخصوصية' : 'You must agree to the Terms and Privacy Policy'
+  const termsMessage = isRTL
+    ? 'يجب الموافقة على الشروط وسياسة الخصوصية للمتابعة'
+    : 'You must agree to the Terms and Privacy Policy'
 
   const strengthChecks = [
     form.password.length >= 8,
@@ -111,13 +116,19 @@ export default function RegisterForm() {
   const strengthScore = strengthChecks.filter(Boolean).length
   const strengthLevel = Math.min(4, Math.ceil((strengthScore / 5) * 4))
   const strengthColor =
-    strengthLevel <= 1 ? 'var(--error)' : strengthLevel <= 3 ? 'var(--warning)' : 'var(--success)'
+    strengthLevel <= 1 ? '#EF4444' : strengthLevel <= 3 ? '#F59E0B' : '#10B981'
   const strengthText =
     strengthLevel <= 1
-      ? (isRTL ? 'ضعيفة' : 'Weak')
+      ? isRTL
+        ? 'ضعيفة'
+        : 'Weak'
       : strengthLevel <= 3
-      ? (isRTL ? 'متوسطة' : 'Good')
-      : (isRTL ? 'قوية جداً' : 'Strong')
+      ? isRTL
+        ? 'متوسطة'
+        : 'Good'
+      : isRTL
+      ? 'قوية جداً'
+      : 'Strong'
 
   const passwordsMatch = form.confirm.length > 0 && form.password === form.confirm
   const confirmMismatch = form.confirm.length > 0 && form.password !== form.confirm
@@ -125,8 +136,8 @@ export default function RegisterForm() {
   const validateField = (field: RegisterField, value = form[field]) => {
     if (!value.trim()) return requiredMessage
     if (field === 'email' && !emailPattern.test(value)) return invalidEmailMessage
-    if (field === 'password' && form.password.length < 8) return t.auth.invalidPassword
-    if (field === 'confirm' && form.password !== form.confirm) return t.auth.passwordsMismatch
+    if (field === 'password' && form.password.length < 8) return t.auth?.invalidPassword || 'Password must be at least 8 characters'
+    if (field === 'confirm' && form.password !== form.confirm) return t.auth?.passwordsMismatch || 'Passwords do not match'
     return ''
   }
 
@@ -156,15 +167,15 @@ export default function RegisterForm() {
       return
     }
     if (form.password !== form.confirm) {
-      setError(t.auth.passwordsMismatch)
+      setError(t.auth?.passwordsMismatch || 'Passwords do not match')
       return
     }
     if (form.password.length < 8) {
-      setError(t.auth.invalidPassword)
+      setError(t.auth?.invalidPassword || 'Password must be at least 8 characters')
       return
     }
     if (!planChoice) {
-      setError(isRTL ? 'يرجى اختيار تجربة باقة الأعمال أو باقة مدفوعة قبل إنشاء الحساب.' : 'Choose the 14-day Business trial or a paid plan before creating your account.')
+      setError(isRTL ? 'يرجى اختيار خطة البدء.' : 'Please choose your signup plan.')
       return
     }
     if (planChoice === 'paid' && !selectedPackageId) {
@@ -174,7 +185,7 @@ export default function RegisterForm() {
 
     setLoading(true)
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 12000)
+    const timeout = setTimeout(() => controller.abort(), 15000)
 
     try {
       const res = await fetch(
@@ -197,11 +208,11 @@ export default function RegisterForm() {
       )
       clearTimeout(timeout)
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message || t.auth.registerError)
+      if (!res.ok) throw new Error(data.message || t.auth?.registerError || 'Registration failed')
 
-      toast.success(t.auth.registerSuccess)
+      toast.success(t.auth?.registerSuccess || 'Account created successfully')
       setSuccessPulse(true)
-      await new Promise((resolve) => setTimeout(resolve, 400))
+      await new Promise((resolve) => setTimeout(resolve, 350))
 
       const params = new URLSearchParams()
       params.set('email', form.email)
@@ -212,7 +223,7 @@ export default function RegisterForm() {
 
       window.location.href = `/verify-email?${params.toString()}`
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : t.auth.registerError
+      const msg = err instanceof Error ? err.message : (t.auth?.registerError || 'Registration failed')
       setError(
         msg.includes('abort') || msg.includes('fetch')
           ? isRTL
@@ -227,122 +238,99 @@ export default function RegisterForm() {
     }
   }
 
-  const fields = [
-    {
-      key: 'name' as const,
-      label: t.auth.name,
-      type: 'text',
-      ph: isRTL ? 'مثال: محمد الشمري' : 'e.g. Alexander Vance',
-      autoComplete: 'name',
-      icon: User,
-    },
-    {
-      key: 'email' as const,
-      label: t.auth.email,
-      type: 'email',
-      ph: 'name@business.com',
-      autoComplete: 'email',
-      icon: Mail,
-    },
-    {
-      key: 'password' as const,
-      label: t.auth.password,
-      type: showPass ? 'text' : 'password',
-      ph: '••••••••',
-      autoComplete: 'new-password',
-      icon: Lock,
-    },
-    {
-      key: 'confirm' as const,
-      label: t.auth.confirmPassword,
-      type: showConfirm ? 'text' : 'password',
-      ph: '••••••••',
-      autoComplete: 'new-password',
-      icon: Lock,
-    },
-  ]
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative w-full overflow-hidden rounded-3xl border border-border bg-surface-elevated/95 p-6 shadow-2xl backdrop-blur-xl sm:p-9"
+      transition={{ duration: 0.45 }}
+      className="relative w-full overflow-hidden rounded-3xl border border-border/80 bg-surface-elevated/95 p-6 shadow-2xl backdrop-blur-2xl sm:p-9"
     >
+      {/* Top gradient accent line */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand via-brand-cyan to-brand-violet" />
+
       {/* Mobile brand header */}
       <div className="mb-6 flex justify-center lg:hidden">
-        <Link href="/" aria-label="Nazeer Business">
-          <BrandWordmark width="70px" priority />
+        <Link href="/" aria-label="Naz AutoReply">
+          <BrandWordmark width="76px" priority />
         </Link>
       </div>
 
-      {/* Header with status badge */}
+      {/* Header */}
       <div className="mb-6 text-start">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1 text-xs font-bold text-brand">
-          <Sparkles size={13} />
-          <span className="uppercase tracking-wider">{t.auth.register}</span>
+          <Sparkles size={12} />
+          <span className="uppercase tracking-wider">{t.auth?.register || 'Sign Up'}</span>
         </div>
-        <h2 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
+        <h1 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl">
           {isRTL ? 'أنشئ حسابك وابدأ الأتمتة' : 'Create your business account'}
-        </h2>
+        </h1>
         <p className="mt-1.5 text-xs text-text-secondary sm:text-sm">
           {isRTL
-            ? 'اختر تجربة باقة الأعمال الكاملة لمدة 14 يوماً أو باقة مدفوعة للمتابعة.'
-            : 'Choose the 14-day full Business trial or a paid plan to continue.'}
+            ? 'ابدأ تجربتك المجانية الكاملة لمدة 14 يوماً بدون بطاقة ائتمان، أو اختر خطتك المدفوعة مباشرة.'
+            : 'Get started with a 14-day unrestricted trial or select your production plan.'}
         </p>
       </div>
 
-      {/* Plan Selection Switcher */}
+      {/* Plan Selection Mode Segmented Control */}
       <div className="mb-6 space-y-3">
-        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface-secondary/70 p-1.5">
+        <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border/80 bg-surface-secondary/70 p-1.5">
           <button
             type="button"
             onClick={() => setPlanChoice('trial')}
-            className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
+            className={`relative flex flex-col items-center justify-center rounded-xl py-2 px-3 text-center transition-all duration-200 ${
               planChoice === 'trial'
-                ? 'bg-surface-elevated text-brand shadow-sm border border-brand/30'
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-surface-elevated text-text-primary shadow-md border border-brand/40 ring-1 ring-brand/20'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
             }`}
           >
-            <Zap size={14} />
-            <span>{isRTL ? 'تجربة الأعمال الكاملة (14 يوم)' : '14-Day Full Business Trial'}</span>
+            <div className="flex items-center gap-1.5 text-xs font-bold">
+              <Zap size={13} className="text-emerald-500 shrink-0" />
+              <span>14-Day Full Business Trial</span>
+            </div>
+            <span className="mt-0.5 text-[10px] text-emerald-500 font-semibold">
+              {isRTL ? 'مجاني بالكامل • بدون بطاقة' : 'Free • No Card Required'}
+            </span>
           </button>
+
           <button
             type="button"
             onClick={() => setPlanChoice('paid')}
-            className={`flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all ${
+            className={`relative flex flex-col items-center justify-center rounded-xl py-2 px-3 text-center transition-all duration-200 ${
               planChoice === 'paid'
-                ? 'bg-surface-elevated text-brand shadow-sm border border-brand/30'
-                : 'text-text-secondary hover:text-text-primary'
+                ? 'bg-surface-elevated text-text-primary shadow-md border border-brand/40 ring-1 ring-brand/20'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/50'
             }`}
           >
-            <CreditCard size={14} />
-            <span>{isRTL ? 'اشتراك باقة مدفوعة' : 'Select Paid Plan'}</span>
+            <div className="flex items-center gap-1.5 text-xs font-bold">
+              <CreditCard size={13} className="text-brand shrink-0" />
+              <span>{isRTL ? 'باقة مدفوعة مباشرة' : 'Direct Paid Plan'}</span>
+            </div>
+            <span className="mt-0.5 text-[10px] text-brand font-semibold">
+              {isRTL ? 'إعداد فوري مع الدفع' : 'Instant Activation'}
+            </span>
           </button>
         </div>
 
-        {/* Paid Plan Options Drawer */}
+        {/* Paid Plan Details Selector (if paid mode is active) */}
         <AnimatePresence>
-          {planChoice === 'paid' && (
+          {planChoice === 'paid' && packages.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="space-y-3 overflow-hidden rounded-2xl border border-brand/20 bg-brand/5 p-3.5"
             >
-              {/* Billing Cycle Toggle */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-text-primary">
-                  {isRTL ? 'دورة الفوترة' : 'Billing Frequency'}
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-text-primary">
+                  {isRTL ? 'اختر الباقة المناسبة:' : 'Select Plan:'}
                 </span>
-                <div className="flex items-center gap-1 rounded-lg border border-border bg-surface-elevated p-1 text-xs">
+                {/* Billing cycle toggle */}
+                <div className="inline-flex rounded-lg border border-border bg-surface-elevated p-0.5 text-[11px]">
                   <button
                     type="button"
                     onClick={() => setSelectedBillingCycle('monthly')}
-                    className={`rounded-md px-2.5 py-1 font-semibold transition-colors ${
-                      selectedBillingCycle === 'monthly'
-                        ? 'bg-brand text-brand-text'
-                        : 'text-text-secondary hover:text-text-primary'
+                    className={`rounded-md px-2 py-0.5 font-medium transition-colors ${
+                      selectedBillingCycle === 'monthly' ? 'bg-brand text-white' : 'text-text-secondary'
                     }`}
                   >
                     {isRTL ? 'شهري' : 'Monthly'}
@@ -350,59 +338,45 @@ export default function RegisterForm() {
                   <button
                     type="button"
                     onClick={() => setSelectedBillingCycle('yearly')}
-                    className={`flex items-center gap-1 rounded-md px-2.5 py-1 font-semibold transition-colors ${
-                      selectedBillingCycle === 'yearly'
-                        ? 'bg-brand text-brand-text'
-                        : 'text-text-secondary hover:text-text-primary'
+                    className={`rounded-md px-2 py-0.5 font-medium transition-colors ${
+                      selectedBillingCycle === 'yearly' ? 'bg-brand text-white' : 'text-text-secondary'
                     }`}
                   >
-                    <span>{isRTL ? 'سنوي' : 'Yearly'}</span>
-                    <span className="rounded bg-emerald-500/20 px-1 py-0.2 text-[9px] text-emerald-400">
-                      -20%
-                    </span>
+                    {isRTL ? 'سنوي (خصم 20%)' : 'Yearly (-20%)'}
                   </button>
                 </div>
               </div>
 
-              {/* Package cards */}
-              {packages.length > 0 ? (
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {packages.map((pkg) => {
-                    const isSelected = selectedPackageId === String(pkg.id)
-                    const price =
-                      selectedBillingCycle === 'yearly' ? pkg.price_yearly : pkg.price_monthly
-                    return (
-                      <button
-                        key={pkg.id}
-                        type="button"
-                        onClick={() => setSelectedPackageId(String(pkg.id))}
-                        className={`rounded-xl border p-2.5 text-start transition-all ${
-                          isSelected
-                            ? 'border-brand bg-surface-elevated shadow-sm ring-1 ring-brand'
-                            : 'border-border bg-surface-elevated/70 hover:border-brand/40'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-text-primary">
-                            {isRTL ? pkg.name_ar : pkg.name}
-                          </span>
-                          {isSelected && <Check size={14} className="text-brand" />}
-                        </div>
-                        <div className="mt-1 text-sm font-black text-brand">
-                          {Number(price).toLocaleString()} SAR
-                          <span className="text-[10px] font-normal text-text-tertiary">
-                            /{selectedBillingCycle === 'yearly' ? (isRTL ? 'سنة' : 'yr') : (isRTL ? 'شهر' : 'mo')}
-                          </span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <p className="text-xs text-text-secondary">
-                  {isRTL ? 'جاري تحميل الباقات المتاحة...' : 'Loading available plans...'}
-                </p>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {packages.map((pkg) => {
+                  const price =
+                    selectedBillingCycle === 'yearly'
+                      ? Math.round(Number(pkg.price_yearly) / 12)
+                      : Number(pkg.price_monthly)
+                  const isSelected = String(pkg.id) === selectedPackageId
+
+                  return (
+                    <button
+                      key={pkg.id}
+                      type="button"
+                      onClick={() => setSelectedPackageId(String(pkg.id))}
+                      className={`relative flex flex-col rounded-xl p-2.5 text-start transition-all border ${
+                        isSelected
+                          ? 'border-brand bg-surface-elevated shadow-sm ring-1 ring-brand'
+                          : 'border-border/60 bg-surface-elevated/50 hover:border-brand/40'
+                      }`}
+                    >
+                      <span className="text-xs font-bold text-text-primary">
+                        {isRTL ? pkg.name_ar || pkg.name : pkg.name}
+                      </span>
+                      <div className="mt-1 flex items-baseline gap-1">
+                        <span className="text-sm font-black text-brand">${price}</span>
+                        <span className="text-[10px] text-text-tertiary">/mo</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -411,21 +385,13 @@ export default function RegisterForm() {
       {/* Social Login Buttons */}
       <SocialLoginButtons
         redirectTo={redirectTo || undefined}
-        packageId={planChoice === 'paid' ? selectedPackageId : undefined}
-        billingCycle={planChoice === 'paid' ? selectedBillingCycle : undefined}
+        packageId={selectedPackageId}
+        billingCycle={selectedBillingCycle}
         signupChoice={planChoice || undefined}
-        disabled={!planChoice || (planChoice === 'paid' && !selectedPackageId)}
+        showDivider={true}
       />
 
-      {/* Divider */}
-      <div className="relative my-6 flex items-center justify-center">
-        <div className="w-full border-t border-border" />
-        <span className="absolute bg-surface-elevated px-3 text-[11px] font-bold uppercase tracking-wider text-text-tertiary">
-          {t.auth.orDivider || (isRTL ? 'أو عبر البريد' : 'or with email')}
-        </span>
-      </div>
-
-      {/* Error Banner */}
+      {/* Error Alert */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -436,244 +402,276 @@ export default function RegisterForm() {
             transition={shakeTransition}
             className="mb-5 flex items-center gap-2.5 rounded-xl border border-error/30 bg-error/10 p-3 text-xs font-medium text-error"
           >
-            <AlertCircle size={16} className="shrink-0" />
+            <AlertCircle size={15} className="shrink-0" />
             <span>{error}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Form Fields */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {fields.map(({ key, label, type, ph, autoComplete, icon: FieldIcon }, i) => {
-          const message = fieldErrors[key]
-          const isPasswordField = key === 'password' || key === 'confirm'
-          const showToggle = key === 'password' ? showPass : showConfirm
-          const toggleFn = key === 'password' ? () => setShowPass(!showPass) : () => setShowConfirm(!showConfirm)
+      {/* Registration Form */}
+      <form onSubmit={handleSubmit} noValidate className="space-y-4 text-start">
+        {/* Full Name Field */}
+        <div>
+          <label htmlFor="name" className="mb-1.5 block text-xs font-bold text-text-primary">
+            {t.auth?.name || 'Name'}
+          </label>
+          <div
+            className={`group relative flex items-center rounded-xl border bg-surface/80 px-3.5 py-2.5 shadow-sm transition-all duration-200 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 ${
+              fieldErrors.name ? 'border-error/80 bg-error/5' : 'border-border hover:border-border-hover'
+            }`}
+          >
+            <User size={16} className="shrink-0 text-text-tertiary group-focus-within:text-brand" />
+            <input
+              id="name"
+              name="name"
+              type="text"
+              autoComplete="name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onFocus={() => setTouched((prev) => ({ ...prev, name: true }))}
+              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+              placeholder={isRTL ? 'مثال: محمد الشمري' : 'e.g. Alexander Vance'}
+              aria-label={t.auth?.name || 'Name'}
+              aria-invalid={!!fieldErrors.name}
+              aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+              className="w-full bg-transparent px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+            />
+          </div>
+          {fieldErrors.name && (
+            <p id="name-error" className="mt-1 text-[11px] font-medium text-error">
+              {fieldErrors.name}
+            </p>
+          )}
+        </div>
 
-          return (
-            <div key={key} className="space-y-1.5">
-              <label htmlFor={`reg-${key}`} className="block text-xs font-bold text-text-secondary">
-                {label}
-              </label>
-              <div className="relative">
-                <span
-                  className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-text-tertiary ${
-                    isRTL ? 'right-3.5' : 'left-3.5'
-                  }`}
-                >
-                  <FieldIcon size={16} />
-                </span>
+        {/* Business Email Field */}
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-xs font-bold text-text-primary">
+            {t.auth?.email || 'Email'}
+          </label>
+          <div
+            className={`group relative flex items-center rounded-xl border bg-surface/80 px-3.5 py-2.5 shadow-sm transition-all duration-200 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 ${
+              fieldErrors.email ? 'border-error/80 bg-error/5' : 'border-border hover:border-border-hover'
+            }`}
+          >
+            <Mail size={16} className="shrink-0 text-text-tertiary group-focus-within:text-brand" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onFocus={() => setTouched((prev) => ({ ...prev, email: true }))}
+              onBlur={() => setTouched((prev) => ({ ...prev, email: true }))}
+              placeholder="name@business.com"
+              aria-label={t.auth?.email || 'Email'}
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+              className="w-full bg-transparent px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+            />
+          </div>
+          {fieldErrors.email && (
+            <p id="email-error" className="mt-1 text-[11px] font-medium text-error">
+              {fieldErrors.email}
+            </p>
+          )}
+        </div>
 
-                <input
-                  id={`reg-${key}`}
-                  type={type}
-                  required
-                  autoComplete={autoComplete}
-                  value={form[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                  onBlur={() => setTouched({ ...touched, [key]: true })}
-                  placeholder={ph}
-                  aria-invalid={!!message}
-                  aria-describedby={message ? `reg-${key}-error` : undefined}
-                  className={`w-full rounded-xl py-3 text-sm font-medium outline-none transition-all ${
-                    isRTL ? 'pr-10' : 'pl-10'
-                  } ${isPasswordField ? (isRTL ? 'pl-11' : 'pr-11') : isRTL ? 'pl-4' : 'pr-4'} ${
-                    message
-                      ? 'border border-error bg-error/5 focus:border-error focus:ring-2 focus:ring-error/20'
-                      : 'border border-border bg-surface-secondary/50 focus:border-brand focus:bg-surface-elevated focus:ring-2 focus:ring-brand/20'
-                  }`}
+        {/* Password & Confirm Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="mb-1.5 block text-xs font-bold text-text-primary">
+              {t.auth?.password || 'Password'}
+            </label>
+            <div
+              className={`group relative flex items-center rounded-xl border bg-surface/80 px-3.5 py-2.5 shadow-sm transition-all duration-200 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 ${
+                fieldErrors.password ? 'border-error/80 bg-error/5' : 'border-border hover:border-border-hover'
+              }`}
+            >
+              <Lock size={16} className="shrink-0 text-text-tertiary group-focus-within:text-brand" />
+              <input
+                id="password"
+                name="password"
+                type={showPass ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onFocus={() => setTouched((prev) => ({ ...prev, password: true }))}
+                onBlur={() => setTouched((prev) => ({ ...prev, password: true }))}
+                placeholder="••••••••"
+                aria-label={t.auth?.password || 'Password'}
+                aria-invalid={!!fieldErrors.password}
+                className="w-full bg-transparent px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                aria-label={showPass ? 'Hide password' : 'Show password'}
+                className="text-text-tertiary hover:text-text-primary focus:outline-none"
+              >
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label htmlFor="confirm" className="mb-1.5 block text-xs font-bold text-text-primary">
+              {t.auth?.confirmPassword || 'Confirm Password'}
+            </label>
+            <div
+              className={`group relative flex items-center rounded-xl border bg-surface/80 px-3.5 py-2.5 shadow-sm transition-all duration-200 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 ${
+                fieldErrors.confirm || confirmMismatch ? 'border-error/80 bg-error/5' : 'border-border hover:border-border-hover'
+              }`}
+            >
+              <Lock size={16} className="shrink-0 text-text-tertiary group-focus-within:text-brand" />
+              <input
+                id="confirm"
+                name="confirm"
+                type={showConfirm ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={form.confirm}
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                onFocus={() => setTouched((prev) => ({ ...prev, confirm: true }))}
+                onBlur={() => setTouched((prev) => ({ ...prev, confirm: true }))}
+                placeholder="••••••••"
+                aria-label={t.auth?.confirmPassword || 'Confirm Password'}
+                aria-invalid={!!fieldErrors.confirm || confirmMismatch}
+                className="w-full bg-transparent px-3 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                className="text-text-tertiary hover:text-text-primary focus:outline-none"
+              >
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Password Strength Meter & Match Status */}
+        {form.password && (
+          <div className="space-y-1.5 rounded-xl border border-border/60 bg-surface/60 p-2.5 text-xs">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-text-secondary">Password strength:</span>
+              <span className="font-bold" style={{ color: strengthColor }}>
+                {strengthText}
+              </span>
+            </div>
+            {/* 4-bar progress indicator */}
+            <div className="grid grid-cols-4 gap-1.5">
+              {[1, 2, 3, 4].map((step) => (
+                <div
+                  key={step}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{
+                    backgroundColor: step <= strengthLevel ? strengthColor : 'var(--border)',
+                  }}
                 />
+              ))}
+            </div>
 
-                {isPasswordField && (
-                  <button
-                    type="button"
-                    onClick={toggleFn}
-                    className={`absolute top-1/2 -translate-y-1/2 rounded-md p-1.5 text-text-tertiary transition-colors hover:text-text-primary ${
-                      isRTL ? 'left-2.5' : 'right-2.5'
-                    }`}
-                    aria-label={showToggle ? 'Hide password' : 'Show password'}
-                  >
-                    {showToggle ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+            {/* Passwords Match status */}
+            {form.confirm && (
+              <div className="mt-1 flex items-center gap-1.5 text-[11px]">
+                {passwordsMatch ? (
+                  <span className="inline-flex items-center gap-1 text-emerald-500 font-medium">
+                    <CheckCircle2 size={12} />
+                    <span>{isRTL ? 'كلمات المرور متطابقة' : 'Passwords match'}</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-error font-medium">
+                    <AlertCircle size={12} />
+                    <span>{t.auth?.passwordsMismatch || 'Passwords do not match'}</span>
+                  </span>
                 )}
               </div>
-
-              {/* Password Strength Meter (under password field) */}
-              {key === 'password' && form.password.length > 0 && (
-                <div className="mt-2 space-y-1.5 pt-0.5">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="text-text-tertiary">
-                      {isRTL ? 'قوة كلمة المرور:' : 'Password strength:'}
-                    </span>
-                    <span className="font-bold" style={{ color: strengthColor }}>
-                      {strengthText}
-                    </span>
-                  </div>
-                  <div className="flex h-1.5 gap-1.5 overflow-hidden rounded-full bg-border">
-                    {[1, 2, 3, 4].map((level) => (
-                      <div
-                        key={level}
-                        className="h-full flex-1 rounded-full transition-all duration-300"
-                        style={{
-                          background: level <= strengthLevel ? strengthColor : 'transparent',
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Password match check (under confirm field) */}
-              {key === 'confirm' && form.confirm.length > 0 && (
-                <div className="pt-0.5">
-                  <span
-                    className={`flex items-center gap-1.5 text-xs font-semibold ${
-                      passwordsMatch ? 'text-success' : 'text-error'
-                    }`}
-                  >
-                    {passwordsMatch ? (
-                      <>
-                        <CheckCircle2 size={13} />
-                        <span>{isRTL ? 'كلمات المرور متطابقة' : 'Passwords match'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertCircle size={13} />
-                        <span>{isRTL ? 'كلمات المرور غير متطابقة' : 'Passwords do not match'}</span>
-                      </>
-                    )}
-                  </span>
-                </div>
-              )}
-
-              {/* Error Message */}
-              <AnimatePresence>
-                {message && (
-                  <motion.p
-                    id={`reg-${key}-error`}
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="text-xs font-semibold text-error"
-                  >
-                    {message}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          )
-        })}
+            )}
+          </div>
+        )}
 
         {/* Terms and Privacy Checkbox */}
-        <div className="pt-2">
-          <label htmlFor="reg-terms" className="flex items-start gap-2.5 cursor-pointer text-xs leading-relaxed text-text-secondary">
+        <div className="pt-1">
+          <label className="flex cursor-pointer items-start gap-2.5 select-none">
             <Checkbox
-              id="reg-terms"
-              required
               checked={termsAccepted}
-              onChange={setTermsAccepted}
-              onBlur={() => setTouched({ ...touched, terms: true })}
-              ariaInvalid={!!termsError}
-              ariaDescribedBy={termsError ? 'reg-terms-error' : undefined}
-              label={
-                <span>
-                  {isRTL ? 'أوافق على ' : 'I agree to the '}
-                  <Link
-                    href="/terms"
-                    target="_blank"
-                    className="font-bold text-brand hover:underline"
-                  >
-                    {isRTL ? 'شروط الخدمة' : 'Terms of Service'}
-                  </Link>
-                  {isRTL ? ' و' : ' and '}
-                  <Link
-                    href="/privacy"
-                    target="_blank"
-                    className="font-bold text-brand hover:underline"
-                  >
-                    {isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}
-                  </Link>
-                </span>
-              }
+              onChange={(checked) => {
+                setTermsAccepted(checked)
+                setTouched((prev) => ({ ...prev, terms: true }))
+              }}
+              aria-label="I agree to the terms and privacy policy"
             />
+            <span className="text-xs leading-relaxed text-text-secondary">
+              {isRTL ? (
+                <>
+                  أوافق على{' '}
+                  <Link href="/terms" className="text-brand hover:underline font-semibold">
+                    شروط الخدمة
+                  </Link>{' '}
+                  و{' '}
+                  <Link href="/privacy" className="text-brand hover:underline font-semibold">
+                    سياسة الخصوصية
+                  </Link>
+                </>
+              ) : (
+                <>
+                  I agree to the{' '}
+                  <Link href="/terms" className="text-brand hover:underline font-semibold">
+                    Terms of Service
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/privacy" className="text-brand hover:underline font-semibold">
+                    Privacy Policy
+                  </Link>
+                </>
+              )}
+            </span>
           </label>
-          <AnimatePresence>
-            {termsError && (
-              <motion.p
-                id="reg-terms-error"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                className="mt-1 text-xs font-semibold text-error"
-              >
-                {termsError}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {termsError && <p className="mt-1 text-[11px] font-medium text-error">{termsError}</p>}
         </div>
 
         {/* Submit Button */}
-        <motion.button
+        <button
           type="submit"
           disabled={loading || successPulse}
-          whileHover={!loading && !successPulse ? { scale: 1.015, y: -1 } : {}}
-          whileTap={!loading && !successPulse ? { scale: 0.985 } : {}}
-          className="group relative mt-2 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl py-3.5 text-sm font-black text-white shadow-lg transition-all disabled:cursor-not-allowed disabled:opacity-70"
-          style={{
-            background: 'linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%)',
-            boxShadow: '0 8px 24px -4px rgba(23, 105, 255, 0.4)',
-          }}
+          className="relative mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand via-brand to-brand-violet py-3 px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition-all duration-200 hover:brightness-110 hover:shadow-brand/40 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50"
         >
-          {/* Shimmer sweep effect */}
-          <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 opacity-0 transition-all duration-700 group-hover:left-[120%] group-hover:opacity-30 bg-gradient-to-r from-transparent via-white to-transparent" />
-
-          {successPulse ? (
+          {loading ? (
             <>
-              <Check size={18} className="animate-bounce" />
-              <span>{isRTL ? 'تم إنشاء الحساب بنجاح!' : 'Account Created!'}</span>
-            </>
-          ) : loading ? (
-            <>
-              <Loader2 size={18} className="animate-spin" />
-              <span>{isRTL ? 'جارٍ تهيئة حسابك...' : 'Initializing account...'}</span>
+              <Loader2 size={16} className="animate-spin" />
+              <span>{isRTL ? 'جارٍ إنشاء الحساب...' : 'Creating account...'}</span>
             </>
           ) : (
             <>
-              <span>{t.auth.signUp}</span>
-              <span className="font-normal opacity-80">
-                ({planChoice === 'trial' ? (isRTL ? '14 يوماً بمزايا الأعمال' : '14 days of Business features') : (isRTL ? 'متابعة الدفع' : 'Proceed')})
+              <span>
+                {planChoice === 'trial'
+                  ? isRTL
+                    ? 'بدء التجربة المجانية لمدة 14 يوماً'
+                    : 'Start 14-Day Free Trial'
+                  : isRTL
+                  ? 'المتابعة للدفع وتفعيل الحساب'
+                  : 'Continue to Payment & Setup'}
               </span>
+              {isRTL ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
             </>
           )}
-        </motion.button>
+        </button>
       </form>
 
-      {/* Trust Badges */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-4 border-t border-border/80 pt-4 text-[11px] text-text-tertiary">
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck size={14} className="text-brand" />
-          <span>{isRTL ? 'تشفير آمن 256-bit' : '256-bit Encryption'}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Zap size={14} className="text-warning" />
-          <span>{isRTL ? 'إعداد فوري خلال 3 دقائق' : 'Ready in 3 Minutes'}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <CreditCard size={14} className="text-success" />
-          <span>{isRTL ? 'بدون بطاقة ائتمان' : 'No Card Required'}</span>
-        </div>
-      </div>
-
-      {/* Footer Link to Login */}
-      <p className="mt-6 text-center text-xs text-text-secondary">
-        {t.auth.hasAccount}{' '}
+      {/* Switch to Login */}
+      <div className="mt-6 text-center text-xs text-text-secondary">
+        <span>{t.auth?.hasAccount || (isRTL ? 'لديك حساب بالفعل؟' : 'Already have an account?')} </span>
         <Link
-          href="/login"
+          href={`/login${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`}
           className="font-bold text-brand transition-colors hover:text-brand-hover hover:underline"
         >
-          {t.auth.signIn}
+          {t.auth?.signIn || (isRTL ? 'تسجيل الدخول' : 'Sign In')}
         </Link>
-      </p>
+      </div>
     </motion.div>
   )
 }
