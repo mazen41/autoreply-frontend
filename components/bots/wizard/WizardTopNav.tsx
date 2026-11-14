@@ -11,6 +11,7 @@ interface WizardTopNavProps {
   totalSteps: number
   onExit: () => void
   dirty?: boolean
+  mode?: 'create' | 'edit'
 }
 
 const STEP_TITLES_EN = [
@@ -38,6 +39,7 @@ export default function WizardTopNav({
   totalSteps,
   onExit,
   dirty = false,
+  mode = 'create',
 }: WizardTopNavProps) {
   const { isRTL, t } = useLang()
   const progressPercent = Math.min(100, Math.round((currentStep / totalSteps) * 100))
@@ -67,7 +69,13 @@ export default function WizardTopNav({
                 Naz <span className="text-brand">AutoReply</span>
               </span>
               <span className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
-                {isRTL ? 'استوديو بناء الذكاء الاصطناعي' : 'AI Bot Studio'}
+                {mode === 'edit'
+                  ? isRTL
+                    ? 'تعديل الوكيل الذكي'
+                    : 'Edit Bot Studio'
+                  : isRTL
+                  ? 'استوديو بناء الذكاء الاصطناعي'
+                  : 'AI Bot Studio'}
               </span>
             </div>
           </Link>

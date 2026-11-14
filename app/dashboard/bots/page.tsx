@@ -82,8 +82,7 @@ export default function BotsPage() {
   }
 
   function openEdit(bot: BotRecord) {
-    setEditingBot(bot)
-    setModalOpen(true)
+    router.push(`/dashboard/bots/${bot.id}/edit`)
   }
 
   const changeStatus = async (bot: BotRecord, status: 'active' | 'inactive') => {

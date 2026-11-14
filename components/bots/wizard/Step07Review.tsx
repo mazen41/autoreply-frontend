@@ -26,6 +26,7 @@ interface Step07ReviewProps {
   onEditStep: (stepNumber: number) => void
   isSuccess?: boolean
   createdBotId?: number | null
+  mode?: 'create' | 'edit'
 }
 
 export default function Step07Review({
@@ -45,6 +46,7 @@ export default function Step07Review({
   onEditStep,
   isSuccess = false,
   createdBotId = null,
+  mode = 'create',
 }: Step07ReviewProps) {
   const { isRTL, t } = useLang()
   const copy = t.botCreationWizard || {}
@@ -83,16 +85,19 @@ export default function Step07Review({
 
         <div className="space-y-2">
           <span className="inline-block rounded-full bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1 text-xs font-bold text-emerald-300">
-            {isRTL ? 'تم التدشين بنجاح' : 'Ready & Deployed'}
+            {mode === 'edit'
+              ? isRTL ? 'تم التحديث بنجاح' : 'Updated & Synced'
+              : isRTL ? 'تم التدشين بنجاح' : 'Ready & Deployed'}
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            {copy.successHeading || (isRTL ? 'تهانينا! أصبح وكيلك الذكي جاهزاً للعمل' : 'Congratulations! Your Bot is Alive')}
+            {mode === 'edit'
+              ? copy.editSuccessHeading || (isRTL ? 'تم تحديث الوكيل بنجاح' : 'Bot Updated Successfully')
+              : copy.successHeading || (isRTL ? 'تهانينا! أصبح وكيلك الذكي جاهزاً للعمل' : 'Congratulations! Your Bot is Alive')}
           </h1>
           <p className="text-sm text-text-secondary leading-relaxed max-w-md mx-auto">
-            {copy.successMessage ||
-              (isRTL
-                ? `تم إنشاء الوكيل "${botName}" بنجاح وتجهيز كافة القنوات المعينة لبدء تقديم الردود فوراً.`
-                : `Your bot "${botName}" was created successfully and is ready to deliver fast, delightful customer experiences.`)}
+            {mode === 'edit'
+              ? copy.editSuccessMessage || (isRTL ? `تم حفظ كافة التعديلات على الوكيل "${botName}" وتحديث إعدادات القنوات بنجاح.` : `All changes to "${botName}" have been saved and synced across all channels.`)
+              : copy.successMessage || (isRTL ? `تم إنشاء الوكيل "${botName}" بنجاح وتجهيز كافة القنوات المعينة لبدء تقديم الردود فوراً.` : `Your bot "${botName}" was created successfully and is ready to deliver fast, delightful customer experiences.`)}
           </p>
         </div>
 

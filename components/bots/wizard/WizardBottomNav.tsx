@@ -12,6 +12,7 @@ interface WizardBottomNavProps {
   isSubmitting?: boolean
   canProceed?: boolean
   dirty?: boolean
+  mode?: 'create' | 'edit'
 }
 
 export default function WizardBottomNav({
@@ -22,6 +23,7 @@ export default function WizardBottomNav({
   isSubmitting = false,
   canProceed = true,
   dirty = false,
+  mode = 'create',
 }: WizardBottomNavProps) {
   const { isRTL, t } = useLang()
   const copy = t.botCreationWizard || {}
@@ -66,12 +68,20 @@ export default function WizardBottomNav({
               {isSubmitting ? (
                 <>
                   <LoaderCircle size={15} className="animate-spin" />
-                  <span>{copy.creating || (isRTL ? 'جارٍ تدشين الوكيل...' : 'Creating Bot...')}</span>
+                  <span>
+                    {mode === 'edit'
+                      ? copy.savingChanges || (isRTL ? 'جارٍ حفظ التعديلات...' : 'Saving Changes...')
+                      : copy.creating || (isRTL ? 'جارٍ تدشين الوكيل...' : 'Creating Bot...')}
+                  </span>
                 </>
               ) : (
                 <>
                   <Sparkles size={15} />
-                  <span>{copy.createBot || (isRTL ? 'إنشاء الوكيل الآن' : 'Create My Bot')}</span>
+                  <span>
+                    {mode === 'edit'
+                      ? copy.saveChanges || (isRTL ? 'حفظ التعديلات' : 'Save Changes')
+                      : copy.createBot || (isRTL ? 'إنشاء الوكيل الآن' : 'Create My Bot')}
+                  </span>
                 </>
               )}
             </button>

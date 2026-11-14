@@ -426,8 +426,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
-  // Full-screen dedicated experiences (e.g. Bot Creation Wizard) completely bypass dashboard chrome
-  if (pathname?.startsWith('/dashboard/bots/create')) {
+  // Full-screen dedicated experiences (e.g. Bot Creation & Edit Wizard) completely bypass dashboard chrome
+  if (
+    pathname?.startsWith('/dashboard/bots/create') ||
+    (pathname?.startsWith('/dashboard/bots/') && pathname?.endsWith('/edit'))
+  ) {
     return <>{children}</>
   }
 
