@@ -460,6 +460,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* ── Sidebar ─────────────────────────────────────────────────── */}
         <aside
           role="navigation"
+          data-lenis-prevent
           aria-label={isRTL ? 'قائمة التنقل الرئيسية' : 'Main navigation'}
           style={{ width: sidebarW }}
           className={[
@@ -577,7 +578,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* ── Navigation items ──────────────────────────────────────── */}
-          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 scrollbar-none">
+          <nav data-lenis-prevent className="flex-1 overflow-y-auto overflow-x-hidden py-3 scrollbar-none">
             <div className="px-3 space-y-4">
               {NAV_GROUPS.map((group, groupIdx) => (
                 <div key={group.groupKey}>

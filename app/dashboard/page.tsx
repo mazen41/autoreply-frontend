@@ -14,6 +14,8 @@ import { MetricCardSkeleton } from '../../components/ui/Skeleton'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import { useLang } from '../../lib/LangContext'
 import HandoffTaskQueue from '../../components/inbox/HandoffTaskQueue'
+import Dashboard3DVisual from '../../components/dashboard/Dashboard3DVisual'
+import { GsapStaggerGroup } from '../../components/dashboard/DashboardGsapEffects'
 import {
   MessageSquare,
   Sparkles,
@@ -528,38 +530,59 @@ export default function DashboardPage() {
           Uses a hairline bottom border and a faint brand tint to separate
           it from the metric rows below without a heavy card.
       ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="mb-8">
-        {/* Title row */}
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          {/* Left: title + sub-line */}
-          <div className="flex items-start gap-3">
-            {/* Brand accent */}
-            <div
-              className="mt-1 w-[3px] self-stretch rounded-full bg-brand/70 shrink-0"
-              aria-hidden="true"
-            />
-            <div>
-              <h1 className="text-2xl sm:text-[1.75rem] font-bold tracking-tight text-text-primary leading-tight">
-                {label('Command Center', 'مركز التحكم')}
-              </h1>
-              <p className="mt-1 text-[13px] text-text-tertiary leading-relaxed">
-                {label('Omnichannel performance · AI agent metrics · real-time conversation feed', 'أداء جميع القنوات · مؤشرات الوكلاء · المحادثات أولاً بأول')}
-              </p>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          COMMAND CENTER HERO — 3D TELEMETRY & FILTER CONTROLS
+          Features interactive Three.js 3D channel node visual alongside
+          filter controls with full RTL/LTR responsiveness and zero lag.
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-8 overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-b from-surface/90 via-surface/60 to-surface/40 p-5 shadow-xl shadow-brand/5 backdrop-blur-xl sm:p-7">
+        {/* Top Hero Row: Title & 3D Interactive Visual */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Left: Operational telemetry info */}
+          <div className="flex-1 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[11px] font-semibold text-brand">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+              </span>
+              <span>{label('LIVE TELEMETRY · GLOBAL AI MESH', 'البث المباشر · الشبكة الذكية العالمية')}</span>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div
+                className="mt-1.5 w-[3px] self-stretch rounded-full bg-brand/80 shrink-0"
+                aria-hidden="true"
+              />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-primary leading-tight">
+                  {label('Command Center', 'مركز التحكم')}
+                </h1>
+                <p className="mt-1 max-w-xl text-[13px] text-text-tertiary leading-relaxed">
+                  {label(
+                    'Autonomous Omnichannel AI · Real-time conversation intelligence across WhatsApp, Instagram, Telegram & Stores.',
+                    'الذكاء الاصطناعي المستقل لجميع القنوات · تحليل فوري للمحادثات عبر واتساب، إنستغرام، تيليجرام والمتاجر.'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-1">
+              <Link href="/dashboard/channels">
+                <Button variant="primary" size="md" icon={<Plus size={15} />}>
+                  {label('Connect channel', 'ربط قناة')}
+                </Button>
+              </Link>
             </div>
           </div>
 
-          {/* Right: primary CTA */}
-          <div className="shrink-0 self-start">
-            <Link href="/dashboard/channels">
-              <Button variant="primary" size="md" icon={<Plus size={15} />}>
-                {label('Connect channel', 'ربط قناة')}
-              </Button>
-            </Link>
+          {/* Right: Three.js 3D Interactive Telemetry Sphere */}
+          <div className="w-full lg:w-[380px] xl:w-[440px] shrink-0">
+            <Dashboard3DVisual className="h-[180px] sm:h-[200px] w-full" />
           </div>
         </div>
 
-        {/* Filter bar — sits below the title, full-width, separated by a subtle rule */}
-        <div className="mt-6 rounded-2xl border border-border/70 bg-surface/70 p-3 sm:p-4">
+        {/* Filter bar — sits below the hero visual */}
+        <div className="mt-6 border-t border-border/60 pt-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:w-[min(100%,34rem)]">
               <Select
@@ -570,7 +593,7 @@ export default function DashboardPage() {
                 onValueChange={setSelectedChannelId}
                 size="md"
                 className="w-full"
-                triggerClassName="h-10 rounded-xl bg-background/70"
+                triggerClassName="h-10 rounded-xl bg-background/80"
               />
               <Select
                 id="dashboard-agent-filter"
@@ -580,7 +603,7 @@ export default function DashboardPage() {
                 onValueChange={setSelectedBotId}
                 size="md"
                 className="w-full"
-                triggerClassName="h-10 rounded-xl bg-background/70"
+                triggerClassName="h-10 rounded-xl bg-background/80"
               />
             </div>
 
@@ -592,7 +615,7 @@ export default function DashboardPage() {
               <div
                 role="group"
                 aria-label={label('Time range', 'النطاق الزمني')}
-                className="inline-flex w-fit items-center rounded-xl border border-border bg-background/70 p-1"
+                className="inline-flex w-fit items-center rounded-xl border border-border bg-background/80 p-1"
               >
                 {(['7d', '30d', '90d'] as const).map((range, index) => (
                   <button
@@ -631,87 +654,89 @@ export default function DashboardPage() {
           with the brand colour. The three supporting stats sit beside it in
           a compact column on desktop and stack on mobile.
       ═══════════════════════════════════════════════════════════════════════ */}
-      <motion.section
-        aria-label={label('Key metrics', 'المؤشرات الرئيسية')}
-        className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-        variants={variants.staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* ── Hero: Total messages ── */}
-        <motion.div
-          variants={variants.fadeUp}
-          transition={springs.standard}
-          className="sm:col-span-2 lg:col-span-1"
+      <GsapStaggerGroup className="mb-6">
+        <motion.section
+          aria-label={label('Key metrics', 'المؤشرات الرئيسية')}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+          variants={variants.staggerContainer}
+          initial="hidden"
+          animate="visible"
         >
-          {sectionLoading.stats ? (
-            <MetricCardSkeleton />
-          ) : sectionErrors.stats ? (
-            <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} />
-          ) : (
-            <MetricCard
-              label={label('Total Messages', 'إجمالي الرسائل')}
-              helpText={label('Inbound and outbound messages counted for the selected period and filters.', 'إجمالي الرسائل الواردة والصادرة خلال الفترة والفلاتر المحددة.')}
-              value={(stats?.total_messages ?? 0).toLocaleString()}
-              subValue={`${periodLabel} · ${selectedChannel?.page_name || selectedChannel?.type || label('all channels', 'كل القنوات')}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
-              variant="hero"
-              icon={<MessageSquare size={17} />}
-            />
-          )}
-        </motion.div>
+          {/* ── Hero: Total messages ── */}
+          <motion.div
+            variants={variants.fadeUp}
+            transition={springs.standard}
+            className="sm:col-span-2 lg:col-span-1"
+          >
+            {sectionLoading.stats ? (
+              <MetricCardSkeleton />
+            ) : sectionErrors.stats ? (
+              <SectionError message={sectionErrors.stats} onRetry={() => void loadStats()} />
+            ) : (
+              <MetricCard
+                label={label('Total Messages', 'إجمالي الرسائل')}
+                helpText={label('Inbound and outbound messages counted for the selected period and filters.', 'إجمالي الرسائل الواردة والصادرة خلال الفترة والفلاتر المحددة.')}
+                value={(stats?.total_messages ?? 0).toLocaleString()}
+                subValue={`${periodLabel} · ${selectedChannel?.page_name || selectedChannel?.type || label('all channels', 'كل القنوات')}${selectedBot ? ` · ${selectedBot.name}` : ''}`}
+                variant="hero"
+                icon={<MessageSquare size={17} />}
+              />
+            )}
+          </motion.div>
 
-        {/* ── AI share ── */}
-        <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.ai ? (
-            <MetricCardSkeleton />
-          ) : sectionErrors.ai ? (
-            <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
-          ) : (
-            <MetricCard
-              label={label('AI Reply Rate', 'معدل ردود الذكاء الاصطناعي')}
-              helpText={label('Share of eligible conversations that received an automated AI reply in this period.', 'نسبة المحادثات المؤهلة التي تلقت ردًا آليًا من الذكاء الاصطناعي خلال هذه الفترة.')}
-              value={`${aiShare}%`}
-              subValue={`${autoReplies.toLocaleString(isRTL ? 'ar-EG' : 'en-US')} ${label('auto-replies', 'رد تلقائي')}`}
-              variant="ai"
-              icon={<Sparkles size={17} />}
-            />
-          )}
-        </motion.div>
+          {/* ── AI share ── */}
+          <motion.div variants={variants.fadeUp} transition={springs.standard}>
+            {sectionLoading.ai ? (
+              <MetricCardSkeleton />
+            ) : sectionErrors.ai ? (
+              <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
+            ) : (
+              <MetricCard
+                label={label('AI Reply Rate', 'معدل ردود الذكاء الاصطناعي')}
+                helpText={label('Share of eligible conversations that received an automated AI reply in this period.', 'نسبة المحادثات المؤهلة التي تلقت ردًا آليًا من الذكاء الاصطناعي خلال هذه الفترة.')}
+                value={`${aiShare}%`}
+                subValue={`${autoReplies.toLocaleString(isRTL ? 'ar-EG' : 'en-US')} ${label('auto-replies', 'رد تلقائي')}`}
+                variant="ai"
+                icon={<Sparkles size={17} />}
+              />
+            )}
+          </motion.div>
 
-        {/* ── Response time ── */}
-        <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.ai ? (
-            <MetricCardSkeleton />
-          ) : sectionErrors.ai ? (
-            <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
-          ) : (
-            <MetricCard
-              label={label('Median Response', 'متوسط زمن الرد')}
-              helpText={label('Median time between a customer message and the first reply recorded for it.', 'الوقت الوسيط بين رسالة العميل وأول رد مسجل عليها.')}
-              value={aiPerformance?.median_response_time_formatted || '—'}
-              subValue={label('Message to first reply', 'من استلام الرسالة إلى أول رد')}
-              icon={<Clock size={17} />}
-            />
-          )}
-        </motion.div>
+          {/* ── Response time ── */}
+          <motion.div variants={variants.fadeUp} transition={springs.standard}>
+            {sectionLoading.ai ? (
+              <MetricCardSkeleton />
+            ) : sectionErrors.ai ? (
+              <SectionError message={sectionErrors.ai} onRetry={() => void loadAi()} />
+            ) : (
+              <MetricCard
+                label={label('Median Response', 'متوسط زمن الرد')}
+                helpText={label('Median time between a customer message and the first reply recorded for it.', 'الوقت الوسيط بين رسالة العميل وأول رد مسجل عليها.')}
+                value={aiPerformance?.median_response_time_formatted || '—'}
+                subValue={label('Message to first reply', 'من استلام الرسالة إلى أول رد')}
+                icon={<Clock size={17} />}
+              />
+            )}
+          </motion.div>
 
-        {/* ── Channels ── */}
-        <motion.div variants={variants.fadeUp} transition={springs.standard}>
-          {sectionLoading.channels ? (
-            <MetricCardSkeleton />
-          ) : sectionErrors.channels ? (
-            <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
-          ) : (
-            <MetricCard
-              label={label('Active Channels', 'القنوات النشطة')}
-              helpText={label('Connected channel accounts available to this workspace.', 'حسابات القنوات المتصلة والمتاحة لمساحة العمل هذه.')}
-              value={channels.length}
-              subValue={label('Connected accounts', 'الحسابات المتصلة')}
-              icon={<Radio size={17} />}
-            />
-          )}
-        </motion.div>
-      </motion.section>
+          {/* ── Channels ── */}
+          <motion.div variants={variants.fadeUp} transition={springs.standard}>
+            {sectionLoading.channels ? (
+              <MetricCardSkeleton />
+            ) : sectionErrors.channels ? (
+              <SectionError message={sectionErrors.channels} onRetry={() => void loadChannels()} />
+            ) : (
+              <MetricCard
+                label={label('Active Channels', 'القنوات النشطة')}
+                helpText={label('Connected channel accounts available to this workspace.', 'حسابات القنوات المتصلة والمتاحة لمساحة العمل هذه.')}
+                value={channels.length}
+                subValue={label('Connected accounts', 'الحسابات المتصلة')}
+                icon={<Radio size={17} />}
+              />
+            )}
+          </motion.div>
+        </motion.section>
+      </GsapStaggerGroup>
 
 
       {/* ═══════════════════════════════════════════════════════════════════════

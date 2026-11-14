@@ -10,6 +10,7 @@ import EmptyState from '../../../components/ui/EmptyState'
 import ChannelIcon from '../../../components/ui/ChannelIcon'
 import Select from '../../../components/ui/Select'
 import BotWizardModal from '../../../components/bots/BotWizardModal'
+import { GsapStaggerGroup } from '../../../components/dashboard/DashboardGsapEffects'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 
@@ -155,14 +156,28 @@ export default function BotsPage() {
       {error && <div role="alert" className="flex items-start gap-3 rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-error"><AlertCircle size={16} className="mt-0.5 shrink-0" /><span className="flex-1">{error}</span><Button variant="outline" size="sm" onClick={() => void fetchBots()}>{isRTL ? 'إعادة المحاولة' : 'Retry'}</Button></div>}
       {notice && <div role="status" className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/5 p-3 text-sm text-success"><CheckCircle2 size={16} />{notice}</div>}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label={isRTL ? 'ملخص الوكلاء' : 'Agent summary'}>
-        {[
-          { label: isRTL ? 'إجمالي الوكلاء' : 'Total agents', value: bots.length, icon: <Bot size={19} />, tone: 'text-brand bg-brand/10 border-brand/20' },
-          { label: isRTL ? 'نشط' : 'Active', value: activeCount, icon: <Radio size={19} />, tone: 'text-success bg-success/10 border-success/20' },
-          { label: isRTL ? 'الردود جاهزة' : 'Reply ready', value: readyCount, icon: <CheckCircle2 size={19} />, tone: 'text-success bg-success/10 border-success/20' },
-          { label: isRTL ? 'متوقف أو مسودة' : 'Paused or draft', value: bots.length - activeCount, icon: <Pause size={19} />, tone: 'text-warning bg-warning/10 border-warning/20' },
-        ].map(metric => <Card key={metric.label} className="border-border bg-surface-card"><CardContent className="flex items-center justify-between gap-3 p-4"><div><p className="text-xs font-medium text-text-secondary">{metric.label}</p><p className="mt-1 text-2xl font-bold tabular-nums text-text-primary">{loading ? '—' : metric.value}</p></div><span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${metric.tone}`}>{metric.icon}</span></CardContent></Card>)}
-      </section>
+      <GsapStaggerGroup>
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label={isRTL ? 'ملخص الوكلاء' : 'Agent summary'}>
+          {[
+            { label: isRTL ? 'إجمالي الوكلاء' : 'Total agents', value: bots.length, icon: <Bot size={19} />, tone: 'text-brand bg-brand/10 border-brand/20' },
+            { label: isRTL ? 'نشط' : 'Active', value: activeCount, icon: <Radio size={19} />, tone: 'text-success bg-success/10 border-success/20' },
+            { label: isRTL ? 'الردود جاهزة' : 'Reply ready', value: readyCount, icon: <CheckCircle2 size={19} />, tone: 'text-success bg-success/10 border-success/20' },
+            { label: isRTL ? 'متوقف أو مسودة' : 'Paused or draft', value: bots.length - activeCount, icon: <Pause size={19} />, tone: 'text-warning bg-warning/10 border-warning/20' },
+          ].map(metric => (
+            <Card key={metric.label} className="border-border bg-surface-card transition-all duration-300 hover:border-brand/30 hover:shadow-lg hover:shadow-brand/5">
+              <CardContent className="flex items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="text-xs font-medium text-text-secondary">{metric.label}</p>
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-text-primary">{loading ? '—' : metric.value}</p>
+                </div>
+                <span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${metric.tone}`}>
+                  {metric.icon}
+                </span>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+      </GsapStaggerGroup>
 
       <section className="rounded-2xl border border-border bg-surface-card p-4 md:p-5" aria-label={isRTL ? 'تصفية الوكلاء' : 'Filter agents'}>
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
@@ -185,57 +200,61 @@ export default function BotsPage() {
       {loading ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" role="status">{[0, 1, 2].map(i => <div key={i} className="h-64 animate-pulse rounded-2xl border border-border bg-surface-card" />)}</div> : filteredBots.length === 0 ? (
         <Card className="py-10"><EmptyState icon={Bot} title={bots.length === 0 ? (isRTL ? 'لا يوجد وكلاء بعد' : 'No agents yet') : (isRTL ? 'لا توجد نتائج مطابقة' : 'No matching agents')} description={bots.length === 0 ? (isRTL ? 'أنشئ أول وكيل وحدد قنواته ومتاجره ومصادر المعرفة.' : 'Create your first agent and configure its channels, stores, and knowledge sources.') : (isRTL ? 'جرّب تغيير البحث أو الحالة.' : 'Try changing the search or status filter.')} primaryAction={bots.length === 0 ? <Button icon={<Plus size={14} />} size="sm" onClick={openCreate}>{isRTL ? 'إنشاء وكيل' : 'Create agent'}</Button> : undefined} /></Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredBots.map(bot => {
-            const assignments = bot.knowledge_assignments || bot.knowledgeAssignments || []
-            const commerce = bot.ecommerce_connections || []
-            const active = bot.status === 'active'
-            const ready = Boolean(bot.effective_ai_enabled)
-            const statusVariant = active ? 'success' : bot.status === 'draft' ? 'neutral' : 'warning'
-            const pauseReason = bot.ai_pause_reason === 'agent_inactive'
-              ? (isRTL ? 'الوكيل متوقف' : 'Agent paused')
-              : bot.ai_pause_reason === 'no_active_agent'
-                ? (isRTL ? 'لا يوجد وكيل نشط على القناة' : 'No active agent on channel')
-                : bot.ai_pause_reason === 'multiple_active_agents_without_primary'
-                  ? (isRTL ? 'اختر وكيلاً أساسياً للقناة' : 'Choose a primary agent for the channel')
-                  : (isRTL ? 'لا توجد قناة نشطة معيّنة' : 'No active channel assigned')
-            return <Card key={bot.id} className="flex min-w-0 flex-col border-border bg-surface-card transition-colors hover:border-border-hover">
-              <CardHeader className="pb-3">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand/20 bg-brand/10 text-brand"><Bot size={19} /></span>
-                  <div className="min-w-0 flex-1"><CardTitle className="truncate text-base">{bot.name}</CardTitle><p className="mt-1 truncate text-xs text-text-tertiary">{bot.ai_provider || (isRTL ? 'مزود الذكاء غير محدد' : 'AI provider not set')}{bot.ai_model ? ` · ${bot.ai_model}` : ''}</p></div>
-                  <Badge variant={statusVariant} size="xs" dot>{bot.status || 'unknown'}</Badge>
-                </div>
-                <div className={`mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${ready ? 'border-success/20 bg-success/5 text-success' : 'border-warning/20 bg-warning/5 text-warning'}`}>
-                  {ready ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <AlertCircle size={14} className="mt-0.5 shrink-0" />}
-                  <span>{ready ? (isRTL ? `الردود نشطة على ${bot.effective_ai_channels || 0} قناة` : `Replies active on ${bot.effective_ai_channels || 0} channel${bot.effective_ai_channels === 1 ? '' : 's'}`) : pauseReason}</span>
-                </div>
-              </CardHeader>
+        <GsapStaggerGroup>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filteredBots.map(bot => {
+              const assignments = bot.knowledge_assignments || bot.knowledgeAssignments || []
+              const commerce = bot.ecommerce_connections || []
+              const active = bot.status === 'active'
+              const ready = Boolean(bot.effective_ai_enabled)
+              const statusVariant = active ? 'success' : bot.status === 'draft' ? 'neutral' : 'warning'
+              const pauseReason = bot.ai_pause_reason === 'agent_inactive'
+                ? (isRTL ? 'الوكيل متوقف' : 'Agent paused')
+                : bot.ai_pause_reason === 'no_active_agent'
+                  ? (isRTL ? 'لا يوجد وكيل نشط على القناة' : 'No active agent on channel')
+                  : bot.ai_pause_reason === 'multiple_active_agents_without_primary'
+                    ? (isRTL ? 'اختر وكيلاً أساسياً للقناة' : 'Choose a primary agent for the channel')
+                    : (isRTL ? 'لا توجد قناة نشطة معيّنة' : 'No active channel assigned')
+              return (
+                <Card key={bot.id} className="flex min-w-0 flex-col border-border bg-surface-card transition-all duration-300 hover:border-brand/40 hover:shadow-lg hover:shadow-brand/5">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand/20 bg-brand/10 text-brand"><Bot size={19} /></span>
+                      <div className="min-w-0 flex-1"><CardTitle className="truncate text-base">{bot.name}</CardTitle><p className="mt-1 truncate text-xs text-text-tertiary">{bot.ai_provider || (isRTL ? 'مزود الذكاء غير محدد' : 'AI provider not set')}{bot.ai_model ? ` · ${bot.ai_model}` : ''}</p></div>
+                      <Badge variant={statusVariant} size="xs" dot>{bot.status || 'unknown'}</Badge>
+                    </div>
+                    <div className={`mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${ready ? 'border-success/20 bg-success/5 text-success' : 'border-warning/20 bg-warning/5 text-warning'}`}>
+                      {ready ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <AlertCircle size={14} className="mt-0.5 shrink-0" />}
+                      <span>{ready ? (isRTL ? `الردود نشطة على ${bot.effective_ai_channels || 0} قناة` : `Replies active on ${bot.effective_ai_channels || 0} channel${bot.effective_ai_channels === 1 ? '' : 's'}`) : pauseReason}</span>
+                    </div>
+                  </CardHeader>
 
-              <CardContent className="flex-1 space-y-4 pt-2">
-                <section>
-                  <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-text-secondary">{isRTL ? 'قنوات التواصل' : 'Communication channels'}</h3><span className="rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] tabular-nums text-text-tertiary">{bot.channels?.length || 0}</span></div>
-                  {bot.channels?.length ? <div className="flex flex-wrap gap-2">{bot.channels.map(channel => <span key={channel.id} title={channel.page_name || channel.page_id || channel.type} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-border bg-surface-elevated/60 px-2.5 py-1.5 text-xs text-text-primary"><ChannelIcon type={channel.type as any} size={14} /><span className="truncate">{channel.page_name || channel.type}</span>{channel.pivot?.is_primary && <Badge variant="brand" size="xs">{isRTL ? 'أساسي' : 'Primary'}</Badge>}</span>)}</div> : <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-tertiary">{isRTL ? 'لم يتم تعيين قنوات' : 'No channels assigned'}</p>}
-                </section>
+                  <CardContent className="flex-1 space-y-4 pt-2">
+                    <section>
+                      <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-text-secondary">{isRTL ? 'قنوات التواصل' : 'Communication channels'}</h3><span className="rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] tabular-nums text-text-tertiary">{bot.channels?.length || 0}</span></div>
+                      {bot.channels?.length ? <div className="flex flex-wrap gap-2">{bot.channels.map(channel => <span key={channel.id} title={channel.page_name || channel.page_id || channel.type} className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-border bg-surface-elevated/60 px-2.5 py-1.5 text-xs text-text-primary"><ChannelIcon type={channel.type as any} size={14} /><span className="truncate">{channel.page_name || channel.type}</span>{channel.pivot?.is_primary && <Badge variant="brand" size="xs">{isRTL ? 'أساسي' : 'Primary'}</Badge>}</span>)}</div> : <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-tertiary">{isRTL ? 'لم يتم تعيين قنوات' : 'No channels assigned'}</p>}
+                    </section>
 
-                <section>
-                  <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-text-secondary">{isRTL ? 'المتاجر' : 'Commerce stores'}</h3><span className="rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] tabular-nums text-text-tertiary">{commerce.length}</span></div>
-                  {commerce.length ? <ul className="space-y-1.5">{commerce.map(connection => <li key={connection.id} className="flex min-w-0 items-center gap-2 text-xs text-text-secondary"><Store size={13} className="shrink-0 text-text-tertiary" /><span className="min-w-0 truncate">{connection.type}{connection.page_name ? ` · ${connection.page_name}` : connection.page_id ? ` · ${connection.page_id}` : ''}</span>{connection.pivot?.is_default && <Badge variant="brand" size="xs">{isRTL ? 'افتراضي' : 'Default'}</Badge>}</li>)}</ul> : <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-tertiary">{isRTL ? 'لم يتم تعيين متجر' : 'No store assigned'}</p>}
-                </section>
+                    <section>
+                      <div className="mb-2 flex items-center justify-between gap-2"><h3 className="text-xs font-semibold text-text-secondary">{isRTL ? 'المتاجر' : 'Commerce stores'}</h3><span className="rounded-full bg-surface-elevated px-2 py-0.5 text-[10px] tabular-nums text-text-tertiary">{commerce.length}</span></div>
+                      {commerce.length ? <ul className="space-y-1.5">{commerce.map(connection => <li key={connection.id} className="flex min-w-0 items-center gap-2 text-xs text-text-secondary"><Store size={13} className="shrink-0 text-text-tertiary" /><span className="min-w-0 truncate">{connection.type}{connection.page_name ? ` · ${connection.page_name}` : connection.page_id ? ` · ${connection.page_id}` : ''}</span>{connection.pivot?.is_default && <Badge variant="brand" size="xs">{isRTL ? 'افتراضي' : 'Default'}</Badge>}</li>)}</ul> : <p className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-tertiary">{isRTL ? 'لم يتم تعيين متجر' : 'No store assigned'}</p>}
+                    </section>
 
-                <div className="flex items-center gap-2 border-t border-border/70 pt-3 text-xs text-text-tertiary"><BookOpen size={14} />{assignments.length} {isRTL ? 'مصادر معرفة' : `knowledge source${assignments.length === 1 ? '' : 's'}`}</div>
-              </CardContent>
+                    <div className="flex items-center gap-2 border-t border-border/70 pt-3 text-xs text-text-tertiary"><BookOpen size={14} />{assignments.length} {isRTL ? 'مصادر معرفة' : `knowledge source${assignments.length === 1 ? '' : 's'}`}</div>
+                  </CardContent>
 
-              <CardFooter className="flex-wrap justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" aria-label={active ? (isRTL ? 'إيقاف الوكيل' : 'Pause agent') : (isRTL ? 'تفعيل الوكيل' : 'Activate agent')} title={active ? (isRTL ? 'إيقاف الوكيل' : 'Pause agent') : (isRTL ? 'تفعيل الوكيل' : 'Activate agent')} disabled={busyBotId !== null} loading={busyBotId === bot.id} onClick={() => void changeStatus(bot, active ? 'inactive' : 'active')} icon={active ? <Pause size={15} /> : <Play size={15} />} />
-                  <Button variant="ghost" size="icon" aria-label={isRTL ? 'حذف الوكيل' : 'Delete agent'} title={isRTL ? 'حذف الوكيل' : 'Delete agent'} disabled={busyBotId !== null} onClick={() => void deleteBot(bot)} icon={<Trash2 size={15} className="text-error" />} />
-                </div>
-                <Button variant="secondary" size="sm" icon={<Pencil size={14} />} onClick={() => openEdit(bot)} disabled={busyBotId !== null}>{isRTL ? 'تعديل الإعدادات' : 'Edit configuration'}</Button>
-              </CardFooter>
-            </Card>
-          })}
-        </div>
+                  <CardFooter className="flex-wrap justify-between gap-2">
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="icon" aria-label={active ? (isRTL ? 'إيقاف الوكيل' : 'Pause agent') : (isRTL ? 'تفعيل الوكيل' : 'Activate agent')} title={active ? (isRTL ? 'إيقاف الوكيل' : 'Pause agent') : (isRTL ? 'تفعيل الوكيل' : 'Activate agent')} disabled={busyBotId !== null} loading={busyBotId === bot.id} onClick={() => void changeStatus(bot, active ? 'inactive' : 'active')} icon={active ? <Pause size={15} /> : <Play size={15} />} />
+                      <Button variant="ghost" size="icon" aria-label={isRTL ? 'حذف الوكيل' : 'Delete agent'} title={isRTL ? 'حذف الوكيل' : 'Delete agent'} disabled={busyBotId !== null} onClick={() => void deleteBot(bot)} icon={<Trash2 size={15} className="text-error" />} />
+                    </div>
+                    <Button variant="secondary" size="sm" icon={<Pencil size={14} />} onClick={() => openEdit(bot)} disabled={busyBotId !== null}>{isRTL ? 'تعديل الإعدادات' : 'Edit configuration'}</Button>
+                  </CardFooter>
+                </Card>
+              )
+            })}
+          </div>
+        </GsapStaggerGroup>
       )}
 
       {modalOpen && <BotWizardModal bot={editingBot} onClose={() => { setModalOpen(false); setEditingBot(null) }} onSaved={() => { setModalOpen(false); setEditingBot(null); void fetchBots() }} />}

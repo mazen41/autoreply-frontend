@@ -21,6 +21,7 @@ import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
 import Checkbox from '../../../components/ui/Checkbox'
 import Switch from '../../../components/ui/Switch'
 import Modal from '../../../components/ui/Modal'
+import { GsapStaggerGroup } from '../../../components/dashboard/DashboardGsapEffects'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 import {
@@ -692,61 +693,63 @@ export default function ChannelsPage() {
       )}
 
       {/* ─── Overview KPI Metrics Row ────────────────────────────────────── */}
-      <motion.div
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-        variants={variants.staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
-        {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCardSkeleton />
-            </motion.div>
-          ))
-        ) : (
-          <>
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label={isRTL ? 'الحسابات المتصلة' : 'Connected Accounts'}
-                value={totalConnected}
-                subValue={isRTL ? 'عبر جميع المنصات' : 'Across all platforms'}
-                icon={<Radio size={18} />}
-              />
-            </motion.div>
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label={isRTL ? 'أتمتة الذكاء الاصطناعي النشطة' : 'Active AI Automations'}
-                value={totalActiveAI}
-                subValue={isRTL ? 'تتعامل مع رسائل العملاء' : 'Handling customer DMs'}
-                icon={<Sparkles size={18} />}
-                variant="ai"
-              />
-            </motion.div>
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label={isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
-                value={totalNeedsAttention}
-                subValue={
-                  totalNeedsAttention > 0
-                    ? (isRTL ? 'إعادة ربط أو تنبيه' : 'Re-authentication or alert')
-                    : (isRTL ? 'كل الحسابات سليمة' : 'All accounts healthy')
-                }
-                icon={<AlertTriangle size={18} />}
-                variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
-              />
-            </motion.div>
-            <motion.div variants={variants.fadeUp} transition={springs.standard}>
-              <MetricCard
-                label={isRTL ? 'المنصات المتاحة' : 'Available Platforms'}
-                value={totalAvailable}
-                subValue={isRTL ? 'تكاملات جاهزة' : 'Ready integrations'}
-                icon={<Layers size={18} />}
-              />
-            </motion.div>
-          </>
-        )}
-      </motion.div>
+      <GsapStaggerGroup>
+        <motion.div
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          variants={variants.staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
+                <MetricCardSkeleton />
+              </motion.div>
+            ))
+          ) : (
+            <>
+              <motion.div variants={variants.fadeUp} transition={springs.standard}>
+                <MetricCard
+                  label={isRTL ? 'الحسابات المتصلة' : 'Connected Accounts'}
+                  value={totalConnected}
+                  subValue={isRTL ? 'عبر جميع المنصات' : 'Across all platforms'}
+                  icon={<Radio size={18} />}
+                />
+              </motion.div>
+              <motion.div variants={variants.fadeUp} transition={springs.standard}>
+                <MetricCard
+                  label={isRTL ? 'أتمتة الذكاء الاصطناعي النشطة' : 'Active AI Automations'}
+                  value={totalActiveAI}
+                  subValue={isRTL ? 'تتعامل مع رسائل العملاء' : 'Handling customer DMs'}
+                  icon={<Sparkles size={18} />}
+                  variant="ai"
+                />
+              </motion.div>
+              <motion.div variants={variants.fadeUp} transition={springs.standard}>
+                <MetricCard
+                  label={isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
+                  value={totalNeedsAttention}
+                  subValue={
+                    totalNeedsAttention > 0
+                      ? (isRTL ? 'إعادة ربط أو تنبيه' : 'Re-authentication or alert')
+                      : (isRTL ? 'كل الحسابات سليمة' : 'All accounts healthy')
+                  }
+                  icon={<AlertTriangle size={18} />}
+                  variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
+                />
+              </motion.div>
+              <motion.div variants={variants.fadeUp} transition={springs.standard}>
+                <MetricCard
+                  label={isRTL ? 'المنصات المتاحة' : 'Available Platforms'}
+                  value={totalAvailable}
+                  subValue={isRTL ? 'تكاملات جاهزة' : 'Ready integrations'}
+                  icon={<Layers size={18} />}
+                />
+              </motion.div>
+            </>
+          )}
+        </motion.div>
+      </GsapStaggerGroup>
 
       {/* ─── Filter Bar ──────────────────────────────────────────────────── */}
       <FilterBar

@@ -7,6 +7,7 @@ import MetricCard from '../../../components/ui/MetricCard'
 import Button from '../../../components/ui/Button'
 import Select from '../../../components/ui/Select'
 import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
+import { GsapStaggerGroup } from '../../../components/dashboard/DashboardGsapEffects'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 
@@ -146,31 +147,37 @@ export default function AnalyticsPage() {
       {loading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{Array.from({ length: 8 }).map((_, index) => <MetricCardSkeleton key={index} />)}</div> : data && <>
         <section aria-label={L('Conversation metrics', 'مؤشرات المحادثات')} className="space-y-3">
           <h2 className="text-base font-semibold text-text-primary">{L('Conversations', 'المحادثات')}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard label={L('Total', 'الإجمالي')} value={data.conversations?.total ?? 0} icon={<MessageSquare size={18} />} />
-            <MetricCard label={L('New in period', 'جديدة خلال الفترة')} value={data.conversations?.new ?? 0} icon={<Activity size={18} />} />
-            <MetricCard label={L('Open', 'مفتوحة')} value={data.conversations?.open ?? 0} icon={<MessageSquare size={18} />} />
-            <MetricCard label={L('Closed', 'مغلقة')} value={data.conversations?.closed ?? 0} icon={<MessageSquare size={18} />} />
-          </div>
+          <GsapStaggerGroup>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard label={L('Total', 'الإجمالي')} value={data.conversations?.total ?? 0} icon={<MessageSquare size={18} />} />
+              <MetricCard label={L('New in period', 'جديدة خلال الفترة')} value={data.conversations?.new ?? 0} icon={<Activity size={18} />} />
+              <MetricCard label={L('Open', 'مفتوحة')} value={data.conversations?.open ?? 0} icon={<MessageSquare size={18} />} />
+              <MetricCard label={L('Closed', 'مغلقة')} value={data.conversations?.closed ?? 0} icon={<MessageSquare size={18} />} />
+            </div>
+          </GsapStaggerGroup>
         </section>
         <section aria-label={L('AI metrics', 'مؤشرات الذكاء الاصطناعي')} className="space-y-3">
           <h2 className="text-base font-semibold text-text-primary">{L('AI activity', 'نشاط الذكاء الاصطناعي')}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard label={L('AI conversations', 'محادثات الذكاء الاصطناعي')} value={data.ai?.ai_conversations ?? 0} icon={<Bot size={18} />} />
-            <MetricCard label={L('AI replies', 'ردود الذكاء الاصطناعي')} value={data.ai?.ai_responses ?? 0} icon={<Bot size={18} />} />
-            <MetricCard label={L('Escalated conversations', 'المحادثات المصعّدة')} value={data.ai?.escalated_conversations ?? 0} icon={<Activity size={18} />} />
-            <MetricCard label={L('Median first reply', 'وسيط زمن أول رد')} value={responseTime} icon={<Clock size={18} />} />
-          </div>
+          <GsapStaggerGroup>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard label={L('AI conversations', 'محادثات الذكاء الاصطناعي')} value={data.ai?.ai_conversations ?? 0} icon={<Bot size={18} />} />
+              <MetricCard label={L('AI replies', 'ردود الذكاء الاصطناعي')} value={data.ai?.ai_responses ?? 0} icon={<Bot size={18} />} />
+              <MetricCard label={L('Escalated conversations', 'المحادثات المصعّدة')} value={data.ai?.escalated_conversations ?? 0} icon={<Activity size={18} />} />
+              <MetricCard label={L('Median first reply', 'وسيط زمن أول رد')} value={responseTime} icon={<Clock size={18} />} />
+            </div>
+          </GsapStaggerGroup>
           <p className="text-xs text-text-tertiary">{L('AI share of replies', 'نسبة ردود الذكاء الاصطناعي')}: {data.ai?.ai_share_of_replies ?? 0}% {L('of eligible customer replies in', 'من ردود العملاء المؤهلة حسب')}{' '}{data.range?.timezone ?? L('your business timezone', 'المنطقة الزمنية للنشاط')}.</p>
         </section>
         <section aria-label={L('Customer feedback metrics', 'مؤشرات ملاحظات العملاء')} className="space-y-3">
           <h2 className="text-base font-semibold text-text-primary">{L('Customer feedback', 'ملاحظات العملاء')}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard label={L('Positive rating share', 'نسبة التقييمات الإيجابية')} value={csat === null ? L('Unavailable', 'غير متاح') : csat.total_ratings === 0 ? L('No ratings', 'لا توجد تقييمات') : `${csat.csat_score ?? '—'}%`} icon={<ThumbsUp size={18} />} />
-            <MetricCard label={L('Total ratings', 'إجمالي التقييمات')} value={csat?.total_ratings ?? L('Unavailable', 'غير متاح')} icon={<MessageSquare size={18} />} />
-            <MetricCard label={L('Positive ratings', 'التقييمات الإيجابية')} value={csat?.positive_ratings ?? L('Unavailable', 'غير متاح')} icon={<ThumbsUp size={18} />} />
-            <MetricCard label={L('Negative ratings', 'التقييمات السلبية')} value={csat?.negative_ratings ?? L('Unavailable', 'غير متاح')} icon={<Activity size={18} />} />
-          </div>
+          <GsapStaggerGroup>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetricCard label={L('Positive rating share', 'نسبة التقييمات الإيجابية')} value={csat === null ? L('Unavailable', 'غير متاح') : csat.total_ratings === 0 ? L('No ratings', 'لا توجد تقييمات') : `${csat.csat_score ?? '—'}%`} icon={<ThumbsUp size={18} />} />
+              <MetricCard label={L('Total ratings', 'إجمالي التقييمات')} value={csat?.total_ratings ?? L('Unavailable', 'غير متاح')} icon={<MessageSquare size={18} />} />
+              <MetricCard label={L('Positive ratings', 'التقييمات الإيجابية')} value={csat?.positive_ratings ?? L('Unavailable', 'غير متاح')} icon={<ThumbsUp size={18} />} />
+              <MetricCard label={L('Negative ratings', 'التقييمات السلبية')} value={csat?.negative_ratings ?? L('Unavailable', 'غير متاح')} icon={<Activity size={18} />} />
+            </div>
+          </GsapStaggerGroup>
           <p className="text-xs text-text-tertiary">{L('Positive rating share uses recorded ratings for this period. When there are no ratings, the page says “No ratings” instead of showing 0%.', 'تُحسب نسبة التقييمات الإيجابية من التقييمات المسجلة لهذه الفترة. عند عدم وجود تقييمات، تظهر عبارة «لا توجد تقييمات» بدلًا من ٠٪.')}</p>
         </section>
       </>}
