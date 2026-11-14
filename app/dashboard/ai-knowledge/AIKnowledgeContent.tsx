@@ -31,6 +31,9 @@ import {
   RefreshCw,
   ExternalLink,
   X,
+  Eye,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -44,6 +47,14 @@ interface KnowledgeFile {
   retryable?: boolean
   chunks_count?: number
   error_message?: string | null
+}
+
+interface KnowledgeChunk {
+  id: number
+  business_knowledge_file_id: number
+  chunk_index: number
+  content: string
+  created_at?: string
 }
 
 export default function AIKnowledgeContent() {
@@ -70,6 +81,46 @@ export default function AIKnowledgeContent() {
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([])
   const [newFaqQ, setNewFaqQ] = useState('')
   const [newFaqA, setNewFaqA] = useState('')
+
+  // Document chunk preview
+  const [previewFile, setPreviewFile] = useState<KnowledgeFile | null>(null)
+  const [previewChunks, setPreviewChunks] = useState<KnowledgeChunk[]>([])
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewSearch, setPreviewSearch] = useState('')
+  const [previewPage, setPreviewPage] = useState(1)
+  const [previewTotalPages, setPreviewTotalPages] = useState(1)
+  const [previewTotalChunks, setPreviewTotalChunks] = useState(0)
+  const [copiedChunkId, setCopiedChunkId] = useState<number | null>(null)
+
+  const openPreview = async (file: KnowledgeFile, page = 1) => {
+    setPreviewFile(file)
+    setPreviewPage(page)
+    setPreviewLoading(true)
+    setPreviewSearch('')
+    try {
+      const token = getToken()
+      if (!token) throw new Error('Session expired.')
+      const res = await fetch(`${API}/api/knowledge/files/${file.id}/chunks?page=${page}&per_page=50`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || data.error || 'Could not load chunks.')
+      setPreviewChunks(data.chunks || [])
+      setPreviewTotalPages(data.pagination?.last_page || 1)
+      setPreviewTotalChunks(data.pagination?.total ?? (data.chunks || []).length)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not load document chunks.')
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  const handleCopyChunk = (chunk: KnowledgeChunk) => {
+    navigator.clipboard.writeText(chunk.content)
+    setCopiedChunkId(chunk.id)
+    toast.success(isRTL ? 'تم نسخ المقطع' : 'Chunk copied to clipboard')
+    setTimeout(() => setCopiedChunkId((prev) => (prev === chunk.id ? null : prev)), 2000)
+  }
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const getToken = () =>
@@ -256,6 +307,12 @@ export default function AIKnowledgeContent() {
     return matchesQuery && (fileStatusFilter === 'all' || (file.status || 'pending') === fileStatusFilter)
   }), [files, fileSearch, fileStatusFilter])
 
+  const filteredPreviewChunks = useMemo(() => {
+    if (!previewSearch.trim()) return previewChunks
+    const q = previewSearch.toLowerCase()
+    return previewChunks.filter((c) => c.content.toLowerCase().includes(q))
+  }, [previewChunks, previewSearch])
+
   return (
     <main className="mx-auto w-full max-w-[1760px] space-y-6 p-4 md:p-8" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
@@ -422,10 +479,21 @@ export default function AIKnowledgeContent() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                       <Badge variant={file.status === 'active' ? 'success' : file.status === 'failed' ? 'error' : 'warning'} dot size="xs">
                         {file.status === 'active' ? (isRTL ? 'مفهرس' : 'Indexed') : file.status === 'failed' ? (isRTL ? 'فشل الفهرسة' : 'Indexing failed') : file.status || (isRTL ? 'قيد الانتظار' : 'Pending')}
                       </Badge>
+                      {file.status === 'active' && (
+                        <button
+                          type="button"
+                          onClick={() => void openPreview(file)}
+                          className="p-1.5 rounded-lg text-text-tertiary hover:text-brand hover:bg-brand/10 transition-colors"
+                          title={isRTL ? 'معاينة المقاطع المفهرسة' : 'Preview indexed chunks'}
+                          aria-label={isRTL ? `معاينة مقاطع ${file.filename}` : `Preview chunks of ${file.filename}`}
+                        >
+                          <Eye size={15} />
+                        </button>
+                      )}
                       {file.retryable && <Button variant="outline" size="sm" loading={retryingFileId === file.id} disabled={retryingFileId !== null} onClick={() => void handleRetryFile(file.id)}>{isRTL ? 'إعادة المحاولة' : 'Retry indexing'}</Button>}
                       <button
                         type="button"
@@ -602,6 +670,162 @@ export default function AIKnowledgeContent() {
             )}
           </CardContent>
         </Card>
+      )}
+      {/* ─── Document Chunks Preview Modal ────────────────────────────── */}
+      {previewFile && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setPreviewFile(null)}
+        >
+          <div
+            className="relative flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border border-border bg-surface-elevated shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-border/70 px-5 py-4 bg-surface">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 text-brand border border-brand/20 shrink-0">
+                  <FileText size={18} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-text-primary truncate">
+                      {previewFile.filename}
+                    </h3>
+                    <Badge variant="success" size="xs">
+                      {isRTL ? `${previewTotalChunks} مقطع مفهرس` : `${previewTotalChunks} chunks indexed`}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-text-tertiary mt-0.5">
+                    {isRTL
+                      ? 'هذه المقاطع المستخرجة والمفهرسة في قاعدة المعرفة التي يعتمد عليها المساعد للرد.'
+                      : 'These are the indexed text segments used by the AI engine for retrieval-augmented replies.'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPreviewFile(null)}
+                className="rounded-lg p-2 text-text-tertiary hover:bg-surface-overlay hover:text-text-primary transition-colors shrink-0"
+                aria-label={isRTL ? 'إغلاق المعاينة' : 'Close preview'}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="px-5 py-3 border-b border-border/50 bg-surface/50 flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search size={14} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <input
+                  value={previewSearch}
+                  onChange={(e) => setPreviewSearch(e.target.value)}
+                  placeholder={isRTL ? 'ابحث داخل المقاطع...' : 'Search within chunks...'}
+                  className="w-full rounded-xl border border-border/80 bg-surface py-2 ps-9 pe-9 text-xs text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none"
+                />
+                {previewSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewSearch('')}
+                    className="absolute end-2 top-1/2 -translate-y-1/2 p-1 text-text-tertiary hover:text-text-primary"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              <div className="text-[11px] font-medium text-text-tertiary shrink-0">
+                {isRTL
+                  ? `عرض ${filteredPreviewChunks.length} مقطع`
+                  : `Showing ${filteredPreviewChunks.length} chunks`}
+              </div>
+            </div>
+
+            {/* Modal Body: Chunks List */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-3 overscroll-contain">
+              {previewLoading ? (
+                <div className="py-16 text-center space-y-3">
+                  <RefreshCw size={24} className="mx-auto animate-spin text-brand" />
+                  <p className="text-xs text-text-tertiary">{isRTL ? 'جارٍ تحميل مقاطع المستند…' : 'Loading indexed chunks…'}</p>
+                </div>
+              ) : filteredPreviewChunks.length === 0 ? (
+                <div className="py-16 text-center text-xs text-text-tertiary">
+                  {previewSearch
+                    ? (isRTL ? 'لا توجد مقاطع تطابق بحثك.' : 'No chunks match your search query.')
+                    : (isRTL ? 'لا توجد مقاطع مفهرسة لهذا المستند.' : 'No indexed chunks found for this file.')}
+                </div>
+              ) : (
+                filteredPreviewChunks.map((chunk) => (
+                  <div
+                    key={chunk.id}
+                    className="group relative rounded-xl border border-border/80 bg-surface p-4 transition-all hover:border-brand/40 hover:shadow-sm"
+                  >
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-brand/10 text-brand">
+                          #{chunk.chunk_index + 1}
+                        </span>
+                        <span className="text-[11px] text-text-tertiary">
+                          {chunk.content.length} {isRTL ? 'حرف' : 'characters'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyChunk(chunk)}
+                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-medium text-text-secondary hover:text-brand hover:bg-brand/10 transition-colors"
+                        title={isRTL ? 'نسخ المقطع' : 'Copy chunk content'}
+                      >
+                        {copiedChunkId === chunk.id ? (
+                          <>
+                            <Check size={12} className="text-success" />
+                            <span className="text-success">{isRTL ? 'تم النسخ' : 'Copied'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy size={12} />
+                            <span>{isRTL ? 'نسخ' : 'Copy'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="text-xs text-text-primary leading-relaxed whitespace-pre-wrap font-sans selection:bg-brand/20">
+                      {chunk.content}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Modal Footer / Pagination */}
+            {previewTotalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-border/70 px-5 py-3 bg-surface">
+                <span className="text-xs text-text-tertiary">
+                  {isRTL
+                    ? `صفحة ${previewPage} من ${previewTotalPages}`
+                    : `Page ${previewPage} of ${previewTotalPages}`}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={previewPage <= 1 || previewLoading}
+                    onClick={() => void openPreview(previewFile, previewPage - 1)}
+                  >
+                    {isRTL ? 'السابق' : 'Previous'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={previewPage >= previewTotalPages || previewLoading}
+                    onClick={() => void openPreview(previewFile, previewPage + 1)}
+                  >
+                    {isRTL ? 'التالي' : 'Next'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </main>
   )
