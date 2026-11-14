@@ -275,7 +275,7 @@ export default function NotificationCenter() {
   }, [notifications, activeTab])
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${isOpen ? 'z-[100]' : ''}`} ref={dropdownRef}>
       {/* ── Bell Trigger Button ────────────────────────────────────────────── */}
       <button
         type="button"
@@ -301,7 +301,7 @@ export default function NotificationCenter() {
         )}
       </button>
 
-      {/* ── Dropdown Panel ─────────────────────────────────────────────────── */}
+      {/* ── Dropdown Panel (100% Solid & Opaque to avoid any background conflict) ── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -310,10 +310,14 @@ export default function NotificationCenter() {
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
             dir={isRTL ? 'rtl' : 'ltr'}
-            className="absolute end-0 mt-2.5 w-[360px] sm:w-[420px] max-w-[calc(100vw-1.5rem)] rounded-3xl border border-border/80 bg-surface-elevated/95 p-0 shadow-2xl backdrop-blur-2xl z-50 overflow-hidden ring-1 ring-black/5 dark:ring-white/10"
+            style={{ backgroundColor: 'var(--surface-elevated, #1A2440)' }}
+            className="absolute end-0 mt-2.5 w-[360px] sm:w-[420px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border-strong dark:border-[#2b3a5c] bg-white dark:bg-[#1A2440] p-0 shadow-2xl shadow-black/60 z-[100] overflow-hidden ring-1 ring-black/10 dark:ring-white/10"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border/70 px-5 py-3.5 bg-surface/50">
+            <div
+              style={{ backgroundColor: 'var(--surface, #151E36)' }}
+              className="flex items-center justify-between border-b border-border dark:border-[#263352] px-5 py-3.5 bg-slate-50 dark:bg-[#151E36]"
+            >
               <div className="flex items-center gap-2.5">
                 <h3 className="text-sm font-bold text-text-primary">
                   {isRTL ? 'الإشعارات والتنبيهات' : 'Notifications'}
@@ -348,7 +352,10 @@ export default function NotificationCenter() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex items-center border-b border-border/60 px-5 pt-2 pb-0 gap-4 text-xs font-semibold">
+            <div
+              style={{ backgroundColor: 'var(--surface-elevated, #1A2440)' }}
+              className="flex items-center border-b border-border dark:border-[#263352] px-5 pt-2 pb-0 gap-4 text-xs font-semibold bg-white dark:bg-[#1A2440]"
+            >
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
@@ -373,10 +380,11 @@ export default function NotificationCenter() {
               </button>
             </div>
 
-            {/* Notification Stream */}
+            {/* Notification Stream (100% Solid Background) */}
             <div
               data-lenis-prevent
-              className="max-h-[380px] overflow-y-auto divide-y divide-border/40"
+              style={{ backgroundColor: 'var(--surface-elevated, #1A2440)' }}
+              className="max-h-[380px] overflow-y-auto divide-y divide-border/50 dark:divide-[#263352]/80 bg-white dark:bg-[#1A2440]"
             >
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -387,7 +395,10 @@ export default function NotificationCenter() {
                 </div>
               ) : displayedNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-surface/50 text-text-tertiary mb-3">
+                  <div
+                    style={{ backgroundColor: 'var(--surface, #151E36)' }}
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/80 bg-slate-100 dark:bg-[#151E36] text-text-tertiary mb-3"
+                  >
                     <Inbox size={22} className="opacity-70" />
                   </div>
                   <p className="text-xs font-bold text-text-primary">
@@ -407,8 +418,8 @@ export default function NotificationCenter() {
                       key={notification.id}
                       className={`group relative flex items-start gap-3.5 p-4 transition-all ${
                         !notification.is_read
-                          ? 'bg-brand/[0.04] dark:bg-brand/[0.08]'
-                          : 'hover:bg-surface-elevated/60'
+                          ? 'bg-brand/10 dark:bg-brand/15'
+                          : 'bg-white dark:bg-[#1A2440] hover:bg-slate-50 dark:hover:bg-[#202c4e]'
                       }`}
                     >
                       {/* Unread Accent Pill */}

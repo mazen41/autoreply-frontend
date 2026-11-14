@@ -785,7 +785,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* ── Topbar (Navbar) ─────────────────────────────────────────── */}
           <header
             role="banner"
-            className="sticky top-0 z-30 h-[64px] bg-surface/85 backdrop-blur-xl border-b border-border/80 flex items-center gap-3 px-4 sm:px-6 shadow-xs"
+            className="sticky top-0 z-40 h-[64px] bg-surface/95 backdrop-blur-xl border-b border-border/80 flex items-center gap-3 px-4 sm:px-6 shadow-xs"
           >
             {/* Left cluster */}
             <div className="flex items-center gap-2.5 shrink-0">
