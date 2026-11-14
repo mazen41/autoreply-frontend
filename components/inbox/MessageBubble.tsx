@@ -32,6 +32,7 @@ import {
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import VoiceMessagePlayer from './VoiceMessagePlayer'
+import { stripHtml } from './inboxParser'
 
 type MediaType = 'image' | 'audio' | 'video' | 'document' | 'sticker' | null
 
@@ -516,7 +517,9 @@ const MessageBubble = memo(function MessageBubble({
                 dir={textDirection as React.HTMLAttributes<HTMLDivElement>['dir']}
                 className={`${hasMedia ? 'mt-2' : ''} whitespace-pre-wrap text-start [overflow-wrap:anywhere] [word-break:normal]`}
               >
-                {msg.content}
+                {msg.content.includes('<') && (msg.content.includes('<html') || msg.content.includes('<style') || msg.content.includes('<head'))
+                  ? stripHtml(msg.content)
+                  : msg.content}
               </div>
             )}
             {(isFailed || isBlocked) && (

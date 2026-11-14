@@ -2,6 +2,7 @@
 
 import React, { memo } from 'react'
 import ChannelIcon from '../ui/ChannelIcon'
+import { parseConversationMeta } from './inboxParser'
 
 interface ConversationListItemProps {
   conv: {
@@ -28,9 +29,7 @@ interface ConversationListItemProps {
 }
 
 function senderLabel(conv: ConversationListItemProps['conv']) {
-  if (conv.sender_name && conv.sender_name.trim()) return conv.sender_name.trim()
-  if (conv.sender_email) return conv.sender_email
-  return `···${conv.sender_id.slice(-4)}`
+  return parseConversationMeta(conv, false).cleanName
 }
 
 function formatTimestamp(iso: string | null) {
@@ -65,7 +64,8 @@ const ConversationListItem = memo(function ConversationListItem({
   isEscalated,
   isAssigned
 }: ConversationListItemProps) {
-  const preview = conv.latest_message?.content ?? conv.subject ?? '—'
+  const parsed = parseConversationMeta(conv, false)
+  const preview = parsed.cleanPreview || '—'
   const isAI = conv.latest_message?.is_ai
   const isHighPriority = conv.priority === 'high'
   const isClassified = !!conv.category

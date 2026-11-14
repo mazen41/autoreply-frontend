@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import gsap from 'gsap'
 import { ApiConversation, ApiBot } from '../../hooks/useInbox'
 import ConversationCard from './ConversationCard'
 import { ConversationItemSkeleton } from '../ui/Skeleton'
@@ -105,6 +106,32 @@ export default function ConversationList({
     estimateSize: () => 76,
     overscan: 10,
   })
+
+  // GSAP staggered entrance on list updates
+  useEffect(() => {
+    if (!parentRef.current || sorted.length === 0) return
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) return
+
+    const timer = setTimeout(() => {
+      const cards = parentRef.current?.querySelectorAll('button')
+      if (cards && cards.length > 0) {
+        gsap.fromTo(
+          Array.from(cards).slice(0, 10),
+          { opacity: 0, x: isRTL ? 14 : -14 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.32,
+            stagger: 0.035,
+            ease: 'power2.out',
+            clearProps: 'transform,opacity',
+          }
+        )
+      }
+    }, 40)
+    return () => clearTimeout(timer)
+  }, [sorted.length, activeTab, isRTL])
 
   if (collapsed) {
     return (
@@ -310,7 +337,12 @@ export default function ConversationList({
       )}
 
       {/* Virtual list */}
-      <div ref={parentRef} className="flex-1 overflow-y-auto overflow-x-hidden" style={{ contain: 'strict' }}>
+      <div
+        ref={parentRef}
+        data-lenis-prevent
+        className="flex-1 overflow-y-auto overflow-x-hidden"
+        style={{ contain: 'strict' }}
+      >
         {loading && sorted.length === 0 ? (
           <div>
             {[...Array(8)].map((_, i) => (

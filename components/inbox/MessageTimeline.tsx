@@ -117,6 +117,7 @@ export default function MessageTimeline({
     <div className="relative flex-1 min-h-0 bg-background">
       <div 
         ref={scrollRef}
+        data-lenis-prevent
         onScroll={handleScroll}
         className="absolute inset-0 overflow-y-auto p-4 sm:p-6 space-y-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
       >

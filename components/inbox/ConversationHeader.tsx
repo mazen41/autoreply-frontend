@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { ApiConversation, ApiBot } from '../../hooks/useInbox'
+import { parseConversationMeta } from './inboxParser'
 import Select from '../ui/Select'
 import {
   Bot, User, AlertTriangle, CheckCircle, Archive,
@@ -68,6 +69,9 @@ export default function ConversationHeader({
     pending: { label: L('Pending', 'معلق'),    color: 'var(--warning)',  icon: <Clock size={12} /> },
     closed:  { label: L('Resolved','محلول'),   color: 'var(--success)', icon: <CheckCircle size={12} /> },
   }
+  const meta = parseConversationMeta(conv, isRTL)
+  const isPurple = meta.isAi || meta.cleanName.toLowerCase().includes('naz biz')
+
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-surface flex-shrink-0">
       {/* Panel toggles */}
@@ -80,14 +84,20 @@ export default function ConversationHeader({
       </button>
 
       {/* Customer info */}
-      <div className="flex items-center gap-2 min-w-0 flex-1">
-        <div className="w-8 h-8 rounded-xl border border-white/10 bg-gradient-to-br from-accent to-accent-end flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm">
-          {(conv.sender_name?.charAt(0) || '?').toUpperCase()}
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div
+          className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm ${
+            isPurple
+              ? 'bg-[#2b223c] text-[#c084fc] border border-purple-500/30'
+              : 'bg-[#181f2c] text-slate-300 border border-slate-700/40'
+          }`}
+        >
+          {meta.avatarText}
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-text-primary truncate">
-              {conv.sender_name || `#${conv.sender_id?.slice(-6)}`}
+              {meta.cleanName}
             </span>
             <span
               className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md text-white flex-shrink-0"

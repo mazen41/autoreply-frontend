@@ -16,6 +16,7 @@ import CustomerPanel from '../../../components/inbox/CustomerPanel'
 import HandoffTaskQueue from '../../../components/inbox/HandoffTaskQueue'
 import { MessageSquare, PanelRight, MoreHorizontal, Ban, Trash2, Archive, Clock, Bot } from 'lucide-react'
 import Select from '../../../components/ui/Select'
+import Inbox3DVisual from '../../../components/inbox/Inbox3DVisual'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -215,18 +216,8 @@ export default function InboxPage() {
 
   // ─── Empty State (no conversation selected) ────────────────────────────────
   const EmptyThread = () => (
-    <div className="flex-1 flex flex-col items-center justify-center gap-4 bg-background text-text-tertiary select-none">
-      <div className="w-14 h-14 rounded-2xl bg-surface border border-border flex items-center justify-center">
-        <MessageSquare size={24} className="opacity-40" />
-      </div>
-      <div className="text-center">
-        <p className="text-sm font-semibold text-text-secondary mb-0.5">
-          {isRTL ? 'اختر محادثة' : 'Select a conversation'}
-        </p>
-        <p className="text-xs text-text-tertiary">
-          {isRTL ? 'ستظهر الرسائل هنا' : 'Messages will appear here'}
-        </p>
-      </div>
+    <div className="flex-1 flex flex-col items-center justify-center bg-background select-none p-4 overflow-hidden">
+      <Inbox3DVisual isRTL={isRTL} className="w-full" />
     </div>
   )
 
@@ -333,7 +324,7 @@ export default function InboxPage() {
       >
         {/* Panel 1 — Conversation List */}
         {!leftCollapsed && (
-          <div data-tour="inbox-list" className="flex flex-shrink-0 h-full flex-col overflow-hidden" style={{ width: 280 }}>
+          <div data-tour="inbox-list" className="flex flex-shrink-0 h-full flex-col overflow-hidden w-[310px] md:w-[330px] xl:w-[350px] transition-all duration-200">
             <HandoffTaskQueue onSelect={handleSelectConversation} onResolved={() => fetchConversations()} />
             <div className="min-h-0 flex-1 overflow-hidden">
             <ConversationList

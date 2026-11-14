@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { ApiConversation } from '../../hooks/useInbox'
+import { parseConversationMeta } from './inboxParser'
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, ShoppingBag,
   Tag, CreditCard, ExternalLink, ChevronDown, ChevronUp, Edit2, X, Plus
@@ -105,8 +106,9 @@ export default function CustomerPanel({ conv, isRTL, onClose, customer, notes = 
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Use real customer data if available, fallback to conversation data
-  const customerName = customer?.name || conv.sender_name || L('Unknown Contact', 'جهة اتصال غير معروفة')
+  // Use real customer data if available, fallback to parsed conversation data
+  const meta = parseConversationMeta(conv, isRTL)
+  const customerName = customer?.name || meta.cleanName || L('Unknown Contact', 'جهة اتصال غير معروفة')
   const isWhatsApp = conv.channel?.type?.toLowerCase() === 'whatsapp'
   const senderId = conv.sender_id || ''
   const isWhatsAppGroup = isWhatsApp && (
