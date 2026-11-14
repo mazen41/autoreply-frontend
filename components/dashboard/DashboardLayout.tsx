@@ -426,6 +426,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
+  // Full-screen dedicated experiences (e.g. Bot Creation Wizard) completely bypass dashboard chrome
+  if (pathname?.startsWith('/dashboard/bots/create')) {
+    return <>{children}</>
+  }
+
   const sidebarW = collapsed ? 72 : 260
 
   // ─── Render ────────────────────────────────────────────────────────────────

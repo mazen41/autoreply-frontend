@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AlertCircle, BookOpen, Bot, CheckCircle2, Pause, Pencil, Play, Plus, Radio, RefreshCw, Search, Store, Trash2 } from 'lucide-react'
 import PageHeader from '../../../components/ui/PageHeader'
 import Card, { CardContent, CardFooter, CardHeader, CardTitle } from '../../../components/ui/Card'
@@ -43,6 +44,7 @@ type BotRecord = {
 type BotStatusFilter = 'all' | 'active' | 'inactive' | 'draft'
 
 export default function BotsPage() {
+  const router = useRouter()
   const { isRTL } = useLang()
   const [bots, setBots] = useState<BotRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -76,8 +78,7 @@ export default function BotsPage() {
   useEffect(() => { void fetchBots() }, [fetchBots])
 
   function openCreate() {
-    setEditingBot(null)
-    setModalOpen(true)
+    router.push('/dashboard/bots/create')
   }
 
   function openEdit(bot: BotRecord) {
