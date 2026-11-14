@@ -428,7 +428,7 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
         primary_channel_ids: primaryChannelIds.filter((id) => chosenChannelIds.includes(id)),
         channel_store_routing: channelCommerceDefaults,
         knowledge_assignments: assignments.map((a) => ({
-          business_knowledge_file_id: a.file_id,
+          file_id: a.file_id,
           channel_id: a.channel_id,
         })),
       }
@@ -667,6 +667,7 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
                 replyStyle={replyStyle}
                 confidenceThreshold={confidenceThreshold}
                 escalationKeywords={escalationKeywords}
+                assignments={assignments}
                 onBotTypingState={(typing) => setBotMood(typing ? 'typing' : 'idle')}
               />
             )}
