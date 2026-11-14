@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 vi.mock('../../lib/businessContext', () => ({ getBusinessHeaders: () => ({ 'X-Business-Id': '7' }) }))
+vi.mock('../../lib/LangContext', () => ({ useLang: () => ({ isRTL: false, lang: 'en' }) }))
 
 import DashboardPage from '../../app/dashboard/page'
 

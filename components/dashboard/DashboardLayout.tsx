@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useId } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { springs } from '../../lib/motion'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLang } from '../../lib/LangContext'
 import NotificationCenter from '../NotificationCenter'
@@ -50,6 +51,8 @@ import {
   PauseCircle,
   PanelLeftClose,
   PanelLeftOpen,
+  Plus,
+  Zap,
 } from 'lucide-react'
 
 // ─── NAV GROUPS ──────────────────────────────────────────────────────────────
@@ -58,6 +61,8 @@ interface NavItemDef {
   href: string
   labelEn: string
   labelAr: string
+  badge?: string
+  badgeColor?: 'brand' | 'success' | 'violet'
 }
 
 interface NavGroupDef {
@@ -77,7 +82,7 @@ const NAV_GROUPS: NavGroupDef[] = [
       { icon: Inbox, href: '/inbox', labelEn: 'Inbox', labelAr: 'الرسائل' },
       { icon: Users, href: '/dashboard/contacts', labelEn: 'Contacts', labelAr: 'جهات الاتصال' },
       { icon: MessageCircle, href: '/dashboard/comments', labelEn: 'Comments', labelAr: 'التعليقات' },
-      { icon: Radio, href: '/dashboard/channels', labelEn: 'Channels', labelAr: 'القنوات' },
+      { icon: Radio, href: '/dashboard/channels', labelEn: 'Channels', labelAr: 'القنوات', badge: 'Live', badgeColor: 'success' },
       { icon: MessageCircle, href: '/dashboard/whatsapp', labelEn: 'WhatsApp', labelAr: 'واتساب' },
     ],
   },
@@ -86,7 +91,7 @@ const NAV_GROUPS: NavGroupDef[] = [
     labelEn: 'AI & Knowledge',
     labelAr: 'الذكاء والمعرفة',
     items: [
-      { icon: Bot, href: '/dashboard/bots', labelEn: 'Bots', labelAr: 'البوتات' },
+      { icon: Bot, href: '/dashboard/bots', labelEn: 'Bots', labelAr: 'البوتات', badge: 'AI', badgeColor: 'brand' },
       { icon: Brain, href: '/dashboard/ai-knowledge', labelEn: 'AI Knowledge', labelAr: 'قاعدة المعرفة' },
       { icon: GraduationCap, href: '/dashboard/training', labelEn: 'Training', labelAr: 'التدريب' },
       { icon: BarChart3, href: '/dashboard/analytics', labelEn: 'Analytics', labelAr: 'التحليلات' },
@@ -112,7 +117,7 @@ const NAV_GROUPS: NavGroupDef[] = [
       { icon: ListTodo, href: '/dashboard/handoffs', labelEn: 'Handoffs', labelAr: 'التصعيدات' },
       { icon: MessageSquarePlus, href: '/dashboard/cases', labelEn: 'Cases', labelAr: 'الحالات' },
       { icon: BookOpen, href: '/dashboard/help-center', labelEn: 'Help Center', labelAr: 'مركز المساعدة' },
-      { icon: Workflow, href: '/dashboard/workflows', labelEn: 'Workflows', labelAr: 'سير العمل' },
+      { icon: Workflow, href: '/dashboard/workflows', labelEn: 'Workflows', labelAr: 'سير العمل', badge: 'Auto', badgeColor: 'violet' },
       { icon: FileSpreadsheet, href: '/dashboard/reports', labelEn: 'Reports', labelAr: 'التقارير' },
       { icon: Layers, href: '/dashboard/multimodal', labelEn: 'Multimodal', labelAr: 'متعدد الوسائط' },
     ],
@@ -229,6 +234,13 @@ function NavItem({ item, isActive, collapsed, isRTL, onClick }: NavItemProps) {
   const Icon = item.icon
   const label = isRTL ? item.labelAr : item.labelEn
 
+  const badgeClass =
+    item.badgeColor === 'success'
+      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+      : item.badgeColor === 'violet'
+      ? 'bg-purple-500/10 text-purple-500 border border-purple-500/20'
+      : 'bg-brand/10 text-brand border border-brand/20'
+
   const linkEl = (
     <Link
       href={item.href}
@@ -236,28 +248,19 @@ function NavItem({ item, isActive, collapsed, isRTL, onClick }: NavItemProps) {
       aria-current={isActive ? 'page' : undefined}
       aria-label={collapsed ? label : undefined}
       className={[
-        'group relative flex items-center rounded-lg text-xs font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]',
-        collapsed ? 'h-9 w-9 justify-center mx-auto' : `gap-2.5 px-2.5 py-[7px]`,
+        'group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]',
+        collapsed ? 'h-10 w-10 justify-center mx-auto' : `gap-3 px-3 py-2`,
         isActive
-          ? 'text-[var(--brand)] font-semibold'
-          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]',
+          ? 'text-brand font-bold bg-gradient-to-r from-brand/12 via-brand/8 to-brand-violet/5 border border-brand/20 shadow-xs'
+          : 'text-text-secondary hover:text-text-primary hover:bg-surface-elevated/80',
       ].join(' ')}
     >
-      {/* Active background pill */}
-      {isActive && (
-        <motion.span
-          layoutId="sidebar-active-pill"
-          className="absolute inset-0 rounded-lg bg-[var(--brand)]/[0.08]"
-          transition={springs.standard}
-        />
-      )}
-
-      {/* Active left/right accent bar */}
+      {/* Active accent side indicator bar */}
       {isActive && !collapsed && (
         <motion.span
           layoutId="sidebar-active-bar"
           className={[
-            'absolute top-1 bottom-1 w-0.5 rounded-full bg-[var(--brand)]',
+            'absolute top-1.5 bottom-1.5 w-1 rounded-full bg-gradient-to-b from-brand to-brand-violet shadow-sm shadow-brand/40',
             isRTL ? 'right-0' : 'left-0',
           ].join(' ')}
           transition={springs.standard}
@@ -265,16 +268,23 @@ function NavItem({ item, isActive, collapsed, isRTL, onClick }: NavItemProps) {
       )}
 
       {/* Icon */}
-      <span className="relative z-10 flex shrink-0 items-center justify-center transition-transform duration-150 group-hover:scale-110 group-hover:-translate-y-px motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:translate-y-0">
+      <span className="relative z-10 flex shrink-0 items-center justify-center transition-transform duration-150 group-hover:scale-110 motion-reduce:transition-none">
         <Icon
           size={16}
-          className={isActive ? 'text-[var(--brand)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-primary)] transition-colors'}
+          className={isActive ? 'text-brand drop-shadow-xs' : 'text-text-tertiary group-hover:text-text-primary transition-colors'}
         />
       </span>
 
-      {/* Label */}
+      {/* Label & Optional Badge */}
       {!collapsed && (
-        <span className="relative z-10 truncate leading-tight">{label}</span>
+        <>
+          <span className="relative z-10 truncate leading-tight flex-1">{label}</span>
+          {item.badge && (
+            <span className={`inline-flex items-center rounded-md px-1.5 py-0.2 text-[9px] font-bold tracking-wider uppercase ${badgeClass}`}>
+              {item.badge}
+            </span>
+          )}
+        </>
       )}
     </Link>
   )
@@ -382,12 +392,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-[var(--surface-elevated)] border border-[var(--border)] flex items-center justify-center shadow-sm">
-            <Sparkles className="w-5 h-5 text-[var(--brand)]" />
+          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-brand/20 bg-surface-elevated shadow-lg shadow-brand/10">
+            <Image src="/icons/logo_icon.png" alt="Naz AutoReply" width={32} height={32} className="object-contain" priority />
+            <span className="absolute -inset-1 animate-ping rounded-[1.15rem] border border-brand/20" aria-hidden="true" />
           </div>
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--text-tertiary)] tracking-widest uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] animate-pulse" />
-            {isRTL ? 'جارٍ تحميل ناز بزنس…' : 'Loading NazBiz…'}
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-text-tertiary tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+            {isRTL ? 'جارٍ تحميل لوحة التحكم…' : 'Loading Naz AutoReply…'}
           </div>
         </div>
       </div>
@@ -397,10 +408,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (authIssue === 'unavailable' || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div role="alert" className="max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-center shadow-md">
-          <h1 className="text-sm font-bold text-[var(--text-primary)]">{isRTL ? 'تعذر تحميل حسابك' : 'Could not load your account'}</h1>
-          <p className="mt-2 text-xs text-[var(--text-secondary)] leading-relaxed">{isRTL ? 'تحقق من اتصالك ثم حاول مرة أخرى.' : 'Check your connection and try again.'}</p>
-          <button type="button" onClick={() => void retryAuth()} className="mt-4 rounded-lg bg-[var(--brand)] px-4 py-2 text-xs font-semibold text-[var(--brand-text)]">
+        <div role="alert" className="max-w-sm rounded-3xl border border-border bg-surface-elevated p-8 text-center shadow-xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-error/10 text-error">
+            <X size={20} />
+          </div>
+          <h1 className="text-base font-bold text-text-primary">{isRTL ? 'تعذر تحميل حسابك' : 'Could not load your account'}</h1>
+          <p className="mt-2 text-xs text-text-secondary leading-relaxed">{isRTL ? 'تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.' : 'Check your internet connection and try again.'}</p>
+          <button
+            type="button"
+            onClick={() => void retryAuth()}
+            className="mt-5 w-full rounded-xl bg-gradient-to-r from-brand to-brand-violet px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-brand/20 hover:brightness-110 active:scale-[0.99] transition-all"
+          >
             {isRTL ? 'أعد المحاولة' : 'Try again'}
           </button>
         </div>
@@ -408,7 +426,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     )
   }
 
-  const sidebarW = collapsed ? 68 : 248
+  const sidebarW = collapsed ? 72 : 260
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
@@ -416,12 +434,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Skip-to-content link for keyboard users */}
       <a
         href={`#${mainContentId}`}
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:rounded-lg focus:bg-[var(--brand)] focus:px-4 focus:py-2 focus:text-xs focus:font-bold focus:text-[var(--brand-text)]"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:text-xs focus:font-bold focus:text-white shadow-lg"
       >
         {isRTL ? 'انتقل إلى المحتوى' : 'Skip to content'}
       </a>
 
-      <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-background text-[var(--text-primary)] flex">
+      <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-background text-text-primary flex">
 
         {/* ── Mobile backdrop ─────────────────────────────────────────── */}
         <AnimatePresence>
@@ -432,7 +450,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
-              className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] lg:hidden"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
               aria-hidden="true"
             />
@@ -445,7 +463,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           aria-label={isRTL ? 'قائمة التنقل الرئيسية' : 'Main navigation'}
           style={{ width: sidebarW }}
           className={[
-            'fixed top-0 bottom-0 z-40 flex flex-col bg-[var(--surface)] border-[var(--border)] transition-[width,transform] duration-200 ease-out select-none will-change-transform',
+            'fixed top-0 bottom-0 z-40 flex flex-col bg-surface/90 backdrop-blur-xl border-border/80 transition-[width,transform] duration-200 ease-out select-none will-change-transform shadow-xs',
             isRTL
               ? 'right-0 border-l translate-x-full lg:translate-x-0'
               : 'left-0 border-r -translate-x-full lg:translate-x-0',
@@ -454,7 +472,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           {/* ── Brand / Workspace header ──────────────────────────────── */}
           <div
-            className="relative h-[60px] border-b border-[var(--border)] flex items-center px-3 shrink-0"
+            className="relative h-[64px] border-b border-border/70 flex items-center px-3.5 shrink-0 bg-gradient-to-b from-brand/5 via-transparent to-transparent"
             ref={workspaceMenuRef}
           >
             {!collapsed ? (
@@ -464,38 +482,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 aria-expanded={workspaceMenuOpen}
                 aria-haspopup="listbox"
                 aria-label={isRTL ? 'اختيار مساحة العمل' : 'Select workspace'}
-                className="flex items-center gap-2.5 w-full rounded-xl px-1.5 py-1.5 hover:bg-[var(--surface-elevated)] transition-colors text-left group"
+                className="flex items-center gap-3 w-full rounded-xl px-2 py-1.5 hover:bg-surface-elevated/80 border border-transparent hover:border-border/60 transition-all text-start group shadow-2xs"
               >
                 {/* Brand mark */}
-                <div className="w-8 h-8 rounded-lg bg-[var(--brand)] text-[var(--brand-text)] flex items-center justify-center font-black text-sm shadow-sm shrink-0" aria-hidden="true">
-                  N
+                <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/20 to-brand-violet/20 border border-brand/30 shadow-xs">
+                  <Image src="/icons/logo_icon.png" alt="Naz AutoReply" width={22} height={22} className="object-contain" priority />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-bold text-[var(--text-primary)] truncate leading-tight">
-                    {selectedBusiness?.name || (isRTL ? 'اختر عمل' : 'Select business')}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-text-primary truncate leading-tight">
+                      {selectedBusiness?.name || (isRTL ? 'اختر مساحة عمل' : 'Select Workspace')}
+                    </span>
+                    <span className="rounded bg-brand/10 px-1 py-0.2 text-[9px] font-bold text-brand">
+                      PRO
+                    </span>
                   </div>
-                  <div className="text-[10px] text-[var(--text-tertiary)] truncate leading-tight mt-px">
+                  <div className="text-[10px] text-text-tertiary truncate leading-tight mt-0.5">
                     {user?.email || ''}
                   </div>
                 </div>
                 <ChevronDown
-                  size={13}
+                  size={14}
                   className={[
-                    'shrink-0 text-[var(--text-tertiary)] transition-transform duration-150',
+                    'shrink-0 text-text-tertiary transition-transform duration-150 group-hover:text-text-primary',
                     workspaceMenuOpen ? 'rotate-180' : '',
                   ].join(' ')}
                   aria-hidden="true"
                 />
               </button>
             ) : (
-              <Tooltip content={selectedBusiness?.name || 'NazBiz'} position={isRTL ? 'left' : 'right'}>
+              <Tooltip content={selectedBusiness?.name || 'Naz AutoReply'} position={isRTL ? 'left' : 'right'}>
                 <button
                   type="button"
                   onClick={() => setCollapsed(false)}
                   aria-label={isRTL ? 'توسيع القائمة الجانبية' : 'Expand sidebar'}
-                  className="w-9 h-9 mx-auto rounded-lg bg-[var(--brand)] text-[var(--brand-text)] flex items-center justify-center font-bold text-xs shadow-sm hover:brightness-110 transition-[filter]"
+                  className="flex h-10 w-10 mx-auto items-center justify-center rounded-xl bg-gradient-to-br from-brand/20 to-brand-violet/20 border border-brand/30 shadow-xs hover:brightness-110 transition-all"
                 >
-                  N
+                  <Image src="/icons/logo_icon.png" alt="Naz AutoReply" width={24} height={24} className="object-contain" priority />
                 </button>
               </Tooltip>
             )}
@@ -510,34 +533,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: -6 }}
                   transition={{ duration: 0.14 }}
-                  className="absolute top-[62px] inset-x-2 bg-[var(--surface-overlay)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-50"
+                  className="absolute top-[66px] inset-x-2 bg-surface-overlay border border-border/80 rounded-2xl shadow-2xl p-2 z-50 backdrop-blur-xl"
                 >
-                  <div className="px-2.5 py-1 text-[9px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.1em]">
-                    {isRTL ? 'الأعمال' : 'Businesses'}
+                  <div className="px-2.5 py-1 text-[10px] font-bold text-text-tertiary uppercase tracking-wider">
+                    {isRTL ? 'مساحات العمل النشطة' : 'Active Workspaces'}
                   </div>
-                  {businesses.length ? businesses.map((biz) => (
-                    <button
-                      key={biz.id}
-                      role="option"
-                      aria-selected={biz.id === selectedBusinessId}
-                      type="button"
-                      onClick={() => { selectBusiness(biz.id); setWorkspaceMenuOpen(false); window.location.reload() }}
-                      className={[
-                        'w-full flex items-center justify-between gap-2 p-2 rounded-lg text-xs font-medium transition-colors',
-                        biz.id === selectedBusinessId
-                          ? 'bg-[var(--brand)]/10 text-[var(--brand)]'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--surface-elevated)] hover:text-[var(--text-primary)]',
-                      ].join(' ')}
-                    >
-                      <span className="truncate">{biz.name}</span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[9px] opacity-60">{biz.role}</span>
-                        {biz.id === selectedBusinessId && <Check size={12} />}
-                      </div>
-                    </button>
-                  )) : (
-                    <div className="px-2.5 py-2 text-xs text-[var(--text-tertiary)]">
-                      {isRTL ? 'لا توجد أعمال' : 'No businesses'}
+                  {businesses.length ? (
+                    businesses.map((biz) => (
+                      <button
+                        key={biz.id}
+                        role="option"
+                        aria-selected={biz.id === selectedBusinessId}
+                        type="button"
+                        onClick={() => {
+                          selectBusiness(biz.id)
+                          setWorkspaceMenuOpen(false)
+                          window.location.reload()
+                        }}
+                        className={[
+                          'w-full flex items-center justify-between gap-2 p-2.5 rounded-xl text-xs font-medium transition-all my-0.5',
+                          biz.id === selectedBusinessId
+                            ? 'bg-brand/10 text-brand font-bold border border-brand/20'
+                            : 'text-text-secondary hover:bg-surface-elevated hover:text-text-primary',
+                        ].join(' ')}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="truncate">{biz.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] opacity-70 font-semibold">{biz.role}</span>
+                          {biz.id === selectedBusinessId && <Check size={13} className="text-brand" />}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-2.5 py-2 text-xs text-text-tertiary">
+                      {isRTL ? 'لا توجد مساحات عمل' : 'No workspaces'}
                     </div>
                   )}
                 </motion.div>
@@ -546,23 +577,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* ── Navigation items ──────────────────────────────────────── */}
-          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 scrollbar-none">
-            <div className="px-2.5 space-y-4">
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 scrollbar-none">
+            <div className="px-3 space-y-4">
               {NAV_GROUPS.map((group, groupIdx) => (
                 <div key={group.groupKey}>
                   {/* Section divider in collapsed mode */}
                   {collapsed ? (
-                    groupIdx > 0 ? <div className="h-px bg-[var(--border)] mx-1.5 mb-2" /> : null
+                    groupIdx > 0 ? <div className="h-px bg-border/60 mx-1.5 mb-2" /> : null
                   ) : (
                     <div
-                      className="px-1 pb-1 pt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)] select-none"
+                      className="px-2 pb-1.5 pt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary/90 select-none flex items-center justify-between"
                       aria-hidden="true"
                     >
-                      {isRTL ? group.labelAr : group.labelEn}
+                      <span>{isRTL ? group.labelAr : group.labelEn}</span>
                     </div>
                   )}
 
-                  <div className={collapsed ? 'flex flex-col items-center gap-0.5' : 'space-y-0.5'} role="list" aria-label={isRTL ? group.labelAr : group.labelEn}>
+                  <div className={collapsed ? 'flex flex-col items-center gap-1' : 'space-y-1'} role="list" aria-label={isRTL ? group.labelAr : group.labelEn}>
                     {group.items.map((item) => {
                       const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
                       return (
@@ -583,10 +614,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </nav>
 
-          {/* ── Bottom: fixed items + user ────────────────────────────── */}
-          <div className="border-t border-[var(--border)] px-2.5 pt-2 pb-2.5 space-y-0.5 shrink-0">
+          {/* ── Bottom: fixed items + AI status + user ────────────────────────────── */}
+          <div className="border-t border-border/70 px-3 pt-2.5 pb-3 space-y-2 shrink-0 bg-surface/50">
+            {/* Pro AI Status Widget */}
+            {!collapsed && (
+              <div className="rounded-xl border border-brand/20 bg-gradient-to-br from-brand/10 via-brand-violet/5 to-transparent p-2.5 text-start shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    <span className="text-[11px] font-bold text-text-primary">
+                      {isRTL ? 'الذكاء الاصطناعي نشط' : 'AI Engine 2.4'}
+                    </span>
+                  </div>
+                  <span className="rounded bg-brand/20 px-1.5 py-0.2 text-[9px] font-bold text-brand">
+                    {isRTL ? '24/7 متصل' : 'ONLINE'}
+                  </span>
+                </div>
+                <p className="mt-1 text-[10px] text-text-tertiary truncate leading-relaxed">
+                  {isRTL ? 'أتمتة المحادثات نشطة بجميع القنوات' : 'Autonomous multi-channel replies active'}
+                </p>
+              </div>
+            )}
+
             {/* Bottom nav items */}
-            <div role="list" aria-label={isRTL ? 'روابط الحساب' : 'Account links'} className={collapsed ? 'flex flex-col items-center gap-0.5' : 'space-y-0.5'}>
+            <div role="list" aria-label={isRTL ? 'روابط الحساب' : 'Account links'} className={collapsed ? 'flex flex-col items-center gap-1' : 'space-y-1'}>
               {NAV_BOTTOM.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -608,13 +662,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 type="button"
                 onClick={() => setHelpModalOpen(true)}
-                className="w-full flex items-center justify-between px-2.5 py-[7px] rounded-lg text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated/80 transition-all focus-visible:outline-2 focus-visible:outline-brand"
               >
-                <div className="flex items-center gap-2.5">
-                  <HelpCircle size={16} className="text-[var(--text-tertiary)] shrink-0" aria-hidden="true" />
+                <div className="flex items-center gap-3">
+                  <HelpCircle size={16} className="text-text-tertiary shrink-0" aria-hidden="true" />
                   <span>{isRTL ? 'المساعدة والدعم' : 'Help & Support'}</span>
                 </div>
-                <kbd className="text-[9px] text-[var(--text-tertiary)] bg-[var(--surface-elevated)] px-1.5 py-0.5 rounded-md border border-[var(--border)] font-mono" aria-label="question mark key">?</kbd>
+                <kbd className="text-[10px] text-text-tertiary bg-surface-elevated px-1.5 py-0.5 rounded-md border border-border font-mono shadow-xs" aria-label="question mark key">?</kbd>
               </button>
             ) : (
               <Tooltip content={isRTL ? 'المساعدة' : 'Help & Support'} position={isRTL ? 'left' : 'right'}>
@@ -622,7 +676,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   type="button"
                   onClick={() => setHelpModalOpen(true)}
                   aria-label={isRTL ? 'المساعدة والدعم' : 'Help & Support'}
-                  className="h-9 w-9 mx-auto flex items-center justify-center rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]"
+                  className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl text-text-tertiary hover:text-text-primary hover:bg-surface-elevated/80 transition-colors focus-visible:outline-2 focus-visible:outline-brand"
                 >
                   <HelpCircle size={16} />
                 </button>
@@ -630,7 +684,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
 
             {/* Divider before user */}
-            <div className="h-px bg-[var(--border)] my-1" />
+            <div className="h-px bg-border/60 my-1" />
 
             {/* User profile */}
             <div className="relative" ref={userMenuRef}>
@@ -641,17 +695,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 aria-haspopup="menu"
                 aria-label={isRTL ? `قائمة المستخدم لـ ${user.name}` : `User menu for ${user.name}`}
                 className={[
-                  'w-full flex items-center rounded-xl border border-transparent hover:bg-[var(--surface-elevated)] hover:border-[var(--border)] transition-all focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--brand)]',
-                  collapsed ? 'justify-center p-1' : 'gap-2.5 px-1.5 py-1.5',
+                  'w-full flex items-center rounded-xl border border-border/70 hover:border-brand/40 bg-surface-elevated/50 hover:bg-surface-elevated transition-all focus-visible:outline-2 focus-visible:outline-brand shadow-xs',
+                  collapsed ? 'justify-center p-1.5' : 'gap-3 px-2 py-1.5',
                 ].join(' ')}
               >
-                <Avatar name={user.name} size={collapsed ? 'sm' : 'md'} />
+                <div className="relative">
+                  <Avatar name={user.name} size={collapsed ? 'sm' : 'md'} status="online" />
+                </div>
                 {!collapsed && (
                   <div className="min-w-0 flex-1 text-start">
-                    <div className="text-[11px] font-bold text-[var(--text-primary)] truncate leading-tight">
+                    <div className="text-xs font-bold text-text-primary truncate leading-tight">
                       {user.name}
                     </div>
-                    <div className="text-[10px] text-[var(--text-tertiary)] truncate leading-tight mt-px">
+                    <div className="text-[10px] text-text-tertiary truncate leading-tight mt-0.5">
                       {user.email}
                     </div>
                   </div>
@@ -669,40 +725,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     exit={{ opacity: 0, scale: 0.96, y: 4 }}
                     transition={{ duration: 0.14 }}
                     className={[
-                      'absolute bottom-full mb-2 bg-[var(--surface-overlay)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-50',
-                      collapsed ? (isRTL ? 'right-1 w-52' : 'left-1 w-52') : 'inset-x-0',
+                      'absolute bottom-full mb-2 bg-surface-overlay/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl p-2 z-50',
+                      collapsed ? (isRTL ? 'right-1 w-56' : 'left-1 w-56') : 'inset-x-0',
                     ].join(' ')}
                   >
-                    <div className="px-3 py-2 border-b border-[var(--border)]/60 mb-1">
-                      <div className="text-xs font-bold text-[var(--text-primary)] truncate">{user.name}</div>
-                      <div className="text-[10px] text-[var(--text-tertiary)] truncate">{user.email}</div>
+                    <div className="px-3 py-2 border-b border-border/60 mb-1.5">
+                      <div className="text-xs font-bold text-text-primary truncate">{user.name}</div>
+                      <div className="text-[10px] text-text-tertiary truncate mt-0.5">{user.email}</div>
                     </div>
                     <Link
                       href="/dashboard/settings"
                       role="menuitem"
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated rounded-xl transition-colors"
                     >
-                      <Settings size={13} aria-hidden="true" />
+                      <Settings size={14} aria-hidden="true" />
                       <span>{isRTL ? 'إعدادات الحساب' : 'Account Settings'}</span>
                     </Link>
                     <Link
                       href="/dashboard/billing"
                       role="menuitem"
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-elevated rounded-xl transition-colors"
                     >
-                      <CreditCard size={13} aria-hidden="true" />
+                      <CreditCard size={14} aria-hidden="true" />
                       <span>{isRTL ? 'إدارة الاشتراك' : 'Manage Subscription'}</span>
                     </Link>
-                    <div className="my-1 border-t border-[var(--border)]/60" />
+                    <div className="my-1 border-t border-border/60" />
                     <button
                       type="button"
                       role="menuitem"
                       onClick={logout}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors text-start focus-visible:outline-2 focus-visible:outline-[var(--error)]"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-error hover:bg-error/10 rounded-xl transition-colors text-start"
                     >
-                      <LogOut size={13} aria-hidden="true" />
+                      <LogOut size={14} aria-hidden="true" />
                       <span>{isRTL ? 'تسجيل الخروج' : 'Log out'}</span>
                     </button>
                   </motion.div>
@@ -717,13 +773,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           className="flex-1 flex flex-col min-w-0 transition-[margin] duration-200"
           style={{ [isRTL ? 'marginRight' : 'marginLeft']: `${sidebarW}px` }}
         >
-          {/* ── Topbar ──────────────────────────────────────────────────── */}
+          {/* ── Topbar (Navbar) ─────────────────────────────────────────── */}
           <header
             role="banner"
-            className="sticky top-0 z-30 h-[56px] bg-[var(--surface)]/95 backdrop-blur-md border-b border-[var(--border)] flex items-center gap-3 px-4 sm:px-5"
+            className="sticky top-0 z-30 h-[64px] bg-surface/85 backdrop-blur-xl border-b border-border/80 flex items-center gap-3 px-4 sm:px-6 shadow-xs"
           >
             {/* Left cluster */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               {/* Mobile: open sidebar */}
               <button
                 type="button"
@@ -731,9 +787,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 aria-label={isRTL ? 'فتح القائمة' : 'Open navigation'}
                 aria-expanded={mobileOpen}
                 aria-controls="sidebar"
-                className="lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                className="lg:hidden p-2 rounded-xl border border-border/70 text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
               >
-                <Menu size={17} />
+                <Menu size={18} />
               </button>
 
               {/* Desktop: collapse/expand toggle */}
@@ -746,7 +802,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   onClick={() => setCollapsed((v) => !v)}
                   aria-label={collapsed ? (isRTL ? 'توسيع القائمة الجانبية' : 'Expand sidebar') : (isRTL ? 'طي القائمة الجانبية' : 'Collapse sidebar')}
                   aria-pressed={collapsed}
-                  className="hidden lg:flex p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                  className="hidden lg:flex p-2 rounded-xl border border-border/70 text-text-secondary hover:text-text-primary hover:bg-surface-elevated/80 transition-colors shadow-2xs"
                 >
                   {collapsed
                     ? (isRTL ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />)
@@ -756,54 +812,68 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Tooltip>
 
               {/* Breadcrumb */}
-              <nav aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} className="flex items-center gap-1.5 text-xs">
-                <span className="hidden sm:inline text-[var(--text-tertiary)] font-medium">NazBiz</span>
-                <span className="hidden sm:inline text-[var(--text-tertiary)]" aria-hidden="true">/</span>
-                <span className="font-semibold text-[var(--text-primary)]" aria-current="page">
+              <nav aria-label={isRTL ? 'مسار التنقل' : 'Breadcrumb'} className="flex items-center gap-2 text-xs">
+                <span className="hidden sm:inline font-bold text-text-tertiary">Naz AutoReply</span>
+                <span className="hidden sm:inline text-text-tertiary/70" aria-hidden="true">/</span>
+                <span className="font-extrabold text-sm text-text-primary tracking-tight" aria-current="page">
                   {pageTitle}
                 </span>
               </nav>
             </div>
 
             {/* Center: global search (grows) */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center px-2">
               <button
                 type="button"
                 onClick={() => setCommandPaletteOpen(true)}
                 aria-label={isRTL ? 'البحث (Ctrl+K)' : 'Search (Ctrl+K)'}
                 aria-keyshortcuts="Control+k Meta+k"
-                className="hidden sm:flex items-center justify-between gap-2 px-3 py-1.5 w-full max-w-[360px] rounded-lg bg-[var(--surface-elevated)] border border-[var(--border)] hover:border-[var(--border-hover)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] text-xs transition-all shadow-xs group"
+                className="hidden sm:flex items-center justify-between gap-3 px-3.5 py-2 w-full max-w-[380px] rounded-xl bg-surface-elevated/70 border border-border/80 hover:border-brand/40 text-text-tertiary hover:text-text-secondary text-xs transition-all shadow-xs group"
               >
-                <div className="flex items-center gap-2">
-                  <Search size={13} aria-hidden="true" />
-                  <span>{isRTL ? 'بحث أو انتقل إلى...' : 'Search or jump to...'}</span>
+                <div className="flex items-center gap-2.5">
+                  <Search size={14} className="text-text-tertiary group-hover:text-brand transition-colors" aria-hidden="true" />
+                  <span className="text-text-tertiary group-hover:text-text-secondary">
+                    {isRTL ? 'بحث سريع، قنوات، أوامر... (⌘K)' : 'Search actions, bots, channels... (⌘K)'}
+                  </span>
                 </div>
                 <kbd
-                  className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono bg-[var(--surface)] border border-[var(--border)] rounded text-[var(--text-tertiary)]"
+                  className="hidden md:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono bg-surface border border-border/90 rounded-md text-text-tertiary shadow-2xs"
                   aria-hidden="true"
                 >
-                  <Command size={9} />K
+                  <Command size={10} />K
                 </kbd>
               </button>
             </div>
 
             {/* Right cluster */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* AI Copilot badge */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* AI Engine Status badge */}
               <div
-                aria-label={isRTL ? 'مساعد الذكاء الاصطناعي' : 'AI Copilot'}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--brand)]/[0.08] text-[var(--brand)] text-[10px] font-bold select-none border border-[var(--brand)]/[0.15]"
+                aria-label={isRTL ? 'حالة الذكاء الاصطناعي' : 'AI Engine Operational'}
+                className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-500 select-none backdrop-blur-sm"
               >
-                <Sparkles size={11} aria-hidden="true" />
-                <span>AI Copilot</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span>{isRTL ? 'محرك الذكاء متصل' : 'AI Operational'}</span>
               </div>
+
+              {/* Quick Connect Channel Button */}
+              <Link
+                href="/dashboard/channels"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand to-brand-violet px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-brand/20 hover:brightness-110 active:scale-[0.98] transition-all"
+              >
+                <Plus size={13} />
+                <span>{isRTL ? 'ربط قناة' : 'Connect Channel'}</span>
+              </Link>
 
               {/* Search trigger — mobile only */}
               <button
                 type="button"
                 onClick={() => setCommandPaletteOpen(true)}
                 aria-label={isRTL ? 'بحث' : 'Search'}
-                className="sm:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                className="sm:hidden p-2 rounded-xl border border-border/70 text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
               >
                 <Search size={17} />
               </button>
@@ -813,7 +883,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 type="button"
                 onClick={toggleLang}
                 aria-label={isRTL ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
-                className="px-2.5 py-1 text-[10px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg border border-[var(--border)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                className="px-2.5 py-1.5 text-[11px] font-bold text-text-secondary hover:text-text-primary rounded-xl border border-border/80 hover:bg-surface-elevated/80 transition-colors shadow-2xs"
               >
                 {isRTL ? 'EN' : 'عربي'}
               </button>
@@ -833,7 +903,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className={[
               'flex-1 w-full mx-auto flex flex-col outline-none',
               isInboxPage
-                ? 'p-0 max-w-none h-[calc(100vh-56px)]'
+                ? 'p-0 max-w-none h-[calc(100vh-64px)]'
                 : 'p-4 sm:p-6 lg:p-8 max-w-none',
             ].join(' ')}
           >
@@ -859,7 +929,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
-                className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm"
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
                 onClick={() => setHelpModalOpen(false)}
                 aria-hidden="true"
               />
@@ -874,18 +944,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
               >
-                <div className="pointer-events-auto w-full max-w-md bg-[var(--surface-overlay)] border border-[var(--border)] rounded-2xl shadow-2xl p-6">
-                  <div className="flex items-start justify-between pb-4 border-b border-[var(--border)]/70 mb-4">
+                <div className="pointer-events-auto w-full max-w-md bg-surface-overlay/95 backdrop-blur-xl border border-border/80 rounded-3xl shadow-2xl p-6">
+                  <div className="flex items-start justify-between pb-4 border-b border-border/70 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-[var(--brand)]/10 text-[var(--brand)]" aria-hidden="true">
-                        <HelpCircle size={19} />
+                      <div className="p-2.5 rounded-2xl bg-brand/10 text-brand" aria-hidden="true">
+                        <HelpCircle size={20} />
                       </div>
                       <div>
-                        <h3 id="help-modal-title" className="text-sm font-bold text-[var(--text-primary)]">
-                          {isRTL ? 'مساعدة NazBiz والتوثيق' : 'NazBiz Help & Documentation'}
+                        <h3 id="help-modal-title" className="text-sm font-bold text-text-primary">
+                          {isRTL ? 'مساعدة نزار والتوثيق' : 'Naz AutoReply Help & Docs'}
                         </h3>
-                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                          {isRTL ? 'احصل على إجابات فورية أو تواصل مع الدعم' : 'Get instant answers or connect with support'}
+                        <p className="text-xs text-text-secondary mt-0.5">
+                          {isRTL ? 'دليل إعداد القنوات وأدلة الذكاء الاصطناعي والدعم' : 'Channel setups, AI guides & merchant support'}
                         </p>
                       </div>
                     </div>
@@ -893,53 +963,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       type="button"
                       onClick={() => setHelpModalOpen(false)}
                       aria-label={isRTL ? 'إغلاق' : 'Close'}
-                      className="p-1.5 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-elevated)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                      className="p-1.5 rounded-xl text-text-tertiary hover:text-text-primary hover:bg-surface-elevated transition-colors"
                     >
-                      <X size={15} />
+                      <X size={16} />
                     </button>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <a
                       href="https://docs.nazbiz.io"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-card)] border border-[var(--border)] transition-colors group"
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-elevated/70 hover:bg-surface-card border border-border/70 transition-all group"
                     >
                       <div>
-                        <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">
+                        <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
                           {isRTL ? 'التوثيق الرسمي' : 'Official Documentation'}
                         </div>
-                        <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
-                          {isRTL ? 'مراجع API والمساعدة' : 'API references, Webhooks, and guides'}
+                        <div className="text-[10px] text-text-tertiary mt-0.5">
+                          {isRTL ? 'مراجع API والربط السحابي ومسارات العمل' : 'API references, Webhooks, and setup guides'}
                         </div>
                       </div>
-                      <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
+                      <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand shrink-0" aria-hidden="true" />
                     </a>
 
                     <Link
                       href="/dashboard/channels"
                       onClick={() => setHelpModalOpen(false)}
-                      className="flex items-center justify-between p-3 rounded-xl bg-[var(--surface-elevated)] hover:bg-[var(--surface-card)] border border-[var(--border)] transition-colors group"
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-elevated/70 hover:bg-surface-card border border-border/70 transition-all group"
                     >
                       <div>
-                        <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--brand)] transition-colors">
-                          {isRTL ? 'إعداد القنوات' : 'Channel Setup Walkthrough'}
+                        <div className="text-xs font-bold text-text-primary group-hover:text-brand transition-colors">
+                          {isRTL ? 'إعداد القنوات والمتاجر' : 'Channel & Store Connect'}
                         </div>
-                        <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
-                          {isRTL ? 'دليل خطوة بخطوة' : 'Step-by-step guides for Instagram, WhatsApp & Salla'}
+                        <div className="text-[10px] text-text-tertiary mt-0.5">
+                          {isRTL ? 'دليل ربط واتساب، إنستغرام، سلة وشوبيفاي' : 'Step-by-step connection for WhatsApp, IG, Salla & Shopify'}
                         </div>
                       </div>
-                      <ExternalLink size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--brand)] shrink-0" aria-hidden="true" />
+                      <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand shrink-0" aria-hidden="true" />
                     </Link>
                   </div>
 
-                  <div className="pt-4 border-t border-[var(--border)]/70 mt-4 flex items-center justify-between text-xs text-[var(--text-tertiary)]">
-                    <a href="mailto:support@nazbiz.io" className="rounded text-[var(--text-secondary)] hover:text-[var(--brand)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--brand)]">support@nazbiz.io</a>
+                  <div className="pt-4 border-t border-border/70 mt-4 flex items-center justify-between text-xs text-text-tertiary">
+                    <a href="mailto:support@nazbiz.io" className="text-text-secondary hover:text-brand hover:underline font-medium">support@nazbiz.io</a>
                     <button
                       type="button"
                       onClick={() => setHelpModalOpen(false)}
-                      className="px-3 py-1.5 rounded-lg bg-[var(--brand)] text-[var(--brand-text)] font-semibold text-xs hover:brightness-110 transition-[filter] focus-visible:outline-2 focus-visible:outline-[var(--brand)]"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-brand to-brand-violet text-white font-bold text-xs shadow-md shadow-brand/20 hover:brightness-110 transition-all"
                     >
                       {isRTL ? 'إغلاق' : 'Close'}
                     </button>
