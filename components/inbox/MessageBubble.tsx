@@ -59,6 +59,7 @@ interface MessageBubbleProps {
     content_html?: string | null
     direction: 'inbound' | 'outbound'
     is_ai: boolean
+    source?: string | null
     status: string
     send_status?: 'queued' | 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'blocked' | string
     delivery_status?: 'pending' | 'sent' | 'delivered' | 'failed' | string
@@ -164,7 +165,8 @@ function AttachmentCard({
   const [authenticatedMediaUrl, setAuthenticatedMediaUrl] = useState('')
   const kind = fileKind(msg.media_type, msg.mime_type, msg.file_name)
   const directUrl = absoluteMediaUrl(msg.media_url)
-  const inlineUrl = msg.id > 0 ? authenticatedMediaUrl : directUrl
+  const isPublicProductImage = msg.source === 'ai_product_image' && /^https?:\/\//i.test(msg.media_url || '')
+  const inlineUrl = msg.id > 0 && !isPublicProductImage ? authenticatedMediaUrl : directUrl
   const downloadUrl = inlineUrl
   const name = msg.file_name || (kind === 'pdf' ? 'PDF document' : 'Attachment')
   const meta = [kind.toUpperCase(), formatFileSize(msg.file_size)].filter(Boolean).join(' - ')
@@ -177,7 +179,7 @@ function AttachmentCard({
 
     const load = async () => {
       try {
-        if (msg.id <= 0) {
+        if (msg.id <= 0 || isPublicProductImage) {
           setAuthenticatedMediaUrl(directUrl)
           setLoading(false)
           return
@@ -208,7 +210,7 @@ function AttachmentCard({
       disposed = true
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [msg.id, directUrl])
+  }, [msg.id, directUrl, isPublicProductImage])
 
   const downloadButton = loading || !downloadUrl ? (
     <span className="text-[11px] opacity-70">{isRTL ? 'جارٍ تحميل المرفق…' : 'Loading attachment…'}</span>

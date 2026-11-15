@@ -36,6 +36,7 @@ export interface ApiMessage {
   content_html?: string | null
   direction: 'inbound' | 'outbound'
   is_ai: boolean
+  source?: string | null
   status: string
   send_status?: 'queued' | 'pending' | 'sent' | 'delivered' | 'read' | 'failed' | 'blocked' | string
   delivery_status?: 'pending' | 'queued' | 'sent' | 'delivered' | 'failed' | string
