@@ -25,6 +25,8 @@ interface ConversationHeaderProps {
   conv: ApiConversation
   isRTL: boolean
   onToggleAI: () => void
+  onMarkHandled: () => void
+  isMarkingHandled?: boolean
   onStatusChange: (s: 'open' | 'closed' | 'pending') => void
   onToggleLeftPanel: () => void
   onToggleRightPanel: () => void
@@ -44,7 +46,7 @@ interface ConversationHeaderProps {
 }
 
 export default function ConversationHeader({
-  conv, isRTL, onToggleAI, onStatusChange,
+  conv, isRTL, onToggleAI, onMarkHandled, isMarkingHandled = false, onStatusChange,
   onToggleLeftPanel, onToggleRightPanel, leftCollapsed, rightCollapsed,
   availableBots = [], onBotChange, isUpdatingBot = false,
   availableAgents = [], onAgentChange, isUpdatingAgent = false,
@@ -55,13 +57,15 @@ export default function ConversationHeader({
   const L = (en: string, ar: string) => isRTL ? ar : en
 
   const ch = CHANNEL_LABELS[conv.channel?.type?.toLowerCase() || ''] ?? { label: conv.channel?.type ?? 'Chat', color: 'var(--accent)' }
-  const requires_human = (conv as any).requires_human
+  const requires_human = conv.requires_human
+  const isHumanHandling = requires_human && !!conv.human_handling_started_at
 
-  const aiState = requires_human ? 'escalated' : conv.ai_enabled ? 'active' : 'paused'
+  const aiState = requires_human ? (isHumanHandling ? 'handling' : 'escalated') : conv.ai_enabled ? 'active' : 'paused'
   const aiStateConfig = {
     active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-brand/10',  text: 'text-brand',   dot: 'bg-brand' },
     paused:    { label: L('AI Paused', 'AI متوقف'),     bg: 'bg-surface-elevated', text: 'text-text-secondary', dot: 'bg-text-tertiary' },
     escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-error-subtle', text: 'text-error', dot: 'bg-error' },
+    handling:  { label: L('Agent handling', 'الموظف يتابع'), bg: 'bg-warning/10', text: 'text-warning', dot: 'bg-warning' },
   }[aiState]
 
   const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
@@ -139,13 +143,32 @@ export default function ConversationHeader({
       {/* AI State Toggle & Manual Takeover */}
       <button
         onClick={onToggleAI}
+        disabled={requires_human}
         className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all flex-shrink-0 ${aiStateConfig.bg} ${aiStateConfig.text} border border-current/10`}
-        title={L('Toggle AI / Manual Takeover', 'تبديل AI / الاستحواذ اليدوي')}
+        title={requires_human ? L('Mark this escalation handled to resume AI', 'أنه معالجة التصعيد لإعادة تشغيل الذكاء الاصطناعي') : L('Toggle AI / Manual Takeover', 'تبديل AI / الاستحواذ اليدوي')}
       >
         <span className={`w-1.5 h-1.5 rounded-full ${aiStateConfig.dot} ${aiState === 'active' ? 'animate-pulse' : ''}`} />
         {aiStateConfig.label}
         {aiState === 'active' ? <Bot size={12} /> : aiState === 'escalated' ? <AlertTriangle size={12} /> : <User size={12} />}
       </button>
+
+      {(conv.human_handled_count ?? 0) > 0 && (
+        <span className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-success-subtle px-2 py-1.5 text-[10px] font-semibold text-success" title={L('Completed agent handoffs', 'مرات المعالجة المكتملة')}>
+          <CheckCircle size={12} />{conv.human_handled_count} {L('handled', 'تمت المعالجة')}
+        </span>
+      )}
+
+      {isHumanHandling && (
+        <button
+          type="button"
+          onClick={onMarkHandled}
+          disabled={isMarkingHandled}
+          className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+        >
+          {isMarkingHandled ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+          {L('Handled', 'تمت المعالجة')}
+        </button>
+      )}
 
       {/* Status dropdown */}
       <div className="w-32 shrink-0">

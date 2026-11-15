@@ -89,6 +89,8 @@ export interface ApiConversation {
   requires_human?: boolean
   escalated_at?: string | null
   escalation_reason?: string | null
+  human_handling_started_at?: string | null
+  human_handled_count?: number
   last_message_at: string | null
   channel: ApiChannel
   bot?: ApiBot | null
@@ -128,6 +130,8 @@ function normalizeConversation(raw: ApiConversation & { messages?: ApiMessage[] 
     requires_human: raw.requires_human ?? false,
     escalated_at: raw.escalated_at ?? null,
     escalation_reason: raw.escalation_reason ?? null,
+    human_handling_started_at: raw.human_handling_started_at ?? null,
+    human_handled_count: raw.human_handled_count ?? 0,
     last_message_at: raw.last_message_at,
     channel: raw.channel,
     bot: raw.bot ?? null,
@@ -295,6 +299,25 @@ export function useInbox() {
       return false
     }
   }, [])
+
+  const markHandled = useCallback(async (convId: number): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API}/inbox/${convId}/handled`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error(`Error ${res.status}`)
+      const data = await res.json()
+      if (data.conversation) {
+        const normalized = normalizeConversation(data.conversation)
+        setConversations(prev => prev.map(c => c.id === convId ? normalized : c))
+      }
+      fetchConversations(true)
+      return true
+    } catch {
+      return false
+    }
+  }, [fetchConversations])
 
   const updateConversationStatus = useCallback(async (convId: number, status: 'open' | 'closed' | 'pending'): Promise<boolean> => {
     const previous = conversations.find(c => c.id === convId) ?? null
@@ -624,7 +647,7 @@ export function useInbox() {
   return {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error, msgError,
-    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, updateConversationStatus, updateConversationBot, updateConversationBlockStatus, deleteConversation, deleteWhatsAppMessage, reactToMessage,
+    fetchConversations, selectConversation, sendReply, sendMediaReply, toggleAi, markHandled, updateConversationStatus, updateConversationBot, updateConversationBlockStatus, deleteConversation, deleteWhatsAppMessage, reactToMessage,
     getConversationTags, addTag, removeTag, getAllTags, submitFeedback,
   }
 }

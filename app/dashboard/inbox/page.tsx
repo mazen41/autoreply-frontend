@@ -32,7 +32,7 @@ export default function InboxPage() {
     conversations, messages, selectedId, selectedConv,
     loadingConvs, loadingMsgs, sending, error,
     fetchConversations, selectConversation, sendReply, sendMediaReply,
-    toggleAi, updateConversationStatus, updateConversationBot, updateConversationBlockStatus, deleteConversation, deleteWhatsAppMessage, reactToMessage, submitFeedback,
+    toggleAi, markHandled, updateConversationStatus, updateConversationBot, updateConversationBlockStatus, deleteConversation, deleteWhatsAppMessage, reactToMessage, submitFeedback,
     getConversationTags, addTag, removeTag
   } = useInbox()
 
@@ -53,6 +53,7 @@ export default function InboxPage() {
   const [channels, setChannels] = useState<Array<{ id: number; type: string; page_name: string | null; page_id?: string | null }>>([])
   const [isUpdatingBot, setIsUpdatingBot] = useState(false)
   const [isDeletingConversation, setIsDeletingConversation] = useState(false)
+  const [isMarkingHandled, setIsMarkingHandled] = useState(false)
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
 
   // Fetch bots and channels for filters — untouched API logic
@@ -180,6 +181,14 @@ export default function InboxPage() {
     if (!success) window.alert(isRTL ? 'تعذر حذف المحادثة.' : 'Could not delete the conversation.')
   }, [deleteConversation, isDeletingConversation, isRTL, selectedConv])
 
+  const handleMarkHandled = useCallback(async () => {
+    if (!selectedConv || isMarkingHandled) return
+    setIsMarkingHandled(true)
+    const success = await markHandled(selectedConv.id)
+    setIsMarkingHandled(false)
+    if (!success) window.alert(isRTL ? 'تعذر إنهاء التصعيد. تأكد من إرسال رد يدوي أولاً.' : 'Could not complete the escalation. Make sure a manual reply was sent first.')
+  }, [isMarkingHandled, isRTL, markHandled, selectedConv])
+
   const handleDeleteWhatsAppMessage = useCallback(async (message: ApiMessage) => {
     if (!window.confirm(isRTL
       ? 'حذف هذه الرسالة للجميع؟'
@@ -230,6 +239,8 @@ export default function InboxPage() {
             conv={selectedConv}
             isRTL={isRTL}
             onToggleAI={() => toggleAi(selectedConv.id)}
+            onMarkHandled={() => { void handleMarkHandled() }}
+            isMarkingHandled={isMarkingHandled}
             onRequestFeedback={() => void requestCustomerFeedback()}
             isCreatingFeedbackLink={creatingFeedbackLink}
             onStatusChange={(s) => updateConversationStatus(selectedConv.id, s)}
