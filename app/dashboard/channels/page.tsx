@@ -5,33 +5,37 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { springs, variants } from '../../../lib/motion'
 import PageHeader from '../../../components/ui/PageHeader'
-import ContextualExplainer from '../../../components/dashboard/ContextualExplainer'
-import FilterBar from '../../../components/ui/FilterBar'
 import MetricCard from '../../../components/ui/MetricCard'
 import Button from '../../../components/ui/Button'
 import EmptyState from '../../../components/ui/EmptyState'
-import { SkeletonCard } from '../../../components/ui/Skeleton'
-import { MetricCardSkeleton } from '../../../components/ui/Skeleton'
-import ChannelCard, { ChannelDef, ChannelInstance } from '../../../components/channels/ChannelCard'
-import ChannelConnectWizard, { ALL_CHANNELS, ChannelOption } from '../../../components/channels/ChannelConnectWizard'
+import { SkeletonCard, MetricCardSkeleton } from '../../../components/ui/Skeleton'
+import ChannelCardModern from '../../../components/channels/ChannelCardModern'
+import ChannelAccountDrawer from '../../../components/channels/ChannelAccountDrawer'
+import SetupReadinessCard, { AiSetupChecklist } from '../../../components/channels/SetupReadinessCard'
+import ChannelConnectModalModern from '../../../components/channels/ChannelConnectModalModern'
 import TelegramConnect from '../../../components/channels/TelegramConnect'
 import WooCommerceConnect from '../../../components/channels/WooCommerceConnect'
 import ShopifyConnect from '../../../components/channels/ShopifyConnect'
 import WhatsAppConnect from '../../../components/channels/WhatsAppConnect'
-import Checkbox from '../../../components/ui/Checkbox'
-import Switch from '../../../components/ui/Switch'
-import Modal from '../../../components/ui/Modal'
-import { GsapStaggerGroup } from '../../../components/dashboard/DashboardGsapEffects'
+import { ChannelDef, ChannelInstance } from '../../../components/channels/ChannelCard'
+import { ChannelOption, ALL_CHANNELS } from '../../../components/channels/ChannelConnectWizard'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 import {
   Radio,
   Plus,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
-  Sparkles,
   RefreshCw,
+  Search,
+  Sparkles,
+  Layers,
+  AlertTriangle,
+  SlidersHorizontal,
+  CheckCircle2,
+  Store,
+  MessageSquare,
+  Share2,
+  Mail,
+  Zap,
 } from 'lucide-react'
 
 function getToken(): string {
@@ -42,11 +46,6 @@ function getToken(): string {
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-type AiSetupChecklist = {
-  ready: boolean
-  checks: Record<string, { passed: boolean; label: string }>
-  missing: string[]
-}
 type GoLiveSettings = { consent_policy_acknowledged: boolean; handoff_notification_email: string | null }
 type ApiChannel = ChannelInstance & {
   type: string
@@ -62,131 +61,133 @@ type ApiChannel = ChannelInstance & {
 }
 
 function needsChannelAttention(channel: ApiChannel) {
-  return channel.status === 'warning'
-    || channel.status === 'error'
-    || channel.comment_webhook_status === 'error'
-    || Boolean(channel.integration?.sync_error)
-    || channel.integration?.sync_status === 'failed'
+  return (
+    channel.status === 'warning' ||
+    channel.status === 'error' ||
+    channel.comment_webhook_status === 'error' ||
+    Boolean(channel.integration?.sync_error) ||
+    channel.integration?.sync_status === 'failed'
+  )
 }
 
 const CHANNELS_CATALOG: ChannelDef[] = [
   {
-    id: 'instagram',
-    name: 'Instagram',
-    description: 'Connect a professional account for supported direct messages and comment replies.',
-    category: 'social',
-    brandColor: '#E4405F',
-  },
-  {
     id: 'whatsapp',
     name: 'WhatsApp Business',
-    description: 'Connect WhatsApp Cloud or a compatible WhatsApp instance; features depend on the provider.',
+    description: 'Connect WhatsApp Cloud or a dedicated business phone instance for 24/7 client care.',
     category: 'messaging',
     brandColor: '#25D366',
   },
   {
+    id: 'instagram',
+    name: 'Instagram',
+    description: 'Connect a professional account for direct messaging and automated comment replies.',
+    category: 'social',
+    brandColor: '#E4405F',
+  },
+  {
     id: 'facebook',
     name: 'Facebook Messenger',
-    description: 'Connect a Facebook Page for supported Messenger conversations and comment replies.',
+    description: 'Connect a Facebook Page for Messenger conversations and post comment automation.',
     category: 'social',
     brandColor: '#1877F2',
   },
   {
-    id: 'gmail',
-    name: 'Gmail & Google Workspace',
-    description: 'Connect a mailbox to sync email conversations and send supported replies.',
-    category: 'email',
-    brandColor: '#EA4335',
-  },
-  {
     id: 'salla',
     name: 'Salla Store',
-    description: 'Connect a Salla store to sync its catalog and order data for commerce-aware conversations.',
+    description: 'Connect a Salla store to sync catalog, inventory, and real-time order inquiries.',
     category: 'ecommerce',
     brandColor: '#00B4D8',
   },
   {
-    id: 'telegram',
-    name: 'Telegram',
-    description: 'Connect a Telegram bot for customer conversations.',
-    category: 'messaging',
-    brandColor: '#0088CC',
-  },
-  {
     id: 'shopify',
-    name: 'Shopify',
-    description: 'Connect a Shopify store to sync its catalog, customers and orders.',
+    name: 'Shopify Store',
+    description: 'Connect a Shopify store to sync catalog products, customer profiles, and order updates.',
     category: 'ecommerce',
     brandColor: '#96BF48',
   },
   {
     id: 'woocommerce',
     name: 'WooCommerce',
-    description: 'Connect a WooCommerce store to sync its catalog, customers and orders.',
+    description: 'Connect a WordPress WooCommerce store to sync catalog, customers, and order history.',
     category: 'ecommerce',
     brandColor: '#96588A',
+  },
+  {
+    id: 'telegram',
+    name: 'Telegram',
+    description: 'Connect a Telegram bot token to handle instant customer conversations.',
+    category: 'messaging',
+    brandColor: '#0088CC',
+  },
+  {
+    id: 'gmail',
+    name: 'Gmail & Google Workspace',
+    description: 'Connect a company mailbox to sync email threads and automate support ticket handling.',
+    category: 'email',
+    brandColor: '#EA4335',
   },
 ]
 
 export default function ChannelsPage() {
   const { isRTL } = useLang()
-  const L = (en: string, ar: string) => isRTL ? ar : en
-  const goLiveCheckLabels: Record<string, string> = {
-    connected_channel: L('Connect at least one channel', 'اربط قناة واحدة على الأقل'),
-    active_agent: L('Create an active agent with a supported provider and assign a connected channel', 'أنشئ وكيلاً نشطاً بمزود مدعوم وأسند إليه قناة متصلة'),
-    provider_configured: L('Configure a supported AI provider', 'أعدّ مزوداً مدعوماً للذكاء الاصطناعي'),
-    knowledge_or_instructions: L('Add business knowledge or AI instructions', 'أضف معرفة النشاط أو تعليمات الذكاء الاصطناعي'),
-    test_reply_generated: L('Generate a successful test reply using the current agent setup', 'أنشئ رداً تجريبياً ناجحاً باستخدام إعدادات الوكيل الحالية'),
-    consent_policy_acknowledged: L('Acknowledge the marketing consent and opt-out policy', 'أقرّ بسياسة موافقة الرسائل التسويقية وإلغاء الاشتراك'),
-    handoff_recipient_configured: L('Set an email recipient for human handoffs', 'حدد بريداً إلكترونياً لإشعارات التحويل إلى موظف'),
-  }
+  const L = (en: string, ar: string) => (isRTL ? ar : en)
+
   const [apiChannels, setApiChannels] = useState<ApiChannel[]>([])
-  const [settingsInstance, setSettingsInstance] = useState<ApiChannel | null>(null)
+  const [selectedDrawerInstance, setSelectedDrawerInstance] = useState<ApiChannel | null>(null)
   const [aiSetup, setAiSetup] = useState<AiSetupChecklist | null>(null)
   const [testReplyLoading, setTestReplyLoading] = useState(false)
-  const [savingOrderSubmissionId, setSavingOrderSubmissionId] = useState<number | null>(null)
   const [testReply, setTestReply] = useState<string | null>(null)
-  const [goLiveSettings, setGoLiveSettings] = useState<GoLiveSettings>({ consent_policy_acknowledged: false, handoff_notification_email: '' })
+  const [goLiveSettings, setGoLiveSettings] = useState<GoLiveSettings>({
+    consent_policy_acknowledged: false,
+    handoff_notification_email: '',
+  })
   const [savingGoLiveSettings, setSavingGoLiveSettings] = useState(false)
+  const [isSavingOrderSubmission, setIsSavingOrderSubmission] = useState(false)
+  const [syncingInstanceId, setSyncingInstanceId] = useState<number | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [errorState, setErrorState] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortOption, setSortOption] = useState('accounts')
+  const [selectedFilter, setSelectedFilter] = useState('all')
+  const [sortOption, setSortOption] = useState<'recent' | 'alphabetical' | 'accounts' | 'status'>('accounts')
 
-  // Connect wizard modal
-  const [wizardOpen, setWizardOpen] = useState(false)
-  const [selectedWizardChannel, setSelectedWizardChannel] = useState<ChannelOption | null>(null)
+  // Modern Connect Modal
+  const [connectModalOpen, setConnectModalOpen] = useState(false)
+  const [selectedChannelOption, setSelectedChannelOption] = useState<ChannelOption | null>(null)
 
-  // Special direct connect modals
-  const [activeModalChannel, setActiveModalChannel] = useState<ChannelDef | null>(null)
+  // Direct Integration Modals (WhatsApp, Telegram, WooCommerce, Shopify)
+  const [activeSpecialModal, setActiveSpecialModal] = useState<ChannelDef | null>(null)
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    const arabicMessages: Record<string, string> = {
-      'Select a business first.': 'اختر نشاطاً تجارياً أولاً.',
-      'Go-live settings saved.': 'تم حفظ متطلبات التفعيل.',
-      'Could not save go-live settings.': 'تعذر حفظ متطلبات التفعيل.',
-      'Test reply generated and setup checklist refreshed.': 'تم إنشاء الرد التجريبي وتحديث قائمة التحقق.',
-      'The AI test reply failed.': 'تعذر إنشاء الرد التجريبي للذكاء الاصطناعي.',
-      'WooCommerce authorization was cancelled.': 'تم إلغاء تفويض WooCommerce.',
-      'WooCommerce connected. Store sync has started.': 'تم ربط WooCommerce وبدأت مزامنة المتجر.',
-      'Could not verify the WooCommerce connection.': 'تعذر التحقق من اتصال WooCommerce.',
-      'Channel connected successfully!': 'تم ربط القناة بنجاح!',
-      'Shopify connected. Initial store sync has started.': 'تم ربط Shopify وبدأت المزامنة الأولية للمتجر.',
-      'Channel account disconnected': 'تم فصل حساب القناة.',
-      'Automatic order submission updated.': 'تم تحديث الإرسال التلقائي للطلبات.',
-      'Could not update automatic order submission.': 'تعذر تحديث الإرسال التلقائي للطلبات.',
-      'Disconnect failed': 'تعذر فصل الاتصال.',
-      'Store sync started': 'بدأت مزامنة المتجر.',
-      'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
-      'Telegram bot connected!': 'تم ربط بوت تيليجرام بنجاح!',
-    }
-    setToast({ message: isRTL ? (arabicMessages[message] || message) : message, type })
-    setTimeout(() => setToast(null), 4000)
-  }, [isRTL])
+  const showToast = useCallback(
+    (message: string, type: 'success' | 'error' = 'success') => {
+      const arabicMessages: Record<string, string> = {
+        'Select a business first.': 'اختر نشاطاً تجارياً أولاً.',
+        'Go-live settings saved.': 'تم حفظ متطلبات التفعيل.',
+        'Could not save go-live settings.': 'تعذر حفظ متطلبات التفعيل.',
+        'Test reply generated and setup checklist refreshed.': 'تم إنشاء الرد التجريبي وتحديث قائمة التحقق.',
+        'The AI test reply failed.': 'تعذر إنشاء الرد التجريبي للذكاء الاصطناعي.',
+        'WooCommerce authorization was cancelled.': 'تم إلغاء تفويض WooCommerce.',
+        'WooCommerce connected. Store sync has started.': 'تم ربط WooCommerce وبدأت مزامنة المتجر.',
+        'Could not verify the WooCommerce connection.': 'تعذر التحقق من اتصال WooCommerce.',
+        'Channel connected successfully!': 'تم ربط القناة بنجاح!',
+        'Shopify connected. Initial store sync has started.': 'تم ربط Shopify وبدأت المزامنة الأولية للمتجر.',
+        'Channel account disconnected': 'تم فصل حساب القناة.',
+        'Automatic order submission updated.': 'تم تحديث الإرسال التلقائي للطلبات.',
+        'Could not update automatic order submission.': 'تعذر تحديث الإرسال التلقائي للطلبات.',
+        'Disconnect failed': 'تعذر فصل الاتصال.',
+        'Store sync started': 'بدأت مزامنة المتجر.',
+        'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
+        'Telegram bot connected!': 'تم ربط بوت تيليجرام بنجاح!',
+      }
+      setToast({ message: isRTL ? arabicMessages[message] || message : message, type })
+      setTimeout(() => setToast(null), 4000)
+    },
+    [isRTL]
+  )
 
   const fetchChannels = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true)
@@ -223,7 +224,7 @@ export default function ChannelsPage() {
       })
       if (response.ok) setAiSetup(await response.json())
     } catch {
-      // Channel loading remains usable if readiness status is temporarily unavailable.
+      // Graceful fallback
     }
   }, [])
 
@@ -236,7 +237,9 @@ export default function ChannelsPage() {
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
       })
       if (response.ok) setGoLiveSettings(await response.json())
-    } catch { /* Readiness remains visible if settings are temporarily unavailable. */ }
+    } catch {
+      // Graceful fallback
+    }
   }, [])
 
   useEffect(() => {
@@ -254,7 +257,12 @@ export default function ChannelsPage() {
     try {
       const response = await fetch(`${API}/api/businesses/${businessId}/go-live-settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+          Accept: 'application/json',
+          ...getBusinessHeaders(),
+        },
         body: JSON.stringify(goLiveSettings),
       })
       const result = await response.json().catch(() => ({}))
@@ -264,7 +272,9 @@ export default function ChannelsPage() {
       showToast('Go-live settings saved.', 'success')
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not save go-live settings.', 'error')
-    } finally { setSavingGoLiveSettings(false) }
+    } finally {
+      setSavingGoLiveSettings(false)
+    }
   }
 
   const runAiSetupTest = async () => {
@@ -293,29 +303,6 @@ export default function ChannelsPage() {
     }
   }
 
-  const commerceSyncIsActive = apiChannels.some((channel) =>
-    ['queued', 'syncing'].includes(channel.integration?.sync_status || '')
-  )
-
-  useEffect(() => {
-    if (!commerceSyncIsActive) return
-    const timer = setInterval(async () => {
-      const token = getToken()
-      if (!token) return
-      try {
-        const res = await fetch(`${API}/api/channels`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
-        })
-        if (!res.ok) return
-        const data = await res.json()
-        setApiChannels(Array.isArray(data) ? data : data.data || [])
-      } catch (error) {
-        console.warn('Could not refresh commerce sync status:', error)
-      }
-    }, 2500)
-    return () => clearInterval(timer)
-  }, [commerceSyncIsActive])
-
   // Handle OAuth redirects in URL parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -331,9 +318,12 @@ export default function ChannelsPage() {
       void (async () => {
         for (let attempt = 0; attempt < 30; attempt++) {
           try {
-            const res = await fetch(`${API}/api/channels/woocommerce/connection-status?state=${encodeURIComponent(wooState)}`, {
-              headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
-            })
+            const res = await fetch(
+              `${API}/api/channels/woocommerce/connection-status?state=${encodeURIComponent(wooState)}`,
+              {
+                headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() },
+              }
+            )
             const result = await res.json()
             if (result.status === 'connected') {
               showToast('WooCommerce connected. Store sync has started.', 'success')
@@ -349,14 +339,17 @@ export default function ChannelsPage() {
           }
           await new Promise((resolve) => setTimeout(resolve, 1000))
         }
-        showToast('WooCommerce authorization returned, but the server has not confirmed the connection yet. Refresh the channel list shortly.', 'error')
+        showToast('WooCommerce authorization returned. Refresh the channel list shortly.', 'error')
       })()
     } else if (params.get('success')) {
       const success = params.get('success')
       void Promise.resolve().then(() => {
-        showToast(success === 'shopify_connected'
-          ? 'Shopify connected. Initial store sync has started.'
-          : 'Channel connected successfully!', 'success')
+        showToast(
+          success === 'shopify_connected'
+            ? 'Shopify connected. Initial store sync has started.'
+            : 'Channel connected successfully!',
+          'success'
+        )
         return fetchChannels()
       })
       window.history.replaceState({}, '', window.location.pathname)
@@ -375,13 +368,13 @@ export default function ChannelsPage() {
       void Promise.resolve().then(() => showToast(errorMessage, 'error'))
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('connect') === 'true') {
-      void Promise.resolve().then(() => setWizardOpen(true))
+      void Promise.resolve().then(() => setConnectModalOpen(true))
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [fetchChannels, showToast])
 
   const handleToggleOrderSubmission = async (instanceId: number, enabled: boolean) => {
-    setSavingOrderSubmissionId(instanceId)
+    setIsSavingOrderSubmission(true)
     try {
       const token = getToken()
       if (!token) throw new Error('Your session expired. Sign in again.')
@@ -399,24 +392,21 @@ export default function ChannelsPage() {
       const result = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(result.message || result.error || 'Could not update automatic order submission.')
 
-      setSettingsInstance((current) => current?.id === instanceId
-        ? { ...current, auto_order_confirmation_enabled: enabled, effective_auto_order_confirmation_enabled: enabled }
-        : current)
+      setSelectedDrawerInstance((current) =>
+        current?.id === instanceId
+          ? { ...current, auto_order_confirmation_enabled: enabled, effective_auto_order_confirmation_enabled: enabled }
+          : current
+      )
       await fetchChannels(false)
       showToast('Automatic order submission updated.', 'success')
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Could not update automatic order submission.', 'error')
     } finally {
-      setSavingOrderSubmissionId((current) => current === instanceId ? null : current)
+      setIsSavingOrderSubmission(false)
     }
   }
 
-  // Disconnect Account
   const handleDisconnect = async (instanceId: number) => {
-    if (!confirm('Are you sure you want to disconnect this channel account?')) {
-      return
-    }
-
     try {
       const token = getToken()
       if (!token) throw new Error('Please sign in again before disconnecting this channel.')
@@ -437,12 +427,34 @@ export default function ChannelsPage() {
     }
   }
 
-  // Start the matching supported connection flow.
+  const handleSync = async (instance: ChannelInstance) => {
+    setSyncingInstanceId(instance.id)
+    try {
+      const token = getToken()
+      const endpoint =
+        instance.type === 'shopify'
+          ? `/api/channels/shopify/${instance.id}/sync`
+          : `/api/channels/woocommerce/${instance.id}/sync`
+      const res = await fetch(`${API}${endpoint}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || 'Could not queue store sync')
+      showToast('Store sync started', 'success')
+      await fetchChannels(false)
+    } catch (err: any) {
+      showToast(err?.message || 'Sync failed', 'error')
+    } finally {
+      setSyncingInstanceId(null)
+    }
+  }
+
   const handleChannelConnection = async (ch: ChannelOption) => {
     if (['whatsapp', 'telegram', 'woocommerce', 'shopify'].includes(ch.id)) {
       const channel = CHANNELS_CATALOG.find((item) => item.id === ch.id)
       if (!channel) throw new Error(`The ${ch.name} connection flow is unavailable.`)
-      setActiveModalChannel(channel)
+      setActiveSpecialModal(channel)
       return
     }
 
@@ -492,28 +504,23 @@ export default function ChannelsPage() {
       return
     }
 
-
-
     throw new Error(`The ${ch.id} connection flow is not implemented yet.`)
   }
 
-  // Open direct connect for specialized channels (WhatsApp, Telegram, WooCommerce)
   const handleOpenConnect = (ch: ChannelDef) => {
-    if (ch.id === 'whatsapp' || ch.id === 'telegram' || ch.id === 'woocommerce' || ch.id === 'shopify') {
-      setActiveModalChannel(ch)
+    if (['whatsapp', 'telegram', 'woocommerce', 'shopify'].includes(ch.id)) {
+      setActiveSpecialModal(ch)
     } else {
       const foundOption = ALL_CHANNELS.find((c) => c.id === ch.id) || null
-      setSelectedWizardChannel(foundOption)
-      setWizardOpen(true)
+      setSelectedChannelOption(foundOption)
+      setConnectModalOpen(true)
     }
   }
 
-  // Combined Channel List with Real instances
+  // Combined Catalog with live instances
   const channelCards = useMemo(() => {
     return CHANNELS_CATALOG.map((def) => {
-      const instances: ChannelInstance[] = apiChannels.filter(
-        (c) => c.type === def.id
-      )
+      const instances: ChannelInstance[] = apiChannels.filter((c) => c.type === def.id)
       return {
         ...def,
         instances,
@@ -522,26 +529,16 @@ export default function ChannelsPage() {
     })
   }, [apiChannels])
 
-  // Overview Statistics
-  const totalConnected = useMemo(() => {
-    return apiChannels.length
-  }, [apiChannels])
-
-  const totalActiveAI = useMemo(() => {
-    return apiChannels.filter((c) => c.effective_ai_enabled ?? c.ai_enabled).length
-  }, [apiChannels])
-
-  const totalNeedsAttention = useMemo(() => {
-    return apiChannels.filter(needsChannelAttention).length
-  }, [apiChannels])
-
+  // Overview Metrics
+  const totalConnected = useMemo(() => apiChannels.length, [apiChannels])
+  const totalActiveAI = useMemo(() => apiChannels.filter((c) => c.effective_ai_enabled ?? c.ai_enabled).length, [apiChannels])
+  const totalNeedsAttention = useMemo(() => apiChannels.filter(needsChannelAttention).length, [apiChannels])
   const totalAvailable = CHANNELS_CATALOG.length
 
   // Filtered & Sorted Channels
   const filteredChannels = useMemo(() => {
     return channelCards
       .filter((ch) => {
-        // Search filter
         const q = searchQuery.toLowerCase().trim()
         const matchesSearch =
           !q ||
@@ -549,32 +546,67 @@ export default function ChannelsPage() {
           ch.description.toLowerCase().includes(q) ||
           ch.instances.some((inst) =>
             [inst.page_name, inst.page_id, inst.integration?.store_url]
-              .some((value) => (value || '').toLowerCase().includes(q))
+              .some((val) => (val || '').toLowerCase().includes(q))
           )
 
-        // Category filter
-        let matchesCategory = true
-        if (selectedCategory === 'connected') {
-          matchesCategory = ch.connected
-        } else if (selectedCategory === 'attention') {
-          matchesCategory = ch.instances.some((instance) => needsChannelAttention(instance as ApiChannel))
-        } else if (selectedCategory !== 'all') {
-          matchesCategory = ch.category === selectedCategory
+        let matchesFilter = true
+        if (selectedFilter === 'connected') {
+          matchesFilter = ch.connected
+        } else if (selectedFilter === 'disconnected') {
+          matchesFilter = !ch.connected
+        } else if (selectedFilter === 'attention') {
+          matchesFilter = ch.instances.some((inst) => needsChannelAttention(inst as ApiChannel))
+        } else if (selectedFilter !== 'all') {
+          matchesFilter = ch.category === selectedFilter
         }
 
-        return matchesSearch && matchesCategory
+        return matchesSearch && matchesFilter
       })
       .sort((a, b) => {
-        if (sortOption === 'connected') {
+        if (sortOption === 'recent') {
+          const aLatest = Math.max(...a.instances.map((i) => (i as any).connected_at ? new Date((i as any).connected_at).getTime() : 0), 0)
+          const bLatest = Math.max(...b.instances.map((i) => (i as any).connected_at ? new Date((i as any).connected_at).getTime() : 0), 0)
+          return bLatest - aLatest
+        }
+        if (sortOption === 'status') {
           return Number(b.connected) - Number(a.connected)
         }
         if (sortOption === 'alphabetical') {
           return a.name.localeCompare(b.name)
         }
-        // Default to the integrations with the most connected accounts.
         return b.instances.length - a.instances.length
       })
-  }, [channelCards, searchQuery, selectedCategory, sortOption])
+  }, [channelCards, searchQuery, selectedFilter, sortOption])
+
+  // Group into clear visual categories
+  const categoriesMap = useMemo(() => {
+    return {
+      messaging: {
+        titleEn: 'Messaging & Communication',
+        titleAr: 'المراسلة والتواصل الفوري',
+        icon: <MessageSquare size={16} className="text-emerald-400" />,
+        channels: filteredChannels.filter((c) => c.category === 'messaging'),
+      },
+      social: {
+        titleEn: 'Social & Feed Interactions',
+        titleAr: 'التواصل الاجتماعي والتعليقات',
+        icon: <Share2 size={16} className="text-pink-400" />,
+        channels: filteredChannels.filter((c) => c.category === 'social'),
+      },
+      ecommerce: {
+        titleEn: 'E-Commerce & Store Sync',
+        titleAr: 'المتاجر والتجارة الإلكترونية',
+        icon: <Store size={16} className="text-cyan-400" />,
+        channels: filteredChannels.filter((c) => c.category === 'ecommerce'),
+      },
+      email: {
+        titleEn: 'Email & Productivity',
+        titleAr: 'البريد الإلكتروني والإنتاجية',
+        icon: <Mail size={16} className="text-amber-400" />,
+        channels: filteredChannels.filter((c) => c.category === 'email'),
+      },
+    }
+  }, [filteredChannels])
 
   return (
     <motion.div
@@ -585,12 +617,14 @@ export default function ChannelsPage() {
       animate="visible"
       transition={springs.smooth}
     >
-      {/* ─── Page Header ─────────────────────────────────────────────────── */}
+      {/* ─── A. Page Header ────────────────────────────────────────────── */}
       <PageHeader
-        title={isRTL ? 'القنوات' : 'Channels'}
-        description={isRTL
-          ? 'اربط قنوات التواصل مع عملائك وأدر المحادثات المدعومة بالذكاء الاصطناعي من مكان واحد.'
-          : 'Connect your customer communication channels and manage AI-powered conversations from one place.'}
+        title={isRTL ? 'القنوات والتكاملات' : 'Channels & Integrations'}
+        description={
+          isRTL
+            ? 'إدارة الحسابات المربوطة، مراسلات المتاجر، والتكاملات المدعومة بالذكاء الاصطناعي من منصة موحدة.'
+            : 'Manage connected platforms, messaging accounts, and AI-powered integrations from one workspace.'
+        }
         breadcrumbs={[
           { label: 'NazBiz', href: '/dashboard' },
           { label: isRTL ? 'القنوات' : 'Channels' },
@@ -599,14 +633,13 @@ export default function ChannelsPage() {
           <Button
             variant="primary"
             size="md"
-            data-tour="channels-connect"
             icon={<Plus size={16} />}
             onClick={() => {
-              setSelectedWizardChannel(null)
-              setWizardOpen(true)
+              setSelectedChannelOption(null)
+              setConnectModalOpen(true)
             }}
           >
-            {isRTL ? 'ربط قناة' : 'Connect channel'}
+            {isRTL ? 'ربط قناة جديدة' : 'Connect Channel'}
           </Button>
         }
         secondaryActions={
@@ -621,151 +654,138 @@ export default function ChannelsPage() {
         }
       />
 
-      {errorState && <div role="alert" className="flex items-center justify-between border border-error/30 bg-error/5 px-4 py-3 text-sm"><span>{errorState}</span><Button variant="outline" size="sm" onClick={() => void fetchChannels()}>{L('Retry', 'إعادة المحاولة')}</Button></div>}
-
-      {aiSetup && (
-        <section className="rounded-2xl border border-border bg-surface-card p-5" aria-labelledby="ai-setup-title">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-            <h2 id="ai-setup-title" className="text-sm font-semibold text-text-primary">{L('AI go-live checklist', 'قائمة التحقق قبل تفعيل الذكاء الاصطناعي')}</h2>
-              <p className="mt-1 text-xs text-text-secondary">{L('Use this checklist to verify the AI setup and test a response before relying on automatic replies.', 'استخدم هذه القائمة للتحقق من إعداد الذكاء الاصطناعي وتجربة الرد قبل الاعتماد على الردود التلقائية.')}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => void runAiSetupTest()} disabled={testReplyLoading}>
-              {testReplyLoading ? 'Generating test reply…' : 'Generate test reply'}
-            </Button>
-          </div>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {Object.entries(aiSetup.checks).map(([key, check]) => (
-              <li key={key} className="flex items-center gap-2 text-xs text-text-secondary">
-                {check.passed
-                  ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-                  : <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />}
-                <span>{goLiveCheckLabels[key] || check.label}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-2">
-            <Checkbox checked={goLiveSettings.consent_policy_acknowledged} onChange={(checked) => setGoLiveSettings({ ...goLiveSettings, consent_policy_acknowledged: checked })} label={<>{L('I acknowledge that marketing messages require prior opt-in and STOP or unsubscribe requests are honored.', 'أقرّ بأن الرسائل التسويقية تتطلب موافقة مسبقة، وأن طلبات الإيقاف أو إلغاء الاشتراك ستُحترم.')} <Link className="text-brand underline" href="/privacy">{L('Privacy policy', 'سياسة الخصوصية')}</Link></>} className="text-xs" />
-            <label className="space-y-1 text-xs text-text-secondary">{L('Human handoff notification email', 'بريد إشعارات التحويل إلى موظف')}
-              <input type="email" className="w-full rounded-md border border-border bg-surface-elevated px-3 py-2 text-sm" value={goLiveSettings.handoff_notification_email || ''} onChange={(event) => setGoLiveSettings({ ...goLiveSettings, handoff_notification_email: event.target.value })} placeholder="support@example.com" />
-            </label>
-            <div className="md:col-span-2"><Button variant="outline" size="sm" onClick={() => void saveGoLiveSettings()} disabled={savingGoLiveSettings}>{savingGoLiveSettings ? L('Saving…', 'جارٍ الحفظ…') : L('Save go-live requirements', 'حفظ متطلبات التفعيل')}</Button></div>
-          </div>
-          {testReply && <p className="mt-3 rounded-lg bg-surface-elevated p-3 text-xs text-text-secondary">{L('Test reply:', 'الرد التجريبي:')} {testReply}</p>}
-          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">{L('Setup verified. Active bots assigned to connected channels can reply automatically.', 'تم التحقق من الإعداد. يمكن للوكلاء النشطين المعينين للقنوات المتصلة الرد تلقائياً.')}</p>}
-        </section>
+      {/* Error Banner */}
+      {errorState && (
+        <div role="alert" className="flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-300">
+          <span>{errorState}</span>
+          <Button variant="outline" size="sm" onClick={() => void fetchChannels()}>
+            {L('Retry', 'إعادة المحاولة')}
+          </Button>
+        </div>
       )}
 
-      {/* ─── Overview KPI Metrics Row ────────────────────────────────────── */}
-      <GsapStaggerGroup>
-        <motion.div
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
-          variants={variants.staggerContainer}
-          initial="hidden"
-          animate="visible"
-        >
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <motion.div key={i} variants={variants.fadeUp} transition={springs.standard}>
-                <MetricCardSkeleton />
-              </motion.div>
-            ))
-          ) : (
-            <>
-              <motion.div variants={variants.fadeUp} transition={springs.standard}>
-                <MetricCard
-                  label={isRTL ? 'الحسابات المتصلة' : 'Connected Accounts'}
-                  value={totalConnected}
-                  subValue={isRTL ? 'عبر جميع المنصات' : 'Across all platforms'}
-                  icon={<Radio size={18} />}
-                />
-              </motion.div>
-              <motion.div variants={variants.fadeUp} transition={springs.standard}>
-                <MetricCard
-                  label={isRTL ? 'أتمتة الذكاء الاصطناعي النشطة' : 'Active AI Automations'}
-                  value={totalActiveAI}
-                  subValue={isRTL ? 'تتعامل مع رسائل العملاء' : 'Handling customer DMs'}
-                  icon={<Sparkles size={18} />}
-                  variant="ai"
-                />
-              </motion.div>
-              <motion.div variants={variants.fadeUp} transition={springs.standard}>
-                <MetricCard
-                  label={isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
-                  value={totalNeedsAttention}
-                  subValue={
-                    totalNeedsAttention > 0
-                      ? (isRTL ? 'إعادة ربط أو تنبيه' : 'Re-authentication or alert')
-                      : (isRTL ? 'كل الحسابات سليمة' : 'All accounts healthy')
-                  }
-                  icon={<AlertTriangle size={18} />}
-                  variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
-                />
-              </motion.div>
-              <motion.div variants={variants.fadeUp} transition={springs.standard}>
-                <MetricCard
-                  label={isRTL ? 'المنصات المتاحة' : 'Available Platforms'}
-                  value={totalAvailable}
-                  subValue={isRTL ? 'تكاملات جاهزة' : 'Ready integrations'}
-                  icon={<Layers size={18} />}
-                />
-              </motion.div>
-            </>
-          )}
-        </motion.div>
-      </GsapStaggerGroup>
+      {/* ─── B. Integration Overview KPI Metrics ────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <MetricCardSkeleton key={i} />)
+        ) : (
+          <>
+            <MetricCard
+              label={isRTL ? 'الحسابات المتصلة' : 'Connected Accounts'}
+              value={totalConnected}
+              subValue={isRTL ? 'نشطة ومربوطة' : 'Active across platforms'}
+              icon={<Radio size={18} />}
+            />
+            <MetricCard
+              label={isRTL ? 'أتمتة الذكاء الاصطناعي النشطة' : 'Active AI Automations'}
+              value={totalActiveAI}
+              subValue={isRTL ? 'تتعامل مع المحادثات فورياً' : 'Routing live customer DMs'}
+              icon={<Sparkles size={18} />}
+              variant="ai"
+            />
+            <MetricCard
+              label={isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention'}
+              value={totalNeedsAttention}
+              subValue={
+                totalNeedsAttention > 0
+                  ? isRTL ? 'تتطلب إعادة توثيق' : 'Requires re-authorization'
+                  : isRTL ? 'جميع الحسابات مستقرة' : 'All accounts healthy'
+              }
+              icon={<AlertTriangle size={18} />}
+              variant={totalNeedsAttention > 0 ? 'warning' : 'default'}
+            />
+            <MetricCard
+              label={isRTL ? 'المنصات المتاحة' : 'Available Platforms'}
+              value={totalAvailable}
+              subValue={isRTL ? 'تكاملات جاهزة للربط' : 'Supported official integrations'}
+              icon={<Layers size={18} />}
+            />
+          </>
+        )}
+      </div>
 
-      {/* ─── Filter Bar ──────────────────────────────────────────────────── */}
-      <FilterBar
-        dir={isRTL ? 'rtl' : 'ltr'}
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder={isRTL ? 'ابحث عن قناة أو حساب...' : 'Search channels or accounts...'}
-        tabs={[
-          { id: 'all', label: isRTL ? 'كل القنوات' : 'All Channels', count: channelCards.length },
-          {
-            id: 'connected',
-            label: isRTL ? 'متصلة' : 'Connected',
-            count: channelCards.filter((c) => c.connected).length,
-          },
-          {
-            id: 'messaging',
-            label: isRTL ? 'المراسلة والدردشة' : 'Messaging & Chat',
-            count: channelCards.filter((c) => c.category === 'messaging').length,
-          },
-          {
-            id: 'social',
-            label: isRTL ? 'التواصل الاجتماعي والتقييمات' : 'Social & Reviews',
-            count: channelCards.filter((c) => c.category === 'social').length,
-          },
-          {
-            id: 'ecommerce',
-            label: isRTL ? 'التجارة الإلكترونية' : 'E-Commerce',
-            count: channelCards.filter((c) => c.category === 'ecommerce').length,
-          },
-          {
-            id: 'email',
-            label: isRTL ? 'البريد الإلكتروني' : 'Email',
-            count: channelCards.filter((c) => c.category === 'email').length,
-          },
-          {
-            id: 'attention',
-            label: isRTL ? 'تحتاج إلى متابعة' : 'Needs Attention',
-            count: totalNeedsAttention,
-          },
-        ]}
-        activeTab={selectedCategory}
-        onTabChange={setSelectedCategory}
-        sortOptions={[
-          { value: 'accounts', label: isRTL ? 'الأكثر اتصالاً' : 'Most Connected Accounts' },
-          { value: 'connected', label: isRTL ? 'المتصلة أولاً' : 'Connected First' },
-          { value: 'alphabetical', label: isRTL ? 'أبجدياً' : 'Alphabetical' },
-        ]}
-        sortValue={sortOption}
-        onSortChange={setSortOption}
+      {/* ─── C. Setup Readiness Card (Compact by default) ──────────────── */}
+      <SetupReadinessCard
+        aiSetup={aiSetup}
+        isRTL={isRTL}
+        goLiveSettings={goLiveSettings}
+        setGoLiveSettings={setGoLiveSettings}
+        onSaveGoLiveSettings={saveGoLiveSettings}
+        savingGoLiveSettings={savingGoLiveSettings}
+        onRunTestReply={runAiSetupTest}
+        testReplyLoading={testReplyLoading}
+        testReply={testReply}
       />
 
-      {/* ─── Channels Directory Grid ─────────────────────────────────────── */}
+      {/* ─── D. Modern Search & Filter Toolbar ─────────────────────────── */}
+      <div className="rounded-2xl border border-border/80 bg-surface-card p-4 space-y-3 shadow-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1 max-w-md">
+            <Search size={15} className="absolute start-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isRTL ? 'ابحث عن منصة أو حساب أو متجر...' : 'Search integrations, pages, or store URLs…'}
+              className="w-full rounded-xl border border-border bg-surface ps-10 pe-4 py-2 text-xs text-text-primary placeholder:text-text-tertiary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30"
+            />
+          </div>
+
+          {/* Sort Selector */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-semibold text-text-tertiary hidden sm:inline">
+              {isRTL ? 'الترتيب:' : 'Sort by:'}
+            </span>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as any)}
+              className="rounded-xl border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/30 cursor-pointer"
+            >
+              <option value="accounts">{isRTL ? 'الأكثر حسابات' : 'Most connected'}</option>
+              <option value="status">{isRTL ? 'المتصلة أولاً' : 'Connected first'}</option>
+              <option value="alphabetical">{isRTL ? 'أبجدياً' : 'Alphabetical'}</option>
+              <option value="recent">{isRTL ? 'الأحدث ربطاً' : 'Recently connected'}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Filter Segmented Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 text-xs">
+          {[
+            { id: 'all', labelEn: 'All Integrations', labelAr: 'كل التكاملات', count: channelCards.length },
+            { id: 'connected', labelEn: 'Connected', labelAr: 'المتصلة', count: channelCards.filter((c) => c.connected).length },
+            { id: 'disconnected', labelEn: 'Available', labelAr: 'المتاحة', count: channelCards.filter((c) => !c.connected).length },
+            { id: 'attention', labelEn: 'Needs Attention', labelAr: 'تحتاج متابعة', count: totalNeedsAttention },
+            { id: 'messaging', labelEn: 'Messaging', labelAr: 'المراسلة', count: channelCards.filter((c) => c.category === 'messaging').length },
+            { id: 'social', labelEn: 'Social', labelAr: 'التواصل', count: channelCards.filter((c) => c.category === 'social').length },
+            { id: 'ecommerce', labelEn: 'E-Commerce', labelAr: 'المتاجر', count: channelCards.filter((c) => c.category === 'ecommerce').length },
+            { id: 'email', labelEn: 'Email', labelAr: 'البريد', count: channelCards.filter((c) => c.category === 'email').length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSelectedFilter(tab.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold transition-all shrink-0 ${
+                selectedFilter === tab.id
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'bg-surface text-text-tertiary hover:text-text-primary border border-border/60 hover:bg-surface-elevated'
+              }`}
+            >
+              <span>{isRTL ? tab.labelAr : tab.labelEn}</span>
+              <span
+                className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                  selectedFilter === tab.id ? 'bg-white/20 text-white' : 'bg-surface-elevated text-text-secondary'
+                }`}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ─── E. Integration Categories & Cards ─────────────────────────── */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -775,133 +795,111 @@ export default function ChannelsPage() {
       ) : filteredChannels.length === 0 ? (
         <EmptyState
           icon={<Radio size={24} />}
-          title={isRTL ? 'لا توجد قنوات مطابقة' : 'No channels match your filter'}
-          description={isRTL
-            ? 'جرّب تعديل كلمات البحث أو تغيير الفئة المحددة لعرض القنوات المتاحة.'
-            : 'Try modifying your search keywords or change the selected category to view available channels.'}
+          title={isRTL ? 'لا توجد قنوات مطابقة' : 'No integrations match your filters'}
+          description={
+            isRTL
+              ? 'جرّب تعديل كلمات البحث أو مسح عوامل التصفية لعرض جميع التكاملات المدعومة.'
+              : 'Try adjusting your search query or clear the active filter to view all supported platforms.'
+          }
           action={{
-            label: isRTL ? 'مسح عوامل التصفية' : 'Clear Filters',
+            label: isRTL ? 'مسح التصفية' : 'Clear Filters',
             onClick: () => {
               setSearchQuery('')
-              setSelectedCategory('all')
+              setSelectedFilter('all')
             },
           }}
         />
-      ) : (
+      ) : selectedFilter !== 'all' ? (
+        /* Flat Grid View when filtering by a specific subset */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredChannels.map((channel) => (
-            <ChannelCard
+            <ChannelCardModern
               key={channel.id}
               channel={channel}
               instances={channel.instances}
               isRTL={isRTL}
               onConnect={() => handleOpenConnect(channel)}
               onDisconnect={handleDisconnect}
-              onSync={async (instance) => {
-                const token = getToken()
-                const endpoint = instance.type === 'shopify'
-                  ? `/api/channels/shopify/${instance.id}/sync`
-                  : `/api/channels/woocommerce/${instance.id}/sync`
-                const res = await fetch(`${API}${endpoint}`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() } })
-                const result = await res.json()
-                if (!res.ok) throw new Error(result.error || 'Could not queue store sync')
-                showToast('Store sync started', 'success')
-                fetchChannels()
-              }}
-              onManageSettings={(inst) => {
-                const selected = apiChannels.find((channel) => channel.id === inst.id)
-                if (selected) setSettingsInstance(selected)
-              }}
+              onSync={handleSync}
+              onManageAccount={(inst) => setSelectedDrawerInstance(inst as ApiChannel)}
+              syncingInstanceId={syncingInstanceId}
             />
           ))}
         </div>
+      ) : (
+        /* Categorized Sectioned Layout when viewing All Integrations */
+        <div className="space-y-8">
+          {Object.entries(categoriesMap).map(([key, cat]) => {
+            if (cat.channels.length === 0) return null
+            return (
+              <section key={key} className="space-y-4">
+                {/* Section Title */}
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                  <div className="flex items-center gap-2">
+                    {cat.icon}
+                    <h2 className="text-sm font-bold text-text-primary tracking-tight">
+                      {isRTL ? cat.titleAr : cat.titleEn}
+                    </h2>
+                    <span className="rounded-full bg-surface-elevated border border-border px-2 py-0.5 text-[10px] font-bold text-text-tertiary">
+                      {cat.channels.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Section Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {cat.channels.map((channel) => (
+                    <ChannelCardModern
+                      key={channel.id}
+                      channel={channel}
+                      instances={channel.instances}
+                      isRTL={isRTL}
+                      onConnect={() => handleOpenConnect(channel)}
+                      onDisconnect={handleDisconnect}
+                      onSync={handleSync}
+                      onManageAccount={(inst) => setSelectedDrawerInstance(inst as ApiChannel)}
+                      syncingInstanceId={syncingInstanceId}
+                    />
+                  ))}
+                </div>
+              </section>
+            )
+          })}
+        </div>
       )}
 
-      {/* ─── Channel Connect Multi-Step Wizard Modal ──────────────────────── */}
-      <ChannelConnectWizard
-        key={selectedWizardChannel?.id || 'all-channels'}
-        isOpen={wizardOpen}
+      {/* ─── F. Account Details Slide-over Drawer ──────────────────────── */}
+      <ChannelAccountDrawer
+        isOpen={selectedDrawerInstance !== null}
+        onClose={() => setSelectedDrawerInstance(null)}
+        instance={selectedDrawerInstance}
+        isRTL={isRTL}
+        onDisconnect={handleDisconnect}
+        onSync={handleSync}
+        onToggleOrderSubmission={handleToggleOrderSubmission}
+        isSavingOrderSubmission={isSavingOrderSubmission}
+      />
+
+      {/* ─── G. Modern Connect Modal ────────────────────────────────────── */}
+      <ChannelConnectModalModern
+        isOpen={connectModalOpen}
         onClose={() => {
-          setWizardOpen(false)
-          setSelectedWizardChannel(null)
+          setConnectModalOpen(false)
+          setSelectedChannelOption(null)
         }}
-        initialChannel={selectedWizardChannel}
+        initialChannel={selectedChannelOption}
         onContinueConnection={handleChannelConnection}
         isRTL={isRTL}
       />
 
-      <Modal
-        isOpen={settingsInstance !== null}
-        onClose={() => setSettingsInstance(null)}
-        title={settingsInstance?.page_name || L('Account settings', 'إعدادات الحساب')}
-        description={L('Connection status and account controls for this channel.', 'حالة الاتصال وإعدادات الحساب لهذه القناة.')}
-        size="md"
-        footer={settingsInstance ? <Button variant="outline" onClick={() => setSettingsInstance(null)}>{L('Close', 'إغلاق')}</Button> : undefined}
-      >
-        {settingsInstance && <div className="space-y-4 text-sm">
-          <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-4 gap-y-3">
-            <dt className="text-text-muted">{L('Channel', 'القناة')}</dt><dd className="font-medium capitalize">{settingsInstance.type}</dd>
-            <dt className="text-text-muted">{L('Account ID', 'معرّف الحساب')}</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
-            <dt className="text-text-muted">{L('Connection', 'الاتصال')}</dt><dd className="capitalize">{settingsInstance.status || L('Connected', 'متصل')}</dd>
-            {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && <>
-              <dt className="text-text-muted">{L('Auto-reply', 'الرد التلقائي')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Active bot assigned', 'يوجد وكيل نشط') : L('Bot setup needed', 'يلزم إعداد الوكيل')}</dd>
-              {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">{L('Agent setup', 'إعداد الوكيل')}</dt><dd>{settingsInstance.ai_pause_reason === 'no_active_agent'
-                ? L('Assign an active agent to this channel in Bots.', 'عيّن وكيلاً نشطاً لهذه القناة من صفحة الوكلاء.')
-                : settingsInstance.ai_pause_reason === 'multiple_active_agents_without_primary'
-                  ? L('Choose a primary agent for this channel in Bots.', 'اختر وكيلاً أساسياً لهذه القناة من صفحة الوكلاء.')
-                  : settingsInstance.ai_pause_reason}</dd></>}
-            </>}
-            {settingsInstance.comment_webhook_status && <><dt className="text-text-muted">{L('Comment webhook', 'خطاف التعليقات')}</dt><dd className="capitalize">{settingsInstance.comment_webhook_status}{settingsInstance.comment_webhook_error_code ? ` (${settingsInstance.comment_webhook_error_code})` : ''}</dd></>}
-            {settingsInstance.integration?.store_url && <><dt className="text-text-muted">{L('Store URL', 'رابط المتجر')}</dt><dd className="break-all">{settingsInstance.integration.store_url}</dd></>}
-            {settingsInstance.integration?.sync_status && <><dt className="text-text-muted">{L('Store sync', 'مزامنة المتجر')}</dt><dd className="capitalize">{settingsInstance.integration.sync_status}</dd></>}
-            {settingsInstance.integration?.sync_error && <><dt className="text-text-muted">{L('Sync issue', 'مشكلة المزامنة')}</dt><dd className="text-error">{settingsInstance.integration.sync_error}</dd></>}
-          </dl>
-          {settingsInstance.status_message && <p className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-warning">{settingsInstance.status_message}</p>}
-          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && (
-            <div className="rounded-xl border border-warning/25 bg-warning/5 p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-text-primary">{L('Automatic order submission', 'إرسال الطلبات تلقائياً')}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-                    {L('When enabled, a customer’s explicit order confirmation submits the order to this conversation’s active store. This can create real orders.', 'عند التفعيل، يؤدي تأكيد العميل الصريح إلى إرسال الطلب إلى المتجر النشط للمحادثة. قد ينشئ ذلك طلبات فعلية.')}
-                  </p>
-                  <p className="mt-2 text-[11px] text-text-tertiary">
-                    {settingsInstance.auto_order_confirmation_enabled === null || settingsInstance.auto_order_confirmation_enabled === undefined
-                      ? L('This channel follows the business default.', 'تتبع هذه القناة الإعداد الافتراضي للنشاط التجاري.')
-                      : L('This setting overrides the business default for this channel.', 'يتجاوز هذا الإعداد القيمة الافتراضية للنشاط لهذه القناة.')}{' '}
-                    {L('Currently', 'الحالة الحالية')}: {settingsInstance.effective_auto_order_confirmation_enabled
-                      ? L('On', 'مفعّل')
-                      : L('Off', 'متوقف')}.
-                  </p>
-                </div>
-                <Switch
-                  checked={Boolean(settingsInstance.effective_auto_order_confirmation_enabled)}
-                  onChange={(enabled) => void handleToggleOrderSubmission(settingsInstance.id, enabled)}
-                  disabled={savingOrderSubmissionId === settingsInstance.id}
-                  size="sm"
-                  label={L('Allow order submission', 'السماح بإرسال الطلبات')}
-                  description={savingOrderSubmissionId === settingsInstance.id ? L('Saving…', 'جارٍ الحفظ…') : undefined}
-                />
-              </div>
-            </div>
-          )}
-          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && !settingsInstance.effective_ai_enabled && (
-            <div className="border-t border-border pt-4 text-xs text-text-tertiary">
-              {L('Assign an active bot to this channel to turn on automatic replies.', 'عيّن وكيلاً نشطاً لهذه القناة لتفعيل الرد التلقائي.')}{' '}
-              <Link href="/dashboard/bots" className="font-semibold text-brand hover:underline">{L('Manage bots', 'إدارة الوكلاء')}</Link>
-            </div>
-          )}
-        </div>}
-      </Modal>
-
-      {/* ─── Direct WhatsApp Connect Modal ───────────────────────────────── */}
-      {activeModalChannel?.id === 'whatsapp' && (
+      {/* ─── H. Specialized Modals (Preserved Exact Logic) ─────────────── */}
+      {activeSpecialModal?.id === 'whatsapp' && (
         <WhatsAppConnect
           isConnected={false}
-          channel={activeModalChannel}
+          channel={activeSpecialModal}
           onConnected={() => {
             fetchChannels()
-            setActiveModalChannel(null)
+            setActiveSpecialModal(null)
             showToast('WhatsApp connected successfully!', 'success')
           }}
           onDisconnect={async () => {
@@ -911,14 +909,13 @@ export default function ChannelsPage() {
               headers: { Authorization: `Bearer ${token}`, ...getBusinessHeaders() },
             })
             fetchChannels()
-            setActiveModalChannel(null)
+            setActiveSpecialModal(null)
           }}
-          onClose={() => setActiveModalChannel(null)}
+          onClose={() => setActiveSpecialModal(null)}
         />
       )}
 
-      {/* ─── Direct Telegram Connect Modal ───────────────────────────────── */}
-      {activeModalChannel?.id === 'telegram' && (
+      {activeSpecialModal?.id === 'telegram' && (
         <TelegramConnect
           isConnected={false}
           onConnect={async (data) => {
@@ -933,15 +930,14 @@ export default function ChannelsPage() {
             const result = await res.json()
             if (!result.success) throw new Error(result.error || 'Failed to connect')
             fetchChannels()
-            setActiveModalChannel(null)
+            setActiveSpecialModal(null)
             showToast('Telegram bot connected!', 'success')
           }}
-          onDisconnect={async () => setActiveModalChannel(null)}
+          onDisconnect={async () => setActiveSpecialModal(null)}
         />
       )}
 
-      {/* ─── Direct WooCommerce Connect Modal ────────────────────────────── */}
-      {activeModalChannel?.id === 'woocommerce' && (
+      {activeSpecialModal?.id === 'woocommerce' && (
         <WooCommerceConnect
           isConnected={apiChannels.some((channel) => channel.type === 'woocommerce')}
           channels={apiChannels.filter((channel) => channel.type === 'woocommerce')}
@@ -963,28 +959,30 @@ export default function ChannelsPage() {
           onSync={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'woocommerce')
             if (!channel) return
-            const res = await fetch(`${API}/api/channels/woocommerce/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() } })
-            if (!res.ok) throw new Error('Could not queue store sync')
-            showToast('Store sync started', 'success')
-            fetchChannels()
+            await handleSync(channel)
           }}
           onDisconnect={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'woocommerce')
             if (channel) await handleDisconnect(channel.id)
-            setActiveModalChannel(null)
+            setActiveSpecialModal(null)
           }}
         />
       )}
 
-      {activeModalChannel?.id === 'shopify' && (
+      {activeSpecialModal?.id === 'shopify' && (
         <ShopifyConnect
-          onClose={() => setActiveModalChannel(null)}
+          onClose={() => setActiveSpecialModal(null)}
           isConnected={apiChannels.some((channel) => channel.type === 'shopify')}
           channels={apiChannels.filter((channel) => channel.type === 'shopify')}
           onConnect={async (data) => {
             const res = await fetch(`${API}/api/channels/shopify/connect`, {
               method: 'POST',
-              headers: { Authorization: `Bearer ${getToken()}`, 'Content-Type': 'application/json', Accept: 'application/json', ...getBusinessHeaders() },
+              headers: {
+                Authorization: `Bearer ${getToken()}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                ...getBusinessHeaders(),
+              },
               body: JSON.stringify(data),
             })
             const result = await res.json()
@@ -994,33 +992,28 @@ export default function ChannelsPage() {
           onSync={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'shopify')
             if (!channel) return
-            const res = await fetch(`${API}/api/channels/shopify/${channel.id}/sync`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}`, Accept: 'application/json', ...getBusinessHeaders() } })
-            if (!res.ok) throw new Error('Could not queue store sync')
-            showToast('Store sync started', 'success')
-            fetchChannels()
+            await handleSync(channel)
           }}
           onDisconnect={async (channelId) => {
             const channel = apiChannels.find((item) => item.id === channelId && item.type === 'shopify')
             if (channel) await handleDisconnect(channel.id)
-            setActiveModalChannel(null)
+            setActiveSpecialModal(null)
           }}
         />
       )}
 
-      {/* ─── Toast Feedback Notification ─────────────────────────────────── */}
+      {/* ─── Toast Feedback ────────────────────────────────────────────── */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-6 end-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
           <div
             className={`px-4 py-3 rounded-xl text-xs font-semibold shadow-xl border flex items-center gap-2.5 backdrop-blur-md ${
               toast.type === 'error'
-                ? 'bg-error/15 border-error/30 text-error'
-                : 'bg-success/15 border-success/30 text-success'
+                ? 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
             }`}
           >
             <div
-              className={`w-2 h-2 rounded-full ${
-                toast.type === 'error' ? 'bg-error' : 'bg-success'
-              }`}
+              className={`w-2 h-2 rounded-full ${toast.type === 'error' ? 'bg-rose-400' : 'bg-emerald-400'}`}
             />
             <span>{toast.message}</span>
           </div>
