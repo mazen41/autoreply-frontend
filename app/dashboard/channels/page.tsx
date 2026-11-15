@@ -177,15 +177,12 @@ export default function ChannelsPage() {
       'Channel connected successfully!': 'تم ربط القناة بنجاح!',
       'Shopify connected. Initial store sync has started.': 'تم ربط Shopify وبدأت المزامنة الأولية للمتجر.',
       'Channel account disconnected': 'تم فصل حساب القناة.',
-      'Failed to update AI setting': 'تعذر تحديث إعداد الذكاء الاصطناعي.',
       'Automatic order submission updated.': 'تم تحديث الإرسال التلقائي للطلبات.',
       'Could not update automatic order submission.': 'تعذر تحديث الإرسال التلقائي للطلبات.',
       'Disconnect failed': 'تعذر فصل الاتصال.',
       'Store sync started': 'بدأت مزامنة المتجر.',
       'WhatsApp connected successfully!': 'تم ربط واتساب بنجاح!',
       'Telegram bot connected!': 'تم ربط بوت تيليجرام بنجاح!',
-      'Replies resumed for this account': 'تم استئناف الردود لهذا الحساب.',
-      'Replies paused for this account': 'تم إيقاف الردود لهذا الحساب مؤقتاً.',
     }
     setToast({ message: isRTL ? (arabicMessages[message] || message) : message, type })
     setTimeout(() => setToast(null), 4000)
@@ -382,39 +379,6 @@ export default function ChannelsPage() {
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [fetchChannels, showToast])
-
-  // Toggle AI Auto-Reply
-  const handleToggleAI = async (instanceId: number, currentStatus: boolean) => {
-    try {
-      const token = getToken()
-      if (!token) throw new Error('Your session expired. Sign in again.')
-      const response = await fetch(`${API}/api/channels/${instanceId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            ...getBusinessHeaders(),
-          },
-          body: JSON.stringify({ ai_enabled: !currentStatus }),
-        })
-      const result = await response.json().catch(() => ({}))
-      if (!response.ok) {
-        if (result.checks) setAiSetup({ ready: Boolean(result.ready), checks: result.checks, missing: result.missing || [] })
-        throw new Error(result.message || result.error || 'AI setting update failed.')
-      }
-      setApiChannels((prev) => prev.map((item) => item.id === instanceId ? { ...item, ai_enabled: !currentStatus } : item))
-      await fetchChannels(false)
-      showToast(
-        !currentStatus
-          ? 'Replies resumed for this account'
-          : 'Replies paused for this account'
-      )
-    } catch (e) {
-      console.error(e)
-      showToast(e instanceof Error ? e.message : 'Failed to update AI setting', 'error')
-    }
-  }
 
   const handleToggleOrderSubmission = async (instanceId: number, enabled: boolean) => {
     setSavingOrderSubmissionId(instanceId)
@@ -664,7 +628,7 @@ export default function ChannelsPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
             <h2 id="ai-setup-title" className="text-sm font-semibold text-text-primary">{L('AI go-live checklist', 'قائمة التحقق قبل تفعيل الذكاء الاصطناعي')}</h2>
-              <p className="mt-1 text-xs text-text-secondary">{L('Replies stay off until setup is complete and a test reply succeeds.', 'تبقى الردود متوقفة حتى يكتمل الإعداد وينجح الرد التجريبي.')}</p>
+              <p className="mt-1 text-xs text-text-secondary">{L('Use this checklist to verify the AI setup and test a response before relying on automatic replies.', 'استخدم هذه القائمة للتحقق من إعداد الذكاء الاصطناعي وتجربة الرد قبل الاعتماد على الردود التلقائية.')}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => void runAiSetupTest()} disabled={testReplyLoading}>
               {testReplyLoading ? 'Generating test reply…' : 'Generate test reply'}
@@ -688,7 +652,7 @@ export default function ChannelsPage() {
             <div className="md:col-span-2"><Button variant="outline" size="sm" onClick={() => void saveGoLiveSettings()} disabled={savingGoLiveSettings}>{savingGoLiveSettings ? L('Saving…', 'جارٍ الحفظ…') : L('Save go-live requirements', 'حفظ متطلبات التفعيل')}</Button></div>
           </div>
           {testReply && <p className="mt-3 rounded-lg bg-surface-elevated p-3 text-xs text-text-secondary">{L('Test reply:', 'الرد التجريبي:')} {testReply}</p>}
-          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">{L('Setup verified. You can enable AI replies on a connected channel.', 'تم التحقق من الإعداد. يمكنك تفعيل ردود الذكاء الاصطناعي على قناة متصلة.')}</p>}
+          {aiSetup.ready && <p className="mt-3 text-xs font-medium text-success">{L('Setup verified. Active bots assigned to connected channels can reply automatically.', 'تم التحقق من الإعداد. يمكن للوكلاء النشطين المعينين للقنوات المتصلة الرد تلقائياً.')}</p>}
         </section>
       )}
 
@@ -832,7 +796,6 @@ export default function ChannelsPage() {
               instances={channel.instances}
               isRTL={isRTL}
               onConnect={() => handleOpenConnect(channel)}
-              onToggleAI={handleToggleAI}
               onDisconnect={handleDisconnect}
               onSync={async (instance) => {
                 const token = getToken()
@@ -881,7 +844,7 @@ export default function ChannelsPage() {
             <dt className="text-text-muted">{L('Account ID', 'معرّف الحساب')}</dt><dd className="break-all font-mono text-xs">{settingsInstance.page_id || settingsInstance.id}</dd>
             <dt className="text-text-muted">{L('Connection', 'الاتصال')}</dt><dd className="capitalize">{settingsInstance.status || L('Connected', 'متصل')}</dd>
             {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && <>
-              <dt className="text-text-muted">{L('Reply status', 'حالة الردود')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Active', 'نشطة') : L('Paused', 'متوقفة مؤقتاً')}</dd>
+              <dt className="text-text-muted">{L('Auto-reply', 'الرد التلقائي')}</dt><dd>{settingsInstance.effective_ai_enabled ?? settingsInstance.ai_enabled ? L('Active bot assigned', 'يوجد وكيل نشط') : L('Bot setup needed', 'يلزم إعداد الوكيل')}</dd>
               {settingsInstance.ai_pause_reason && <><dt className="text-text-muted">{L('Agent setup', 'إعداد الوكيل')}</dt><dd>{settingsInstance.ai_pause_reason === 'no_active_agent'
                 ? L('Assign an active agent to this channel in Bots.', 'عيّن وكيلاً نشطاً لهذه القناة من صفحة الوكلاء.')
                 : settingsInstance.ai_pause_reason === 'multiple_active_agents_without_primary'
@@ -922,16 +885,10 @@ export default function ChannelsPage() {
               </div>
             </div>
           )}
-          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && (
-            <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
-              <p className="text-xs text-text-tertiary">
-                {L('An active agent must be assigned in Bots. This control only pauses or resumes this account.', 'يجب تعيين وكيل نشط من صفحة الوكلاء. هذا المفتاح يوقف الردود لهذا الحساب أو يستأنفها فقط.')}{' '}
-                <Link href="/dashboard/bots" className="font-semibold text-brand hover:underline">{L('Manage agents', 'إدارة الوكلاء')}</Link>
-              </p>
-              <Button variant={settingsInstance.ai_enabled ? 'outline' : 'primary'} onClick={() => {
-                void handleToggleAI(settingsInstance.id, settingsInstance.ai_enabled)
-                setSettingsInstance(null)
-              }}>{settingsInstance.ai_enabled ? L('Pause replies', 'إيقاف الردود مؤقتاً') : L('Resume replies', 'استئناف الردود')}</Button>
+          {!['salla', 'shopify', 'woocommerce'].includes(settingsInstance.type) && !settingsInstance.effective_ai_enabled && (
+            <div className="border-t border-border pt-4 text-xs text-text-tertiary">
+              {L('Assign an active bot to this channel to turn on automatic replies.', 'عيّن وكيلاً نشطاً لهذه القناة لتفعيل الرد التلقائي.')}{' '}
+              <Link href="/dashboard/bots" className="font-semibold text-brand hover:underline">{L('Manage bots', 'إدارة الوكلاء')}</Link>
             </div>
           )}
         </div>}

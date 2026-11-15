@@ -5,7 +5,6 @@ import ChannelIcon from '../ui/ChannelIcon'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
 import {
-  Sparkles,
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
@@ -51,7 +50,6 @@ export interface ChannelCardProps {
   instances: ChannelInstance[]
   isRTL?: boolean
   onConnect: () => void
-  onToggleAI: (instanceId: number, currentStatus: boolean) => void
   onDisconnect: (instanceId: number) => void
   onSync?: (instance: ChannelInstance) => void
   onManageSettings?: (instance: ChannelInstance) => void
@@ -62,7 +60,6 @@ export default function ChannelCard({
   instances,
   isRTL = false,
   onConnect,
-  onToggleAI,
   onDisconnect,
   onSync,
   onManageSettings,
@@ -216,7 +213,7 @@ export default function ChannelCard({
                       )}
                     </div>
 
-                    {/* Per-account reply pause; an assigned active agent is still required. */}
+                    {/* Reply status follows the active bot assignment; there is no per-channel pause switch. */}
                     {supportsAiReplies && (
                       <div className="flex shrink-0 items-center gap-2">
                         <span className={`rounded-md border px-2 py-1 text-[10px] font-semibold ${
@@ -225,32 +222,15 @@ export default function ChannelCard({
                             : 'border-warning/30 bg-warning/10 text-warning'
                         }`}>
                           {(inst.effective_ai_enabled ?? inst.ai_enabled)
-                            ? (isRTL ? 'الردود نشطة' : 'Replies active')
-                            : inst.ai_pause_reason === 'no_active_agent' || inst.ai_pause_reason === 'multiple_active_agents_without_primary'
-                              ? (isRTL ? 'يلزم إعداد وكيل' : 'Agent setup needed')
-                              : (isRTL ? 'الردود متوقفة' : 'Replies paused')}
+                            ? (isRTL ? 'الرد التلقائي نشط' : 'Auto-reply active')
+                            : inst.ai_pause_reason === 'multiple_active_agents_without_primary'
+                              ? (isRTL ? 'اختر وكيلاً أساسياً' : 'Choose a primary bot')
+                              : inst.ai_pause_reason === 'agent_inactive'
+                                ? (isRTL ? 'فعّل الوكيل' : 'Activate the bot')
+                                : inst.ai_pause_reason === 'channel_not_connected'
+                                  ? (isRTL ? 'القناة غير متصلة' : 'Channel disconnected')
+                                  : (isRTL ? 'عيّن وكيلاً نشطاً' : 'Assign an active bot')}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => onToggleAI(inst.id, inst.ai_enabled)}
-                          disabled={channel.disabled}
-                          title={isRTL
-                            ? 'هذا المفتاح يوقف أو يستأنف الردود لهذا الحساب فقط. يجب أيضاً تعيين وكيل نشط من صفحة الوكلاء.'
-                            : 'This pauses or resumes replies for this account only. An active agent must also be assigned in Bots.'}
-                          aria-label={isRTL
-                            ? (inst.ai_enabled ? 'إيقاف الردود مؤقتاً لهذا الحساب' : 'استئناف الردود لهذا الحساب')
-                            : (inst.ai_enabled ? 'Pause replies for this account' : 'Resume replies for this account')}
-                          className={`px-2 py-1 rounded-md text-[10px] font-semibold inline-flex items-center gap-1.5 border transition-all ${
-                            inst.ai_enabled
-                              ? 'bg-brand/10 border-brand/30 text-brand hover:bg-brand/15'
-                              : 'bg-surface border-border text-text-muted hover:text-text-primary'
-                          }`}
-                        >
-                          <Sparkles className="w-3 h-3" />
-                          <span>{inst.ai_enabled
-                            ? (isRTL ? 'إيقاف الردود' : 'Pause replies')
-                            : (isRTL ? 'استئناف الردود' : 'Resume replies')}</span>
-                        </button>
                       </div>
                     )}
 
@@ -261,12 +241,12 @@ export default function ChannelCard({
 
                   {inst.ai_pause_reason === 'no_active_agent' && (
                     <p className="mb-2 text-[10px] font-medium text-warning">
-                      {isRTL ? 'لا يوجد وكيل نشط — الردود متوقفة' : 'No active agent — replies paused'}
+                      {isRTL ? 'عيّن وكيلاً نشطاً لهذه القناة من صفحة الوكلاء لتفعيل الرد التلقائي.' : 'Assign an active bot to this channel in Bots to enable automatic replies.'}
                     </p>
                   )}
                   {inst.ai_pause_reason === 'multiple_active_agents_without_primary' && (
                     <p className="mb-2 text-[10px] font-medium text-warning">
-                      {isRTL ? 'يلزم اختيار وكيل أساسي — الردود متوقفة' : 'Multiple agents need a primary selection — replies paused'}
+                      {isRTL ? 'اختر وكيلاً أساسياً لهذه القناة من صفحة الوكلاء لتحديد من يرد.' : 'Choose a primary bot for this channel in Bots to select which bot replies.'}
                     </p>
                   )}
 
