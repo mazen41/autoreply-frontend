@@ -68,7 +68,7 @@ export default function Footer() {
 
             <p className="max-w-xs text-xs sm:text-sm leading-relaxed text-text-secondary">
               {isRTL
-                ? 'المنصة الرائدة لأتمتة محادثات الأعمال والمتاجر الإلكترونية بالذكاء الاصطناعي عبر جميع قنوات التواصل.'
+                ? 'ندير مراسلاتك و مبيعاتك بذكاء — المنصة الرائدة لأتمتة محادثات الأعمال والمتاجر الإلكترونية بالذكاء الاصطناعي.'
                 : 'Enterprise autonomous conversational AI platform connecting messaging apps and commerce stores into one intelligent workspace.'}
             </p>
 

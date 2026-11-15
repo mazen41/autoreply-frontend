@@ -14,9 +14,9 @@ export default function FinalCtaSection() {
   const copy = isRTL
     ? {
         badge: 'ابدأ الأتمتة خلال 3 دقائق',
-        headline: 'توقف عن إدارة محادثاتك يدوياً.',
+        headline: 'ندير مراسلاتك و مبيعاتك بذكاء.',
         supporting:
-          'اجمع قنوات المراسلة، ذكاءك الاصطناعي، وسير عمل متجرك في منصة موحدة واحدة مع نذير أوتوريبلاي.',
+          'اجمع قنوات المراسلة، ذكاءك الاصطناعي، وسير عمل متجرك في منصة موحدة واحدة مع ناز أوتوريبلاي.',
         cta: user ? 'الانتقال إلى لوحة التحكم' : 'ابدأ تجربتك المجانية اليوم',
         trust1: 'تجربة مجانية كاملة 14 يوماً',
         trust2: 'بدون الحاجة لبطاقة ائتمانية',
@@ -24,7 +24,7 @@ export default function FinalCtaSection() {
       }
     : {
         badge: 'Ready to Deploy in Under 3 Minutes',
-        headline: 'Stop Managing Conversations Manually.',
+        headline: 'Manage Conversations & Drive Sales Intelligently.',
         supporting:
           'Bring your messaging channels, AI assistant, and store workflows together with Naz AutoReply.',
         cta: user ? 'Go to Dashboard' : 'Get Started Today',

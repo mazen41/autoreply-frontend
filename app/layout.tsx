@@ -27,11 +27,11 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://nazbiz.io'),
   title: {
-    default: 'Naz AutoReply — Autonomous Conversational AI & Omnichannel Automation',
+    default: 'Naz AutoReply — ندير مراسلاتك و مبيعاتك بذكاء',
     template: '%s | Naz AutoReply',
   },
   description:
-    'Automate customer conversations across WhatsApp, Instagram, Telegram, TikTok, Salla, and Shopify with intelligent AI-powered replies, live order tracking, and custom workflows.',
+    'ندير مراسلاتك و مبيعاتك بذكاء. أتمتة محادثات العملاء عبر واتساب، إنستغرام، تيليجرام، تيك توك، سلة وشوبيفاي مع ردود ذكية وتتبع طلبات مباشر.',
   keywords: [
     'AI customer support',
     'WhatsApp automation',
@@ -59,12 +59,12 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    alternateLocale: 'ar_SA',
+    locale: 'ar_SA',
+    alternateLocale: 'en_US',
     url: '/',
-    title: 'Naz AutoReply — Autonomous Conversational AI Platform',
+    title: 'Naz AutoReply — ندير مراسلاتك و مبيعاتك بذكاء',
     description:
-      'Every Conversation. One Intelligent AI. Connect WhatsApp, Instagram, Telegram, and e-commerce stores with intelligent autonomous support.',
+      'ندير مراسلاتك و مبيعاتك بذكاء. كل المحادثات والمبيعات من منصة ذكاء اصطناعي واحدة متكاملة مع واتساب، إنستغرام، والمتاجر الإلكترونية.',
     siteName: 'Naz AutoReply',
     images: [
       {
@@ -77,9 +77,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Naz AutoReply — Autonomous Conversational AI Platform',
+    title: 'Naz AutoReply — ندير مراسلاتك و مبيعاتك بذكاء',
     description:
-      'Automate customer conversations across WhatsApp, Instagram, Telegram, and your online store with AI-powered replies.',
+      'ندير مراسلاتك و مبيعاتك بذكاء. كل المحادثات والمبيعات من منصة ذكاء اصطناعي واحدة متكاملة.',
     images: ['/icons/logo_icon.png'],
   },
   robots: {

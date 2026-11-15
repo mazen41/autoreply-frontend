@@ -59,11 +59,11 @@ export default function HeroSection() {
 
   const copy = isRTL
     ? {
-        badge: 'الجيل الجديد من أتمتة المحادثات الذكية',
-        headline1: 'كل محادثة.',
-        headlineHighlight: 'ذكاء اصطناعي واحد.',
+        badge: 'الجيل الجديد من أتمتة المحادثات والمبيعات',
+        headline1: 'ندير مراسلاتك',
+        headlineHighlight: 'و مبيعاتك بذكاء',
         description:
-          'أتمت محادثات عملائك عبر جميع قنوات المراسلة مع ردود ذكية، وسير عمل آلي متكامل، ومزامنة فورية مع متجرك الإلكتروني — من منصة موحدة واحدة.',
+          'أتمت محادثات عملائك ومبيعاتك عبر جميع قنوات المراسلة مع ردود ذكية، وسير عمل آلي متكامل، ومزامنة فورية مع متجرك الإلكتروني — من منصة موحدة واحدة.',
         primaryCta: user ? 'فتح لوحة التحكم' : 'ابدأ الأتمتة الآن',
         secondaryCta: 'استكشف المنصة',
         trustStat1: 'رد فوري 24/7',
@@ -71,11 +71,11 @@ export default function HeroSection() {
         trustStat3: 'ربط سحابي رسمي',
       }
     : {
-        badge: 'Next-Gen Autonomous Conversational AI',
-        headline1: 'Every Conversation.',
-        headlineHighlight: 'One Intelligent AI.',
+        badge: 'Next-Gen Autonomous Conversational AI & Sales',
+        headline1: 'Manage Conversations.',
+        headlineHighlight: '& Drive Sales Intelligently.',
         description:
-          'Automate customer conversations across your messaging channels with AI-powered replies, intelligent workflows, and business integrations — all managed from one platform.',
+          'Automate customer conversations and sales across your messaging channels with AI-powered replies, intelligent workflows, and business integrations — all managed from one platform.',
         primaryCta: user ? 'Go to Dashboard' : 'Start Automating',
         secondaryCta: 'Explore the Platform',
         trustStat1: 'Instant 24/7 Autonomous Replies',

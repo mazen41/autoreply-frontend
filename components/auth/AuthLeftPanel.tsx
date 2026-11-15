@@ -75,24 +75,24 @@ export default function AuthLeftPanel({ mode }: AuthLeftPanelProps) {
             <Sparkles size={12} />
             <span>
               {isLogin
-                ? (isRTL ? 'إدارة محادثات الأعمال الذكية' : 'Autonomous Conversational AI')
-                : (isRTL ? 'تجربة كاملة مجاناً لمدة 14 يوماً' : '14-Day Full Business Trial')}
+                ? (isRTL ? 'ندير مراسلاتك و مبيعاتك بذكاء' : 'Autonomous Conversational AI & Sales')
+                : (isRTL ? 'ندير مراسلاتك و مبيعاتك بذكاء' : '14-Day Full Business Trial')}
             </span>
           </div>
 
           <h2 className="text-2xl font-black tracking-tight text-text-primary sm:text-3xl xl:text-4xl">
             {isLogin
               ? (isRTL ? 'أهلاً بك مجدداً في نزار أوتوريبلاي' : 'Welcome back to Naz AutoReply')
-              : (isRTL ? 'أتمتة خدمة عملائك ومبيعاتك بلا توقف' : 'Scale sales & 24/7 customer support with AI')}
+              : (isRTL ? 'ندير مراسلاتك و مبيعاتك بذكاء' : 'Scale sales & 24/7 customer support with AI')}
           </h2>
 
           <p className="text-xs leading-relaxed text-text-secondary sm:text-sm">
             {isLogin
               ? (isRTL
-                  ? 'قم بإدارة صندوق الوارد الموحد ومتابعة أداء وكلائك الأذكياء عبر واتساب وإنستغرام وتيليجرام ومتاجرك.'
+                  ? 'ندير مراسلاتك و مبيعاتك بذكاء. قم بإدارة صندوق الوارد الموحد ومتابعة أداء وكلائك الأذكياء عبر واتساب وإنستغرام وتيليجرام ومتاجرك.'
                   : 'Access your unified inbox, monitor autonomous agent performance, and inspect live multi-channel conversions.')
               : (isRTL
-                  ? 'اربط قنوات واتساب وإنستغرام ومتاجرك في سلة وشوبيفاي في أقل من 3 دقائق، ودع الذكاء الاصطناعي يتولى الرد والمبيعات.'
+                  ? 'ندير مراسلاتك و مبيعاتك بذكاء. اربط قنوات واتساب وإنستغرام ومتاجرك في سلة وشوبيفاي في أقل من 3 دقائق، ودع الذكاء الاصطناعي يتولى الرد والمبيعات.'
                   : 'Connect WhatsApp, Instagram, Telegram, and your online store in under 3 minutes. Automate 90% of conversations instantly.')}
           </p>
         </div>
