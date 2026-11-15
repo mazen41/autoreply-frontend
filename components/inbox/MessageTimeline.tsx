@@ -3,6 +3,10 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react'
 import { ApiMessage, ApiConversation } from '../../hooks/useInbox'
 import MessageBubble from './MessageBubble'
+import MessageAlbumBubble from './MessageAlbumBubble'
+import MediaViewer, { type MediaViewerItem } from './MediaViewer'
+import { absoluteMediaUrl } from '../../lib/mediaUrls'
+import { clusterMessages, type TimelineItem } from '../../lib/mediaClustering'
 import { ArrowDown } from 'lucide-react'
 
 interface MessageTimelineProps {
@@ -17,6 +21,11 @@ interface MessageTimelineProps {
   onReplyToMessage?: (message: ApiMessage) => void
   canDeleteWhatsAppMessages?: boolean
   onDeleteWhatsAppMessage?: (message: ApiMessage) => void
+}
+
+interface DateTimelineGroup {
+  date: string
+  items: TimelineItem[]
 }
 
 // Group messages by date
@@ -50,8 +59,43 @@ export default function MessageTimeline({
   const [showScrollDown, setShowScrollDown] = useState(false)
   const lastMessageId = useRef<number | null>(null)
 
-  const grouped = useMemo(() => groupMessages(messages), [messages])
   const L = (en: string, ar: string) => isRTL ? ar : en
+
+  // Group by date, then cluster consecutive inbound media into albums
+  const grouped: DateTimelineGroup[] = useMemo(() => {
+    const dateGroups = groupMessages(messages)
+    return dateGroups.map(g => ({
+      date: g.date,
+      items: clusterMessages(g.messages),
+    }))
+  }, [messages])
+
+  // Full-screen viewer: gather every image/sticker in this conversation, in
+  // order, so prev/next can navigate across message boundaries.
+  const imageItems: MediaViewerItem[] = useMemo(() => messages
+    .filter(m => {
+      if (m.metadata?.deleted_for_everyone === true) return false
+      const mime = (m.mime_type || '').toLowerCase()
+      return m.media_type === 'image' || mime.startsWith('image/') || (m.media_type === 'sticker' && mime.startsWith('image/')) || m.media_type === 'video' || mime.startsWith('video/')
+    })
+    .map(m => {
+      const mime = (m.mime_type || '').toLowerCase()
+      const isVid = m.media_type === 'video' || mime.startsWith('video/')
+      return {
+        id: m.id,
+        directUrl: absoluteMediaUrl(m.media_url),
+        isRemote: /^https?:\/\//i.test(m.media_url || ''),
+        name: m.file_name || (isVid ? 'Video' : 'Image'),
+        fileSize: m.file_size,
+        kind: (isVid ? 'video' : 'image') as 'video' | 'image',
+      }
+    }), [messages])
+
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null)
+  const openMedia = (messageId: number) => {
+    const idx = imageItems.findIndex(it => it.id === messageId)
+    if (idx >= 0) setViewerIndex(idx)
+  }
 
   // Scroll logic
   const scrollToBottom = (behavior: 'auto' | 'smooth' = 'auto') => {
@@ -132,31 +176,59 @@ export default function MessageTimeline({
             </div>
             
             <div className="space-y-2">
-              {group.messages.map(msg => (
-                <MessageBubble
-                  key={msg.id}
-                  msg={msg}
-                  channelType={channelType}
-                  isRTL={isRTL}
-                  onReact={reactToMessage}
-                  onReply={onReplyToMessage}
-                  canDeleteWhatsAppMessages={canDeleteWhatsAppMessages}
-                  onDeleteWhatsAppMessage={onDeleteWhatsAppMessage}
-                  quotedMessage={(() => {
-                    const localId = Number(msg.metadata?.reply_to_message_id)
-                    const quoted = localId ? messages.find(candidate => candidate.id === localId) : null
-                    return quoted ? {
+              {group.items.map(item => {
+                if (item.type === 'cluster') {
+                  const primaryMsg = item.primaryMessage
+                  const localId = Number(primaryMsg.metadata?.reply_to_message_id)
+                  const quoted = localId ? messages.find(c => c.id === localId) : null
+
+                  return (
+                    <MessageAlbumBubble
+                      key={item.id}
+                      cluster={item}
+                      channelType={channelType}
+                      isRTL={isRTL}
+                      onReact={reactToMessage}
+                      onReply={onReplyToMessage}
+                      conv={selectedConv as any}
+                      onOpenMedia={openMedia}
+                      quotedMessage={quoted ? {
+                        senderName: quoted.direction === 'inbound'
+                          ? selectedConv.sender_name || L('Customer', 'العميل')
+                          : L('You', 'أنت'),
+                        content: quoted.content || '',
+                      } : null}
+                    />
+                  )
+                }
+
+                const msg = item.message
+                const localId = Number(msg.metadata?.reply_to_message_id)
+                const quoted = localId ? messages.find(candidate => candidate.id === localId) : null
+
+                return (
+                  <MessageBubble
+                    key={msg.id}
+                    msg={msg}
+                    channelType={channelType}
+                    isRTL={isRTL}
+                    onReact={reactToMessage}
+                    onReply={onReplyToMessage}
+                    canDeleteWhatsAppMessages={canDeleteWhatsAppMessages}
+                    onDeleteWhatsAppMessage={onDeleteWhatsAppMessage}
+                    quotedMessage={quoted ? {
                       senderName: quoted.direction === 'inbound'
                         ? selectedConv.sender_name || L('Customer', 'العميل')
                         : L('You', 'أنت'),
                       content: quoted.content || '',
-                    } : null
-                  })()}
-                  conv={selectedConv as any}
-                  onSubmitFeedback={submitFeedback}
-                  onCorrectAI={onCorrectAI}
-                />
-              ))}
+                    } : null}
+                    conv={selectedConv as any}
+                    onSubmitFeedback={submitFeedback}
+                    onCorrectAI={onCorrectAI}
+                    onOpenMedia={openMedia}
+                  />
+                )
+              })}
             </div>
           </div>
         ))}
@@ -171,6 +243,16 @@ export default function MessageTimeline({
         >
           <ArrowDown size={14} />
         </button>
+      )}
+
+      {viewerIndex !== null && (
+        <MediaViewer
+          items={imageItems}
+          index={viewerIndex}
+          onIndexChange={setViewerIndex}
+          onClose={() => setViewerIndex(null)}
+          isRTL={isRTL}
+        />
       )}
     </div>
   )

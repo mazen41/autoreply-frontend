@@ -28,9 +28,11 @@ import {
   CheckCircle2,
   Info,
   Clock3,
+  Maximize2,
 } from 'lucide-react'
 import Select from '../ui/Select'
 import { getBusinessHeaders } from '../../lib/businessContext'
+import { absoluteMediaUrl, formatFileSize, getToken, useAuthenticatedBlob } from '../../lib/mediaUrls'
 import VoiceMessagePlayer from './VoiceMessagePlayer'
 import { stripHtml } from './inboxParser'
 
@@ -91,21 +93,10 @@ interface MessageBubbleProps {
   }
   onSubmitFeedback?: (messageId: number, feedback: 'positive' | 'negative') => void
   onCorrectAI?: (messageId: number, aiDraft: string, correction: string, learningType: string) => Promise<void>
+  onOpenMedia?: (messageId: number) => void
 }
 
 const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
-
-function getToken(): string {
-  if (typeof document === 'undefined') return ''
-  const match = document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)
-  return match ? decodeURIComponent(match[1]) : ''
-}
-
-function absoluteMediaUrl(url?: string | null) {
-  if (!url) return ''
-  if (/^https?:\/\//i.test(url)) return url
-  return `${API_ORIGIN}${url.startsWith('/') ? url : `/${url}`}`
-}
 
 function messageMediaUrl(messageId: number, mode: 'inline' | 'download') {
   return `${API_ORIGIN}/api/messages/${messageId}/media?disposition=${mode}`
@@ -113,12 +104,6 @@ function messageMediaUrl(messageId: number, mode: 'inline' | 'download') {
 
 function formatMsgTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-}
-
-function formatFileSize(size?: number | null) {
-  if (!size) return ''
-  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
-  return `${(size / 1024 / 1024).toFixed(1)} MB`
 }
 
 function fileKind(mediaType?: MediaType, mimeType?: string | null, name?: string | null) {
@@ -154,66 +139,27 @@ function AttachmentCard({
   isOutgoing,
   isRTL,
   isSolidBubble = isOutgoing,
+  onOpenMedia,
 }: {
   msg: MessageBubbleProps['msg']
   isOutgoing: boolean
   isRTL: boolean
   isSolidBubble?: boolean
+  onOpenMedia?: (messageId: number) => void
 }) {
-  const [previewError, setPreviewError] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [authenticatedMediaUrl, setAuthenticatedMediaUrl] = useState('')
   const kind = fileKind(msg.media_type, msg.mime_type, msg.file_name)
   const directUrl = absoluteMediaUrl(msg.media_url)
   // Commerce images use public provider/CDN URLs rather than files in our
   // private media disk. Apply this to legacy rows too, which may not carry the
   // newer `ai_product_image` source marker.
   const isRemoteImage = kind === 'image' && /^https?:\/\//i.test(msg.media_url || '')
+  const { url: authenticatedMediaUrl, loading, error: previewErrorFromFetch } = useAuthenticatedBlob(msg.id, directUrl, isRemoteImage)
+  const [previewError, setPreviewError] = useState(false)
+  useEffect(() => { setPreviewError(previewErrorFromFetch) }, [previewErrorFromFetch])
   const inlineUrl = msg.id > 0 && !isRemoteImage ? authenticatedMediaUrl : directUrl
   const downloadUrl = inlineUrl
   const name = msg.file_name || (kind === 'pdf' ? 'PDF document' : 'Attachment')
   const meta = [kind.toUpperCase(), formatFileSize(msg.file_size)].filter(Boolean).join(' - ')
-
-  useEffect(() => {
-    let disposed = false
-    let objectUrl: string | null = null
-    setLoading(true)
-    setPreviewError(false)
-
-    const load = async () => {
-      try {
-        if (msg.id <= 0 || isRemoteImage) {
-          setAuthenticatedMediaUrl(directUrl)
-          setLoading(false)
-          return
-        }
-
-        const token = getToken()
-        const response = await fetch(messageMediaUrl(msg.id, 'inline'), {
-          headers: { Authorization: `Bearer ${token}`, Accept: '*/*', ...getBusinessHeaders() },
-        })
-        if (!response.ok) throw new Error('Attachment could not be loaded')
-        const blob = await response.blob()
-        objectUrl = URL.createObjectURL(blob)
-        if (!disposed) {
-          setAuthenticatedMediaUrl(objectUrl)
-          setLoading(false)
-        }
-      } catch {
-        if (!disposed) {
-          setPreviewError(true)
-          setLoading(false)
-        }
-      }
-    }
-
-    setAuthenticatedMediaUrl('')
-    void load()
-    return () => {
-      disposed = true
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-    }
-  }, [msg.id, directUrl, isRemoteImage])
 
   const downloadButton = loading || !downloadUrl ? (
     <span className="text-[11px] opacity-70">{isRTL ? 'جارٍ تحميل المرفق…' : 'Loading attachment…'}</span>
@@ -236,18 +182,28 @@ function AttachmentCard({
 
   if ((kind === 'image' || kind === 'sticker') && !previewError) {
     return (
-      <div className="space-y-2">
-        <a href={inlineUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-black/5 bg-black/5">
+      <div className="space-y-1.5">
+        <button
+          type="button"
+          onClick={() => onOpenMedia?.(msg.id)}
+          disabled={loading}
+          className="group/img relative block overflow-hidden rounded-xl bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
+        >
           {loading && <div className="flex h-36 w-64 max-w-full items-center justify-center text-text-secondary"><Loader2 className="h-5 w-5 animate-spin" /></div>}
           <img
             src={inlineUrl}
             alt={name}
             loading="lazy"
-            onLoad={() => setLoading(false)}
-            onError={() => { setPreviewError(true); setLoading(false) }}
-            className={`${loading ? 'hidden' : 'block'} ${kind === 'sticker' ? 'max-h-48 max-w-48' : 'max-h-80 max-w-full'} w-auto object-contain`}
+            onLoad={() => {}}
+            onError={() => setPreviewError(true)}
+            className={`${loading ? 'hidden' : 'block'} ${kind === 'sticker' ? 'max-h-48 max-w-48' : 'max-h-80 max-w-full'} w-auto object-contain transition-transform duration-300 group-hover/img:scale-[1.015]`}
           />
-        </a>
+          {!loading && kind === 'image' && (
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-200 group-hover/img:bg-black/25 group-hover/img:opacity-100">
+              <span className="rounded-full bg-black/55 p-2.5 text-white backdrop-blur-sm"><ImageIcon size={16} /></span>
+            </span>
+          )}
+        </button>
         <div className="flex items-center justify-between gap-2">{downloadButton}</div>
       </div>
     )
@@ -280,8 +236,21 @@ function AttachmentCard({
 
   if (kind === 'video' && !previewError) {
     return (
-      <div className="space-y-2">
-        <video src={inlineUrl} controls preload="metadata" onError={() => setPreviewError(true)} className="max-h-80 max-w-full rounded-xl bg-black" />
+      <div className="space-y-1.5">
+        <div className="group/vid relative overflow-hidden rounded-xl bg-black">
+          <video src={inlineUrl} controls preload="metadata" onError={() => setPreviewError(true)} className="max-h-80 max-w-full" />
+          {onOpenMedia && !previewError && (
+            <button
+              type="button"
+              onClick={() => onOpenMedia(msg.id)}
+              className="absolute end-2 top-2 rounded-lg bg-black/55 p-1.5 text-white opacity-0 backdrop-blur-sm transition-opacity group-hover/vid:opacity-100 focus-visible:opacity-100"
+              title="Full screen"
+              aria-label="Open in full screen"
+            >
+              <Maximize2 size={14} />
+            </button>
+          )}
+        </div>
         <div className="flex items-center justify-between gap-2">{downloadButton}</div>
       </div>
     )
@@ -352,6 +321,7 @@ const MessageBubble = memo(function MessageBubble({
   conv,
   onSubmitFeedback,
   onCorrectAI,
+  onOpenMedia,
 }: MessageBubbleProps) {
   const isIn = msg.direction === 'inbound'
   const isGmail = channelType === 'gmail'
@@ -493,18 +463,18 @@ const MessageBubble = memo(function MessageBubble({
   }
 
   const bubbleTone = isIn
-    ? 'border-border bg-surface-elevated text-text-primary'
+    ? 'border-border/70 bg-surface-elevated text-text-primary'
     : msg.is_ai
-      ? 'border-brand/25 bg-brand/10 text-text-primary'
-      : 'border-brand/30 bg-brand text-brand-text font-medium'
+      ? 'border-brand/20 bg-brand/[0.08] text-text-primary'
+      : 'border-transparent bg-brand text-brand-text font-medium shadow-[0_1px_0_rgba(0,0,0,0.04)]'
 
   return (
-    <div className={`group flex w-full ${isIn ? 'justify-start' : 'justify-end'}`}>
+    <div className={`group flex w-full py-0.5 ${isIn ? 'justify-start' : 'justify-end'}`}>
       <div className={`flex max-w-[min(76%,42rem)] items-end gap-2 ${isIn ? 'flex-row' : 'flex-row-reverse'} sm:max-w-[min(72%,44rem)]`}>
         <div className="relative min-w-0">
-          <div className={`inline-block w-fit max-w-full rounded-2xl border px-3.5 py-2.5 text-[14px] leading-[1.58] shadow-xs ${bubbleTone} ${isIn ? 'rounded-es-md' : 'rounded-ee-md'}`}>
+          <div className={`inline-block w-fit max-w-full rounded-[1.1rem] border px-4 py-2.5 text-[14.5px] leading-[1.55] tracking-[-0.003em] shadow-sm ${bubbleTone} ${isIn ? 'rounded-es-sm' : 'rounded-ee-sm'}`}>
             {msg.is_ai && (
-              <div className="mb-1.5 flex items-center gap-1 text-[10px] font-semibold text-brand/80 tracking-wider">
+              <div className="mb-1.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-brand/85">
                 <Bot size={12} /> AI generated
               </div>
             )}
@@ -516,7 +486,7 @@ const MessageBubble = memo(function MessageBubble({
             )}
             {isDeletedForEveryone ? (
               <span className="italic text-text-secondary">{isRTL ? 'تم حذف هذه الرسالة' : 'This message was deleted'}</span>
-            ) : hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isRTL={isRTL} isSolidBubble={!isIn && !msg.is_ai} />}
+            ) : hasMedia && <AttachmentCard msg={msg} isOutgoing={!isIn} isRTL={isRTL} isSolidBubble={!isIn && !msg.is_ai} onOpenMedia={onOpenMedia} />}
             {!isDeletedForEveryone && msg.content && (
               <div
                 dir={textDirection as React.HTMLAttributes<HTMLDivElement>['dir']}

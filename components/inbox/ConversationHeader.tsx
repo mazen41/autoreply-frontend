@@ -61,7 +61,7 @@ export default function ConversationHeader({
   const aiStateConfig = {
     active:    { label: L('AI Active', 'AI نشط'),      bg: 'bg-brand/10',  text: 'text-brand',   dot: 'bg-brand' },
     paused:    { label: L('AI Paused', 'AI متوقف'),     bg: 'bg-surface-elevated', text: 'text-text-secondary', dot: 'bg-text-tertiary' },
-    escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-error dark:bg-error/20', text: 'text-error',           dot: 'bg-error' },
+    escalated: { label: L('Escalated', 'مصعّد'),       bg: 'bg-error-subtle', text: 'text-error', dot: 'bg-error' },
   }[aiState]
 
   const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {

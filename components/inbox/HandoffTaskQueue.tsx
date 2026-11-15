@@ -2,16 +2,19 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, ChevronDown, UserPlus } from 'lucide-react'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import { useLang } from '../../lib/LangContext'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+type Assignee = { id: number; name: string | null; email: string | null; role: string }
+
 type HandoffTask = {
   id: number
   reason: string
   priority: string
+  assignee?: Assignee | null
   due_at: string | null
   conversation?: { id: number; sender_name?: string | null; channel?: { type?: string; page_name?: string } }
 }
@@ -28,6 +31,36 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [overdueCount, setOverdueCount] = useState(0)
+  const [collapsed, setCollapsed] = useState(false)
+  const [assignees, setAssignees] = useState<Assignee[]>([])
+  const [openAssignFor, setOpenAssignFor] = useState<number | null>(null)
+  const [assigning, setAssigning] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch(`${API}/api/handoff-tasks/assignees`, {
+      headers: { Authorization: `Bearer ${token()}`, Accept: 'application/json', ...getBusinessHeaders() },
+    }).then(r => r.ok ? r.json() : []).then(data => setAssignees(Array.isArray(data) ? data : [])).catch(() => {})
+  }, [])
+
+  const assignTask = async (taskId: number, userId: number) => {
+    setAssigning(taskId)
+    try {
+      const response = await fetch(`${API}/api/handoff-tasks/${taskId}/assign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}`, Accept: 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify({ assigned_to: userId }),
+      })
+      if (!response.ok) throw new Error('Could not assign this handoff')
+      const data = await response.json()
+      setTasks(current => current.map(t => t.id === taskId ? { ...t, assignee: data.task?.assignee ?? t.assignee } : t))
+      setOpenAssignFor(null)
+    } catch {
+      setError(true)
+    } finally {
+      setAssigning(null)
+    }
+  }
+
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -84,24 +117,60 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
         <AlertTriangle className="h-4 w-4 text-warning" />
         <span>{tasks.length} {L('open handoff tasks', 'طلبات متابعة مفتوحة')}</span>
         {overdueCount > 0 && <span className="ms-auto text-warning">{overdueCount} {L('overdue', 'متأخرة')}</span>}
-        {!compact && <Link className="ms-auto text-brand hover:underline" href="/dashboard/handoffs">{L('Manage handoffs', 'إدارة طلبات المتابعة')}</Link>}
+        {!compact && <Link className="text-brand hover:underline" href="/dashboard/handoffs">{L('Manage handoffs', 'إدارة طلبات المتابعة')}</Link>}
+        <button
+          type="button"
+          onClick={() => setCollapsed(v => !v)}
+          className={`rounded p-0.5 text-text-tertiary hover:text-text-primary ${overdueCount > 0 || !compact ? '' : 'ms-auto'}`}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? L('Expand handoff tasks', 'إظهار طلبات المتابعة') : L('Collapse handoff tasks', 'إخفاء طلبات المتابعة')}
+        >
+          <ChevronDown size={13} className={`transition-transform ${collapsed ? '-rotate-90' : ''}`} />
+        </button>
       </div>
+      {!collapsed && (
       <ul className={`mt-2 space-y-1.5 ${compact ? 'max-h-24 overflow-y-auto' : ''}`}>
         {tasks.slice(0, compact ? 3 : 5).map(task => {
           const conversationId = task.conversation?.id
           const overdue = Boolean(task.due_at && new Date(task.due_at).getTime() < Date.now())
           return (
-            <li key={task.id} className="flex items-center gap-2 text-[11px] text-text-secondary">
+            <li key={task.id} className="relative flex items-center gap-2 text-[11px] text-text-secondary">
               <Clock className={`h-3.5 w-3.5 shrink-0 ${overdue ? 'text-error' : 'text-text-tertiary'}`} />
               <button type="button" className="min-w-0 flex-1 truncate text-start hover:text-brand" onClick={() => conversationId && onSelect?.(conversationId)}>
                 {task.conversation?.sender_name || `${L('Conversation', 'محادثة')} #${conversationId}`} · {task.reason.replaceAll('_', ' ')}
               </button>
               {task.due_at && <time className={overdue ? 'text-error' : 'text-text-tertiary'}>{overdue ? L('Overdue', 'متأخرة') : new Date(task.due_at).toLocaleTimeString(isRTL ? 'ar' : 'en', { hour: '2-digit', minute: '2-digit' })}</time>}
+              <button
+                type="button"
+                onClick={() => setOpenAssignFor(v => v === task.id ? null : task.id)}
+                disabled={assigning === task.id}
+                className={`flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 ${task.assignee ? 'text-text-primary' : 'text-text-tertiary hover:text-brand'}`}
+                title={task.assignee ? `${L('Assigned to', 'مُسند إلى')}: ${task.assignee.name}` : L('Assign', 'إسناد')}
+              >
+                <UserPlus size={12} />
+                {task.assignee && <span className="max-w-[5rem] truncate">{task.assignee.name}</span>}
+              </button>
+              {openAssignFor === task.id && (
+                <div className="absolute end-0 top-6 z-20 w-44 rounded-lg border border-border bg-surface-elevated p-1 shadow-lg">
+                  {assignees.length === 0 && <div className="px-2 py-1 text-text-tertiary">{L('No assignees found', 'لا يوجد أعضاء متاحون')}</div>}
+                  {assignees.map(a => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => void assignTask(task.id, a.id)}
+                      className="block w-full truncate rounded px-2 py-1 text-start text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                    >
+                      {a.name || a.email} <span className="text-text-tertiary">· {a.role}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {onSelect && <button type="button" className="rounded p-1 text-text-tertiary hover:text-success" title={L('Resolve handoff', 'إنهاء طلب المتابعة')} onClick={() => void resolve(task.id)}><CheckCircle2 size={14} /></button>}
             </li>
           )
         })}
       </ul>
+      )}
     </section>
   )
 }

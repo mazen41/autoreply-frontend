@@ -107,9 +107,13 @@ export default function Inbox3DVisual({ isRTL = false, className = '' }: Inbox3D
     // C: Satellite Nodes
     const satelliteColors = [0x25d366, 0xe4405f, 0x00d9ff, 0x713cff, 0xff9f43]
     const satellites: THREE.Mesh[] = []
+    const satGeos: THREE.BufferGeometry[] = []
+    const satMats: THREE.Material[] = []
     satelliteColors.forEach((col, i) => {
       const satGeo = new THREE.SphereGeometry(0.08, 12, 12)
       const satMat = new THREE.MeshBasicMaterial({ color: col })
+      satGeos.push(satGeo)
+      satMats.push(satMat)
       const sat = new THREE.Mesh(satGeo, satMat)
       scene.add(sat)
       satellites.push(sat)
@@ -201,6 +205,7 @@ export default function Inbox3DVisual({ isRTL = false, className = '' }: Inbox3D
       ringGeo1.dispose()
       ringGeo2.dispose()
       particleGeo.dispose()
+      satGeos.forEach(g => g.dispose())
 
       // Materials
       coreMat.dispose()
@@ -208,10 +213,12 @@ export default function Inbox3DVisual({ isRTL = false, className = '' }: Inbox3D
       ringMat1.dispose()
       ringMat2.dispose()
       particleMat.dispose()
+      satMats.forEach(m => m.dispose())
 
       if (renderer) {
+        renderer.forceContextLoss?.()
         renderer.dispose()
-        if (renderer.domElement.parentElement) {
+        if (renderer.domElement && renderer.domElement.parentElement) {
           renderer.domElement.parentElement.removeChild(renderer.domElement)
         }
       }
