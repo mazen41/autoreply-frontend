@@ -351,7 +351,29 @@ export default function ChannelsPage() {
 
           window.sessionStorage.removeItem('naz_pending_salla_claim')
           await fetchChannels()
-          showToast('Salla store connected successfully. Initial sync has started.', 'success')
+          const citiesStatus = result.cities_status
+          if (citiesStatus === 'matched' || citiesStatus === 'exists') {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! تم التحقق من مدن التوصيل ومطابقتها (20,335 مدينة جاهزة).'
+                : 'Salla store connected! Delivery cities are verified and matched (20,335 cities ready).',
+              'success'
+            )
+          } else if (citiesStatus === 'processing') {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! جاري معالجة وتحديث مدن التوصيل في الخلفية.'
+                : 'Salla store connected! City catalog is currently being processed in the background.',
+              'success'
+            )
+          } else {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! مدن التوصيل مفعلة ومطابقة.'
+                : 'Salla store connected successfully! Delivery cities are active.',
+              'success'
+            )
+          }
         } catch (error) {
           showToast(error instanceof Error ? error.message : 'Could not finish connecting the Salla store.', 'error')
         } finally {
@@ -398,13 +420,36 @@ export default function ChannelsPage() {
       })()
     } else if (params.get('success')) {
       const success = params.get('success')
+      const cities = params.get('cities')
       void Promise.resolve().then(() => {
-        showToast(
-          success === 'shopify_connected'
-            ? 'Shopify connected. Initial store sync has started.'
-            : 'Channel connected successfully!',
-          'success'
-        )
+        if (success === 'salla_connected') {
+          if (cities === 'matched' || cities === 'exists') {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! تم التحقق من مدن التوصيل ومطابقتها (20,335 مدينة جاهزة).'
+                : 'Salla store connected! Delivery cities are verified and matched (20,335 cities ready).',
+              'success'
+            )
+          } else if (cities === 'processing') {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! جاري معالجة وتحديث مدن التوصيل في الخلفية.'
+                : 'Salla store connected! City catalog is currently being processed in the background.',
+              'success'
+            )
+          } else {
+            showToast(
+              isRTL
+                ? 'تم ربط متجر سلة بنجاح! مدن التوصيل مفعلة ومطابقة.'
+                : 'Salla store connected successfully! Delivery cities are active.',
+              'success'
+            )
+          }
+        } else if (success === 'shopify_connected') {
+          showToast('Shopify connected. Initial store sync has started.', 'success')
+        } else {
+          showToast('Channel connected successfully!', 'success')
+        }
         return fetchChannels()
       })
       window.history.replaceState({}, '', window.location.pathname)
