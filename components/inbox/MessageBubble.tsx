@@ -284,29 +284,33 @@ function AttachmentCard({
 function EmailIframe({ content, isRTL }: { content: string; isRTL: boolean }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(220)
-
-  React.useEffect(() => {
-    const iframe = iframeRef.current
-    const doc = iframe?.contentDocument || iframe?.contentWindow?.document
-    if (!doc) return
-    const resizeScript = `<script>function _h(){parent.postMessage({type:'iframe-height',height:document.documentElement.scrollHeight},'*')}document.addEventListener('DOMContentLoaded',_h);window.addEventListener('load',_h);setTimeout(_h,100);setTimeout(_h,600);<\/script>`
-    const html = /^\s*(<(!DOCTYPE|html)[^>]*>|<!DOCTYPE)/i.test(content.trim())
-      ? content.replace(/<\/body>/i, `${resizeScript}</body>`)
-      : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{margin:0;padding:16px;background:transparent;color:#111;font:14px/1.6 sans-serif;overflow-wrap:anywhere}img{max-width:100%;height:auto}</style></head><body>${content}${resizeScript}</body></html>`
-    doc.open()
-    doc.write(html)
-    doc.close()
+  const srcDoc = useMemo(() => {
+    const resizeScript = `<script>(function(){function _h(){parent.postMessage({type:'naz-email-height',height:document.documentElement.scrollHeight},'*')}document.addEventListener('DOMContentLoaded',_h);window.addEventListener('load',_h);setTimeout(_h,100);setTimeout(_h,600)})()<\/script>`
+    const baseStyle = `<style>html{color-scheme:light;background:#fff}body{box-sizing:border-box;min-height:100%;margin:0;padding:16px;background:#fff;color:#202124;font:14px/1.6 Arial,sans-serif;overflow-wrap:anywhere}img,video{max-width:100%;height:auto}table{max-width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>`
+    let html = /^\s*(<(!DOCTYPE|html)[^>]*>|<!DOCTYPE)/i.test(content.trim())
+      ? content
+      : `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${content}</body></html>`
+    if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, `${baseStyle}</head>`)
+    else html = html.replace(/<html[^>]*>/i, `$&<head><meta charset="UTF-8">${baseStyle}</head>`)
+    return /<\/body>/i.test(html)
+      ? html.replace(/<\/body>/i, `${resizeScript}</body>`)
+      : `${html}${resizeScript}`
   }, [content])
 
   React.useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      if (e.data?.type === 'iframe-height' && typeof e.data.height === 'number') setHeight(Math.max(80, e.data.height + 8))
+      if (
+        e.source === iframeRef.current?.contentWindow
+        && e.data?.type === 'naz-email-height'
+        && typeof e.data.height === 'number'
+        && Number.isFinite(e.data.height)
+      ) setHeight(Math.min(1200, Math.max(80, e.data.height + 8)))
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [])
 
-  return <iframe ref={iframeRef} title={isRTL ? 'محتوى البريد الإلكتروني' : 'Email Content'} style={{ width: '100%', height, border: 'none', display: 'block', background: 'transparent', borderRadius: 8 }} sandbox="allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox" />
+  return <iframe ref={iframeRef} srcDoc={srcDoc} title={isRTL ? 'محتوى البريد الإلكتروني' : 'Email Content'} style={{ width: '100%', height, border: 'none', display: 'block', background: '#fff', borderRadius: 8 }} sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" referrerPolicy="no-referrer" />
 }
 
 const MessageBubble = memo(function MessageBubble({

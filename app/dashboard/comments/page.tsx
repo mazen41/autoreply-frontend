@@ -9,7 +9,8 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { useLang } from '../../../lib/LangContext'
-import { getBusinessHeaders } from '../../../lib/businessContext'
+import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
+import { getEcho } from '../../../lib/echo'
 import Tabs, { TabItem } from '../../../components/ui/Tabs'
 import Button from '../../../components/ui/Button'
 import PageHeader from '../../../components/ui/PageHeader'
@@ -81,6 +82,8 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
     needs_attention: 0,
   })
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [commentActionBusy, setCommentActionBusy] = useState(false)
+  const [commentActionError, setCommentActionError] = useState('')
   const [platform, setPlatform] = useState('all')
   const [status, setStatus] = useState('all')
   const [search, setSearch] = useState('')
@@ -390,9 +393,58 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
     [page, platform, search, status]
   )
 
+  const runCommentAction = useCallback(async (path: string, method: 'POST' | 'PATCH', body: Record<string, unknown>) => {
+    setCommentActionBusy(true)
+    setCommentActionError('')
+    try {
+      const response = await fetch(`${API}${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${token()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() },
+        body: JSON.stringify(body),
+      })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const providerCode = result.provider_error_code ? ` (Meta ${result.provider_error_code})` : ''
+        throw new Error(`${result.message || `Action failed (HTTP ${response.status}).`}${providerCode}`)
+      }
+      await load(true)
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Could not complete this comment action.'
+      setCommentActionError(message)
+      throw new Error(message)
+    } finally {
+      setCommentActionBusy(false)
+    }
+  }, [load])
+
   useEffect(() => {
     void load()
   }, [load])
+
+  // New Meta comments are broadcast on the authenticated business channel.
+  // Keep polling below as a recovery path if a browser temporarily disconnects.
+  useEffect(() => {
+    const businessId = getSelectedBusinessId()
+    if (!businessId || !process.env.NEXT_PUBLIC_PUSHER_KEY) return
+
+    const echo = getEcho()
+    const channelName = `business.${businessId}`
+    const channel = echo.private(channelName)
+    const onCommentReceived = (event: { business_id?: number }) => {
+      if (Number(event?.business_id) !== businessId) return
+      if (page !== 1) {
+        setPage(1)
+        return
+      }
+      void load(true)
+    }
+
+    channel.listen('.social-comment.received', onCommentReceived)
+    return () => {
+      channel.stopListening('.social-comment.received', onCommentReceived)
+      echo.leave(channelName)
+    }
+  }, [load, page])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -489,6 +541,11 @@ export default function CommentsPage({ initialTab = 'comments' }: CommentsPagePr
           lastPage={lastPage}
           loading={loading}
           isRTL={isRTL}
+          actionBusy={commentActionBusy}
+          actionError={commentActionError}
+          onManualReply={(eventId, message) => runCommentAction(`/social-comments/${eventId}/replies`, 'POST', { message })}
+          onEditReply={(eventId, messageId, message) => runCommentAction(`/social-comments/${eventId}/replies/${messageId}`, 'PATCH', { message })}
+          onToggleHidden={(eventId, hidden) => runCommentAction(`/social-comments/${eventId}/visibility`, 'PATCH', { hidden })}
         />
       )}
 

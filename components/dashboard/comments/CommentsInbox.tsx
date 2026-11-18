@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   MessageSquare,
   CheckCheck,
@@ -18,6 +18,10 @@ import {
   ArrowRight,
   ShieldCheck,
   HelpCircle,
+  Send,
+  Pencil,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { Select } from '../../../components/ui/Select'
 import { CommentEvent } from './types'
@@ -47,6 +51,11 @@ interface CommentsInboxProps {
   lastPage: number
   loading: boolean
   isRTL: boolean
+  actionBusy: boolean
+  actionError: string
+  onManualReply: (eventId: number, message: string) => Promise<void>
+  onEditReply: (eventId: number, messageId: number, message: string) => Promise<void>
+  onToggleHidden: (eventId: number, hidden: boolean) => Promise<void>
 }
 
 function formatDate(value: string | null | undefined, isRTL: boolean) {
@@ -119,8 +128,33 @@ export default function CommentsInbox({
   lastPage,
   loading,
   isRTL,
+  actionBusy,
+  actionError,
+  onManualReply,
+  onEditReply,
+  onToggleHidden,
 }: CommentsInboxProps) {
   const selected = comments.find((c) => c.id === selectedId) || null
+  const [replyDraft, setReplyDraft] = useState('')
+  const [editingReply, setEditingReply] = useState(false)
+  const [localActionError, setLocalActionError] = useState('')
+
+  useEffect(() => {
+    setReplyDraft('')
+    setEditingReply(false)
+    setLocalActionError('')
+  }, [selected?.id])
+
+  const runAction = async (action: () => Promise<void>) => {
+    setLocalActionError('')
+    try {
+      await action()
+      setReplyDraft('')
+      setEditingReply(false)
+    } catch (error) {
+      setLocalActionError(error instanceof Error ? error.message : 'Could not complete this action.')
+    }
+  }
 
   const statusFilters = [
     { id: 'all', label: isRTL ? 'الكل' : 'All', count: stats.total },
@@ -414,6 +448,15 @@ export default function CommentsInbox({
                       )
                     })()}
                   </div>
+                  <button
+                    type="button"
+                    disabled={actionBusy}
+                    onClick={() => void runAction(() => onToggleHidden(selected.id, !selected.is_hidden))}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-surface-elevated disabled:opacity-50"
+                  >
+                    {selected.is_hidden ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {selected.is_hidden ? (isRTL ? 'إظهار التعليق' : 'Unhide comment') : (isRTL ? 'إخفاء التعليق' : 'Hide comment')}
+                  </button>
                 </div>
 
                 {/* Section 1: Customer's incoming comment */}
@@ -452,7 +495,9 @@ export default function CommentsInbox({
                       <div className="flex items-center justify-between text-xs text-success">
                         <span className="font-semibold flex items-center gap-1.5">
                           <CheckCheck size={14} />
-                          {isRTL ? 'تم الإرسال على المنشور بنجاح' : 'Published to post'}
+                          {selected.reply.is_ai
+                            ? (isRTL ? 'رد الذكاء الاصطناعي المنشور' : 'Published AI reply')
+                            : (isRTL ? 'رد الموظف المنشور' : 'Published agent reply')}
                         </span>
                         <span className="text-[11px] opacity-75">
                           {formatDate(selected.reply.created_at, isRTL)}
@@ -461,6 +506,15 @@ export default function CommentsInbox({
                       <p className="text-xs text-text-primary whitespace-pre-wrap leading-relaxed">
                         {selected.reply.content}
                       </p>
+                      {selected.reply.is_ai && selected.platform === 'facebook' && selected.reply.id && !editingReply && (
+                        <button
+                          type="button"
+                          onClick={() => { setReplyDraft(selected.reply?.content || ''); setEditingReply(true); setLocalActionError('') }}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-[11px] font-semibold text-text-secondary hover:bg-surface-elevated"
+                        >
+                          <Pencil size={12} /> {isRTL ? 'تعديل رد الذكاء الاصطناعي' : 'Edit AI reply'}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-border bg-surface-elevated/20 p-4 text-xs text-text-secondary flex items-start gap-3">
@@ -477,6 +531,61 @@ export default function CommentsInbox({
                       </div>
                     </div>
                   )}
+
+                  {editingReply && selected.reply?.id && (
+                    <div className="rounded-xl border border-brand/30 bg-brand/5 p-4 space-y-3">
+                      <p className="text-xs font-semibold text-text-primary">{isRTL ? 'عدّل الرد المنشور على فيسبوك' : 'Edit the published Facebook reply'}</p>
+                      <textarea
+                        value={replyDraft}
+                        onChange={(event) => setReplyDraft(event.target.value)}
+                        maxLength={500}
+                        rows={3}
+                        className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary outline-none focus:border-brand"
+                      />
+                      <div className="flex items-center justify-between text-[11px] text-text-tertiary">
+                        <span>{replyDraft.length}/500</span>
+                        <div className="flex gap-2">
+                          <button type="button" onClick={() => { setEditingReply(false); setReplyDraft('') }} className="rounded-lg border border-border px-3 py-2 hover:bg-surface-elevated">{isRTL ? 'إلغاء' : 'Cancel'}</button>
+                          <button
+                            type="button"
+                            disabled={actionBusy || !replyDraft.trim()}
+                            onClick={() => void runAction(() => onEditReply(selected.id, selected.reply!.id!, replyDraft.trim()))}
+                            className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 font-semibold text-white disabled:opacity-50"
+                          >
+                            {isRTL ? 'حفظ التعديل' : 'Save edit'}
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-text-tertiary">{isRTL ? 'تعديل الرد متاح عبر واجهة Meta لتعليقات فيسبوك فقط.' : 'Meta API editing is available here for Facebook replies only.'}</p>
+                    </div>
+                  )}
+
+                  {!editingReply && <div className="rounded-xl border border-border bg-surface-elevated/20 p-4 space-y-3">
+                    <div>
+                      <h5 className="text-xs font-semibold text-text-primary">{isRTL ? 'إضافة رد يدوي عام' : 'Add a manual public reply'}</h5>
+                      <p className="mt-1 text-[11px] text-text-tertiary">{isRTL ? 'سيظهر الرد علناً أسفل التعليق على المنصة.' : 'Your reply will be published publicly under the customer’s comment.'}</p>
+                    </div>
+                    <textarea
+                      value={replyDraft}
+                      onChange={(event) => setReplyDraft(event.target.value)}
+                      maxLength={500}
+                      rows={3}
+                      placeholder={isRTL ? 'اكتب ردك...' : 'Write your reply...'}
+                      className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-text-primary outline-none focus:border-brand"
+                    />
+                    <div className="flex items-center justify-between text-[11px] text-text-tertiary">
+                      <span>{replyDraft.length}/500</span>
+                      <button
+                        type="button"
+                        disabled={actionBusy || !replyDraft.trim() || editingReply}
+                        onClick={() => void runAction(() => onManualReply(selected.id, replyDraft.trim()))}
+                        className="inline-flex items-center gap-2 rounded-lg bg-brand px-3 py-2 font-semibold text-white disabled:opacity-50"
+                      >
+                        <Send size={13} /> {actionBusy ? (isRTL ? 'جارٍ الإرسال...' : 'Sending...') : (isRTL ? 'إرسال رد عام' : 'Send public reply')}
+                      </button>
+                    </div>
+                    {(localActionError || actionError) && <p role="alert" className="text-xs text-error">{localActionError || actionError}</p>}
+                  </div>}
                 </div>
 
                 {/* Section 3: Automation Decision Timeline */}

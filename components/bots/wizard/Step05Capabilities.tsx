@@ -11,6 +11,7 @@ interface Step05CapabilitiesProps {
   commentSettings: Record<number, CommentSettings>
   setCommentSettings: React.Dispatch<React.SetStateAction<Record<number, CommentSettings>>>
   selectedChannelIds: number[]
+  commentChannelIds: number[]
 }
 
 const PUBLIC_INFO_OPTIONS: Array<{ id: PublicInfoCategory; labelEn: string; labelAr: string }> = [
@@ -29,12 +30,40 @@ export default function Step05Capabilities({
   commentSettings,
   setCommentSettings,
   selectedChannelIds,
+  commentChannelIds,
 }: Step05CapabilitiesProps) {
   const { isRTL, t } = useLang()
   const copy = t.botCreationWizard || {}
 
   const toggleCapability = (key: keyof BotCapabilitiesState) => {
     setCapabilities((cur) => ({ ...cur, [key]: !cur[key] }))
+  }
+
+  const selectedCommentChannelIds = selectedChannelIds.filter((id) => commentChannelIds.includes(id))
+  const updatePublicInformation = (category: PublicInfoCategory, checked: boolean) => {
+    setCommentSettings((current) => {
+      const next = { ...current }
+      for (const id of selectedCommentChannelIds) {
+        const existing = next[id] || {
+          enabled: false,
+          public_reply_enabled: true,
+          private_reply_enabled: false,
+          settings: {
+            public_information: PUBLIC_INFO_OPTIONS.map((option) => option.id),
+            fallback_response: '',
+            trigger_keywords: ['*'],
+            excluded_keywords: [],
+          },
+        }
+        const selected = new Set(existing.settings.public_information)
+        checked ? selected.add(category) : selected.delete(category)
+        next[id] = {
+          ...existing,
+          settings: { ...existing.settings, public_information: Array.from(selected) },
+        }
+      }
+      return next
+    })
   }
 
   const capabilityItems = [
@@ -160,7 +189,10 @@ export default function Step05Capabilities({
                       >
                         <input
                           type="checkbox"
-                          defaultChecked={true}
+                          checked={selectedCommentChannelIds.length === 0 || selectedCommentChannelIds.every((id) =>
+                            (commentSettings[id]?.settings.public_information ?? PUBLIC_INFO_OPTIONS.map((option) => option.id)).includes(opt.id)
+                          )}
+                          onChange={(event) => updatePublicInformation(opt.id, event.target.checked)}
                           className="rounded border-white/20 bg-surface accent-brand"
                         />
                         <span>{isRTL ? opt.labelAr : opt.labelEn}</span>

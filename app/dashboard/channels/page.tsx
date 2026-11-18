@@ -306,6 +306,61 @@ export default function ChannelsPage() {
   // Handle OAuth redirects in URL parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    const claimFromUrl = params.get('salla_claim')
+    const claimToken = claimFromUrl || window.sessionStorage.getItem('naz_pending_salla_claim')
+    if (claimFromUrl) {
+      // Remove the short-lived claim token from the address bar immediately, while
+      // retaining it in this tab in case the API request needs to be retried.
+      window.sessionStorage.setItem('naz_pending_salla_claim', claimFromUrl)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (claimToken) {
+      const inProgressAt = Number(window.sessionStorage.getItem('naz_salla_claim_started_at') || 0)
+      if (inProgressAt && Date.now() - inProgressAt < 60_000) return
+
+      const token = getToken()
+      const businessId = window.localStorage.getItem('naz_selected_business_id')
+      if (!token || !businessId) {
+        showToast(
+          !token ? 'Sign in to finish connecting your Salla store.' : 'Select a workspace to finish connecting your Salla store.',
+          'error'
+        )
+        return
+      }
+
+      window.sessionStorage.setItem('naz_salla_claim_started_at', String(Date.now()))
+      void (async () => {
+        try {
+          const response = await fetch(`${API}/api/channels/salla/claim`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              ...getBusinessHeaders(),
+            },
+            body: JSON.stringify({ token: claimToken }),
+          })
+          const result = await response.json().catch(() => ({}))
+          if (!response.ok) {
+            if (response.status === 422 || response.status === 404) {
+              window.sessionStorage.removeItem('naz_pending_salla_claim')
+            }
+            throw new Error(result.message || result.error || 'Could not finish connecting the Salla store.')
+          }
+
+          window.sessionStorage.removeItem('naz_pending_salla_claim')
+          await fetchChannels()
+          showToast('Salla store connected successfully. Initial sync has started.', 'success')
+        } catch (error) {
+          showToast(error instanceof Error ? error.message : 'Could not finish connecting the Salla store.', 'error')
+        } finally {
+          window.sessionStorage.removeItem('naz_salla_claim_started_at')
+        }
+      })()
+      return
+    }
+
     const wooState = params.get('connection_state')
     if (params.get('connection') === 'woocommerce' && wooState) {
       const approved = params.get('success') !== '0'

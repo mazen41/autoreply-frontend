@@ -915,6 +915,38 @@ body {
 
 /* ─── Global interaction defaults ─────────────────────────────────────────── */
 
+/* Shared form-control colors must win over page-level utility classes. This
+   prevents white-on-white fields in dark pages while preserving light theme. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+textarea,
+select {
+  color: var(--text-primary) !important;
+  background-color: var(--surface-elevated) !important;
+  color-scheme: light;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+.dark textarea,
+.dark select {
+  color-scheme: dark;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"])::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+  opacity: 1;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-elevated) inset;
+  caret-color: var(--text-primary);
+}
+
 /* Every button: hardware-accelerated, no layout-affecting transitions */
 button {
   transition: color 150ms ease, background-color 150ms ease, opacity 150ms ease;

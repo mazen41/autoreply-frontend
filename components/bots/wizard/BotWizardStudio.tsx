@@ -22,12 +22,31 @@ import {
   KnowledgeAssignment,
   BotCapabilitiesState,
   CommentSettings,
+  PublicInfoCategory,
   WizardStepId,
 } from './types'
 import { isCommunicationChannel, getCommunicationChannels } from '../botWizardUtils'
 import { LoaderCircle, AlertCircle, ArrowLeft } from 'lucide-react'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const DEFAULT_PUBLIC_INFORMATION: PublicInfoCategory[] = [
+  'general_business_info', 'product_names', 'product_descriptions', 'product_prices',
+  'discounts', 'availability', 'product_links',
+]
+
+function defaultCommentSettings(): CommentSettings {
+  return {
+    enabled: false,
+    public_reply_enabled: true,
+    private_reply_enabled: false,
+    settings: {
+      public_information: DEFAULT_PUBLIC_INFORMATION,
+      fallback_response: '',
+      trigger_keywords: ['*'],
+      excluded_keywords: [],
+    },
+  }
+}
 
 function getToken(): string {
   if (typeof document === 'undefined') return ''
@@ -219,7 +238,7 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
             settings: {
               public_information: Array.isArray(settingsObj.public_information)
                 ? settingsObj.public_information
-                : [],
+                : DEFAULT_PUBLIC_INFORMATION,
               fallback_response:
                 typeof settingsObj.fallback_response === 'string'
                   ? settingsObj.fallback_response
@@ -409,6 +428,14 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
         channels.filter((c) => isCommunicationChannel(c)).map((c) => c.id)
       )
       const chosenChannelIds = selectedChannelIds.filter((id) => validCommIds.has(id))
+      const commentChannels = channels.filter(
+        (c) => ['facebook', 'instagram'].includes(c.type) && chosenChannelIds.includes(c.id)
+      )
+      if (capabilities.commentAutomation && commentChannels.length === 0) {
+        throw new Error(isRTL
+          ? 'اختر حساباً على فيسبوك أو إنستغرام لهذه الوكيلة لتفعيل الرد على التعليقات.'
+          : 'Select a Facebook or Instagram account for this bot to enable comment automation.')
+      }
 
       const payload = {
         name: name.trim(),
@@ -461,31 +488,38 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
       const targetBotId = Number(result.bot?.id || result.id || botId)
       setCreatedBotId(targetBotId)
 
-      // Save comment automation if enabled
-      if (capabilities.commentAutomation && targetBotId) {
-        const commentChannels = channels.filter(
-          (c) => ['facebook', 'instagram'].includes(c.type) && chosenChannelIds.includes(c.id)
-        )
-        for (const ch of commentChannels) {
-          const cfg = commentSettings[ch.id]
-          if (cfg) {
-            await fetch(`${API}/api/bots/${targetBotId}/comment-automation`, {
-              method: 'PUT',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                ...getBusinessHeaders(),
-              },
-              body: JSON.stringify({
-                channel_id: ch.id,
-                comment_automation_enabled: cfg.enabled,
-                public_comment_reply_enabled: cfg.public_reply_enabled,
-                private_comment_reply_enabled: false,
-                comment_settings: cfg.settings,
-              }),
-            }).catch(() => null)
+      // Persist comment automation for every selected social account, including
+      // disabled states. The API accepts a channels[] batch, not one channel.
+      if (targetBotId && commentChannels.length > 0) {
+        const settingsPayload = commentChannels.map((ch) => {
+          const cfg = commentSettings[ch.id] || defaultCommentSettings()
+          const settings = { ...cfg.settings }
+          if (capabilities.commentAutomation && !settings.trigger_keywords.length) {
+            settings.trigger_keywords = ['*']
           }
+          return {
+            channel_id: ch.id,
+            enabled: capabilities.commentAutomation,
+            public_reply_enabled: cfg.public_reply_enabled,
+            private_reply_enabled: false,
+            settings,
+          }
+        })
+        const settingsResponse = await fetch(`${API}/api/bots/${targetBotId}/comment-automation`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...getBusinessHeaders(),
+          },
+          body: JSON.stringify({ channels: settingsPayload }),
+        })
+        const settingsResult = await settingsResponse.json().catch(() => ({}))
+        if (!settingsResponse.ok) {
+          throw new Error(settingsResult.message || (isRTL
+            ? 'تعذر حفظ إعدادات الرد على التعليقات.'
+            : 'Could not save comment automation settings.'))
         }
       }
 
@@ -654,8 +688,14 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
                   setDirty(true)
                 }}
                 commentSettings={commentSettings}
-                setCommentSettings={setCommentSettings}
+                setCommentSettings={(update) => {
+                  setCommentSettings(update)
+                  setDirty(true)
+                }}
                 selectedChannelIds={selectedChannelIds}
+                commentChannelIds={channels
+                  .filter((channel) => ['facebook', 'instagram'].includes(channel.type))
+                  .map((channel) => channel.id)}
               />
             )}
 

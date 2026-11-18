@@ -9,6 +9,7 @@ export type CommentEvent = {
   platform_created_at: string | null
   created_at: string
   status: string
+  is_hidden?: boolean
   failure_code: string | null
   failure_reason: string | null
   decision_trace?: {
@@ -25,7 +26,7 @@ export type CommentEvent = {
   }
   channel?: { id: number; type: string; page_name?: string | null; page_id?: string | null }
   bot?: { id: number; name: string } | null
-  reply?: { content: string; source: string; created_at: string } | null
+  reply?: { id?: number; content: string; source: string; is_ai?: boolean; created_at: string } | null
 }
 
 export type CommentsResponse = {
