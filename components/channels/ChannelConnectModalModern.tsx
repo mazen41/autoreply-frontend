@@ -5,18 +5,14 @@ import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import ChannelIcon from '../ui/ChannelIcon'
 import {
-  ArrowRight,
   ShieldCheck,
-  Sparkles,
   Search,
   CheckCircle2,
-  Lock,
-  ExternalLink,
-  Layers,
-  Store,
-  MessageSquare,
-  Mail,
   Zap,
+  Loader2,
+  ArrowRight,
+  ArrowUpRight,
+  Sparkles,
 } from 'lucide-react'
 import { ChannelOption, ALL_CHANNELS } from './ChannelConnectWizard'
 
@@ -37,105 +33,79 @@ export default function ChannelConnectModalModern({
 }: ChannelConnectModalModernProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedChannel, setSelectedChannel] = useState<ChannelOption | null>(initialChannel || null)
-  const [connecting, setConnecting] = useState(false)
+  const [connectingChannelId, setConnectingChannelId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const categories = [
-    { id: 'all', labelEn: 'All Channels', labelAr: 'كل القنوات' },
+    { id: 'all', labelEn: 'All Integrations', labelAr: 'كل التكاملات' },
     { id: 'messaging', labelEn: 'Messaging', labelAr: 'المراسلة' },
-    { id: 'social', labelEn: 'Social & Reviews', labelAr: 'التواصل الاجتماعي' },
+    { id: 'social', labelEn: 'Social', labelAr: 'التواصل الاجتماعي' },
     { id: 'ecommerce', labelEn: 'E-Commerce', labelAr: 'المتاجر الإلكترونية' },
     { id: 'email', labelEn: 'Email', labelAr: 'البريد' },
   ]
 
-  const localizedChannels: Record<string, { name: string; desc: string; requirements: string[] }> = {
+  const localizedChannels: Record<string, { name: string; desc: string; badge: string }> = {
     instagram: {
       name: isRTL ? 'إنستغرام' : 'Instagram Professional',
       desc: isRTL
-        ? 'ربط حساب Instagram Business عبر Meta لاستقبال الـ DMs والرد التلقائي على التعليقات.'
-        : 'Connect your Instagram professional account via Meta for direct messaging and automated comment replies.',
-      requirements: [
-        isRTL ? 'حساب أعمال إنستغرام أو منشئ محتوى' : 'Instagram Professional / Creator account',
-        isRTL ? 'صفحة فيسبوك مرتبطة بالحساب' : 'Linked Facebook Page with Admin access',
-        isRTL ? 'صلاحيات قراءة الرسائل وتوجيه الردود' : 'Direct Messages & Comments permissions',
-      ],
+        ? 'ربط حساب الأعمال عبر Meta لاستقبال الـ DMs والرد التلقائي على التعليقات.'
+        : 'Connect Instagram Business via Meta for direct messaging and automated comment replies.',
+      badge: 'Meta OAuth',
     },
     facebook: {
       name: isRTL ? 'فيسبوك ماسنجر' : 'Facebook Messenger',
       desc: isRTL
         ? 'ربط صفحات فيسبوك للرد على محادثات ماسنجر وإدارة التعليقات على المنشورات.'
-        : 'Connect your Facebook Pages to auto-reply to Messenger inquiries and feed comments.',
-      requirements: [
-        isRTL ? 'دور مسؤول (Admin) على الصفحة' : 'Admin role on the target Facebook Page',
-        isRTL ? 'ربط رسمي آمن عبر Meta OAuth' : 'Official Meta OAuth secure authorization',
-      ],
+        : 'Connect your Facebook Pages to auto-reply to Messenger inquiries and post comments.',
+      badge: 'Meta OAuth',
     },
     whatsapp: {
       name: isRTL ? 'واتساب للأعمال' : 'WhatsApp Business',
       desc: isRTL
-        ? 'ربط سحابي رسمي عبر WhatsApp Cloud API أو اتصالات QR لخدمة العملاء على مدار الساعة.'
-        : 'Connect via official Meta Cloud API or QR instance for high-volume customer communications.',
-      requirements: [
-        isRTL ? 'رقم هاتف مفعل للأعمال' : 'Dedicated phone number for WhatsApp Business',
-        isRTL ? 'حساب Meta Business Manager موثق' : 'Verified Meta Business Manager profile',
-      ],
+        ? 'ربط سحابي رسمي عبر WhatsApp Cloud API لخدمة العملاء المؤتمتة على مدار الساعة.'
+        : 'Official Meta Cloud API integration for 24/7 automated customer conversations.',
+      badge: 'Cloud API',
     },
     telegram: {
       name: isRTL ? 'تيليجرام' : 'Telegram',
       desc: isRTL
         ? 'ربط بوت تيليجرام من خلال رمز التوثيق BotFather لخدمة العملاء الفورية.'
-        : 'Connect any Telegram bot using its official BotFather token for automated customer care.',
-      requirements: [
-        isRTL ? 'بوت تم إنشاؤه عبر @BotFather' : 'Bot created via @BotFather',
-        isRTL ? 'رمز الوصول البرمجي (Bot Token)' : 'Valid Telegram HTTP API bot token',
-      ],
+        : 'Connect any Telegram bot using its official BotFather token for automated support.',
+      badge: 'Bot Token',
     },
     gmail: {
       name: isRTL ? 'Gmail وGoogle Workspace' : 'Gmail & Google Workspace',
       desc: isRTL
         ? 'مزامنة صناديق البريد والردود الذكية وتتبع رسائل الدعم عبر بروتوكول Google المعتمد.'
-        : 'Sync company mailboxes, draft smart replies, and manage customer tickets via secure Google OAuth.',
-      requirements: [
-        isRTL ? 'حساب Gmail أو Google Workspace نشط' : 'Active Gmail or Google Workspace account',
-        isRTL ? 'صلاحيات قراءة وإرسال رسائل البريد' : 'Read & send mailbox authorization',
-      ],
+        : 'Sync company mailboxes, draft smart replies, and manage customer tickets via Google OAuth.',
+      badge: 'Google OAuth',
     },
     salla: {
       name: isRTL ? 'متجر سلة' : 'Salla Store',
       desc: isRTL
-        ? 'تكامل مباشر مع منصة سلة لمزامنة كتالوج المنتجات وتتبع حالة الطلبات والمبيعات في المحادثات.'
-        : 'Direct OAuth integration with Salla to sync products, inventory, and real-time order lookups.',
-      requirements: [
-        isRTL ? 'حساب تاجر نشط في منصة سلة' : 'Active merchant account on Salla Partners',
-        isRTL ? 'تطبيق معتمد ومربوط بمتجرك' : 'Store app authorization permissions',
-      ],
+        ? 'تكامل مباشر مع منصة سلة لمزامنة كتالوج المنتجات وتتبع حالة الطلبات والمدن.'
+        : 'Direct OAuth integration with Salla to sync products, inventory, and instant orders.',
+      badge: 'Salla OAuth',
     },
     shopify: {
       name: isRTL ? 'شوبيفاي' : 'Shopify Store',
       desc: isRTL
-        ? 'مزامنة الكتالوج وقاعدة بيانات العملاء وسجلات الطلبات لتفعيل البيع الآلي عبر المحادثات.'
+        ? 'مزامنة الكتالوج وقاعدة بيانات العملاء وسجلات الطلبات لتفعيل البيع الآلي.'
         : 'Connect your Shopify store to enable product catalog lookups and automated order updates.',
-      requirements: [
-        isRTL ? 'اسم نطاق متجر شوبيفاي (myshopify.com)' : 'Your store domain (e.g. store.myshopify.com)',
-        isRTL ? 'صلاحيات تطبيق شوبيفاي المخصص' : 'Shopify app installation & webhook scopes',
-      ],
+      badge: 'Shopify Store',
     },
     woocommerce: {
       name: isRTL ? 'WooCommerce' : 'WooCommerce Store',
       desc: isRTL
-        ? 'ربط مشفر لمتاجر ووردبريس ومزامنة تفاصيل المنتجات والطلبات عبر WooCommerce REST API.'
-        : 'Encrypted bridge to your WordPress WooCommerce store via REST API for catalog synchronization.',
-      requirements: [
-        isRTL ? 'موقع ووردبريس ببروتوكول HTTPS' : 'WordPress site with valid SSL/HTTPS',
-        isRTL ? 'مفتاح المستهلك ومفتاح السر للـ API' : 'Consumer Key & Secret credentials',
-      ],
+        ? 'ربط مشفر لمتاجر ووردبريس ومزامنة تفاصيل المنتجات والطلبات عبر REST API.'
+        : 'Encrypted bridge to your WordPress WooCommerce store via REST API for catalog sync.',
+      badge: 'REST API',
     },
   }
 
   const filtered = ALL_CHANNELS.filter((ch) => {
     const q = searchQuery.toLowerCase().trim()
-    const meta = localizedChannels[ch.id] || { name: ch.name, desc: ch.description }
+    const meta = localizedChannels[ch.id] || { name: ch.name, desc: ch.description, badge: ch.category }
     const matchesSearch =
       !q ||
       meta.name.toLowerCase().includes(q) ||
@@ -144,17 +114,17 @@ export default function ChannelConnectModalModern({
     return matchesSearch && matchesCategory
   })
 
-  const handleContinue = async () => {
-    if (!selectedChannel) return
-    setConnecting(true)
+  const handleDirectConnect = async (channel: ChannelOption) => {
+    setConnectingChannelId(channel.id)
     setError(null)
     try {
-      await onContinueConnection(selectedChannel)
+      await onContinueConnection(channel)
+      // Note: for OAuth channels, window.location.href redirects immediately.
+      // For credential modals, onClose will hide this modal and show the specific credential modal.
       onClose()
     } catch (err: any) {
       setError(err?.message || (isRTL ? 'تعذر إتمام عملية الربط.' : 'Could not proceed with connection.'))
-    } finally {
-      setConnecting(false)
+      setConnectingChannelId(null)
     }
   }
 
@@ -174,8 +144,8 @@ export default function ChannelConnectModalModern({
             </h3>
             <p className="text-xs text-text-secondary mt-0.5">
               {isRTL
-                ? 'اختر المنصة التي ترغب في ربطها لبدء استقبال المحادثات والمزامنة.'
-                : 'Select a platform to authorize and start routing customer conversations.'}
+                ? 'انقر على أي منصة لبدء الربط المباشر الفوري دون خطوات إضافية.'
+                : 'Click any platform to start instant authorization without extra steps.'}
             </p>
           </div>
         </div>
@@ -187,22 +157,9 @@ export default function ChannelConnectModalModern({
             <span>{isRTL ? 'ربط آمن ومشفر عبر البروتوكولات الرسمية' : 'End-to-end encrypted official OAuth'}</span>
           </span>
 
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={onClose} disabled={connecting}>
-              {isRTL ? 'إلغاء' : 'Cancel'}
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleContinue}
-              disabled={!selectedChannel || connecting}
-              icon={<ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />}
-            >
-              {connecting
-                ? isRTL ? 'جارٍ الربط...' : 'Connecting…'
-                : isRTL ? 'متابعة الربط' : 'Authorize & Connect'}
-            </Button>
-          </div>
+          <Button variant="secondary" size="sm" onClick={onClose} disabled={Boolean(connectingChannelId)}>
+            {isRTL ? 'إغلاق' : 'Close'}
+          </Button>
         </div>
       }
     >
@@ -247,68 +204,73 @@ export default function ChannelConnectModalModern({
           </div>
         </div>
 
-        {/* Channels Grid Selection */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto p-1" data-lenis-prevent>
+        {/* Channels Grid Selection with Instant 1-Click Connect */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto p-1" data-lenis-prevent>
           {filtered.map((ch) => {
-            const isSelected = selectedChannel?.id === ch.id
+            const isConnectingThis = connectingChannelId === ch.id
             const meta = localizedChannels[ch.id] || {
               name: ch.name,
               desc: ch.description,
-              requirements: [],
+              badge: ch.category,
             }
 
             return (
-              <button
+              <div
                 key={ch.id}
-                type="button"
-                onClick={() => setSelectedChannel(ch)}
-                className={`group flex items-start gap-3.5 rounded-2xl border p-4 text-start transition-all relative ${
-                  isSelected
-                    ? 'border-brand bg-brand/[0.06] shadow-sm ring-1 ring-brand/40'
-                    : 'border-border/70 bg-surface/70 hover:border-brand/40 hover:bg-surface-elevated'
-                }`}
+                className="group flex flex-col justify-between rounded-2xl border border-border/70 bg-surface/80 p-4 transition-all hover:border-brand/50 hover:bg-surface-elevated hover:shadow-md"
               >
-                {/* Platform Icon */}
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-surface shadow-xs transition-transform group-hover:scale-105 mt-0.5">
-                  <ChannelIcon type={ch.id as any} size={24} />
-                </div>
-
-                {/* Details */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-sm font-bold text-text-primary">{meta.name}</h4>
-                    {isSelected && (
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white">
-                        <CheckCircle2 size={13} />
-                      </span>
-                    )}
+                <div>
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-surface shadow-xs transition-transform group-hover:scale-105">
+                        <ChannelIcon type={ch.id as any} size={24} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-text-primary">{meta.name}</h4>
+                        <span className="inline-block mt-0.5 rounded bg-surface-elevated border border-border/60 px-1.5 py-0.2 text-[9px] font-bold text-text-tertiary">
+                          {meta.badge}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <p className="mt-1 text-xs text-text-secondary leading-relaxed line-clamp-2">
+                  <p className="mt-2 text-xs text-text-secondary leading-relaxed line-clamp-2">
                     {meta.desc}
                   </p>
                 </div>
-              </button>
+
+                <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+                  <span className="text-[10px] text-text-tertiary flex items-center gap-1">
+                    <Sparkles size={11} className="text-brand" />
+                    <span>{isRTL ? 'ربط فوري مباشر' : 'Direct connect'}</span>
+                  </span>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={Boolean(connectingChannelId)}
+                    onClick={() => handleDirectConnect(ch)}
+                    icon={
+                      isConnectingThis ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <ArrowUpRight size={13} className={isRTL ? 'rotate-[-90deg]' : ''} />
+                      )
+                    }
+                  >
+                    {isConnectingThis
+                      ? isRTL
+                        ? 'جارٍ التحويل...'
+                        : 'Connecting…'
+                      : isRTL
+                      ? 'ربط الآن'
+                      : 'Connect'}
+                  </Button>
+                </div>
+              </div>
             )
           })}
         </div>
-
-        {/* Selected Channel Requirements Footer Preview */}
-        {selectedChannel && localizedChannels[selectedChannel.id]?.requirements?.length > 0 && (
-          <div className="rounded-xl border border-border/60 bg-surface p-3 text-xs space-y-1.5">
-            <span className="font-bold text-text-tertiary uppercase text-[10px] block">
-              {isRTL ? 'متطلبات الربط السريع:' : 'Quick Connection Checklist:'}
-            </span>
-            <div className="grid gap-1.5 sm:grid-cols-2">
-              {localizedChannels[selectedChannel.id].requirements.map((req, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 text-text-secondary text-[11px]">
-                  <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                  <span>{req}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </Modal>
   )
