@@ -93,6 +93,8 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
   const [ecommerceConnectionIds, setEcommerceConnectionIds] = useState<number[]>([])
   const [defaultEcommerceConnectionId, setDefaultEcommerceConnectionId] = useState<number | null>(null)
   const [channelCommerceDefaults, setChannelCommerceDefaults] = useState<Record<number, number | null>>({})
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const autoEnabledStoresRef = useRef(false)
 
   // ── Step 3: Knowledge Base ─────────────────────────────────────────────────
   const [knowledgeFiles, setKnowledgeFiles] = useState<KnowledgeFile[]>([])
@@ -322,6 +324,23 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
     }
   }, [mode])
 
+  // ── Enable a newly connected store once when nothing is enabled yet ───────
+  // Mirrors the backend rule in ChannelController::syncSallaChannelToBots, so a
+  // store connected after the bot was created shows up enabled. It runs only
+  // once, so a user who deselects every store is not overridden.
+  useEffect(() => {
+    if (autoEnabledStoresRef.current || loadingBot || loadingChannels) return
+    const connectedIds = channels
+      .filter((c) => !isCommunicationChannel(c) && c.status === 'connected')
+      .map((c) => c.id)
+    if (connectedIds.length === 0) return
+    autoEnabledStoresRef.current = true
+    if (!ecommerceConnectionIds.some((id) => connectedIds.includes(id))) {
+      setEcommerceConnectionIds(connectedIds)
+      setDefaultEcommerceConnectionId(connectedIds[0])
+    }
+  }, [loadingBot, loadingChannels, channels, ecommerceConnectionIds])
+
   // ── Load Knowledge Files from API ──────────────────────────────────────────
   useEffect(() => {
     let active = true
@@ -418,6 +437,7 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
     }
 
     setIsSubmitting(true)
+    setSaveError(null)
     setBotMood('thinking')
 
     try {
@@ -428,6 +448,24 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
         channels.filter((c) => isCommunicationChannel(c)).map((c) => c.id)
       )
       const chosenChannelIds = selectedChannelIds.filter((id) => validCommIds.has(id))
+
+      // Send only what the backend will accept: connected stores, a default that is
+      // enabled, and routes that point at an enabled store for a selected channel.
+      // Stale client state (deselected channels, disconnected stores) is dropped here
+      // instead of making the whole save fail with a 422.
+      const connectedStoreIds = new Set(
+        channels.filter((c) => !isCommunicationChannel(c) && c.status === 'connected').map((c) => c.id)
+      )
+      const enabledStoreIds = ecommerceConnectionIds.filter((id) => connectedStoreIds.has(id))
+      const defaultStoreId =
+        defaultEcommerceConnectionId !== null && enabledStoreIds.includes(defaultEcommerceConnectionId)
+          ? defaultEcommerceConnectionId
+          : (enabledStoreIds[0] ?? null)
+      const routing: Record<number, number | null> = {}
+      for (const channelId of chosenChannelIds) {
+        const route = channelCommerceDefaults[channelId] ?? null
+        routing[channelId] = route !== null && enabledStoreIds.includes(route) ? route : null
+      }
       const commentChannels = channels.filter(
         (c) => ['facebook', 'instagram'].includes(c.type) && chosenChannelIds.includes(c.id)
       )
@@ -449,11 +487,11 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
           keywords: escalationKeywords,
           intents: escalationIntents,
         },
-        ecommerce_connection_ids: ecommerceConnectionIds,
-        default_ecommerce_connection_id: defaultEcommerceConnectionId,
+        ecommerce_connection_ids: enabledStoreIds,
+        default_ecommerce_connection_id: defaultStoreId,
         channel_ids: chosenChannelIds,
         primary_channel_ids: primaryChannelIds.filter((id) => chosenChannelIds.includes(id)),
-        channel_store_routing: channelCommerceDefaults,
+        channel_store_routing: routing,
         knowledge_assignments: assignments.map((a) => ({
           file_id: a.file_id,
           channel_id: a.channel_id,
@@ -477,7 +515,11 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
       const result = await res.json().catch(() => ({}))
 
       if (!res.ok) {
+        // Laravel validation errors arrive as errors{field: [messages]}. Show those
+        // (e.g. "The selected store must be enabled") instead of the generic message.
+        const fieldErrors = result.errors ? Object.values(result.errors).flat().join(' ') : ''
         throw new Error(
+          fieldErrors ||
           result.message ||
             (isRTL
               ? mode === 'edit' ? 'تعذر حفظ تعديلات الوكيل' : 'تعذر إنشاء الوكيل'
@@ -527,7 +569,8 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
       setBotMood('celebrating')
       setIsSuccess(true)
     } catch (err: any) {
-      alert(
+      // Keep the wizard open with all entered data, and show the reason inline.
+      setSaveError(
         err.message ||
           (isRTL
             ? 'تعذر حفظ بيانات الوكيل. يرجى المحاولة مرة أخرى.'
@@ -599,6 +642,15 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
         {/* ── Left / Start Side: Interactive Configuration Forms ── */}
         <div className="flex-1 flex flex-col justify-between overflow-y-auto px-6 sm:px-12 py-8 lg:py-12 z-10 max-w-3xl">
           <div className="w-full">
+            {saveError && (
+              <div role="alert" className="mb-6 flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200">
+                <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                <div className="flex-1">{saveError}</div>
+                <button type="button" onClick={() => setSaveError(null)} className="text-xs font-semibold underline">
+                  {isRTL ? 'إغلاق' : 'Dismiss'}
+                </button>
+              </div>
+            )}
             {currentStep === 1 && (
               <Step01Identity
                 name={name}

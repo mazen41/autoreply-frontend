@@ -74,6 +74,12 @@ export default function Step02Channels({
 
   const changeStoreRoute = (channelId: number, storeId: number | null) => {
     setChannelCommerceDefaults((current) => ({ ...current, [channelId]: storeId }))
+    // A route can only point at an enabled store. Enable the chosen store so the
+    // save is accepted instead of failing with a 422.
+    if (storeId !== null && !ecommerceConnectionIds.includes(storeId)) {
+      setEcommerceConnectionIds([...ecommerceConnectionIds, storeId])
+      if (defaultEcommerceConnectionId === null) setDefaultEcommerceConnectionId(storeId)
+    }
   }
 
   return (
