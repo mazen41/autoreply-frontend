@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: 'security',
+  },
+
   // Use standard webpack instead of turbopack to avoid font issues
   // turbopack: {
   //   root: process.cwd(),
