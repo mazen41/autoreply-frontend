@@ -37,11 +37,11 @@ export default function Footer() {
               {isRTL ? 'شروط الخدمة' : 'Terms of Service'}
             </Link>
             <a
-              href="mailto:support@nazautoreply.com"
+              href="mailto:support@nazbiz.io"
               className="text-sm transition-colors hover:opacity-80"
               style={{ color: 'var(--text-secondary)' }}
             >
-              support@nazautoreply.com
+              support@nazbiz.io
             </a>
             {user && (
               <Link

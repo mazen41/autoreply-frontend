@@ -356,8 +356,10 @@ export default function ChannelCardModern({
                       {/* Sub-label: ID or sync info */}
                       <div className="flex items-center gap-2 text-[10px] text-text-tertiary mt-0.5">
                         {inst.page_id && (
-                          <span className="font-mono truncate max-w-[120px]">
-                            {inst.page_id}
+                          <span className="font-mono truncate max-w-[180px]" title={inst.page_id}>
+                            {inst.type === 'salla'
+                              ? `${isRTL ? 'معرّف المتجر:' : 'Store ID:'} ${inst.page_id}`
+                              : inst.page_id}
                           </span>
                         )}
                         {isEcommerce && inst.integration?.last_synced_at && (

@@ -979,10 +979,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
 
                   <div className="space-y-2.5">
-                    <a
-                      href="https://docs.nazbiz.io"
-                      target="_blank"
-                      rel="noreferrer"
+                    <Link
+                      href="/dashboard/help-center"
+                      onClick={() => setHelpModalOpen(false)}
                       className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-elevated/70 hover:bg-surface-card border border-border/70 transition-all group"
                     >
                       <div>
@@ -993,8 +992,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           {isRTL ? 'مراجع API والربط السحابي ومسارات العمل' : 'API references, Webhooks, and setup guides'}
                         </div>
                       </div>
-                      <ExternalLink size={14} className="text-text-tertiary group-hover:text-brand shrink-0" aria-hidden="true" />
-                    </a>
+                      <BookOpen size={14} className="text-text-tertiary group-hover:text-brand shrink-0" aria-hidden="true" />
+                    </Link>
 
                     <Link
                       href="/dashboard/channels"

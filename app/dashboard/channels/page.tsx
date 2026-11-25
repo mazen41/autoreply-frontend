@@ -532,9 +532,10 @@ export default function ChannelsPage() {
     setSyncingInstanceId(instance.id)
     try {
       const token = getToken()
-      const endpoint =
-        instance.type === 'shopify'
-          ? `/api/channels/shopify/${instance.id}/sync`
+      const endpoint = instance.type === 'shopify'
+        ? `/api/channels/shopify/${instance.id}/sync`
+        : instance.type === 'salla'
+          ? `/api/channels/salla/${instance.id}/sync`
           : `/api/channels/woocommerce/${instance.id}/sync`
       const res = await fetch(`${API}${endpoint}`, {
         method: 'POST',
