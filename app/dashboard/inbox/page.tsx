@@ -17,6 +17,7 @@ import HandoffTaskQueue from '../../../components/inbox/HandoffTaskQueue'
 import { MessageSquare, PanelRight, MoreHorizontal, Ban, Trash2, Archive, Clock, Bot } from 'lucide-react'
 import Select from '../../../components/ui/Select'
 import Inbox3DVisual from '../../../components/inbox/Inbox3DVisual'
+import { confirmInPage } from '../../../lib/dialogService'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -163,22 +164,26 @@ export default function InboxPage() {
 
   const handleBlockChange = useCallback(async (blocked: boolean) => {
     if (!selectedConv) return
-    if (blocked && !window.confirm(isRTL
-      ? 'هل تريد حظر جهة الاتصال هذه على واتساب؟ لن تتمكن من مراسلتك من هذا الرقم.'
-      : 'Block this WhatsApp contact? They will no longer be able to message this number.')) return
+    if (blocked && !await confirmInPage({
+      title: isRTL ? 'حظر جهة الاتصال' : 'Block contact',
+      message: isRTL ? 'لن تتمكن جهة الاتصال من مراسلتك على واتساب بعد الحظر.' : 'This contact will no longer be able to message you on WhatsApp.',
+      confirmLabel: isRTL ? 'حظر' : 'Block', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true,
+    })) return
     const success = await updateConversationBlockStatus(selectedConv.id, blocked)
-    if (!success) window.alert(isRTL ? 'تعذر تحديث حالة الحظر.' : 'Could not update the contact block status.')
+    if (!success) setFeedbackNotice(isRTL ? 'تعذر تحديث حالة الحظر.' : 'Could not update the contact block status.')
   }, [isRTL, selectedConv, updateConversationBlockStatus])
 
   const handleDeleteConversation = useCallback(async () => {
     if (!selectedConv || isDeletingConversation) return
-    if (!window.confirm(isRTL
-      ? 'حذف هذه المحادثة من صندوق الوارد؟ ستُحفظ السجلات ويمكن استعادتها من النظام.'
-      : 'Remove this conversation from the inbox? Its records are retained and can be recovered by an administrator.')) return
+    if (!await confirmInPage({
+      title: isRTL ? 'حذف المحادثة' : 'Delete conversation',
+      message: isRTL ? 'ستُزال المحادثة من صندوق الوارد، ويمكن للمسؤول استعادة السجلات.' : 'Remove this conversation from the inbox? An administrator can recover its retained records.',
+      confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true,
+    })) return
     setIsDeletingConversation(true)
     const success = await deleteConversation(selectedConv.id)
     setIsDeletingConversation(false)
-    if (!success) window.alert(isRTL ? 'تعذر حذف المحادثة.' : 'Could not delete the conversation.')
+    if (!success) setFeedbackNotice(isRTL ? 'تعذر حذف المحادثة.' : 'Could not delete the conversation.')
   }, [deleteConversation, isDeletingConversation, isRTL, selectedConv])
 
   const handleMarkHandled = useCallback(async () => {
@@ -186,17 +191,18 @@ export default function InboxPage() {
     setIsMarkingHandled(true)
     const success = await markHandled(selectedConv.id)
     setIsMarkingHandled(false)
-    if (!success) window.alert(isRTL ? 'تعذر إنهاء التصعيد. تأكد من إرسال رد يدوي أولاً.' : 'Could not complete the escalation. Make sure a manual reply was sent first.')
+    if (!success) setFeedbackNotice(isRTL ? 'تعذر استئناف البوت. أرسل ردًا يدويًا أولًا.' : 'Could not resume the bot. Send a manual reply first.')
+    else setFeedbackNotice(isRTL ? 'تم التعامل مع التصعيد واستؤنفت ردود البوت.' : 'Handoff marked handled and bot replies resumed.')
   }, [isMarkingHandled, isRTL, markHandled, selectedConv])
 
   const handleDeleteWhatsAppMessage = useCallback(async (message: ApiMessage) => {
-    if (!window.confirm(isRTL
-      ? 'حذف هذه الرسالة للجميع؟'
-      : 'Delete this message for everyone?')) return
+    if (!await confirmInPage({
+      title: isRTL ? 'حذف الرسالة' : 'Delete message',
+      message: isRTL ? 'هل تريد حذف هذه الرسالة للجميع؟' : 'Delete this message for everyone?',
+      confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true,
+    })) return
     const success = await deleteWhatsAppMessage(message.id)
-    if (!success) window.alert(isRTL
-      ? 'تعذر حذف الرسالة للجميع.'
-      : 'Could not delete this message for everyone.')
+    if (!success) setFeedbackNotice(isRTL ? 'تعذر حذف الرسالة للجميع.' : 'Could not delete this message for everyone.')
   }, [deleteWhatsAppMessage, isRTL])
 
   const handleCorrectAI = useCallback(async (

@@ -20,6 +20,7 @@ import Input from '../ui/Input'
 import Select from '../ui/Select'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../lib/businessContext'
 import { useLang } from '../../lib/LangContext'
+import { confirmInPage } from '../../lib/dialogService'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -379,8 +380,8 @@ export default function WorkflowBuilder({
     }
   }
 
-  const handleBack = () => {
-    if (dirty && !window.confirm('You have unsaved changes. Leave without saving?')) return
+  const handleBack = async () => {
+    if (dirty && !await confirmInPage({ title: 'Discard unsaved changes?', message: 'You have unsaved changes. Leave without saving?', confirmLabel: 'Leave', cancelLabel: 'Stay', destructive: true })) return
     onCancel()
   }
 

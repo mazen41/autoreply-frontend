@@ -332,6 +332,7 @@ export default function ChannelCardModern({
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-text-primary truncate">
                           {inst.page_name || inst.integration?.store_url || inst.page_id || `ID #${inst.id}`}
+                          {inst.type === 'salla' && inst.page_id && <span className="ml-1 font-mono text-[10px] font-medium text-text-tertiary">· {String(inst.page_id).slice(-5)}</span>}
                         </span>
                         {isAiActive && !isEcommerce && (
                           <span

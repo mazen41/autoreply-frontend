@@ -7,6 +7,7 @@ import Switch from '../../../components/ui/Switch'
 import { Select } from '../../../components/ui/Select'
 import RuleEditorModal from './RuleEditorModal'
 import { BotOption, CommentRule, RuleChannel } from './types'
+import { confirmInPage } from '../../../lib/dialogService'
 
 interface CommentRulesManagerProps {
   bots: BotOption[]
@@ -64,8 +65,8 @@ export default function CommentRulesManager({
     }
   }
 
-  const handleDeleteRule = (ruleId: string) => {
-    if (window.confirm(isRTL ? 'هل أنت متأكد من حذف هذه القاعدة؟' : 'Are you sure you want to delete this rule?')) {
+  const handleDeleteRule = async (ruleId: string) => {
+    if (await confirmInPage({ title: isRTL ? 'حذف القاعدة' : 'Delete rule', message: isRTL ? 'هل أنت متأكد من حذف هذه القاعدة؟' : 'Are you sure you want to delete this rule?', confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true })) {
       setRules((current) => current.filter((r) => r.id !== ruleId))
     }
   }

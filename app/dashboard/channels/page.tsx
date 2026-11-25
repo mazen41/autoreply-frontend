@@ -532,11 +532,14 @@ export default function ChannelsPage() {
     setSyncingInstanceId(instance.id)
     try {
       const token = getToken()
-      const endpoint = instance.type === 'shopify'
-        ? `/api/channels/shopify/${instance.id}/sync`
-        : instance.type === 'salla'
-          ? `/api/channels/salla/${instance.id}/sync`
-          : `/api/channels/woocommerce/${instance.id}/sync`
+      const syncRoutes: Record<string, string> = {
+        shopify: 'shopify',
+        salla: 'salla',
+        woocommerce: 'woocommerce',
+      }
+      const route = syncRoutes[(instance.type || '').toLowerCase()]
+      if (!route) throw new Error(`Sync is not supported for ${instance.type} channels.`)
+      const endpoint = `/api/channels/${route}/${instance.id}/sync`
       const res = await fetch(`${API}${endpoint}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', ...getBusinessHeaders() },

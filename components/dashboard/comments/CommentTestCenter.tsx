@@ -18,6 +18,7 @@ import Button from '../../../components/ui/Button'
 import { Select } from '../../../components/ui/Select'
 import RadioGroup from '../../../components/ui/Radio'
 import { BotOption, RuleChannel, Scenario, SimulationResult, SuiteResult } from './types'
+import { confirmInPage } from '../../../lib/dialogService'
 
 interface CommentTestCenterProps {
   bots: BotOption[]
@@ -507,11 +508,9 @@ export default function CommentTestCenter({
                         </Button>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (window.confirm(isRTL ? 'هل تريد حذف هذا السيناريو؟' : 'Delete this test scenario?')) {
-                              void deleteScenario(scenario.id)
-                            }
-                          }}
+                          onClick={() => void (async () => {
+                            if (await confirmInPage({ title: isRTL ? 'حذف السيناريو' : 'Delete scenario', message: isRTL ? 'هل تريد حذف هذا السيناريو؟' : 'Delete this test scenario?', confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true })) await deleteScenario(scenario.id)
+                          })()}
                           disabled={testBusy}
                           className="p-1 rounded text-text-secondary hover:text-error hover:bg-error/10 transition"
                           title={isRTL ? 'حذف' : 'Delete'}

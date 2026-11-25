@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { confirmInPage } from '../../lib/dialogService'
 import toast from 'react-hot-toast'
 import { AlertCircle, ArrowLeft, Settings2, X, Zap } from 'lucide-react'
 import Button from '../ui/Button'
@@ -293,8 +294,11 @@ export default function SequenceEditor({ sequenceId }: Props) {
     }
   }
 
-  const confirmLeave = (e: React.MouseEvent) => {
-    if (dirty && !window.confirm('You have unsaved changes. Leave without saving?')) e.preventDefault()
+  const confirmLeave = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!dirty) return
+    e.preventDefault()
+    const href = e.currentTarget.href
+    if (await confirmInPage({ title: 'Discard unsaved changes?', message: 'You have unsaved changes. Leave without saving?', confirmLabel: 'Leave', cancelLabel: 'Stay', destructive: true })) window.location.assign(href)
   }
 
   // ─── Render ──────────────────────────────────────────────────────────────────

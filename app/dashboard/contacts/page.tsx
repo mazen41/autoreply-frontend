@@ -8,6 +8,7 @@ import Button from '../../../components/ui/Button'
 import Select from '../../../components/ui/Select'
 import { getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
+import { confirmInPage } from '../../../lib/dialogService'
 
 const API = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api`
 type Contact = { id:number; name:string|null; phone:string|null; phone_is_displayable?:boolean; email:string|null; avatar:string|null; tags:string[]|null; lead_score:number; assigned_to:number|null; assignee?:{id:number;name:string}|null; custom_fields:Record<string, unknown>|null; conversations_count:number; conversations_max_last_message_at:string|null; created_at:string }
@@ -123,13 +124,13 @@ export default function ContactsPage() {
     catch(cause){setError(cause instanceof Error?cause.message:'Could not save note.')}finally{setSaving(false)}
   }
   async function mergeContact() {
-    if(!detail||!businessId||!mergeTargetId||!window.confirm(L('Merge this contact into the selected profile? Conversations, notes, and account identities move, and the action can be undone.','هل تريد دمج جهة الاتصال مع الملف المحدد؟ ستُنقل المحادثات والملاحظات والهويات ويمكن التراجع عن العملية.')))return
+    if(!detail||!businessId||!mergeTargetId||!await confirmInPage({title:L('Merge contacts','دمج جهات الاتصال'),message:L('Merge this contact into the selected profile? Conversations, notes, and account identities move, and the action can be undone.','هل تريد دمج جهة الاتصال مع الملف المحدد؟ ستُنقل المحادثات والملاحظات والهويات ويمكن التراجع عن العملية.'),confirmLabel:L('Merge','دمج'),cancelLabel:L('Cancel','إلغاء')}))return
     const targetId=Number(mergeTargetId);setSaving(true);setError('');setNotice('')
     try {const response=await fetch(`${API}/customers/${detail.customer.id}/merge`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({target_customer_id:targetId})});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.message||'Could not merge contacts.');setNotice(L('Contacts merged. The target profile contains an undo option.','تم دمج جهات الاتصال. يحتوي الملف الهدف على خيار للتراجع.'));await load(businessId,1);await loadDetail(targetId,targetId)}
     catch(cause){setError(cause instanceof Error?cause.message:'Could not merge contacts.')}finally{setSaving(false)}
   }
   async function undoMerge(mergeId:number) {
-    if(!detail||!businessId||!window.confirm(L('Undo this merge and restore the moved conversations, notes, and identities?','هل تريد التراجع عن الدمج وإعادة المحادثات والملاحظات والهويات المنقولة؟')))return
+    if(!detail||!businessId||!await confirmInPage({title:L('Undo contact merge','التراجع عن دمج جهات الاتصال'),message:L('Undo this merge and restore the moved conversations, notes, and identities?','هل تريد التراجع عن الدمج وإعادة المحادثات والملاحظات والهويات المنقولة؟'),confirmLabel:L('Undo merge','تراجع عن الدمج'),cancelLabel:L('Cancel','إلغاء')}))return
     setSaving(true);setError('');setNotice('')
     try {const response=await fetch(`${API}/customer-merges/${mergeId}/unmerge`,{method:'POST',headers});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.message||'Could not undo contact merge.');setNotice(L('Contact merge undone.','تم التراجع عن دمج جهة الاتصال.'));await load(businessId,page);await loadDetail(detail.customer.id,detail.customer.id)}
     catch(cause){setError(cause instanceof Error?cause.message:'Could not undo contact merge.')}finally{setSaving(false)}

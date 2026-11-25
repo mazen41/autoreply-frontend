@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '../../../lib/LangContext'
+import { confirmInPage } from '../../../lib/dialogService'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import WizardTopNav from './WizardTopNav'
 import WizardBottomNav from './WizardBottomNav'
@@ -397,14 +398,13 @@ export default function BotWizardStudio({ mode = 'create', botId }: BotWizardStu
     }
   }
 
-  const handleExit = () => {
+  const handleExit = async () => {
     if (dirty && !isSuccess) {
-      const confirmExit = window.confirm(
-        copy.exitConfirm ||
-          (isRTL
-            ? 'هل أنت متأكد من الخروج من معالج الوكيل؟ التغييرات غير المحفوظة ستُفقد.'
-            : 'Are you sure you want to exit? Unsaved progress will be lost.')
-      )
+      const confirmExit = await confirmInPage({
+        title: isRTL ? 'الخروج من معالج الوكيل؟' : 'Exit bot setup?',
+        message: copy.exitConfirm || (isRTL ? 'التغييرات غير المحفوظة ستُفقد.' : 'Unsaved progress will be lost.'),
+        confirmLabel: isRTL ? 'خروج' : 'Exit', cancelLabel: isRTL ? 'متابعة التحرير' : 'Keep editing', destructive: true,
+      })
       if (!confirmExit) return
     }
     router.push('/dashboard/bots')

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { AlertTriangle, CheckCircle2, Clock, ChevronDown, UserPlus } from 'lucide-react'
 import { getBusinessHeaders } from '../../lib/businessContext'
 import { useLang } from '../../lib/LangContext'
+import Modal from '../ui/Modal'
+import Button from '../ui/Button'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -35,6 +37,9 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
   const [assignees, setAssignees] = useState<Assignee[]>([])
   const [openAssignFor, setOpenAssignFor] = useState<number | null>(null)
   const [assigning, setAssigning] = useState<number | null>(null)
+  const [resolveTaskId, setResolveTaskId] = useState<number | null>(null)
+  const [resolutionNote, setResolutionNote] = useState('')
+  const [resolving, setResolving] = useState(false)
 
   useEffect(() => {
     fetch(`${API}/api/handoff-tasks/assignees`, {
@@ -89,19 +94,25 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
   useEffect(() => { void refresh() }, [refresh])
 
   const resolve = async (taskId: number) => {
+    setResolving(true)
     try {
-      const resolutionNote = window.prompt(L('Add a resolution note (optional):', 'أضف ملاحظة للحل (اختياري):'))
-      if (resolutionNote === null) return
       const response = await fetch(`${API}/api/handoff-tasks/${taskId}/resolve`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}`, Accept: 'application/json', ...getBusinessHeaders() },
         body: JSON.stringify(resolutionNote.trim() ? { resolution_note: resolutionNote.trim() } : {}),
       })
-      if (!response.ok) throw new Error('Could not resolve this handoff')
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body.message || L('Send a manual reply in the conversation before marking this handled.', 'أرسل ردًا يدويًا في المحادثة قبل إنهاء المتابعة.'))
+      }
+      setResolveTaskId(null)
+      setResolutionNote('')
       await refresh()
       onResolved?.()
     } catch {
       setError(true)
+    } finally {
+      setResolving(false)
     }
   }
 
@@ -112,6 +123,7 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
   const compact = Boolean(onSelect)
 
   return (
+    <>
     <section dir={isRTL ? 'rtl' : 'ltr'} className={`border-b border-warning/20 bg-warning/5 ${compact ? 'px-3 py-2' : 'rounded-2xl border p-4'}`} aria-label={L('Open handoff tasks', 'طلبات المتابعة المفتوحة')}>
       <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
         <AlertTriangle className="h-4 w-4 text-warning" />
@@ -165,12 +177,22 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
                   ))}
                 </div>
               )}
-              {onSelect && <button type="button" className="rounded p-1 text-text-tertiary hover:text-success" title={L('Resolve handoff', 'إنهاء طلب المتابعة')} onClick={() => void resolve(task.id)}><CheckCircle2 size={14} /></button>}
+              {onSelect && <button type="button" className="rounded p-1 text-text-tertiary hover:text-success" title={L('Resolve handoff', 'إنهاء طلب المتابعة')} onClick={() => { setResolutionNote(''); setResolveTaskId(task.id) }}><CheckCircle2 size={14} /></button>}
             </li>
           )
         })}
       </ul>
       )}
+      {error && <p role="alert" className="mt-2 text-[11px] text-warning">{L('Could not complete that action. Check the conversation and try again.', 'تعذر إتمام الإجراء. راجع المحادثة وحاول مرة أخرى.')}</p>}
     </section>
+    <Modal isOpen={resolveTaskId !== null} onClose={() => { if (!resolving) setResolveTaskId(null) }} title={L('Mark handoff handled', 'تأكيد التعامل مع المتابعة')} description={L('Send a manual reply in the conversation first. This resumes AI replies for that conversation.', 'أرسل ردًا يدويًا في المحادثة أولًا. بعد ذلك ستُستأنف الردود الآلية للمحادثة.')} footer={<>
+      <Button variant="outline" disabled={resolving} onClick={() => setResolveTaskId(null)}>{L('Cancel', 'إلغاء')}</Button>
+      <Button variant="primary" loading={resolving} disabled={resolveTaskId === null || resolving} onClick={() => resolveTaskId !== null && void resolve(resolveTaskId)}>{L('Mark handled', 'تم التعامل')}</Button>
+    </>}>
+      <label className="block space-y-2 text-sm font-medium text-text-secondary">{L('Resolution note (optional)', 'ملاحظة الحل (اختيارية)')}
+        <textarea value={resolutionNote} maxLength={2000} rows={3} onChange={(event) => setResolutionNote(event.target.value)} className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary outline-none focus:border-brand" />
+      </label>
+    </Modal>
+    </>
   )
 }

@@ -23,6 +23,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { ChannelInstance } from './ChannelCard'
+import { confirmInPage } from '../../lib/dialogService'
 
 export interface ChannelAccountDrawerProps {
   isOpen: boolean
@@ -54,7 +55,7 @@ export default function ChannelAccountDrawer({
   const isAiActive = instance.effective_ai_enabled ?? instance.ai_enabled
 
   const handleDisconnect = async () => {
-    if (!window.confirm(isRTL ? 'هل أنت متأكد من فصل هذا الحساب؟ ستتوقف أتمتة الردود.' : 'Disconnect this channel account? Automated replies and sync will stop.')) {
+    if (!await confirmInPage({ title: isRTL ? 'فصل القناة' : 'Disconnect channel', message: isRTL ? 'ستتوقف الردود الآلية والمزامنة لهذا الحساب.' : 'Automated replies and sync will stop for this account.', confirmLabel: isRTL ? 'فصل' : 'Disconnect', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true })) {
       return
     }
     setDisconnecting(true)

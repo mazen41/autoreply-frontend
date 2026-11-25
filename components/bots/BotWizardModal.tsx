@@ -9,6 +9,7 @@ import Checkbox from '../ui/Checkbox'
 import RadioGroup from '../ui/Radio'
 import Switch from '../ui/Switch'
 import { useLang } from '../../lib/LangContext'
+import { confirmInPage } from '../../lib/dialogService'
 import { translations } from '../../lib/i18n'
 import { getCommunicationChannels, isCommunicationChannel } from './botWizardUtils'
 import { getBusinessHeaders } from '../../lib/businessContext'
@@ -255,10 +256,10 @@ export default function BotWizardModal({ bot, onClose, onSaved }: BotWizardModal
   }, [markDirty])
   const touchInstructions = useCallback(() => setTouched((current) => ({ ...current, instructions: true })), [])
 
-  const requestClose = useCallback(() => {
-    if (dirty && !window.confirm(copy.confirmClose)) return
+  const requestClose = useCallback(async () => {
+    if (dirty && !await confirmInPage({ title: isRTL ? 'تجاهل التغييرات؟' : 'Discard changes?', message: copy.confirmClose, confirmLabel: isRTL ? 'خروج' : 'Discard', cancelLabel: isRTL ? 'استمرار' : 'Keep editing', destructive: true })) return
     onClose()
-  }, [copy.confirmClose, dirty, onClose])
+  }, [copy.confirmClose, dirty, isRTL, onClose])
 
   useEffect(() => {
     returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null

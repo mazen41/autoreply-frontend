@@ -9,6 +9,7 @@ import {
 import Link from 'next/link'
 import Button from '../../../../components/ui/Button'
 import PageHeader from '../../../../components/ui/PageHeader'
+import { confirmInPage } from '../../../../lib/dialogService'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -91,7 +92,7 @@ export default function QueueMonitorPage() {
   }, [fetchStats, L])
 
   const deleteJob = useCallback(async (jobId: number) => {
-    if (!window.confirm(L(`Permanently delete failed job #${jobId}?`, `هل تريد حذف المهمة الفاشلة رقم ${jobId} نهائياً؟`))) return
+    if (!await confirmInPage({ title: L('Delete failed job', 'حذف المهمة الفاشلة'), message: L(`Permanently delete failed job #${jobId}?`, `هل تريد حذف المهمة الفاشلة رقم ${jobId} نهائياً؟`), confirmLabel: L('Delete', 'حذف'), cancelLabel: L('Cancel', 'إلغاء'), destructive: true })) return
     setError('')
     try {
       const token = getToken()

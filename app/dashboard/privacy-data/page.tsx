@@ -8,6 +8,7 @@ import Button from '../../../components/ui/Button'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 import { Select } from '../../../components/ui/Select'
+import Modal from '../../../components/ui/Modal'
 
 const API = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api'
 const fieldClass = 'w-full rounded-xl border border-border bg-surface-elevated px-3.5 py-2.5 text-sm text-text-primary outline-none transition placeholder:text-text-tertiary focus:border-brand focus:ring-2 focus:ring-brand/15'
@@ -33,6 +34,7 @@ export default function PrivacyDataPage() {
   const [loading, setLoading] = useState(true)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [eraseConfirmationOpen, setEraseConfirmationOpen] = useState(false)
 
   const headers = useCallback(() => ({ Authorization: `Bearer ${token()}`, Accept: 'application/json', 'Content-Type': 'application/json', ...getBusinessHeaders() }), [])
 
@@ -114,7 +116,8 @@ export default function PrivacyDataPage() {
   async function eraseCustomer() {
     if (!businessId || !selectedCustomer) return
     const customer = customers.find((item) => String(item.id) === selectedCustomer)
-    if (!customer || !window.confirm(isRTL ? `هل تريد حذف محادثات ${customer.name || 'هذا العميل'} ورسائله ووسائطه وموافقاته وملاحظاته وملفه نهائيًا؟ سيبقى سجل منع لإيقاف استيراده مجددًا للتسويق.` : `Permanently delete ${customer.name || 'this customer'}'s conversations, messages, media, consents, notes, and customer profile? A suppression record will remain to prevent marketing re-import.`)) return
+    if (!customer) return
+    setEraseConfirmationOpen(false)
     setBusy(true); setError(''); setNotice('')
     try {
       const response = await fetch(`${API}/businesses/${businessId}/customers/${selectedCustomer}/data`, { method: 'DELETE', headers: headers(), body: JSON.stringify({ confirm: true }) })
@@ -149,12 +152,16 @@ export default function PrivacyDataPage() {
     <Card><CardContent className="space-y-4 p-5">
       <div className="flex items-center gap-3"><Trash2 className="text-error" /><div><h2 className="font-semibold">{t('Erase customer data', 'حذف بيانات العميل')}</h2><p className="text-sm text-muted-foreground">{t('Deletes the customer profile, notes, conversations, messages, media, and consent records. Synced order records remain with customer details anonymized; a suppression record remains.', 'يحذف ملف العميل والملاحظات والمحادثات والرسائل والوسائط وسجلات الموافقة. تبقى الطلبات المتزامنة بعد إزالة بيانات العميل الشخصية، ويُحتفظ بسجل منع التواصل.')}</p></div></div>
       <div className="flex flex-col gap-3 sm:flex-row"><input className={`${fieldClass} min-w-0 flex-1`} placeholder={t('Search name, email, or phone', 'ابحث بالاسم أو البريد أو الهاتف')} value={customerSearch} onChange={(e) => setCustomerSearch(e.target.value)} /><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy || loading}>{t('Search customers', 'بحث عن العملاء')}</Button></div>
-      <div className="flex flex-col gap-3 sm:flex-row"><Select dir={isRTL ? 'rtl' : 'ltr'} className="min-w-0 flex-1" label={t('Customer', 'العميل')} value={selectedCustomer} onValueChange={setSelectedCustomer} options={[{ value: '', label: t('Select a customer', 'اختر عميلًا') }, ...customers.map((customer) => ({ value: String(customer.id), label: `${customer.name || t('Unnamed', 'بدون اسم')}${customer.email ? ` · ${customer.email}` : ''}${customer.phone ? ` · ${customer.phone}` : ''}` }))]} /><Button variant="destructive" onClick={eraseCustomer} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
+      <div className="flex flex-col gap-3 sm:flex-row"><Select dir={isRTL ? 'rtl' : 'ltr'} className="min-w-0 flex-1" label={t('Customer', 'العميل')} value={selectedCustomer} onValueChange={setSelectedCustomer} options={[{ value: '', label: t('Select a customer', 'اختر عميلًا') }, ...customers.map((customer) => ({ value: String(customer.id), label: `${customer.name || t('Unnamed', 'بدون اسم')}${customer.email ? ` · ${customer.email}` : ''}${customer.phone ? ` · ${customer.phone}` : ''}` }))]} /><Button variant="destructive" onClick={() => setEraseConfirmationOpen(true)} disabled={busy || !selectedCustomer}>{t('Erase data', 'حذف البيانات')}</Button></div>
     </CardContent></Card>
 
     <Card><CardContent className="space-y-4 p-5">
       <div className="flex items-center justify-between"><h2 className="font-semibold">{t('Data rights history', 'سجل طلبات البيانات')}</h2><Button variant="outline" onClick={() => businessId && load(businessId, customerSearch)} disabled={busy || loading}><RefreshCw size={15} /> {t('Refresh', 'تحديث')}</Button></div>
       {loading ? <p role="status" className="py-4 text-sm text-text-tertiary">{t('Loading privacy data…', 'جارٍ تحميل بيانات الخصوصية…')}</p> : requests.length === 0 ? <p className="text-sm text-muted-foreground">{t('No requests yet.', 'لا توجد طلبات بعد.')}</p> : <div className="divide-y">{requests.map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"><div><span className="font-medium capitalize">{item.type === 'erasure' ? t('Customer erasure', 'حذف عميل') : t('Data export', 'تصدير بيانات')}</span><span className="ms-2 text-muted-foreground">#{item.id} · {item.status} · {new Date(item.created_at).toLocaleString()}</span>{item.receipt && <pre className="mt-2 max-w-xl overflow-auto rounded bg-muted p-2 text-xs">{JSON.stringify(item.receipt, null, 2)}</pre>}</div>{item.type === 'export' && item.status === 'completed' && item.archive_expires_at && new Date(item.archive_expires_at) > new Date() && <Button variant="outline" onClick={() => downloadExport(item.id)} disabled={busy}><Download size={15} /> {t('Download', 'تنزيل')}</Button>}</div>)}</div>}
     </CardContent></Card>
+    <Modal isOpen={eraseConfirmationOpen} onClose={() => { if (!busy) setEraseConfirmationOpen(false) }} title={t('Confirm permanent erasure', 'تأكيد الحذف النهائي')} description={t('This permanently removes the selected customer profile and related conversations, messages, media, consents, and notes. A suppression record remains; synced orders are retained with personal details anonymized.', 'سيؤدي هذا إلى حذف ملف العميل ومحادثاته ورسائله ووسائطه وموافقاته وملاحظاته نهائيًا. سيبقى سجل منع، وتُحفظ الطلبات المتزامنة بعد إخفاء البيانات الشخصية.')}
+      footer={<><Button variant="outline" onClick={() => setEraseConfirmationOpen(false)} disabled={busy}>{t('Cancel', 'إلغاء')}</Button><Button variant="destructive" onClick={() => void eraseCustomer()} loading={busy} disabled={busy || !selectedCustomer}>{t('Erase permanently', 'حذف نهائيًا')}</Button></>}>
+      <p className="text-sm text-text-secondary">{t('Selected customer:', 'العميل المحدد:')} <strong className="text-text-primary">{customers.find((item) => String(item.id) === selectedCustomer)?.name || t('Unnamed customer', 'عميل بدون اسم')}</strong></p>
+    </Modal>
   </main>
 }

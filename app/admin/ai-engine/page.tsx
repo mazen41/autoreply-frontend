@@ -5,6 +5,7 @@ import { Activity, Bot, Coins, RefreshCw, Save, Search, Settings2, Pencil, Ban, 
 import { useLang } from '../../../lib/LangContext'
 import Select from '../../../components/ui/Select'
 import { AdminShell, Badge, Button, Field, PageHeader, Panel, SkeletonRows, inputClass } from '../../../components/admin/AdminUI'
+import { confirmInPage, promptInPage } from '../../../lib/dialogService'
 
 const API = process.env.NEXT_PUBLIC_API_URL
 type Model = { id: number; provider: string; model_key: string; display_name: string; input_price_per_million: string; output_price_per_million: string; cached_input_price_per_million?: string | null; image_price_per_unit?: string | null; audio_price_per_minute?: string | null; audio_output_price_per_million_chars?: string | null; max_context_tokens?: number | null; max_output_tokens?: number | null; pricing_version: string; is_active: boolean; capabilities?: string[] }
@@ -85,17 +86,17 @@ export default function AiEngineAdminPage() {
     catch (cause) { setError(cause instanceof Error ? cause.message : L('Could not load business usage.', 'تعذر تحميل استخدام النشاط.')) }
   }
 
-  const reconcile = (row: Reconciliation, resolution: 'release' | 'settle') => {
-    if (resolution === 'release' && !window.confirm(L('Confirm the provider did not bill this request and release its reserved credits?', 'أكد أن المزوّد لم يخصم تكلفة هذا الطلب وأنه يمكن تحرير الرصيد المحجوز؟'))) return
+  const reconcile = async (row: Reconciliation, resolution: 'release' | 'settle') => {
+    if (resolution === 'release' && !await confirmInPage({ title: L('Release reserved credits?', 'تحرير الرصيد المحجوز؟'), message: L('Confirm the provider did not bill this request and release its reserved credits?', 'أكد أن المزوّد لم يخصم تكلفة هذا الطلب وأنه يمكن تحرير الرصيد المحجوز؟'), confirmLabel: L('Release credits', 'تحرير الرصيد'), cancelLabel: L('Cancel', 'إلغاء'), destructive: true })) return
     const body: Record<string, unknown> = { resolution }
     if (resolution === 'settle') {
-      const input = window.prompt(L('Enter provider-reported input tokens (0 if not applicable).', 'أدخل عدد رموز الإدخال حسب تقرير المزوّد (0 إن لم ينطبق).'), '0')
+      const input = await promptInPage({ title: L('Input tokens', 'رموز الإدخال'), message: L('Enter provider-reported input tokens (0 if not applicable).', 'أدخل عدد رموز الإدخال حسب تقرير المزوّد (0 إن لم ينطبق).'), initialValue: '0', confirmLabel: L('Continue', 'متابعة'), cancelLabel: L('Cancel', 'إلغاء') })
       if (input === null || !/^\d+$/.test(input)) return
-      const output = window.prompt(L('Enter provider-reported output tokens (0 if not applicable).', 'أدخل عدد رموز الإخراج حسب تقرير المزوّد (0 إن لم ينطبق).'), '0')
+      const output = await promptInPage({ title: L('Output tokens', 'رموز الإخراج'), message: L('Enter provider-reported output tokens (0 if not applicable).', 'أدخل عدد رموز الإخراج حسب تقرير المزوّد (0 إن لم ينطبق).'), initialValue: '0', confirmLabel: L('Save', 'حفظ'), cancelLabel: L('Cancel', 'إلغاء') })
       if (output === null || !/^\d+$/.test(output)) return
       body.input_tokens = Number(input); body.output_tokens = Number(output)
     }
-    void save(() => request(`/usage/${row.id}/reconcile`, { method: 'POST', body: JSON.stringify(body) }))
+    await save(() => request(`/usage/${row.id}/reconcile`, { method: 'POST', body: JSON.stringify(body) }))
   }
 
   if (loading) return <AdminShell><PageHeader title={L('AI Engine', 'محرك الذكاء الاصطناعي')} description={L('Model routing, credit economics, and usage oversight.', 'إدارة توجيه النماذج وتكاليف الرصيد والاستخدام.')} /><SkeletonRows rows={7} /></AdminShell>

@@ -9,6 +9,7 @@ import { AuthProvider } from '../lib/AuthContext'
 import { Space_Grotesk, Cairo } from 'next/font/google'
 import FooterWrapper from '../components/FooterWrapper'
 import InternalAnalytics from '../components/analytics/InternalAnalytics'
+import InPageDialogProvider from '../components/ui/InPageDialogProvider'
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -117,12 +118,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider>
           <LangProvider initialLang={initialLang}>
             <AuthProvider>
-              <div className="relative z-10 flex min-h-screen flex-col">
-                <div className="flex-1">
-                  {children}
+              <InPageDialogProvider>
+                <div className="relative z-10 flex min-h-screen flex-col">
+                  <div className="flex-1">
+                    {children}
+                  </div>
+                  <FooterWrapper />
                 </div>
-                <FooterWrapper />
-              </div>
+              </InPageDialogProvider>
             </AuthProvider>
           </LangProvider>
         </ThemeProvider>

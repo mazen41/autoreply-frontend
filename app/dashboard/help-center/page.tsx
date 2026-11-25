@@ -9,6 +9,7 @@ import { Card, CardContent } from '../../../components/ui/Card'
 import { Select } from '../../../components/ui/Select'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
+import { confirmInPage } from '../../../lib/dialogService'
 
 const API = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api`
 type Article = { id: number; title: string; slug: string; category: string; excerpt: string | null; content: string; status: 'draft' | 'published'; published_at: string | null }
@@ -75,7 +76,7 @@ export default function HelpCenterAdminPage() {
   }
 
   async function removeArticle(article: Article) {
-    if (!window.confirm(L(`Delete “${article.title}”?`, `هل تريد حذف «${article.title}»؟`))) return
+    if (!await confirmInPage({ title: L('Delete article', 'حذف المقال'), message: L(`Delete “${article.title}”?`, `هل تريد حذف «${article.title}»؟`), confirmLabel: L('Delete', 'حذف'), cancelLabel: L('Cancel', 'إلغاء'), destructive: true })) return
     setBusy(true); setError('')
     try {
       const response = await fetch(`${API}/help-center/articles/${article.id}`, { method: 'DELETE', headers: headers() })

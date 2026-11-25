@@ -158,15 +158,16 @@ export default function ConversationHeader({
         </span>
       )}
 
-      {isHumanHandling && (
+      {requires_human && (
         <button
           type="button"
           onClick={onMarkHandled}
-          disabled={isMarkingHandled}
+          disabled={isMarkingHandled || !isHumanHandling}
+          title={!isHumanHandling ? L('Send a manual reply before resuming the bot', 'أرسل ردًا يدويًا قبل استئناف البوت') : L('Resume bot replies and mark this handoff handled', 'استأنف ردود البوت وسجّل التعامل مع المتابعة')}
           className="flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-brand px-2.5 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
         >
           {isMarkingHandled ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle size={12} />}
-          {L('Handled', 'تمت المعالجة')}
+          {L('Resume bot', 'استئناف البوت')}
         </button>
       )}
 

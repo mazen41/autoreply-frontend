@@ -14,6 +14,7 @@ import BotWizardModal from '../../../components/bots/BotWizardModal'
 import { GsapStaggerGroup } from '../../../components/dashboard/DashboardGsapEffects'
 import { getBusinessHeaders } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
+import { confirmInPage } from '../../../lib/dialogService'
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -109,9 +110,7 @@ export default function BotsPage() {
   }
 
   const deleteBot = async (bot: BotRecord) => {
-    const confirmed = window.confirm(isRTL
-      ? `هل تريد حذف الوكيل "${bot.name}"؟ لا يمكن التراجع عن هذا الإجراء.`
-      : `Delete "${bot.name}"? This action cannot be undone.`)
+    const confirmed = await confirmInPage({ title: isRTL ? 'حذف الوكيل' : 'Delete bot', message: isRTL ? `هل تريد حذف الوكيل "${bot.name}"؟ لا يمكن التراجع عن هذا الإجراء.` : `Delete "${bot.name}"? This action cannot be undone.`, confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true })
     if (!confirmed) return
 
     setBusyBotId(bot.id)

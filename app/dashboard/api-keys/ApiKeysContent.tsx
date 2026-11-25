@@ -63,6 +63,7 @@ export default function ApiKeysContent() {
   const [showModal, setShowModal] = useState(false)
   const [newKey, setNewKey] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<number | string | null>(null)
+  const [revokeKeyId, setRevokeKeyId] = useState<number | null>(null)
 
   // Form state
   const [form, setForm] = useState({
@@ -147,8 +148,6 @@ export default function ApiKeysContent() {
   }
 
   const handleRevoke = async (keyId: number) => {
-    if (!confirm(L('Are you sure you want to permanently revoke this API key? External systems using it will immediately cease working.', 'هل تريد إلغاء مفتاح API نهائيًا؟ ستتوقف الأنظمة الخارجية التي تستخدمه عن العمل فورًا.'))) return
-
     try {
       const token = decodeURIComponent(document.cookie.match(/(?:^|;\s*)naz_token=([^;]*)/)?.[1] || '')
       if (!token) throw new Error(L('Your session expired. Sign in again.', 'انتهت جلستك. سجّل الدخول مجددًا.'))
@@ -158,6 +157,7 @@ export default function ApiKeysContent() {
         })
       if (!res.ok) throw new Error(L('Revoke request failed.', 'تعذر إلغاء المفتاح.'))
       setApiKeys(prev => prev.filter(k => k.id !== keyId))
+      setRevokeKeyId(null)
       toast.success(L('API Key revoked', 'تم إلغاء مفتاح API'))
     } catch {
       toast.error(L('Failed to revoke API key', 'تعذر إلغاء مفتاح API'))
@@ -374,7 +374,7 @@ export default function ApiKeysContent() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRevoke(apiKey.id)}
+                        onClick={() => setRevokeKeyId(apiKey.id)}
                         className="text-text-tertiary hover:text-error hover:bg-error/10"
                         icon={<Trash2 size={14} />}
                       >
@@ -517,6 +517,18 @@ export default function ApiKeysContent() {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal
+        isOpen={revokeKeyId !== null}
+        onClose={() => setRevokeKeyId(null)}
+        title={L('Revoke API key?', 'إلغاء مفتاح API؟')}
+        description={L('External systems using this key will immediately stop working. This action cannot be undone.', 'ستتوقف الأنظمة الخارجية التي تستخدم هذا المفتاح فورًا. لا يمكن التراجع عن هذا الإجراء.')}
+        footer={<>
+          <Button variant="outline" onClick={() => setRevokeKeyId(null)}>{L('Cancel', 'إلغاء')}</Button>
+          <Button variant="destructive" onClick={() => revokeKeyId !== null && void handleRevoke(revokeKeyId)} disabled={revokeKeyId === null}>{L('Revoke key', 'إلغاء المفتاح')}</Button>
+        </>}
+      >
+        <p className="text-sm text-text-secondary">{apiKeys.find((item) => item.id === revokeKeyId)?.name}</p>
       </Modal>
     </div>
   )

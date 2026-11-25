@@ -7,6 +7,7 @@ import { Download, Filter, Shield, Trash2, UserCog, Users } from 'lucide-react'
 import { AdminShell, Badge, Button, PageHeader, Panel, SkeletonRows, inputClass } from '../../../components/admin/AdminUI'
 import { useLang } from '../../../lib/LangContext'
 import Select from '../../../components/ui/Select'
+import { confirmInPage } from '../../../lib/dialogService'
 
 type User = {
   id: number
@@ -55,7 +56,7 @@ export default function AdminUsersPage() {
   }
 
   const handleToggleAdmin = async (user: User) => {
-    const ok = window.confirm(user.is_admin ? (isRTL ? `هل تريد إلغاء صلاحيات المشرف عن ${user.name}؟` : `Revoke admin access from ${user.name}?`) : (isRTL ? `هل تريد ترقية ${user.name} إلى مشرف؟` : `Promote ${user.name} to admin?`))
+    const ok = await confirmInPage({ title: isRTL ? 'تأكيد تغيير الصلاحيات' : 'Confirm permission change', message: user.is_admin ? (isRTL ? `هل تريد إلغاء صلاحيات المشرف عن ${user.name}؟` : `Revoke admin access from ${user.name}?`) : (isRTL ? `هل تريد ترقية ${user.name} إلى مشرف؟` : `Promote ${user.name} to admin?`), confirmLabel: isRTL ? 'تأكيد' : 'Confirm', cancelLabel: isRTL ? 'إلغاء' : 'Cancel' })
     if (!ok) return
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}/toggle-admin`, { method: 'POST', headers: { Authorization: `Bearer ${token()}` } })
@@ -72,7 +73,7 @@ export default function AdminUsersPage() {
   }
 
   const handleDeleteUser = async (user: User) => {
-    if (!window.confirm(isRTL ? `هل تريد حذف المستخدم ${user.name} نهائياً؟` : `Permanently delete ${user.name}?`)) return
+    if (!await confirmInPage({ title: isRTL ? 'حذف المستخدم' : 'Delete user', message: isRTL ? `هل تريد حذف المستخدم ${user.name} نهائياً؟` : `Permanently delete ${user.name}?`, confirmLabel: isRTL ? 'حذف' : 'Delete', cancelLabel: isRTL ? 'إلغاء' : 'Cancel', destructive: true })) return
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token()}` } })
       if (!response.ok) {

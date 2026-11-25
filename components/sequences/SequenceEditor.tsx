@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { AlertCircle, ArrowLeft, Settings2, X, Zap } from 'lucide-react'
 import { useLang } from '../../lib/LangContext'
+import { confirmInPage } from '../../lib/dialogService'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -303,8 +304,11 @@ export default function SequenceEditor({ sequenceId }: Props) {
     }
   }
 
-  const confirmLeave = (e: React.MouseEvent) => {
-    if (dirty && !window.confirm(L('You have unsaved changes. Leave without saving?', 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟'))) e.preventDefault()
+  const confirmLeave = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!dirty) return
+    e.preventDefault()
+    const href = e.currentTarget.href
+    if (await confirmInPage({ title: L('Discard unsaved changes?', 'تجاهل التغييرات غير المحفوظة؟'), message: L('You have unsaved changes. Leave without saving?', 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟'), confirmLabel: L('Leave', 'مغادرة'), cancelLabel: L('Stay', 'البقاء'), destructive: true })) window.location.assign(href)
   }
 
   // ─── Render ──────────────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import Button from '../../../components/ui/Button'
 import { Select } from '../../../components/ui/Select'
 import Checkbox from '../../../components/ui/Checkbox'
 import { Card, CardContent } from '../../../components/ui/Card'
+import Modal from '../../../components/ui/Modal'
 import { getBusinessHeaders, getSelectedBusinessId } from '../../../lib/businessContext'
 import { useLang } from '../../../lib/LangContext'
 
@@ -41,6 +42,8 @@ export default function HandoffsPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [busyTask, setBusyTask] = useState<number | null>(null)
+  const [resolveTaskId, setResolveTaskId] = useState<number | null>(null)
+  const [resolutionNote, setResolutionNote] = useState('')
   const [error, setError] = useState('')
   const loadGeneration = useRef(0)
   const memberGeneration = useRef(0)
@@ -113,9 +116,9 @@ export default function HandoffsPage() {
     finally { setBusyTask(null) }
   }
 
-  async function resolve(taskId: number) {
-    const resolutionNote = window.prompt(L('Resolution note (optional):', 'ملاحظة الحل (اختيارية):'))
-    if (resolutionNote === null) return
+  async function resolve() {
+    if (resolveTaskId === null) return
+    const taskId = resolveTaskId
     setBusyTask(taskId); setError('')
     try {
       const response = await fetch(`${API}/handoff-tasks/${taskId}/resolve`, {
@@ -123,6 +126,8 @@ export default function HandoffsPage() {
       })
       const body = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(body.message || L('Could not resolve this task.', 'تعذر إغلاق هذه المهمة.'))
+      setResolveTaskId(null)
+      setResolutionNote('')
       await load()
     } catch (cause) { setError(cause instanceof Error ? cause.message : L('Could not resolve this task.', 'تعذر إغلاق هذه المهمة.')) }
     finally { setBusyTask(null) }
@@ -145,7 +150,7 @@ export default function HandoffsPage() {
       return <Card key={task.id} className="transition-colors hover:border-border-hover"><CardContent className="space-y-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-semibold text-text-primary">{name}</h2><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${isOverdue ? 'bg-error/10 text-error' : task.status === 'resolved' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>{isOverdue ? L('Overdue', 'متأخرة') : L(task.status, task.status === 'open' ? 'مفتوحة' : 'تم الحل')}</span><span className="text-xs text-text-tertiary">{conversation?.channel?.type || L('Channel', 'القناة')} · #{task.id}</span></div><p className="mt-2 text-sm text-text-secondary">{task.reason.replaceAll('_', ' ')}</p><Link href={`/dashboard/inbox?conversation=${conversation?.id || ''}`} className="mt-2 inline-flex items-center rounded-md text-xs font-medium text-brand hover:underline">{L('Open conversation', 'فتح المحادثة')}</Link></div>
-          {task.status === 'open' && <Button variant="secondary" size="sm" onClick={() => void resolve(task.id)} loading={busyTask === task.id} disabled={busyTask !== null}><CheckCircle2 size={15} /> {L('Resolve', 'تم الحل')}</Button>}
+          {task.status === 'open' && <Button variant="secondary" size="sm" onClick={() => { setResolutionNote(''); setResolveTaskId(task.id) }} disabled={busyTask !== null}><CheckCircle2 size={15} /> {L('Mark handled', 'تم التعامل معها')}</Button>}
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <Select dir={isRTL ? 'rtl' : 'ltr'} label={L('Priority', 'الأولوية')} className="min-w-32" value={task.priority} disabled={task.status !== 'open' || busyTask !== null} onValueChange={(value) => void updateTask(task.id, { priority: value })} options={[{ value: 'urgent', label: L('Urgent', 'عاجلة') }, { value: 'high', label: L('High', 'مرتفعة') }, { value: 'normal', label: L('Normal', 'عادية') }, { value: 'low', label: L('Low', 'منخفضة') }]} />
@@ -158,5 +163,20 @@ export default function HandoffsPage() {
       </CardContent></Card>
     })}</div>}
     <p className="text-xs text-text-tertiary">{L('Showing up to 50 tasks.', 'يتم عرض ما يصل إلى ٥٠ مهمة.')} <Link href="/dashboard/inbox" className="text-brand hover:underline">{L('Return to inbox', 'العودة إلى صندوق الوارد')}</Link></p>
+    <Modal
+      isOpen={resolveTaskId !== null}
+      onClose={() => { if (busyTask === null) setResolveTaskId(null) }}
+      title={L('Mark handoff handled', 'تأكيد التعامل مع المتابعة')}
+      description={L('Send a manual reply in the conversation first. Marking it handled resumes AI replies and records one completed human handoff.', 'أرسل ردًا يدويًا في المحادثة أولًا. بعد التأكيد ستعود الردود الآلية ويُسجل التعامل مع متابعة واحدة.')}
+      footer={<>
+        <Button variant="outline" onClick={() => setResolveTaskId(null)} disabled={busyTask !== null}>{L('Cancel', 'إلغاء')}</Button>
+        <Button variant="primary" onClick={() => void resolve()} loading={resolveTaskId !== null && busyTask === resolveTaskId} disabled={resolveTaskId === null || busyTask !== null}>{L('Mark handled', 'تأكيد')}</Button>
+      </>}
+    >
+      <label className="block space-y-2 text-sm font-medium text-text-secondary">
+        {L('Resolution note (optional)', 'ملاحظة الحل (اختيارية)')}
+        <textarea value={resolutionNote} onChange={(event) => setResolutionNote(event.target.value)} maxLength={2000} rows={4} className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text-primary outline-none placeholder:text-text-tertiary focus:border-brand" placeholder={L('Add a short internal note', 'أضف ملاحظة داخلية مختصرة')} />
+      </label>
+    </Modal>
   </main>
 }
