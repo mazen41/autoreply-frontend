@@ -48,20 +48,20 @@ export default function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           {/* Brand Info */}
           <div>
-            <Link href="/" className="flex items-center gap-2.5 mb-4" aria-label="Naz AutoReply">
+            <Link href="/" className="flex items-center gap-2.5 mb-4" aria-label="Nazeer Business">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand/30 bg-surface-elevated shadow-sm">
                 <Image
                   src="/icons/logo_icon.png"
-                  alt="Naz AutoReply"
+                  alt="Nazeer Business"
                   width={26}
                   height={26}
                   className="object-contain"
                 />
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-lg font-black tracking-tight text-text-primary">Naz</span>
+                <span className="text-lg font-black tracking-tight text-text-primary">Nazeer Business</span>
                 <span className="rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-black uppercase text-brand">
-                  AutoReply
+                  NazBiz
                 </span>
               </div>
             </Link>
@@ -147,7 +147,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-text-tertiary sm:flex-row">
-          <p>© {currentYear} Naz AutoReply. {isRTL ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</p>
+          <p>© {currentYear} Nazeer Business (NazBiz). Operated by Nazir Saleh Khashim Establishment for Information Technology, Al Shuraibat District, Madinah, Saudi Arabia. Commercial Registration No. 7055562016.</p>
           <div className="flex items-center gap-4">
             <Link href="/privacy" className="transition-colors hover:text-text-primary">
               {isRTL ? 'الخصوصية' : 'Privacy'}

@@ -19,269 +19,326 @@ export default function PrivacyPage() {
     en: {
       title: 'Privacy Policy',
       badge: 'Security & Data Protection',
-      subtitle: 'This policy explains how Naz Biz processes business and customer data to provide inbox, AI, automation, and commerce features.',
-      lastUpdated: 'Last updated: October 2026',
+      subtitle: 'This policy explains how Nazeer Business (NazBiz) processes business and customer data to provide inbox, AI, automation, and commerce features.',
+      lastUpdated: 'Last updated: November 26, 2026',
       backHome: 'Back to Platform',
       contactUs: 'Questions? Reach out to privacy@nazbiz.io',
       sections: [
         {
-          id: 'intro',
+          id: 'who-we-are',
           icon: <ShieldCheck className="w-5 h-5 text-brand" />,
-          title: '1. Introduction',
-          content: `Naz Biz ("Naz Autoreply", "we", "our", "the platform") is an enterprise AI automation platform designed to manage and automate multi-channel customer communications. This privacy policy explains what data we collect, how it is encrypted and processed, and your rights regarding your information.`
+          title: '1. Who we are',
+          content: `Arabic registered name: مؤسسة نزير صالح خشيم لتقنية المعلومات\n\nNazeer Business ("NazBiz", "we", "us", "our") is an AI-powered customer messaging platform at nazbiz.io. It is operated by Nazir Saleh Khashim Establishment for Information Technology, Commercial Registration No. 7055562016, Al Shuraibat District, Madinah, Saudi Arabia. We act as a data processor for the customer messages our business customers ("Merchants") connect to the platform, and as a data controller for Merchant account data. Contact: privacy@nazbiz.io.`
         },
         {
           id: 'data-collection',
           icon: <Lock className="w-5 h-5 text-ai-accent" />,
-          title: '2. Data Collection & Account Isolation',
-          intro: 'To deliver automated replies, cross-channel inbox aggregation, and contextual AI memory, we collect the following data:',
+          title: '2. Data we collect',
           items: [
-            'Account Credentials: Name, email address, password hashes, and business configuration metadata.',
-            'Business Knowledge Base: Product catalogs, FAQs, operating policies, and guidelines provided during training.',
-            'Channel Access Tokens: Secure access tokens for Meta (Facebook/Instagram), WhatsApp, Telegram, Gmail, Salla, Shopify, and TikTok. All tokens are encrypted at rest using AES-256.',
-            'Message Data: Transcripts of incoming and outgoing customer messages processed to generate AI replies and populate your unified inbox.',
-            'Telemetry: IP address, browser metadata, session timestamps, and operational health metrics.'
+            'Account data: name, email address, password hash, and business settings.',
+            'Business knowledge base: product catalogs, FAQs, policies and instructions the Merchant provides.',
+            'Channel access tokens: authorization tokens for Meta (Facebook and Instagram), WhatsApp, TikTok, Telegram, Gmail, Salla, Shopify and WooCommerce. Tokens are encrypted at rest.',
+            'Message data: incoming and outgoing customer messages and comments, sender display name and channel identifier, and media sent in conversations.',
+            'Store data: orders, products, shipping status and customer contact details from connected stores, only as needed for replies the Merchant enables.',
+            'Technical data: IP address, browser details, session times and system health metrics.'
           ]
         },
         {
-          id: 'data-use',
+          id: 'how-we-use-data',
           icon: <Sparkles className="w-5 h-5 text-info" />,
-          title: '3. Data Processing & Usage Rules',
-          intro: 'Your data is strictly processed to fulfill service requirements:',
+          title: '3. How we use data',
           items: [
-            'Generating and delivering automated AI customer support responses on your connected channels.',
-            'Displaying real-time conversations and message logs in your unified dashboard.',
-            'Personalizing customer responses using verified business details.',
-            'Maintaining system security, preventing spam, and auditing platform performance.',
-            'We NEVER sell your personal or customer data to third parties.',
-            'We NEVER use your private customer messages to train public AI models.'
-          ]
+            "Show conversations in the Merchant's unified inbox and send replies the Merchant (or the Merchant's configured bot) triggers.",
+            "Generate AI replies from the Merchant's knowledge base and connected store data.",
+            'Run workflows, sequences and campaigns the Merchant configures.',
+            'Secure the platform, prevent abuse and measure performance.'
+          ],
+          note: 'We do not sell personal data. We do not use customer messages or platform data from Meta, TikTok, Google or Salla to train public AI models, to build advertising profiles, or for purposes unrelated to providing the service to the Merchant.'
+        },
+        {
+          id: 'meta',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '4. Meta (Facebook, Instagram, Messenger)',
+          content: `When a Merchant connects a Facebook Page or Instagram professional account, we receive, through the official Meta APIs and only after the Merchant authorizes it, the Page or account profile, messages sent to that Page or account, and comments on its posts. We use this only to show those conversations in the inbox and to send replies and comment responses that the Merchant or the Merchant's configured automation triggers. We never send unsolicited messages. We follow Meta's Platform Terms and messaging policies, including the messaging window rules. The Merchant can disconnect the Page at any time in the dashboard and can remove our access in Facebook or Instagram settings.`
+        },
+        {
+          id: 'tiktok',
+          icon: <Globe className="w-5 h-5 text-brand" />,
+          title: '5. TikTok',
+          content: `When a business owner connects a TikTok Business account through TikTok's official authorization (OAuth), we access, with the scopes the owner approves, the account's basic profile, its comments, and its direct messages. We use this data only to display conversations and comments in the Merchant's inbox and to send replies or manage comments the Merchant or the Merchant's configured automation triggers. We store TikTok access tokens encrypted. We do not sell TikTok data, share it with advertisers or data brokers, or use it to train public AI models. The owner can disconnect TikTok at any time in the dashboard, which stops access and deletes the stored token. The owner can also revoke access in TikTok. To request deletion of TikTok data we hold, email privacy@nazbiz.io; we complete deletion within 30 days.`
+        },
+        {
+          id: 'commerce',
+          icon: <Globe className="w-5 h-5 text-info" />,
+          title: '6. Salla, Shopify and WooCommerce',
+          content: `When a Merchant installs our app on a Salla store, or connects Shopify or WooCommerce, we receive the store information, products, orders, shipping status and customer details the Merchant authorizes. We use them to answer customer questions about orders, shipping and stock, and to keep the product catalog current in the Merchant's knowledge base. Order actions occur only when the Merchant enables them. If the Merchant uninstalls the app or disconnects the store, we stop syncing and delete the store's stored tokens, and we delete the remaining store data on request or within the retention period below.`
+        },
+        {
+          id: 'google',
+          icon: <Lock className="w-5 h-5 text-amber-400" />,
+          title: '7. Google user data (Gmail)',
+          content: `If a Merchant connects Gmail, we access the messages the Merchant authorizes only to show customer emails in the inbox and to draft or send replies on the Merchant's behalf. Our use of information received from Google APIs follows the Google API Services User Data Policy, including the Limited Use requirements. We do not use Gmail data for advertising or to train generalized AI models, and no humans read it except where the Merchant asks for support, for security investigation, or where law requires.`
         },
         {
           id: 'providers',
           icon: <Globe className="w-5 h-5 text-emerald-400" />,
-          title: '4. Third-Party Integrations & Infrastructure',
-          intro: 'Naz Biz connects directly with official channel providers and infrastructure services:',
+          title: '8. Service providers and where data is processed',
+          intro: 'We use these providers to run the service. Each receives only the data needed for its function.',
           items: [
-            'Meta Platforms (Facebook & Instagram Graph API) — Authorized messaging and page management.',
-            'WhatsApp Business, Telegram, and connected channel providers — message delivery and receipt status. Evolution API may be used for merchants who connect the legacy WhatsApp session integration.',
-            'Google Cloud & Gmail API — Authorized email ingestion and reply dispatching.',
-            'E-Commerce Platforms (Salla, Shopify, WooCommerce, TikTok) — Order sync, webhooks, and catalog management.',
-            'AI providers, when enabled: Google Gemini, Groq, OpenAI, and Anthropic. Message text, relevant business context, and media submitted for analysis may be sent to the configured provider to generate a reply or analysis.',
-            'Commerce platforms: Salla, Shopify, WooCommerce, and supported TikTok integrations receive store sync or order actions requested by the merchant.',
-            'Operations providers may include Pusher for real-time dashboard updates, the configured email delivery service, and Paymob or MyFatoorah for payments. City-level address lookup uses the merchant-configured private Nominatim endpoint.',
-            'Payment data is handled by the selected payment gateway; Naz Biz does not store raw card numbers.'
-          ]
+            'Hosting: Hostinger.',
+            'AI providers, when enabled by the Merchant: Google (Gemini), Groq, OpenAI and Anthropic. Message text, relevant business context and media submitted for analysis may be sent to the configured provider to produce a reply.',
+            'Real-time updates and email delivery: Pusher and the configured email service.',
+            'Payments: Paymob or MyFatoorah. We do not store raw card numbers.',
+            'Legacy WhatsApp session connection: Evolution API, for Merchants who use that option.'
+          ],
+          note: 'Because some providers are outside Saudi Arabia and Egypt, personal data may be transferred internationally. We transfer data only to providers that give contractual protection for it.'
         },
         {
           id: 'security',
           icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
-          title: '5. Security & Encryption Standards',
+          title: '9. Security',
           items: [
-            'Channel credentials and access tokens are encrypted at rest by the application. Passwords are stored as hashes.',
-            'Connections use HTTPS where supported by the connected provider.',
-            'Strict multi-tenant database isolation ensures your business data is never accessible by other organizations.',
-            'Default retention is 365 days for messages and 30 days for inbound media. Business owners can change retention periods in Privacy & Data settings.',
-            'Data sent to a connected channel, commerce, AI, payment, email, or infrastructure provider is also subject to that provider’s own terms and retention rules.'
+            'Access tokens and channel credentials are encrypted at rest. Passwords are stored as hashes.',
+            'Connections use HTTPS.',
+            "Each Merchant's data is logically isolated from other Merchants.",
+            'We limit staff access to what is needed to run and support the service.'
           ]
         },
         {
+          id: 'retention',
+          icon: <Eye className="w-5 h-5 text-brand" />,
+          title: '10. Retention and deletion',
+          content: `By default we keep messages for 365 days and inbound media for 30 days. Merchants can change these periods in Privacy & Data settings. When an account is deleted, we delete its data within 30 days, except what the law requires us to keep. Data you sent to a connected provider is also subject to that provider's own retention rules.`
+        },
+        {
           id: 'rights',
-          icon: <Eye className="w-5 h-5 text-amber-400" />,
-          title: '6. Your Rights & Data Control',
-          items: [
-            'Right to Access & Export: Download and inspect your communication history and business data.',
-            'Right to Rectify: Update your business information and training context at any time.',
-            'Right to Erasure: Request full account and data deletion by contacting privacy@nazbiz.io.'
-          ]
+          icon: <ShieldCheck className="w-5 h-5 text-info" />,
+          title: '11. Your rights',
+          content: `You can access and export your data, correct it, and ask us to delete it. End customers whose messages a Merchant processes should contact that Merchant first; we will help the Merchant respond. Send requests to privacy@nazbiz.io. We respond within 30 days. Our processing follows the Saudi Personal Data Protection Law where it applies.`
+        },
+        {
+          id: 'children',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '12. Children',
+          content: `The service is for businesses and is not directed at children under 18.`
+        },
+        {
+          id: 'changes',
+          icon: <Sparkles className="w-5 h-5 text-brand" />,
+          title: '13. Changes',
+          content: `We will update the date above when this policy changes and notify Merchants of material changes by email or in the dashboard.`
+        },
+        {
+          id: 'contact',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '14. Contact',
+          content: `Nazir Saleh Khashim Establishment for Information Technology, Al Shuraibat District, Madinah, Saudi Arabia. CR 7055562016. privacy@nazbiz.io | support@nazbiz.io`
         }
       ]
     },
     ar: {
       title: 'سياسة الخصوصية',
-      badge: 'حماية البيانات والأمان',
-      subtitle: 'توضح هذه السياسة كيفية معالجة ناز بيز لبيانات المنشأة والعملاء لتقديم صندوق الوارد والذكاء الاصطناعي والأتمتة والتجارة الإلكترونية.',
-      lastUpdated: 'آخر تحديث: أكتوبر 2026',
+      badge: 'حماية وأمان البيانات',
+      subtitle: 'توضح هذه السياسة كيف تعالج نذير للأعمال (NazBiz) بيانات الأعمال والعملاء لتوفير صندوق الوارد، الذكاء الاصطناعي، الأتمتة، وميزات التجارة الإلكترونية.',
+      lastUpdated: 'آخر تحديث: 26 نوفمبر 2026',
       backHome: 'العودة إلى المنصة',
-      contactUs: 'أسئلة؟ تواصل معنا عبر privacy@nazbiz.io',
+      contactUs: 'لديك استفسار؟ تواصل معنا عبر privacy@nazbiz.io',
       sections: [
         {
-          id: 'intro',
+          id: 'who-we-are',
           icon: <ShieldCheck className="w-5 h-5 text-brand" />,
-          title: '1. مقدمة',
-          content: `تعتبر منصة ناز بيز ("Naz Autoreply"، "نحن"، "المنصة") منظومة متكاملة لأتمتة خدمة العملاء وإدارة المراسلات عبر القنوات المتعددة بالذكاء الاصطناعي. توضح هذه السياسة البيانات التي نجمعها، وكيفية معالجتها وتشفيرها، وحقوقك المتعلقة بمعلوماتك.`
+          title: '1. من نحن',
+          content: `الاسم المسجل بالعربية: مؤسسة نزير صالح خشيم لتقنية المعلومات\n\nنذير للأعمال ("NazBiz"، "نحن") هي منصة مراسلة عملاء مدعومة بالذكاء الاصطناعي على nazbiz.io، وتُدار بواسطة مؤسسة نزير صالح خشيم لتقنية المعلومات، سجل تجاري رقم 7055562016، حي الشريبات، المدينة المنورة، المملكة العربية السعودية. نعمل كمعالج بيانات لرسائل العملاء التي يربطها عملاؤنا التجاريون ("التجار") بالمنصة، وكمتحكم في بيانات حساب التاجر. للتواصل: privacy@nazbiz.io.`
         },
         {
           id: 'data-collection',
           icon: <Lock className="w-5 h-5 text-ai-accent" />,
-          title: '2. جمع البيانات والعزل الأمني',
-          intro: 'لتقديم خدمة الرد الآلي الفوري وتأمين الذاكرة السياقية وصندوق الوارد الموحد، نجمع البيانات التالية بشكل آمن:',
+          title: '2. البيانات التي نجمعها',
           items: [
-            'بيانات الحساب: الاسم، البريد الإلكتروني للعمل، كلمات المرور المشفرة، وإعدادات النشاط التجاري.',
-            'قاعدة معارف النشاط التجاري: كتالوجات المنتجات، الأسئلة الشائعة، وسياق العمل الموفر أثناء التدريب.',
-            'بيانات اتصال القنوات: رموز التوثيق المعتمدة لقنوات ميتا (فيسبوك/إنستغرام)، واتساب، تليجرام، جيميل، سلة، شوبيفاي، وتيك توك. تُشفر جميع المفاتيح باستخدام AES-256.',
-            'سجلات الرسائل: محتوى الرسائل الواردة والصادرة اللازمة لتوليد ردود الذكاء الاصطناعي وعرض صندوق الوارد.',
-            'البيانات التقنية: عنوان IP، معلومات المتصفح، الطوابع الزمنية، ومؤشرات الأداء.'
+            'بيانات الحساب: الاسم، البريد الإلكتروني، كلمة المرور المشفرة، وإعدادات النشاط التجاري.',
+            'قاعدة المعرفة: كتالوجات المنتجات، الأسئلة الشائعة، السياسات والتعليمات التي يقدمها التاجر.',
+            'رموز وصول القنوات: رموز التفويض لمنصات Meta (فيسبوك وإنستغرام)، واتساب، تيك توك، تيليجرام، جيميل، سلة، شوبيفاي وWooCommerce. يتم تشفير جميع الرموز أثناء التخزين.',
+            'بيانات الرسائل: رسائل وتعليقات العملاء الواردة والصادرة، اسم المرسل ومعرف القناة، والوسائط المرسلة في المحادثات.',
+            'بيانات المتجر: الطلبات، المنتجات، حالة الشحن وبيانات تواصل العملاء من المتاجر المرتبطة، فقط بالقدر اللازم للردود التي يفعّلها التاجر.',
+            'البيانات التقنية: عنوان IP، تفاصيل المتصفح، أوقات الجلسات ومقاييس صحة النظام.'
           ]
         },
         {
-          id: 'data-use',
+          id: 'how-we-use-data',
           icon: <Sparkles className="w-5 h-5 text-info" />,
-          title: '3. قواعد معالجة البيانات واستخدامها',
-          intro: 'تُعالج بياناتك حصرياً لتشغيل وخدمة نشاطك التجاري:',
+          title: '3. كيف نستخدم البيانات',
           items: [
-            'توليد وإرسال الردود الآلية بالذكاء الاصطناعي على القنوات المتصلة.',
-            'عرض المحادثات الموحدة وسجلات المراسلات في لوحة التحكم.',
-            'تخصيص التفاعلات بناءً على ملف النشاط التجاري المعتمد.',
-            'الحفاظ على أمان النظام ومنع الرسائل غير المرغوب فيها.',
-            'نحن لا نبيع بياناتك الشخصية أو بيانات عملائك لأي أطراف ثالثة نهائياً.',
-            'نحن لا نستخدم رسائل عملائك الخاصة لتدريب نماذج الذكاء الاصطناعي العامة.'
-          ]
+            'عرض المحادثات في صندوق الوارد الموحد للتاجر وإرسال الردود التي يطلقها التاجر (أو البوت المُعد من قِبله).',
+            'توليد ردود الذكاء الاصطناعي من قاعدة معرفة التاجر وبيانات المتجر المرتبط.',
+            'تشغيل مسارات العمل والتسلسلات والحملات التي يُعدّها التاجر.',
+            'تأمين المنصة ومنع إساءة الاستخدام وقياس الأداء.'
+          ],
+          note: 'نحن لا نبيع البيانات الشخصية. ولا نستخدم رسائل العملاء أو بيانات المنصات من Meta أو TikTok أو Google أو سلة لتدريب نماذج ذكاء اصطناعي عامة، أو لبناء ملفات إعلانية، أو لأغراض غير متعلقة بتقديم الخدمة للتاجر.'
+        },
+        {
+          id: 'meta',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '4. Meta (فيسبوك، إنستغرام، ماسنجر)',
+          content: `عندما يربط التاجر صفحة فيسبوك أو حساب إنستغرام احترافي، نستلم عبر واجهات Meta الرسمية وفقط بعد تفويض التاجر، ملف الصفحة أو الحساب، والرسائل المرسلة إليها، والتعليقات على منشوراتها. نستخدم هذه البيانات فقط لعرض المحادثات في صندوق الوارد وإرسال الردود التي يطلقها التاجر أو أتمتته. لا نرسل رسائل غير مرغوب فيها أبداً، ونلتزم بشروط وسياسات Meta بما في ذلك قواعد نافذة المراسلة. يمكن للتاجر فصل الصفحة في أي وقت من لوحة التحكم وإزالة صلاحياتنا من إعدادات فيسبوك أو إنستغرام.`
+        },
+        {
+          id: 'tiktok',
+          icon: <Globe className="w-5 h-5 text-brand" />,
+          title: '5. TikTok',
+          content: `عندما يربط مالك النشاط التجاري حساب TikTok Business عبر التفويض الرسمي (OAuth)، نصل ضمن الصلاحيات الموافق عليها إلى الملف الأساسي للحساب وتعليقاته ورسائله المباشرة. نستخدم هذه البيانات فقط لعرض المحادثات والتعليقات في صندوق الوارد وإرسال الردود أو إدارة التعليقات التي يطلقها التاجر أو أتمتته. نخزن رموز وصول TikTok مشفرة، ولا نبيع بيانات TikTok أو نشاركها مع معلنين أو وسطاء بيانات أو نستخدمها لتدريب نماذج ذكاء اصطناعي عامة. يمكن للمالك فصل الحساب في أي وقت من لوحة التحكم أو إلغاء الصلاحية من TikTok. لطلب حذف بيانات TikTok لدينا، راسل privacy@nazbiz.io وسنكمل الحذف خلال 30 يوماً.`
+        },
+        {
+          id: 'commerce',
+          icon: <Globe className="w-5 h-5 text-info" />,
+          title: '6. سلة، شوبيفاي وWooCommerce',
+          content: `عند تثبيت تطبيقنا على متجر سلة أو ربط شوبيفاي أو WooCommerce، نستلم معلومات المتجر والمنتجات والطلبات وحالة الشحن وبيانات العملاء التي يفوضها التاجر. نستخدمها للإجابة على أسئلة العملاء حول الطلبات والشحن والمخزون وتحديث كتالوج المنتجات في قاعدة المعرفة. لا تُنفذ إجراءات الطلبات إلا عندما يفعّلها التاجر. عند إلغاء التثبيت أو فصل المتجر نوقف المزامنة ونحذف الرموز المخزنة، ونحذف بقية بيانات المتجر عند الطلب أو ضمن فترة الاحتفاظ أدناه.`
+        },
+        {
+          id: 'google',
+          icon: <Lock className="w-5 h-5 text-amber-400" />,
+          title: '7. بيانات مستخدمي Google (Gmail)',
+          content: `إذا ربط التاجر حساب Gmail، نصل إلى الرسائل المفوضة فقط لعرض رسائل العملاء في صندوق الوارد وصياغة أو إرسال الردود نيابة عن التاجر. يلتزم استخدامنا للمعلومات المستلمة من واجهات Google بسياسة بيانات مستخدمي خدمات Google API بما في ذلك متطلبات الاستخدام المحدود. لا نستخدم بيانات Gmail للإعلانات أو تدريب نماذج ذكاء اصطناعي عامة، ولا يطلع عليها أي شخص بشري إلا عند طلب التاجر للدعم أو للتحقيق الأمني أو بموجب القانون.`
         },
         {
           id: 'providers',
           icon: <Globe className="w-5 h-5 text-emerald-400" />,
-          title: '4. البنية التحتية والمنصات المتصلة',
-          intro: 'تتصل ناز بيز مباشرة مع المنصات الرسمية وبوابات التوثيق لتشغيل المراسلات:',
+          title: '8. مزودو الخدمة ومكان معالجة البيانات',
+          intro: 'نستخدم المزودين التاليين لتشغيل الخدمة، ويتلقى كل منهم فقط البيانات اللازمة لوظيفته:',
           items: [
-            'ميتا (واجهة فيسبوك وإنستغرام الرسمية Graph API) — لإدارة الصفحات والمراسلات.',
-            'واتساب للأعمال السحابي وتليجرام ومزودو القنوات المتصلة — لإرسال الرسائل وتأكيد الوصول. قد تُستخدم Evolution API عند ربط تكامل واتساب القديم.',
-            'جوجل (Google Cloud & Gmail API) — لقراءة بريد الخدمة وإرسال الردود.',
-            'منصات التجارة الإلكترونية (سلة، شوبيفاي، ووكومرس، تيك توك) — لمزامنة الطلبات والمنتجات.',
-            'مزودو الذكاء الاصطناعي عند تفعيلهم: Google Gemini وGroq وOpenAI وAnthropic. قد يُرسل نص الرسالة والسياق التجاري اللازم والوسائط المقدمة للتحليل إلى المزود المحدد لتوليد الرد أو التحليل.',
-            'منصات التجارة: سلة وشوبيفاي وWooCommerce وتكاملات تيك توك المدعومة لمزامنة المتجر وتنفيذ إجراءات الطلبات التي يطلبها التاجر.',
-            'قد تشمل مزودات التشغيل Pusher لتحديثات لوحة التحكم الفورية، وخدمة البريد الإلكتروني المضبوطة، وPaymob أو MyFatoorah للدفع. يستخدم تحديد المدينة نقطة Nominatim الخاصة التي يضبطها التاجر.',
-            'يتعامل مزود الدفع المختار مع بيانات الدفع؛ لا تخزن ناز بيز أرقام البطاقات كاملة.'
-          ]
+            'الاستضافة: Hostinger.',
+            'مزودو الذكاء الاصطناعي عند تفعيلهم من التاجر: Google (Gemini)، Groq، OpenAI وAnthropic. قد يُرسل نص الرسالة وسياق العمل ذو الصلة والوسائط المرسلة للتحليل لإنتاج الرد.',
+            'التحديثات الفورية وإرسال البريد: Pusher وخدمة البريد الإلكتروني المُعدة.',
+            'المدفوعات: Paymob أو MyFatoorah. لا نخزن أرقام البطاقات الخام.',
+            'اتصال واتساب التقليدي: Evolution API للتجار الذين يستخدمون هذا الخيار.'
+          ],
+          note: 'نظراً لوجود بعض المزودين خارج المملكة العربية السعودية ومصر، قد تُنقل البيانات الشخصية دولياً فقط إلى مزودين يوفرون حماية تعاقدية لها.'
         },
         {
           id: 'security',
           icon: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
-          title: '5. معايير الأمان والتشفير',
+          title: '9. الأمان',
           items: [
-            'تُشفّر بيانات اعتماد القنوات ورموز الوصول أثناء التخزين بواسطة التطبيق، وتُخزن كلمات المرور بصيغة تجزئة آمنة.',
-            'تستخدم الاتصالات HTTPS حيثما يدعمه مزود الخدمة المتصل.',
-            'عزل كامل لقواعد البيانات يضمن عدم تداخل بيانات المنشآت.',
-            'مدة الاحتفاظ الافتراضية ٣٦٥ يوماً للرسائل و٣٠ يوماً للوسائط الواردة، ويمكن لمالك النشاط تعديلها من إعدادات الخصوصية والبيانات.',
-            'تخضع البيانات المرسلة إلى مزودي القنوات والتجارة والذكاء الاصطناعي والدفع والبريد والبنية التحتية أيضاً لشروط وسياسات الاحتفاظ الخاصة بكل مزود.'
+            'يتم تشفير رموز الوصول وبيانات اعتماد القنوات أثناء التخزين، وتُحفظ كلمات المرور كقيم مجزأة (Hashes).',
+            'تستخدم جميع الاتصالات بروتوكول HTTPS.',
+            'بيانات كل تاجر معزولة منطقياً عن بقية التجار.',
+            'نقيّد وصول الموظفين إلى الحد الأدنى اللازم لتشغيل ودعم الخدمة.'
           ]
         },
         {
+          id: 'retention',
+          icon: <Eye className="w-5 h-5 text-brand" />,
+          title: '10. الاحتفاظ بالبيانات والحذف',
+          content: `بشكل افتراضي نحتفظ بالرسائل لمدة 365 يوماً والوسائط الواردة لمدة 30 يوماً، ويمكن للتاجر تعديل هذه المدد من إعدادات الخصوصية والبيانات. عند حذف الحساب نحذف بياناته خلال 30 يوماً باستثناء ما يوجب القانون الاحتفاظ به.`
+        },
+        {
           id: 'rights',
-          icon: <Eye className="w-5 h-5 text-amber-400" />,
-          title: '6. حقوقك والتحكم بالبيانات',
-          items: [
-            'حق الوصول والتصدير: مراجعة كافة المحادثات وإعدادات الحساب.',
-            'حق التعديل: تحديث معلومات وسياق عملك فورياً.',
-            'حق الحذف: طلب مسح الحساب والسجلات نهائياً عبر privacy@nazbiz.io.'
-          ]
+          icon: <ShieldCheck className="w-5 h-5 text-info" />,
+          title: '11. حقوقك',
+          content: `يمكنك الوصول إلى بياناتك وتصديرها وتصحيحها وطلب حذفها. يجب على العملاء النهائيين التواصل مع التاجر المعني أولاً وسنساعد التاجر في الاستجابة. أرسل الطلبات إلى privacy@nazbiz.io ونرد خلال 30 يوماً. تخضع معالجتنا لنظام حماية البيانات الشخصية السعودي حيثما ينطبق.`
+        },
+        {
+          id: 'children',
+          icon: <ShieldCheck className="w-5 h-5 text-amber-400" />,
+          title: '12. الأطفال',
+          content: `الخدمة مخصصة للأعمال التجارية وليست موجهة لمن هم دون 18 عاماً.`
+        },
+        {
+          id: 'changes',
+          icon: <Sparkles className="w-5 h-5 text-brand" />,
+          title: '13. التغييرات',
+          content: `سنحدّث التاريخ أعلاه عند تغيير هذه السياسة ونخطر التجار بالتغييرات الجوهرية عبر البريد الإلكتروني أو لوحة التحكم.`
+        },
+        {
+          id: 'contact',
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          title: '14. التواصل',
+          content: `مؤسسة نزير صالح خشيم لتقنية المعلومات، حي الشريبات، المدينة المنورة، المملكة العربية السعودية. سجل تجاري 7055562016. privacy@nazbiz.io | support@nazbiz.io`
         }
       ]
     }
   }
 
-  const c = content[lang]
+  const active = content[lang]
 
   return (
-    <div className={`min-h-screen font-sans ${lang === 'ar' ? 'rtl' : 'ltr'}`} style={{ background: 'var(--background)', color: 'var(--text-primary)' }}>
-      {/* Top Navbar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-white/10 bg-[var(--background)]">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[image:var(--brand-gradient)] flex items-center justify-center shadow-lg shadow-brand/20">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-white">
-              Naz <span className="text-transparent bg-clip-text bg-[image:var(--brand-gradient)]">Biz</span>
-            </span>
+    <div className="min-h-screen bg-bg text-text-primary selection:bg-brand/20 selection:text-brand" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <header className="sticky top-0 z-50 border-b border-border bg-bg/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2 text-sm font-bold text-text-secondary hover:text-brand transition-colors">
+            {lang === 'ar' ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+            <span>{active.backHome}</span>
           </Link>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleLang}
-              className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold transition-all text-slate-200 flex items-center gap-2"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              {lang === 'ar' ? 'English' : 'العربية'}
-            </button>
-            <Link
-              href="/"
-              className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white border border-white/10 hover:border-white/20 bg-white/5 transition-all"
-            >
-              {lang === 'ar' ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowLeft className="w-3.5 h-3.5" />}
-              {c.backHome}
-            </Link>
-          </div>
+          <button
+            onClick={toggleLang}
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-elevated px-3 py-1.5 text-xs font-bold text-text-primary hover:border-brand/50 transition-all"
+          >
+            <Globe size={14} className="text-brand" />
+            <span>{lang === 'ar' ? 'English' : 'العربية'}</span>
+          </button>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Header */}
-      <section className="relative py-16 px-6 border-b border-white/5 bg-gradient-to-b from-brand/20 via-[var(--background)] to-[var(--background)] text-center">
-        <div className="max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand/30 bg-brand/10 text-brand text-xs font-semibold mb-6">
-            <ShieldCheck className="w-4 h-4 text-brand" />
-            {c.badge}
+      <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-20">
+        <div className="mb-12 text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1 text-xs font-bold text-brand">
+            <ShieldCheck size={14} />
+            <span>{active.badge}</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4 text-white">
-            {c.title}
-          </h1>
-          <p className="text-sm sm:text-base text-slate-400 leading-relaxed mb-4 max-w-2xl mx-auto">
-            {c.subtitle}
+          <h1 className="text-3xl font-black tracking-tight sm:text-5xl">{active.title}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm sm:text-base text-text-secondary leading-relaxed">
+            {active.subtitle}
           </p>
-          <div className="text-xs font-medium text-slate-500">
-            {c.lastUpdated}
-          </div>
+          <p className="mt-3 text-xs font-medium text-text-tertiary">{active.lastUpdated}</p>
         </div>
-      </section>
 
-      {/* Main Sections */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
         <div className="space-y-8">
-          {c.sections.map((sec, idx) => (
-            <div
-              key={sec.id || idx}
-              className="p-6 sm:p-8 rounded-2xl border border-white/10 bg-surface backdrop-blur-sm hover:border-brand/30 transition-all shadow-xl shadow-black/20"
+          {active.sections.map((section) => (
+            <section
+              key={section.id}
+              id={section.id}
+              className="rounded-2xl border border-border bg-surface-elevated/40 p-6 sm:p-8 transition-all hover:border-border-hover"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10">
-                  {sec.icon}
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface">
+                  {section.icon}
                 </div>
-                <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                  {sec.title}
-                </h2>
+                <h2 className="text-xl font-bold tracking-tight">{section.title}</h2>
               </div>
 
-              {sec.content && (
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-                  {sec.content}
+              {section.content && (
+                <p className="whitespace-pre-line text-sm sm:text-base leading-relaxed text-text-secondary">
+                  {section.content}
                 </p>
               )}
 
-              {sec.intro && (
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-4">
-                  {sec.intro}
+              {section.intro && (
+                <p className="mb-4 text-sm sm:text-base leading-relaxed text-text-secondary">
+                  {section.intro}
                 </p>
               )}
 
-              {sec.items && (
-                <ul className="space-y-3 mt-3">
-                  {sec.items.map((item, itemIdx) => (
-                    <li key={itemIdx} className="flex items-start gap-3 text-sm sm:text-base text-slate-300">
-                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
-                      <span className="leading-relaxed">{item}</span>
+              {section.items && (
+                <ul className="space-y-3">
+                  {section.items.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-sm sm:text-base leading-relaxed text-text-secondary">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               )}
-            </div>
+
+              {section.note && (
+                <p className="mt-4 rounded-xl border border-border bg-surface/60 p-4 text-xs sm:text-sm leading-relaxed text-text-secondary">
+                  {section.note}
+                </p>
+              )}
+            </section>
           ))}
         </div>
 
-        {/* Footer Contact */}
-        <div className="mt-12 text-center p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-r from-brand-violet/10 via-brand/10 to-surface">
-          <p className="text-sm font-medium text-slate-300">
-            {c.contactUs}
-          </p>
+        <div className="mt-16 rounded-2xl border border-border bg-surface-elevated/60 p-6 text-center">
+          <p className="text-sm font-medium text-text-secondary">{active.contactUs}</p>
         </div>
       </main>
     </div>

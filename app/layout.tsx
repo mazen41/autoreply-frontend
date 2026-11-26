@@ -28,8 +28,8 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://nazbiz.io'),
   title: {
-    default: 'Naz AutoReply — ندير مراسلاتك و مبيعاتك بذكاء',
-    template: '%s | Naz AutoReply',
+    default: 'Nazeer Business | AI customer messaging',
+    template: '%s | Nazeer Business',
   },
   description:
     'ندير مراسلاتك و مبيعاتك بذكاء. أتمتة محادثات العملاء عبر واتساب، إنستغرام، تيليجرام، تيك توك، سلة وشوبيفاي مع ردود ذكية وتتبع طلبات مباشر.',
@@ -40,14 +40,15 @@ export const metadata: Metadata = {
     'Salla store AI',
     'Shopify AI assistant',
     'Conversational AI',
-    'Naz AutoReply',
+    'Nazeer Business',
+    'NazBiz',
     'أتمتة خدمة العملاء',
     'رد آلي واتساب',
     'ذكاء اصطناعي للمتاجر',
   ],
-  authors: [{ name: 'Naz AutoReply Team' }],
-  creator: 'Naz AutoReply',
-  publisher: 'Naz AutoReply',
+  authors: [{ name: 'Nazeer Business Team' }],
+  creator: 'Nazeer Business',
+  publisher: 'Nazeer Business',
   formatDetection: {
     email: false,
     address: false,

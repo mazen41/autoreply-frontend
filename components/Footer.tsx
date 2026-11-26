@@ -17,7 +17,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            © 2026 Autoreply — {isRTL ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
+            © 2026 Nazeer Business (NazBiz). Operated by Nazir Saleh Khashim Establishment for Information Technology, Al Shuraibat District, Madinah, Saudi Arabia. Commercial Registration No. 7055562016.
           </p>
 
           {/* Legal Links */}
