@@ -31,7 +31,7 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
   const L = (en: string, ar: string) => isRTL ? ar : en
   const [tasks, setTasks] = useState<HandoffTask[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
   const [overdueCount, setOverdueCount] = useState(0)
   const [collapsed, setCollapsed] = useState(false)
   const [assignees, setAssignees] = useState<Assignee[]>([])
@@ -55,12 +55,13 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}`, Accept: 'application/json', ...getBusinessHeaders() },
         body: JSON.stringify({ assigned_to: userId }),
       })
-      if (!response.ok) throw new Error('Could not assign this handoff')
-      const data = await response.json()
+      const body = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(body.error || body.message || L('Could not assign this handoff.', 'تعذر إسناد هذه المتابعة.'))
+      const data = body
       setTasks(current => current.map(t => t.id === taskId ? { ...t, assignee: data.task?.assignee ?? t.assignee } : t))
       setOpenAssignFor(null)
-    } catch {
-      setError(true)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : L('Could not assign this handoff.', 'تعذر إسناد هذه المتابعة.'))
     } finally {
       setAssigning(null)
     }
@@ -83,9 +84,9 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
         const overdueData = await overdueResponse.json()
         setOverdueCount(Number(overdueData.meta?.total || 0))
       }
-      setError(false)
+      setError('')
     } catch {
-      setError(true)
+      setError(L('Could not load handoff tasks.', 'تعذر تحميل مهام المتابعة.'))
     } finally {
       setLoading(false)
     }
@@ -103,14 +104,21 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
       })
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
-        throw new Error(body.message || L('Send a manual reply in the conversation before marking this handled.', 'أرسل ردًا يدويًا في المحادثة قبل إنهاء المتابعة.'))
+        throw new Error(body.error || body.message || L('Send a manual reply from this inbox before marking this handled.', 'أرسل ردًا يدويًا من صندوق الوارد قبل إنهاء المتابعة.'))
       }
       setResolveTaskId(null)
       setResolutionNote('')
       await refresh()
       onResolved?.()
-    } catch {
-      setError(true)
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : ''
+      if (message.toLowerCase().includes('manual reply')) {
+        setError(L('Send a manual reply from this inbox first, then mark the handoff handled.', 'أرسل ردًا يدويًا من صندوق الوارد أولًا، ثم أنهِ المتابعة.'))
+      } else if (message.toLowerCase().includes('already been handled')) {
+        setError(L('This handoff has already been handled. Refresh the list.', 'تم التعامل مع هذه المتابعة بالفعل. حدّث القائمة.'))
+      } else {
+        setError(message || L('Could not complete that action. Check the conversation and try again.', 'تعذر إتمام الإجراء. راجع المحادثة وحاول مرة أخرى.'))
+      }
     } finally {
       setResolving(false)
     }
@@ -183,7 +191,7 @@ export default function HandoffTaskQueue({ onSelect, onResolved }: { onSelect?: 
         })}
       </ul>
       )}
-      {error && <p role="alert" className="mt-2 text-[11px] text-warning">{L('Could not complete that action. Check the conversation and try again.', 'تعذر إتمام الإجراء. راجع المحادثة وحاول مرة أخرى.')}</p>}
+      {error && <p role="alert" className="mt-2 text-[11px] text-warning">{error}</p>}
     </section>
     <Modal isOpen={resolveTaskId !== null} onClose={() => { if (!resolving) setResolveTaskId(null) }} title={L('Mark handoff handled', 'تأكيد التعامل مع المتابعة')} description={L('Send a manual reply in the conversation first. This resumes AI replies for that conversation.', 'أرسل ردًا يدويًا في المحادثة أولًا. بعد ذلك ستُستأنف الردود الآلية للمحادثة.')} footer={<>
       <Button variant="outline" disabled={resolving} onClick={() => setResolveTaskId(null)}>{L('Cancel', 'إلغاء')}</Button>

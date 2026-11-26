@@ -125,7 +125,13 @@ export default function HandoffsPage() {
         method: 'PATCH', headers: headers(), body: JSON.stringify(resolutionNote.trim() ? { resolution_note: resolutionNote.trim() } : {}),
       })
       const body = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(body.message || L('Could not resolve this task.', 'تعذر إغلاق هذه المهمة.'))
+      if (!response.ok) {
+        const message = body.error || body.message
+        if (message?.toLowerCase().includes('manual reply')) {
+          throw new Error(L('Send a manual reply from this inbox first, then mark the handoff handled.', 'أرسل ردًا يدويًا من صندوق الوارد أولًا، ثم أنهِ المتابعة.'))
+        }
+        throw new Error(message || L('Could not resolve this task.', 'تعذر إغلاق هذه المهمة.'))
+      }
       setResolveTaskId(null)
       setResolutionNote('')
       await load()
